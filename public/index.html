@@ -4,7 +4,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Firebase Basics</title>
+  <title>Squadron Tracker Web App</title>
+
+  <!-- Link to your CSS files -->
+  <link rel="stylesheet" href="css/modal.css"> <!-- Modal styles -->
+  <link rel="stylesheet" href="css/styles.css"> <!-- HoverMessage styles -->
 
   <!-- The core Firebase JS SDK is always required and must be listed first -->
   <script src="https://www.gstatic.com/firebasejs/7.16.1/firebase-app.js"></script>
@@ -70,21 +74,26 @@
   </section>
 
   <h2>Cadets List</h2>
-    <table border="1">
+  
+    <table id="cadetsTable" border="1">
+      
         <thead>
             <tr>
+              
                 <th>Forename</th>
                 <th>Surname</th>
                 <th>Rank</th>
                 <th>Flight</th>
                 <th>Classification</th>
                 <th>Start Date</th>
-                <th>Created At</th>
-                <th>Added By</th>
             </tr>
         </thead>
         <tbody id="cadetsTableBody"></tbody>
     </table>
+
+    
+
+    
 
   <!-- Modal for Adding Cadet -->
   <div id="addCadetModal" class="modal" style="display: none;">
@@ -108,7 +117,7 @@
           </form>
       </div>
   </div>
-
+<div id="hoverMessage" class="hoverMessage"></div>
 </body>
 
 </html>

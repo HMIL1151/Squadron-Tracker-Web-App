@@ -118,24 +118,44 @@ auth.onAuthStateChanged(user => {
             db.collection("Cadets").onSnapshot(snapshot => {
             cadetsTableBody.innerHTML = ""; // Clear the table before updating
 
-            snapshot.forEach(doc => {
-                const cadet = doc.data();
-                const createdAt = cadet.createdAt && cadet.createdAt.toDate 
-                ? cadet.createdAt.toDate().toLocaleString() 
-                : "N/A"; // Default value if undefined
-                const row = `<tr id="${doc.id}">
-                                <td>${cadet.forename}</td>
-                                <td>${cadet.surname}</td>
-                                <td>${cadet.rank}</td>
-                                <td>${cadet.flight}</td>
-                                <td>${cadet.classification}</td>
-                                <td>${cadet.startDate}</td>
-                                <td>${createdAt}</td>
-                                <td>${cadet.addedBy}</td>
-                            </tr>`;
-
-                cadetsTableBody.innerHTML += row;
-            });
+                snapshot.forEach(doc => {
+                    const cadet = doc.data();
+                    const createdAt = cadet.createdAt && cadet.createdAt.toDate 
+                        ? cadet.createdAt.toDate().toLocaleString('en-GB') 
+                        : "N/A"; 
+            
+                    const row = document.createElement("tr");
+                    row.id = doc.id;
+                    row.innerHTML = `
+                        <td>${cadet.forename}</td>
+                        <td>${cadet.surname}</td>
+                        <td>${cadet.rank}</td>
+                        <td>${cadet.flight}</td>
+                        <td>${cadet.classification}</td>
+                        <td>${cadet.startDate}</td>
+                    `;
+            
+                    row.addEventListener("mouseover", () => {
+                        let messageBox = document.getElementById('hoverMessage');
+                        messageBox.innerHTML = `Added by: ${cadet.addedBy}, ${createdAt}`;
+                        messageBox.style.display = 'block';
+                    });
+            
+                    // this looks like it works after a console output
+                    row.addEventListener("mousemove", (event) => {
+                        let messageBox = document.getElementById('hoverMessage');
+                        messageBox.style.top = `${event.clientY + 10}px`; // 10px below cursor
+                        messageBox.style.left = `${event.clientX + 15}px`; // 15px to the right
+                        
+                    });
+            
+                    row.addEventListener("mouseout", () => {
+                        document.getElementById('hoverMessage').style.display = 'none';
+                    });
+            
+                    document.getElementById("cadetsTableBody").appendChild(row);
+                });
+            
         });
         
 
@@ -147,3 +167,15 @@ auth.onAuthStateChanged(user => {
         
     }
 });
+
+function showMessage(text) {
+    let messageBox = document.getElementById('hoverMessage');
+    messageBox.innerHTML = text; // Using innerHTML to support line breaks
+    messageBox.style.display = 'block';
+    messageBox.style.top = event.clientY + 'px';
+    messageBox.style.left = event.clientX + 'px';
+}
+
+function hideMessage() {
+    document.getElementById('hoverMessage').style.display = 'none';
+}

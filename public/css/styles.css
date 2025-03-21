@@ -1,0 +1,26 @@
+#hoverMessage {
+    position: absolute; /* Allows it to move freely based on top/left */
+    background: lightgrey; /* Background color for visibility */
+    padding: 5px; /* Padding for better appearance */
+    border-radius: 5px; /* Rounded corners */
+    display: none; /* Initially hidden */
+    pointer-events: none; /* Prevents it from interfering with mouse events */
+    white-space: nowrap; /* Prevents text wrapping */
+    z-index: 1000; /* Ensures it appears above other elements */
+}
+
+#cadetsTable {
+    position: relative;
+  }
+  
+  #cadetsTable .hidden-content {
+    display: none;
+    position: absolute;
+    background: lightgray;
+    padding: 5px;
+    border-radius: 5px;
+  }
+
+  
+  
+  
