@@ -34,8 +34,6 @@ auth.onAuthStateChanged(user => {
     }
 });
 
-console.log('hello world');
-
 
 
 ///// Firestore /////
@@ -91,6 +89,10 @@ auth.onAuthStateChanged(user => {
             const flight = parseInt(document.getElementById('flight').value, 10);
             const classification = parseInt(document.getElementById('classification').value, 10);
             const startDate = document.getElementById('startDate').value;
+            // Split the date string (YYYY-MM-DD)
+            const [startYear, startMonth, startDay] = startDate.split('-');
+            // Reformat it to DD/MM/YYYY
+            const formattedDate = `${startDay}/${startMonth}/${startYear}`;
 
             // Add the new cadet to Firestore
             cadetListRef.add({
@@ -100,7 +102,7 @@ auth.onAuthStateChanged(user => {
                 forename: forename,
                 surname: surname,
                 rank: rank,
-                startDate: startDate,
+                startDate: formattedDate,
                 createdAt: firebase.firestore.FieldValue.serverTimestamp()
             }).then(() => {
                 console.log('Cadet added successfully!');
@@ -129,9 +131,9 @@ auth.onAuthStateChanged(user => {
                     row.innerHTML = `
                         <td>${cadet.forename}</td>
                         <td>${cadet.surname}</td>
-                        <td>${cadet.rank}</td>
-                        <td>${cadet.flight}</td>
-                        <td>${cadet.classification}</td>
+                        <td>${Rank[cadet.rank] || 'Unknown'}</td>
+                        <td>${Flights[cadet.flight] || 'Unkown'}</td>
+                        <td>${Classification[cadet.classification] || 'Unknown'}</td>
                         <td>${cadet.startDate}</td>
                     `;
             
