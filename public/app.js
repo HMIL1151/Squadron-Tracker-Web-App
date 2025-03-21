@@ -45,6 +45,14 @@ const db = firebase.firestore();
 const addCadet = document.getElementById('addCadet');
 const cadetList = document.getElementById('cadetList');
 
+const addCadetModal = document.getElementById('addCadetModal');
+const closeModal = document.getElementById('closeModal');
+const addCadetForm = document.getElementById('addCadetForm');
+
+
+
+
+
 
 let cadetListRef;
 let unsubscribe;
@@ -52,25 +60,57 @@ let unsubscribe;
 auth.onAuthStateChanged(user => {
 
     if (user) {
-        console.log('Logged in as: ' + user.uid);
+        console.log('Logged in as: ' + user.displayName + ' (' + user.uid + ')');
         // Database Reference
         cadetListRef = db.collection('Cadets')
 
+        // Show the modal when the addCadet button is clicked
         addCadet.onclick = () => {
-            console.log('clicked');
+            addCadetModal.style.display = 'block';
+        };
 
+        // Close the modal when the close button is clicked
+        closeModal.onclick = () => {
+            addCadetModal.style.display = 'none';
+        };
+
+        // Close the modal if the user clicks outside of it
+        window.onclick = (event) => {
+            if (event.target === addCadetModal) {
+                addCadetModal.style.display = 'none';
+            }
+        };
+
+        // Handle form submission
+        addCadetForm.onsubmit = (event) => {
+            event.preventDefault(); // Prevent the form from refreshing the page
+
+            const forename = document.getElementById('forename').value;
+            const surname = document.getElementById('surname').value;
+            const rank = parseInt(document.getElementById('rank').value, 10);
+            const flight = parseInt(document.getElementById('flight').value, 10);
+            const classification = parseInt(document.getElementById('classification').value, 10);
+            const startDate = document.getElementById('startDate').value;
+
+            // Add the new cadet to Firestore
             cadetListRef.add({
-                addedBy: user.displayName,
-                classification: 5,
-                dischargeDate: '2026-02-04',
-                flight: 0,
-                forename: 'Annabelle',
-                surname: 'Larmour',
-                rank: 0,
-                startDate: '2021-06-15',
+                addedBy: auth.currentUser.displayName,
+                classification: classification,
+                flight: flight,
+                forename: forename,
+                surname: surname,
+                rank: rank,
+                startDate: startDate,
                 createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            }).then(() => {
+                console.log('Cadet added successfully!');
+                addCadetModal.style.display = 'none'; // Close the modal
+                addCadetForm.reset(); // Reset the form
+            }).catch((error) => {
+                console.error('Error adding cadet: ', error);
             });
-        }
+        };
+        
         
 
 
@@ -90,7 +130,6 @@ auth.onAuthStateChanged(user => {
                                 <td>${cadet.flight}</td>
                                 <td>${cadet.classification}</td>
                                 <td>${cadet.startDate}</td>
-                                <td>${cadet.dischargeDate}</td>
                                 <td>${createdAt}</td>
                                 <td>${cadet.addedBy}</td>
                             </tr>`;
