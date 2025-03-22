@@ -38,7 +38,7 @@ const Table = ({ columns, data }) => {
     columns.every((col) => {
       const filter = filters[col];
       if (filter) {
-        const cellValue = String(row[col]).toLowerCase();
+        const cellValue = String(getMappedValue(col, row[col])).toLowerCase(); // Use mapped value for filtering
         return cellValue.includes(filter);
       }
       return true;
@@ -48,8 +48,8 @@ const Table = ({ columns, data }) => {
   const sortedData = filteredData.sort((a, b) => {
     return columns.reduce((acc, col) => {
       if (sortOrder[col]) {
-        const valA = a[col];
-        const valB = b[col];
+        const valA = getMappedValue(col, a[col]); // Use mapped value for sorting
+        const valB = getMappedValue(col, b[col]);
         if (typeof valA === "string" && typeof valB === "string") {
           return sortOrder[col] === "asc" ? valA.localeCompare(valB) : valB.localeCompare(valA);
         }
@@ -142,11 +142,11 @@ const Table = ({ columns, data }) => {
             position: 'absolute',
             top: hoverbox.position.y + 10, // 10px offset
             left: hoverbox.position.x + 20, // 10px offset
-            backgroundColor: 'white',
-            padding: '5px',
-            border: '1px solid gray',
-            borderRadius: '15px',
-            boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+            backgroundColor: "white",
+            padding: "5px",
+            border: "1px solid gray",
+            borderRadius: "15px",
+            boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
             zIndex: 1000,
           }}
         >

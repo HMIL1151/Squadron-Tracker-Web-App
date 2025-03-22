@@ -79,7 +79,7 @@
     border-radius: 5px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     font-size: 1rem;
-    animation: fadeOut 5s ease forwards;
+    animation: fadeOut 10s ease forwards;
   }
   
   @keyframes fadeOut {
