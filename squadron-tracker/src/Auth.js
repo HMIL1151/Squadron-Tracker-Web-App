@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { auth, googleProvider } from "./firebase";
 import { signInWithPopup, signOut, onAuthStateChanged } from "firebase/auth";
+import "./Auth.css";
 
 const Auth = ({ onUserChange }) => {
   const [user, setUser] = useState(null);
@@ -30,17 +31,23 @@ const Auth = ({ onUserChange }) => {
   };
 
   return (
-    <div>
+    <div className="auth-container">
       {user ? (
         <div>
           <p>Welcome, {user.displayName}!</p>
-          <button onClick={handleSignOut}>Sign Out</button>
+          <button className="auth-button sign-out" onClick={handleSignOut}>
+            Sign Out
+          </button>
         </div>
       ) : (
-        <button onClick={handleSignIn}>Sign In with Google</button>
+        <button className="auth-button sign-in" onClick={handleSignIn}>
+          Sign In with Google
+        </button>
       )}
+      <hr />
     </div>
   );
+  
 };
 
 export default Auth;
