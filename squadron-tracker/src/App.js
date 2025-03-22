@@ -3,8 +3,10 @@ import { useState, useEffect } from 'react';
 import { getFirestore, collection, getDocs } from 'firebase/firestore/lite';
 import { app } from './firebase';
 import Table from './Table';
+import Auth from './Auth';
 
 const App = () => {
+  const [user, setUser] = useState(null);
   const [cadets, setCadets] = useState([]);
 
   const refreshCadets = async () => {
@@ -33,22 +35,33 @@ const App = () => {
     CreatedAt: "createdAt"
   };
 
-const formattedCadets = cadets.map(cadet => {
-  return Object.keys(cadetListColumnMapping).reduce((acc, key) => {
-    acc[key] = cadet[cadetListColumnMapping[key]];
-    return acc;
-  }, {});
-});
+  const handleUserChange = (currentUser) => {
+    setUser(currentUser);
+  };
+
+  const formattedCadets = cadets.map(cadet => {
+    return Object.keys(cadetListColumnMapping).reduce((acc, key) => {
+      acc[key] = cadet[cadetListColumnMapping[key]];
+      return acc;
+    }, {});
+  });
 
   return (
     <div className="App">
       <h2>Squadron Tracker</h2>
-        <h3>Cadet List</h3>
-        <section>
-          <Table columns={cadetListColumns} data={formattedCadets}/>
-        </section>
+      <Auth onUserChange={handleUserChange} />
+      {user ? (
+        <div>
+          <h3>Cadet List</h3>
+          <section>
+            <Table columns={cadetListColumns} data={formattedCadets} />
+          </section>
+        </div>
+      ) : (
+        <p>Please sign in to view the cadet list.</p>
+      )}
     </div>
   );
-};
+  };
 
-export default App;
+  export default App;
