@@ -1,26 +1,16 @@
 import React, { useState, useEffect } from "react";
 import { fetchCollectionData } from "./firestoreUtils";
-import { getFirestore, collection, addDoc, deleteDoc, doc } from "firebase/firestore/lite";
-import { rankMap, flightMap, classificationMap } from "./mappings";
+import { getFirestore, deleteDoc, doc } from "firebase/firestore/lite";
 import Table from "./Table";
 import Popup from "./Popup";
 import "./TableDashboard.css";
 
-const CadetsDashboard = ({ user }) => {
+const CadetsDashboard = () => {
   const [cadets, setCadets] = useState([]);
-  const [isAddPopupOpen, setIsAddPopupOpen] = useState(false);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [isConfirmationOpen, setIsConfirmationOpen] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
   const [selectedCadet, setSelectedCadet] = useState(""); // Store the selected cadet's ID
-  const [newCadet, setNewCadet] = useState({
-    forename: "",
-    surname: "",
-    startDate: "",
-    classification: "",
-    flight: "",
-    rank: "",
-  });
 
   const cadetListColumns = [
     "Forename",
@@ -29,7 +19,6 @@ const CadetsDashboard = ({ user }) => {
     "Flight",
     "Classification",
     "Start Date",
-    "Service Length"
   ];
 
   const cadetListColumnMapping = {
@@ -84,92 +73,11 @@ const CadetsDashboard = ({ user }) => {
     }
   };
 
-  const handleAddCadet = async () => {
-    try {
-      const db = getFirestore();
-      if (!user) {
-        alert("User information is missing.");
-        return;
-      }
-      const { forename, surname, startDate, classification, flight, rank } = newCadet;
-
-      if (!forename || !surname || !startDate || classification === "" || flight === "" || rank === "") {
-        alert("Please fill in all fields.");
-        return;
-      }
-
-      await addDoc(collection(db, "Cadets"), {
-        addedBy: user.displayName,
-        classification: parseInt(classification, 10),
-        createdAt: new Date(),
-        flight: parseInt(flight, 10),
-        forename,
-        rank: parseInt(rank, 10),
-        startDate,
-        surname,
-      });
-
-      // Trigger the success message
-      setSuccessMessage(`${forename} ${surname} successfully added.`);
-      setTimeout(() => setSuccessMessage(""), 1000); // Automatically hide after 1 second
-
-      // Close the Add Cadet popup
-      setIsAddPopupOpen(false);
-
-      // Reset the form fields
-      setNewCadet({
-        forename: "",
-        surname: "",
-        startDate: "",
-        classification: "",
-        flight: "",
-        rank: "",
-      });
-
-      // Refresh the cadets list
-      const cadetsData = await fetchCollectionData("Cadets");
-      setCadets(cadetsData);
-    } catch (error) {
-      console.error("Error adding cadet:", error);
-      alert("An error occurred while adding the cadet.");
-    }
-  };
-
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setNewCadet((prev) => ({ ...prev, [name]: value }));
-  };
-
   const formattedCadets = cadets.map((cadet) => {
-    const serviceLength = (() => {
-      if (!cadet.startDate) return "N/A";
-      const startDate = new Date(cadet.startDate);
-      const today = new Date();
-
-      let years = today.getFullYear() - startDate.getFullYear();
-      let months = today.getMonth() - startDate.getMonth();
-      let days = today.getDate() - startDate.getDate();
-
-      if (days < 0) {
-        months -= 1;
-        days += new Date(today.getFullYear(), today.getMonth(), 0).getDate();
-      }
-
-      if (months < 0) {
-        years -= 1;
-        months += 12;
-      }
-
-      return `${years} Yrs, ${months} Mos, ${days} Days`;
-    })();
-
-    return {
-      ...Object.keys(cadetListColumnMapping).reduce((acc, key) => {
-        acc[key] = cadet[cadetListColumnMapping[key]];
-        return acc;
-      }, {}),
-      "Service Length": serviceLength, // Add the calculated service length
-    };
+    return Object.keys(cadetListColumnMapping).reduce((acc, key) => {
+      acc[key] = cadet[cadetListColumnMapping[key]];
+      return acc;
+    }, {});
   });
 
   return (
@@ -179,9 +87,7 @@ const CadetsDashboard = ({ user }) => {
         <button className="table-button-red" onClick={() => setIsPopupOpen(true)}>
           Discharge Cadet
         </button>
-        <button className="table-button" onClick={() => setIsAddPopupOpen(true)}>
-          Add Cadet
-        </button>
+        <button className="table-button">Add Cadet</button>
       </div>
       <Table columns={cadetListColumns} data={formattedCadets} />
 
@@ -214,72 +120,6 @@ const CadetsDashboard = ({ user }) => {
       >
         <h3>Are you sure?</h3>
         <p>Do you really want to discharge this cadet?</p>
-      </Popup>
-
-      {/* Add Cadet Popup */}
-      <Popup
-        isOpen={isAddPopupOpen}
-        onClose={() => setIsAddPopupOpen(false)}
-        onConfirm={handleAddCadet}
-      >
-        <h3>Add Cadet</h3>
-        <input
-          type="text"
-          name="forename"
-          placeholder="Forename"
-          value={newCadet.forename}
-          onChange={handleInputChange}
-        />
-        <input
-          type="text"
-          name="surname"
-          placeholder="Surname"
-          value={newCadet.surname}
-          onChange={handleInputChange}
-        />
-        <input
-          type="date"
-          name="startDate"
-          placeholder="Start Date"
-          value={newCadet.startDate}
-          onChange={handleInputChange}
-        />
-        <select
-          name="classification"
-          value={newCadet.classification}
-          onChange={handleInputChange}
-        >
-          <option value="">-- Select Classification --</option>
-          {Object.entries(classificationMap).map(([key, value]) => (
-            <option key={key} value={key}>
-              {value}
-            </option>
-          ))}
-        </select>
-        <select
-          name="flight"
-          value={newCadet.flight}
-          onChange={handleInputChange}
-        >
-          <option value="">-- Select Flight --</option>
-          {Object.entries(flightMap).map(([key, value]) => (
-            <option key={key} value={key}>
-              {value}
-            </option>
-          ))}
-        </select>
-        <select
-          name="rank"
-          value={newCadet.rank}
-          onChange={handleInputChange}
-        >
-          <option value="">-- Select Rank --</option>
-          {Object.entries(rankMap).map(([key, value]) => (
-            <option key={key} value={key}>
-              {value}
-            </option>
-          ))}
-        </select>
       </Popup>
 
       {/* Success Message */}

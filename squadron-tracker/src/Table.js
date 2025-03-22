@@ -38,7 +38,7 @@ const Table = ({ columns, data }) => {
     columns.every((col) => {
       const filter = filters[col];
       if (filter) {
-        const cellValue = String(getMappedValue(col, row[col])).toLowerCase(); // Use mapped value for filtering
+        const cellValue = String(row[col]).toLowerCase();
         return cellValue.includes(filter);
       }
       return true;
@@ -48,8 +48,8 @@ const Table = ({ columns, data }) => {
   const sortedData = filteredData.sort((a, b) => {
     return columns.reduce((acc, col) => {
       if (sortOrder[col]) {
-        const valA = getMappedValue(col, a[col]); // Use mapped value for sorting
-        const valB = getMappedValue(col, b[col]);
+        const valA = a[col];
+        const valB = b[col];
         if (typeof valA === "string" && typeof valB === "string") {
           return sortOrder[col] === "asc" ? valA.localeCompare(valB) : valB.localeCompare(valA);
         }
@@ -65,10 +65,10 @@ const Table = ({ columns, data }) => {
   const handleMouseEnter = (row, e) => {
     const addedBy = row["AddedBy"]; // Access AddedBy by column name
     const createdAtTimestamp = row["CreatedAt"]; // Access CreatedAt by column name
-
+  
     // Convert Firestore Timestamp to JavaScript Date object
     const createdAtDate = createdAtTimestamp.toDate(); // toDate() converts Firestore Timestamp to Date
-
+  
     // Format the date as DD-MM-YYYY HH:MM
     const formattedCreatedAt = createdAtDate.toLocaleString("en-GB", {
       day: "2-digit",
@@ -78,7 +78,7 @@ const Table = ({ columns, data }) => {
       minute: "2-digit",
       hour12: false, // Use 24-hour format
     });
-
+  
     setHoverbox({
       visible: true,
       content: `Added by ${addedBy} at ${formattedCreatedAt}`,
@@ -139,14 +139,14 @@ const Table = ({ columns, data }) => {
         <div
           className="hoverbox"
           style={{
-            position: "absolute",
+            position: 'absolute',
             top: hoverbox.position.y + 10, // 10px offset
             left: hoverbox.position.x + 20, // 10px offset
-            backgroundColor: "white",
-            padding: "5px",
-            border: "1px solid gray",
-            borderRadius: "15px",
-            boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+            backgroundColor: 'white',
+            padding: '5px',
+            border: '1px solid gray',
+            borderRadius: '15px',
+            boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
             zIndex: 1000,
           }}
         >

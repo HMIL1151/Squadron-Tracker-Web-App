@@ -15,7 +15,8 @@ const App = () => {
       <h2>Squadron Tracker</h2>
       <Auth onUserChange={handleUserChange} />
       {user ? (
-        <CadetsDashboard user={user} />      ) : (
+        <CadetsDashboard />
+      ) : (
         <p>Please sign in to view the cadet list.</p>
       )}
     </div>
