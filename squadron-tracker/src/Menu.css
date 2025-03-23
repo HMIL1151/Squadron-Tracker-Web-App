@@ -1,0 +1,29 @@
+.menu {
+  grid-area: menu;
+  background-color: #f4f4f4;
+  padding: 10px;
+  border-right: 1px solid #ccc;
+  box-sizing: border-box;
+}
+
+.menu ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.menu li {
+  padding: 10px;
+  cursor: pointer;
+  border-radius: 4px;
+  margin-bottom: 5px;
+}
+
+.menu li.active {
+  background-color: #007bff;
+  color: white;
+}
+
+.menu li:not(.active):hover {
+  background-color: #e0e0e0; /* Change background color on hover only if not active */
+}

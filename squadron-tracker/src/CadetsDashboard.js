@@ -178,7 +178,6 @@ const CadetsDashboard = ({ user }) => {
   return (
     <div className="table-dashboard-container">
       <div className="button-container">
-        <span className="dashboard-table-title">Cadets List</span>
         <button className="table-button-red" onClick={() => setIsPopupOpen(true)}>
           Discharge Cadet
         </button>
