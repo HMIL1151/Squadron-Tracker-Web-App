@@ -1,0 +1,93 @@
+.table-dashboard-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+  }
+  
+  .button-container {
+    display: flex;
+    gap: min(20px, 5vw);;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  
+  .dashboard-table-title {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #333;
+    margin-right: 40px; /* space between span and buttons */
+    text-decoration: none; /* Ensure no underline */
+
+  }
+  
+  .table-button {
+    padding: 10px 20px;
+    font-size: 1rem;
+    border: none;
+    background-color: #4CAF50; /* Green background */
+    color: white;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+  }
+  
+  .table-button:hover {
+    background-color: #45a049; /* Slightly darker green */
+    transform: scale(1.05); /* Button grow effect on hover */
+  }
+
+  .table-button-red {
+    padding: 10px 20px;
+    font-size: 1rem;
+    border: none;
+    background-color: #D32F2F; /* Green background */
+    color: white;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+  }
+  
+  .table-button-red:hover {
+    background-color: #B71C1C; /* Slightly darker green */
+    transform: scale(1.05); /* Button grow effect on hover */
+  }
+
+  select {
+    width: 100%;
+    padding: 10px;
+    margin-top: 10px;
+    font-size: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+  }
+  
+  select:focus {
+    outline: none;
+    border-color: #4CAF50; /* Match the green button color */
+    box-shadow: 0 0 5px rgba(76, 175, 80, 0.5);
+  }
+
+  .success-popup {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background-color: #4CAF50; /* Green background */
+    color: white;
+    padding: 10px 20px;
+    border-radius: 5px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    font-size: 1rem;
+    animation: fadeOut 10s ease forwards;
+  }
+  
+  @keyframes fadeOut {
+    0% {
+      opacity: 1;
+    }
+    100% {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+  }
