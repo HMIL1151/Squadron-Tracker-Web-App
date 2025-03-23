@@ -4,7 +4,7 @@ import { getFirestore, collection, addDoc, deleteDoc, doc } from "firebase/fires
 import { rankMap, flightMap, classificationMap } from "../../../utils/mappings";
 import Table from "../../Table/Table";
 import Popup from "./Popup";
-import "../TableDashboard.css";
+import "./CadetsDashboard.css";
 
 const CadetsDashboard = ({ user }) => {
   const [cadets, setCadets] = useState([]);
