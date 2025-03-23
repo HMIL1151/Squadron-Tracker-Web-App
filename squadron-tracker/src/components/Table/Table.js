@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { rankMap, flightMap, classificationMap } from "./mappings"; // Import the mappings
+import { rankMap, flightMap, classificationMap } from "../../utils/mappings"; // Import the mappings
 import "./Table.css";
 
 const Table = ({ columns, data }) => {
