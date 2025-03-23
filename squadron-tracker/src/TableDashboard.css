@@ -71,7 +71,7 @@
 
   .success-popup {
     position: fixed;
-    top: 20px;
+    top: 80px;
     right: 20px;
     background-color: #4CAF50; /* Green background */
     color: white;
