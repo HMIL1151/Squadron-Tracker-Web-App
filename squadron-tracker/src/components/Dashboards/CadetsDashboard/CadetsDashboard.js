@@ -3,7 +3,8 @@ import { fetchCollectionData } from "../../../firebase/firestoreUtils";
 import { getFirestore, collection, addDoc, deleteDoc, doc } from "firebase/firestore/lite";
 import { rankMap, flightMap, classificationMap } from "../../../utils/mappings";
 import Table from "../../Table/Table";
-import Popup from "./Popup";
+import PopupManager from "./PopupManager";
+import SuccessMessage from "./SuccessMessage";
 import "./CadetsDashboard.css";
 
 const CadetsDashboard = ({ user }) => {
@@ -12,7 +13,7 @@ const CadetsDashboard = ({ user }) => {
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [isConfirmationOpen, setIsConfirmationOpen] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
-  const [selectedCadet, setSelectedCadet] = useState(""); // Store the selected cadet's ID
+  const [selectedCadet, setSelectedCadet] = useState("");
   const [newCadet, setNewCadet] = useState({
     forename: "",
     surname: "",
@@ -22,7 +23,6 @@ const CadetsDashboard = ({ user }) => {
     rank: "",
   });
 
-
   const cadetListColumns = [
     "Forename",
     "Surname",
@@ -30,7 +30,7 @@ const CadetsDashboard = ({ user }) => {
     "Flight",
     "Classification",
     "Start Date",
-    "Service Length"
+    "Service Length",
   ];
 
   const cadetListColumnMapping = {
@@ -84,7 +84,6 @@ const CadetsDashboard = ({ user }) => {
       alert("An error occurred while discharging the cadet.");
     }
   };
-
 
   const handleAddCadet = async () => {
     try {
@@ -142,7 +141,6 @@ const CadetsDashboard = ({ user }) => {
     setNewCadet((prev) => ({ ...prev, [name]: value }));
   };
 
-
   const formattedCadets = cadets.map((cadet) => {
     const serviceLength = (() => {
       if (!cadet.startDate) return "N/A";
@@ -186,112 +184,25 @@ const CadetsDashboard = ({ user }) => {
         </button>
       </div>
       <Table columns={cadetListColumns} data={formattedCadets} />
-
-      {/* Popup for Discharge Cadet */}
-      <Popup
-        isOpen={isPopupOpen}
-        onClose={() => setIsPopupOpen(false)}
-        onConfirm={() => setIsConfirmationOpen(true)} // Open confirmation popup
-      >
-        <h3>Discharge Cadet</h3>
-        <p>Select the cadet to discharge:</p>
-        <select
-          value={selectedCadet}
-          onChange={(e) => setSelectedCadet(e.target.value)}
-        >
-          <option value="">-- Select a Cadet --</option>
-          {cadets.map((cadet) => (
-            <option key={cadet.id} value={cadet.id}>
-              {cadet.forename} {cadet.surname}
-            </option>
-          ))}
-        </select>
-      </Popup>
-
-      {/* Confirmation Popup */}
-      <Popup
-        isOpen={isConfirmationOpen}
-        onClose={() => setIsConfirmationOpen(false)}
-        onConfirm={handleDischarge}
-      >
-        <h3>Are you sure?</h3>
-        <p>Do you really want to discharge this cadet?</p>
-      </Popup>
-
-
-      {/* Add Cadet Popup */}
-      <Popup
-        isOpen={isAddPopupOpen}
-        onClose={() => setIsAddPopupOpen(false)}
-        onConfirm={handleAddCadet}
-      >
-        <h3>Add Cadet</h3>
-        <input
-          type="text"
-          name="forename"
-          placeholder="Forename"
-          value={newCadet.forename}
-          onChange={handleInputChange}
-        />
-        <input
-          type="text"
-          name="surname"
-          placeholder="Surname"
-          value={newCadet.surname}
-          onChange={handleInputChange}
-        />
-        <input
-          type="date"
-          name="startDate"
-          placeholder="Start Date"
-          value={newCadet.startDate}
-          onChange={handleInputChange}
-        />
-        <select
-          name="classification"
-          value={newCadet.classification}
-          onChange={handleInputChange}
-        >
-          <option value="">-- Select Classification --</option>
-          {Object.entries(classificationMap).map(([key, value]) => (
-            <option key={key} value={key}>
-              {value}
-            </option>
-          ))}
-        </select>
-        <select
-          name="flight"
-          value={newCadet.flight}
-          onChange={handleInputChange}
-        >
-          <option value="">-- Select Flight --</option>
-          {Object.entries(flightMap).map(([key, value]) => (
-            <option key={key} value={key}>
-              {value}
-            </option>
-          ))}
-        </select>
-        <select
-          name="rank"
-          value={newCadet.rank}
-          onChange={handleInputChange}
-        >
-          <option value="">-- Select Rank --</option>
-          {Object.entries(rankMap).map(([key, value]) => (
-            <option key={key} value={key}>
-              {value}
-            </option>
-          ))}
-        </select>
-      </Popup>
-
-
-      {/* Success Message */}
-      {successMessage && (
-        <div className="success-popup">
-          {successMessage}
-        </div>
-      )}
+      <PopupManager
+        isPopupOpen={isPopupOpen}
+        isConfirmationOpen={isConfirmationOpen}
+        isAddPopupOpen={isAddPopupOpen}
+        setIsPopupOpen={setIsPopupOpen}
+        setIsConfirmationOpen={setIsConfirmationOpen}
+        setIsAddPopupOpen={setIsAddPopupOpen}
+        handleDischarge={handleDischarge}
+        handleAddCadet={handleAddCadet}
+        cadets={cadets}
+        selectedCadet={selectedCadet}
+        setSelectedCadet={setSelectedCadet}
+        newCadet={newCadet}
+        handleInputChange={handleInputChange}
+        classificationMap={classificationMap}
+        flightMap={flightMap}
+        rankMap={rankMap}
+      />
+      <SuccessMessage message={successMessage} />
     </div>
   );
 };
