@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { fetchCollectionData } from "./firestoreUtils";
+import { fetchCollectionData } from "../../../firebase/firestoreUtils";
 import { getFirestore, collection, addDoc, deleteDoc, doc } from "firebase/firestore/lite";
-import { rankMap, flightMap, classificationMap } from "./mappings";
-import Table from "./Table";
+import { rankMap, flightMap, classificationMap } from "../../../utils/mappings";
+import Table from "../../Table/Table";
 import Popup from "./Popup";
-import "./TableDashboard.css";
+import "../TableDashboard.css";
 
 const CadetsDashboard = ({ user }) => {
   const [cadets, setCadets] = useState([]);

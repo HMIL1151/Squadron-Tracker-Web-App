@@ -1,11 +1,11 @@
-import "./App.css";
+import "./Styles/App.css";
 import { useState } from "react";
-import Auth from "./Auth";
-import CadetsDashboard from "./CadetsDashboard";
-import MassEventLog from "./MassEventLog";
-import Menu from "./Menu"; // Import the Menu component
+import Auth from "./components/Auth/Auth";
+import CadetsDashboard from "./components/Dashboards/CadetsDashboard/CadetsDashboard";
+import MassEventLog from "./components/Dashboards/Mass Event Log/MassEventLog";
+import Menu from "./components/Menu/Menu"; // Import the Menu component
 import { signOut } from "firebase/auth";
-import { auth } from "./firebase"; // Adjust the import path to your Firebase configuration
+import { auth } from "./firebase/firebase"; // Adjust the import path to your Firebase configuration
 
 const App = () => {
   const [user, setUser] = useState(null);
