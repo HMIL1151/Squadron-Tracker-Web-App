@@ -12,6 +12,7 @@ const CadetsDashboard = ({ user }) => {
   const [isAddPopupOpen, setIsAddPopupOpen] = useState(false);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [isConfirmationOpen, setIsConfirmationOpen] = useState(false);
+  const [isEditPopupOpen, setIsEditPopupOpen] = useState(false); // New state for edit popup
   const [successMessage, setSuccessMessage] = useState("");
   const [selectedCadet, setSelectedCadet] = useState("");
   const [newCadet, setNewCadet] = useState({
@@ -141,6 +142,12 @@ const CadetsDashboard = ({ user }) => {
     setNewCadet((prev) => ({ ...prev, [name]: value }));
   };
 
+  const handleRowClick = (cadetId) => {
+    const cadet = cadets.find((c) => c.id === cadetId); // Find the selected cadet
+    setSelectedCadet(cadet); // Set the selected cadet's data
+    setIsEditPopupOpen(true); // Open the edit popup
+  };
+
   const formattedCadets = cadets.map((cadet) => {
     const serviceLength = (() => {
       if (!cadet.startDate) return "N/A";
@@ -166,11 +173,12 @@ const CadetsDashboard = ({ user }) => {
 
     return {
       ...Object.keys(cadetListColumnMapping).reduce((acc, key) => {
-      acc[key] = cadet[cadetListColumnMapping[key]];
-      return acc;
-    }, {}),
-    "Service Length": serviceLength, // Add the calculated service length
-  };
+        acc[key] = cadet[cadetListColumnMapping[key]];
+        return acc;
+      }, {}),
+      "Service Length": serviceLength, // Add the calculated service length
+      id: cadet.id, // Include the cadet ID for row click handling
+    };
   });
 
   return (
@@ -183,14 +191,20 @@ const CadetsDashboard = ({ user }) => {
           Add Cadet
         </button>
       </div>
-      <Table columns={cadetListColumns} data={formattedCadets} />
+      <Table
+        columns={cadetListColumns}
+        data={formattedCadets}
+        onRowClick={(row) => handleRowClick(row.id)} // Pass the row click handler
+      />
       <PopupManager
         isPopupOpen={isPopupOpen}
         isConfirmationOpen={isConfirmationOpen}
         isAddPopupOpen={isAddPopupOpen}
+        isEditPopupOpen={isEditPopupOpen} // Pass the new popup state
         setIsPopupOpen={setIsPopupOpen}
         setIsConfirmationOpen={setIsConfirmationOpen}
         setIsAddPopupOpen={setIsAddPopupOpen}
+        setIsEditPopupOpen={setIsEditPopupOpen} // Pass the setter for the new popup
         handleDischarge={handleDischarge}
         handleAddCadet={handleAddCadet}
         cadets={cadets}

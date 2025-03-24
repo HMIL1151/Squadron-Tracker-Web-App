@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { rankMap, flightMap, classificationMap } from "../../utils/mappings"; // Import the mappings
 import "./Table.css";
 
-const Table = ({ columns, data }) => {
+const Table = ({ columns, data, onRowClick }) => {
   const [filters, setFilters] = useState({});
   const [sortOrder, setSortOrder] = useState({});
   const [hoverbox, setHoverbox] = useState({ visible: false, content: "", position: { x: 0, y: 0 } });
@@ -123,6 +123,8 @@ const Table = ({ columns, data }) => {
               onMouseEnter={(e) => handleMouseEnter(row, e)} // Pass the row to handleMouseEnter
               onMouseMove={handleMouseMove}
               onMouseLeave={handleMouseLeave}
+              onClick={() => onRowClick && onRowClick(row)} // Trigger onRowClick if provided
+              className={onRowClick ? "clickable-row" : ""}
             >
               {columns.map((col, colIndex) => (
                 <td key={colIndex}>
