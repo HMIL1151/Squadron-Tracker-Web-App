@@ -40,6 +40,7 @@ const CadetForm = ({
           onChange={handleInputChange}
           className="form-select"
         >
+          <option value="" disabled>Select a rank</option>
           {Object.entries(rankMap).map(([key, value]) => (
             <option key={key} value={key}>
               {value}
@@ -56,6 +57,7 @@ const CadetForm = ({
           onChange={handleInputChange}
           className="form-select"
         >
+          <option value="" disabled>Select a flight</option>
           {Object.entries(flightMap).map(([key, value]) => (
             <option key={key} value={key}>
               {value}
@@ -72,6 +74,7 @@ const CadetForm = ({
           onChange={handleInputChange}
           className="form-select"
         >
+          <option value="" disabled>Select a classification</option>
           {Object.entries(classificationMap).map(([key, value]) => (
             <option key={key} value={key}>
               {value}
