@@ -17,6 +17,12 @@ const Menu = ({ activeMenu, setActiveMenu }) => {
         >
           Mass Event Log
         </li>
+        <li
+          className={activeMenu === "eventcategoriesdashboard" ? "active" : ""}
+          onClick={() => setActiveMenu("eventcategoriesdashboard")}
+        >
+          Event Categories
+        </li>
       </ul>
     </nav>
   );

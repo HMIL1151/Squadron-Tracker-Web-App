@@ -3,6 +3,7 @@ import { useState } from "react";
 import Auth from "./components/Auth/Auth";
 import CadetsDashboard from "./components/Dashboards/CadetsDashboard/CadetsDashboard";
 import MassEventLog from "./components/Dashboards/Mass Event Log/MassEventLog";
+import EventCategoriesDashboard from "./components/Dashboards/EventCategoriesDashboard/EventCategoriesDashboard";
 import Menu from "./components/Menu/Menu"; // Import the Menu component
 import { signOut } from "firebase/auth";
 import { auth } from "./firebase/firebase"; // Adjust the import path to your Firebase configuration
@@ -32,7 +33,9 @@ const App = () => {
       case "dashboard":
         return <CadetsDashboard user={user} />;
       case "masseventlog":
-        return <MassEventLog />;
+        return <MassEventLog user={user}/>;
+      case "eventcategoriesdashboard":
+        return <EventCategoriesDashboard user={user} />;
       default:
         return <h2>Default</h2>;
     }

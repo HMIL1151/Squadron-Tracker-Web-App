@@ -3,7 +3,7 @@ import { fetchCollectionData } from "../../../firebase/firestoreUtils";
 import { getFirestore, collection, addDoc, doc, deleteDoc, query, where, getDocs } from "firebase/firestore/lite";
 import { rankMap, flightMap, classificationMap } from "../../../utils/mappings";
 import Table from "../../Table/Table";
-import PopupManager from "./PopupManager";
+import PopupManager from "./CadetsDashboardPopupManager";
 import SuccessMessage from "../SuccessMessage";
 import "./CadetsDashboard.css";
 
