@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import Popup from "./Popup";
-import SuccessMessage from "./SuccessMessage"; // Import SuccessMessage
+import SuccessMessage from "../SuccessMessage"; // Import SuccessMessage
 import CadetForm from "./CadetForm";
 import { doc, updateDoc, getFirestore } from "firebase/firestore"; // Import Firestore functions
 import { app } from "../../../firebase/firebase"; // Correct import path for app

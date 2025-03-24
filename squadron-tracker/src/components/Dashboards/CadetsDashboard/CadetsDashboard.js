@@ -4,7 +4,7 @@ import { getFirestore, collection, addDoc, deleteDoc, doc } from "firebase/fires
 import { rankMap, flightMap, classificationMap } from "../../../utils/mappings";
 import Table from "../../Table/Table";
 import PopupManager from "./PopupManager";
-import SuccessMessage from "./SuccessMessage";
+import SuccessMessage from "../SuccessMessage";
 import "./CadetsDashboard.css";
 
 const CadetsDashboard = ({ user }) => {
