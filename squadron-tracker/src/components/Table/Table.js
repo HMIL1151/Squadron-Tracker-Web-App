@@ -15,10 +15,11 @@ const Table = ({ columns, data, onRowClick }) => {
   };
 
   const handleSortChange = (col) => {
-    setSortOrder((prev) => ({
-      ...prev,
-      [col]: prev[col] === "asc" ? "desc" : "asc",
-    }));
+    setSortOrder((prev) => {
+      const newSortOrder = { [col]: prev[col] === "asc" ? "desc" : "asc" }; // Toggle sort order for the selected column
+      //console.log("Updated sortOrder:", newSortOrder);
+      return newSortOrder;
+    });
   };
 
   const getMappedValue = (col, value) => {
@@ -45,16 +46,37 @@ const Table = ({ columns, data, onRowClick }) => {
     })
   );
 
-  const sortedData = filteredData.sort((a, b) => {
-    return columns.reduce((acc, col) => {
-      if (sortOrder[col]) {
-        const valA = String(a[col]).toLowerCase(); // Convert to string and lowercase for consistent comparison
-        const valB = String(b[col]).toLowerCase();
-        return sortOrder[col] === "asc" ? valA.localeCompare(valB) : valB.localeCompare(valA);
-      }
-      return acc;
-    }, 0);
+  const sortedData = [...filteredData].sort((a, b) => {
+    const activeColumn = Object.keys(sortOrder)[0]; // Get the currently active column
+    if (!activeColumn) return 0; // If no column is active, return the original order
+  
+    let valA = getMappedValue(activeColumn, a[activeColumn]);
+    let valB = getMappedValue(activeColumn, b[activeColumn]);
+  
+    // Convert Rank and Classification names back to their numerical values for sorting
+    if (activeColumn === "Rank") {
+      valA = parseInt(Object.keys(rankMap).find((key) => rankMap[key] === valA)) || 0;
+      valB = parseInt(Object.keys(rankMap).find((key) => rankMap[key] === valB)) || 0;
+    } else if (activeColumn === "Classification") {
+      valA = parseInt(Object.keys(classificationMap).find((key) => classificationMap[key] === valA)) || 0;
+      valB = parseInt(Object.keys(classificationMap).find((key) => classificationMap[key] === valB)) || 0;
+    } else {
+      valA = String(valA).toLowerCase();
+      valB = String(valB).toLowerCase();
+    }
+  
+    //console.log(`Comparing ${valA} and ${valB} for column ${activeColumn} in ${sortOrder[activeColumn]} order`);
+  
+    if (valA < valB) {
+      return sortOrder[activeColumn] === "asc" ? -1 : 1;
+    }
+    if (valA > valB) {
+      return sortOrder[activeColumn] === "asc" ? 1 : -1;
+    }
+    return 0; // If values are equal, maintain original order
   });
+  
+  
 
   // Hoverbox Event Handlers
   const handleMouseEnter = (row, e) => {
