@@ -1,0 +1,5 @@
+Badge -> category (drop down) -> level (drop down)
+Exam (drop down)
+Event (Text Entry) -> category (drop down)
+Special Award (drop down)
+
