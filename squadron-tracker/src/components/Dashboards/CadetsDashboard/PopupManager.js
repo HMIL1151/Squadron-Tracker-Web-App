@@ -4,6 +4,7 @@ import SuccessMessage from "./SuccessMessage"; // Import SuccessMessage
 import CadetForm from "./CadetForm";
 import { doc, updateDoc, getFirestore } from "firebase/firestore"; // Import Firestore functions
 import { app } from "../../../firebase/firebase"; // Correct import path for app
+import { fetchCollectionData } from "../../../firebase/firestoreUtils"; // Import fetchCollectionData
 
 const PopupManager = ({
   isPopupOpen,
@@ -17,6 +18,7 @@ const PopupManager = ({
   handleDischarge,
   handleAddCadet,
   cadets,
+  setCadets, // Add setCadets to update the cadets list
   selectedCadet,
   setSelectedCadet,
   newCadet,
@@ -55,6 +57,11 @@ const PopupManager = ({
 
       setSuccessMessage("Cadet information updated successfully!"); // Set success message
       setIsEditPopupOpen(false); // Close the popup
+
+      // Refresh the cadets list
+      const cadetsData = await fetchCollectionData("Cadets");
+      setCadets(cadetsData); // Update the cadets state
+
       setTimeout(() => setSuccessMessage(""), 3000); // Clear the message after 3 seconds
     } catch (error) {
       console.error("Error updating cadet:", error);
@@ -120,31 +127,37 @@ const PopupManager = ({
         >
           <h2>Edit Cadet</h2>
           {editedCadet ? (
-            <form>
-              <label>
-                Forename:
+            <form className="edit-cadet-form">
+              <div className="form-group">
+                <label className="form-label" htmlFor="forename">Forename:</label>
                 <input
+                  id="forename"
                   type="text"
                   name="forename"
                   value={editedCadet.forename || ""}
                   onChange={handleEditInputChange}
+                  className="form-input"
                 />
-              </label>
-              <label>
-                Surname:
+              </div>
+              <div className="form-group">
+                <label className="form-label" htmlFor="surname">Surname:</label>
                 <input
+                  id="surname"
                   type="text"
                   name="surname"
                   value={editedCadet.surname || ""}
                   onChange={handleEditInputChange}
+                  className="form-input"
                 />
-              </label>
-              <label>
-                Rank:
+              </div>
+              <div className="form-group">
+                <label className="form-label" htmlFor="rank">Rank:</label>
                 <select
+                  id="rank"
                   name="rank"
                   value={editedCadet.rank || ""}
                   onChange={handleEditInputChange}
+                  className="form-select"
                 >
                   {Object.entries(rankMap).map(([key, value]) => (
                     <option key={key} value={key}>
@@ -152,13 +165,15 @@ const PopupManager = ({
                     </option>
                   ))}
                 </select>
-              </label>
-              <label>
-                Flight:
+              </div>
+              <div className="form-group">
+                <label className="form-label" htmlFor="flight">Flight:</label>
                 <select
+                  id="flight"
                   name="flight"
                   value={editedCadet.flight || ""}
                   onChange={handleEditInputChange}
+                  className="form-select"
                 >
                   {Object.entries(flightMap).map(([key, value]) => (
                     <option key={key} value={key}>
@@ -166,13 +181,15 @@ const PopupManager = ({
                     </option>
                   ))}
                 </select>
-              </label>
-              <label>
-                Classification:
+              </div>
+              <div className="form-group">
+                <label className="form-label" htmlFor="classification">Classification:</label>
                 <select
+                  id="classification"
                   name="classification"
                   value={editedCadet.classification || ""}
                   onChange={handleEditInputChange}
+                  className="form-select"
                 >
                   {Object.entries(classificationMap).map(([key, value]) => (
                     <option key={key} value={key}>
@@ -180,16 +197,18 @@ const PopupManager = ({
                     </option>
                   ))}
                 </select>
-              </label>
-              <label>
-                Start Date:
+              </div>
+              <div className="form-group">
+                <label className="form-label" htmlFor="startDate">Start Date:</label>
                 <input
+                  id="startDate"
                   type="date"
                   name="startDate"
                   value={editedCadet.startDate || ""}
                   onChange={handleEditInputChange}
+                  className="form-input"
                 />
-              </label>
+              </div>
             </form>
           ) : (
             <p>No cadet selected.</p>

@@ -19,8 +19,9 @@
   max-width: 90%;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   text-align: center;
+  font-family: Arial, sans-serif;
+  color: #333;
 }
-
 
 .popup-content select {
   width: 100%;
@@ -49,7 +50,6 @@
   box-shadow: 0 0 5px rgba(76, 175, 80, 0.5);
 }
 
-
 .popup-close {
   position: absolute;
   top: 10px;
@@ -62,4 +62,81 @@
   margin-top: 20px;
   display: flex;
   justify-content: space-between;
+}
+
+/* Form styling */
+.edit-cadet-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1px; /* Reduce the gap between form groups */
+}
+
+.form-group {
+  display: flex;
+  align-items: center; /* Align label and input vertically */
+  gap: 10px; /* Add spacing between label and input */
+}
+
+.form-label {
+  font-weight: bold;
+  font-size: 14px;
+  width: 100px; /* Fixed width for labels to align inputs */
+  text-align: right; /* Align label text to the right */
+}
+
+.form-input,
+.form-select {
+  padding: 1px; /* Reduce padding */
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  flex: 1; /* Allow inputs to take up remaining space */
+  box-sizing: border-box;
+}
+
+.form-input:focus,
+.form-select:focus {
+  border-color: #007bff;
+  outline: none;
+  box-shadow: 0 0 3px rgba(0, 123, 255, 0.5); /* Subtle focus effect */
+}
+
+/* Add spacing between form fields */
+.form-group + .form-group {
+  margin-top: 1px; /* Reduce spacing between groups */
+}
+
+/* Button styling */
+.popup-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.popup-close-button,
+.popup-confirm-button {
+  padding: 10px 15px;
+  font-size: 14px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.popup-close-button {
+  background-color: #f44336;
+  color: white;
+}
+
+.popup-confirm-button {
+  background-color: #4caf50;
+  color: white;
+}
+
+.popup-close-button:hover {
+  background-color: #d32f2f;
+}
+
+.popup-confirm-button:hover {
+  background-color: #388e3c;
 }
