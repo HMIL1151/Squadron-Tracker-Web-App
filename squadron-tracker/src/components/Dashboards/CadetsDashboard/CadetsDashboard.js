@@ -208,6 +208,7 @@ const CadetsDashboard = ({ user }) => {
         handleDischarge={handleDischarge}
         handleAddCadet={handleAddCadet}
         cadets={cadets}
+        setCadets={setCadets} // Pass setCadets to PopupManager
         selectedCadet={selectedCadet}
         setSelectedCadet={setSelectedCadet}
         newCadet={newCadet}
