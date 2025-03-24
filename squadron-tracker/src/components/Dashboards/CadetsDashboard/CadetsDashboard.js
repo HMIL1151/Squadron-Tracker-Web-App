@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { fetchCollectionData } from "../../../firebase/firestoreUtils";
-import { getFirestore, collection, addDoc, deleteDoc, doc } from "firebase/firestore/lite";
+import { getFirestore, collection, addDoc, doc, deleteDoc, query, where, getDocs } from "firebase/firestore/lite";
 import { rankMap, flightMap, classificationMap } from "../../../utils/mappings";
 import Table from "../../Table/Table";
 import PopupManager from "./PopupManager";
@@ -97,6 +97,16 @@ const CadetsDashboard = ({ user }) => {
 
       if (!forename || !surname || !startDate || classification === "" || flight === "" || rank === "") {
         alert("Please fill in all fields.");
+        return;
+      }
+
+      // Query Firestore to check if a cadet with the same forename and surname exists
+      const cadetsRef = collection(db, "Cadets");
+      const q = query(cadetsRef, where("forename", "==", forename), where("surname", "==", surname));
+      const querySnapshot = await getDocs(q);
+
+      if (!querySnapshot.empty) {
+        alert("A cadet with this name already exists.");
         return;
       }
 
