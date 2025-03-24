@@ -48,14 +48,9 @@ const Table = ({ columns, data, onRowClick }) => {
   const sortedData = filteredData.sort((a, b) => {
     return columns.reduce((acc, col) => {
       if (sortOrder[col]) {
-        const valA = getMappedValue(col, a[col]); // Use mapped value for sorting
-        const valB = getMappedValue(col, b[col]);
-        if (typeof valA === "string" && typeof valB === "string") {
-          return sortOrder[col] === "asc" ? valA.localeCompare(valB) : valB.localeCompare(valA);
-        }
-        if (typeof valA === "number" && typeof valB === "number") {
-          return sortOrder[col] === "asc" ? valA - valB : valB - valA;
-        }
+        const valA = String(a[col]).toLowerCase(); // Convert to string and lowercase for consistent comparison
+        const valB = String(b[col]).toLowerCase();
+        return sortOrder[col] === "asc" ? valA.localeCompare(valB) : valB.localeCompare(valA);
       }
       return acc;
     }, 0);
