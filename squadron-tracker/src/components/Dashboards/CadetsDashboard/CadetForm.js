@@ -1,4 +1,5 @@
 import React from "react";
+import Form from "../Form";
 
 const CadetForm = ({
   newCadet,
@@ -7,94 +8,58 @@ const CadetForm = ({
   flightMap,
   rankMap,
 }) => {
-  return (
-    <form className="add-cadet-form">
-      <div className="form-group">
-        <label className="form-label" htmlFor="forename">Forename:</label>
-        <input
-          id="forename"
-          type="text"
-          name="forename"
-          value={newCadet.forename || ""}
-          onChange={handleInputChange}
-          className="form-input"
-        />
-      </div>
-      <div className="form-group">
-        <label className="form-label" htmlFor="surname">Surname:</label>
-        <input
-          id="surname"
-          type="text"
-          name="surname"
-          value={newCadet.surname || ""}
-          onChange={handleInputChange}
-          className="form-input"
-        />
-      </div>
-      <div className="form-group">
-        <label className="form-label" htmlFor="rank">Rank:</label>
-        <select
-          id="rank"
-          name="rank"
-          value={newCadet.rank || ""}
-          onChange={handleInputChange}
-          className="form-select"
-        >
-          <option value="" disabled>Select a rank</option>
-          {Object.entries(rankMap).map(([key, value]) => (
-            <option key={key} value={key}>
-              {value}
-            </option>
-          ))}
-        </select>
-      </div>
-      <div className="form-group">
-        <label className="form-label" htmlFor="flight">Flight:</label>
-        <select
-          id="flight"
-          name="flight"
-          value={newCadet.flight || ""}
-          onChange={handleInputChange}
-          className="form-select"
-        >
-          <option value="" disabled>Select a flight</option>
-          {Object.entries(flightMap).map(([key, value]) => (
-            <option key={key} value={key}>
-              {value}
-            </option>
-          ))}
-        </select>
-      </div>
-      <div className="form-group">
-        <label className="form-label" htmlFor="classification">Classification:</label>
-        <select
-          id="classification"
-          name="classification"
-          value={newCadet.classification || ""}
-          onChange={handleInputChange}
-          className="form-select"
-        >
-          <option value="" disabled>Select a classification</option>
-          {Object.entries(classificationMap).map(([key, value]) => (
-            <option key={key} value={key}>
-              {value}
-            </option>
-          ))}
-        </select>
-      </div>
-      <div className="form-group">
-        <label className="form-label" htmlFor="startDate">Start Date:</label>
-        <input
-          id="startDate"
-          type="date"
-          name="startDate"
-          value={newCadet.startDate || ""}
-          onChange={handleInputChange}
-          className="form-input"
-        />
-      </div>
-    </form>
-  );
+  const fields = [
+    {
+      id: "forename",
+      name: "forename",
+      type: "text",
+      label: "Forename:",
+      value: newCadet.forename,
+    },
+    {
+      id: "surname",
+      name: "surname",
+      type: "text",
+      label: "Surname:",
+      value: newCadet.surname,
+    },
+    {
+      id: "rank",
+      name: "rank",
+      type: "select",
+      label: "Rank:",
+      value: newCadet.rank,
+      placeholder: "Select a rank",
+      options: rankMap,
+    },
+    {
+      id: "flight",
+      name: "flight",
+      type: "select",
+      label: "Flight:",
+      value: newCadet.flight,
+      placeholder: "Select a flight",
+      options: flightMap,
+    },
+    {
+      id: "classification",
+      name: "classification",
+      type: "select",
+      label: "Classification:",
+      value: newCadet.classification,
+      placeholder: "Select a classification",
+      options: classificationMap,
+    },
+    {
+      id: "startDate",
+      name: "startDate",
+      type: "date",
+      label: "Start Date:",
+      value: newCadet.startDate,
+    },
+  ];
+
+  return <Form title="" fields={fields} handleInputChange={handleInputChange} />;
 };
 
 export default CadetForm;

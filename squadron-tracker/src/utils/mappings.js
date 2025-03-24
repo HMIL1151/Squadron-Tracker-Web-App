@@ -1,24 +1,24 @@
 // mappings.js
 
 export const rankMap = {
-    0: "Cadet",
-    1: "Corporal",
-    2: "Sergeant",
-    3: "Flight Sergeant",
-    4: "Cadet Warrant Officer"
+    1: "Cadet",
+    2: "Corporal",
+    3: "Sergeant",
+    4: "Flight Sergeant",
+    5: "Cadet Warrant Officer"
   };
 
 export const flightMap = {
-    0: "Staff Team",
-    1: "Atlas",
-    2: "Tempest"
+    1: "Staff Team",
+    2: "Atlas",
+    3: "Tempest"
     };
 
 export const classificationMap = {
-    0: "Junior",
-    1: "Second Class",
-    2: "First Class",
-    3: "Leading",
-    4: "Senior",
-    5: "Master"
+    1: "Junior",
+    2: "Second Class",
+    3: "First Class",
+    4: "Leading",
+    5: "Senior",
+    6: "Master"
     };
