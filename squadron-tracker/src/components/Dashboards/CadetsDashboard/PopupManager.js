@@ -6,9 +6,11 @@ const PopupManager = ({
   isPopupOpen,
   isConfirmationOpen,
   isAddPopupOpen,
+  isEditPopupOpen, // New prop for edit popup
   setIsPopupOpen,
   setIsConfirmationOpen,
   setIsAddPopupOpen,
+  setIsEditPopupOpen, // Setter for edit popup
   handleDischarge,
   handleAddCadet,
   cadets,
@@ -68,6 +70,25 @@ const PopupManager = ({
           rankMap={rankMap}
         />
       </Popup>
+
+      {/* Edit Cadet Popup */}
+      {isEditPopupOpen && (
+        <Popup isOpen={isEditPopupOpen} onClose={() => setIsEditPopupOpen(false)}>
+          <h2>Edit Cadet</h2>
+          {selectedCadet ? (
+            <div>
+              <p><strong>Forename:</strong> {selectedCadet.forename}</p>
+              <p><strong>Surname:</strong> {selectedCadet.surname}</p>
+              <p><strong>Rank:</strong> {rankMap[selectedCadet.rank]}</p>
+              <p><strong>Flight:</strong> {flightMap[selectedCadet.flight]}</p>
+              <p><strong>Classification:</strong> {classificationMap[selectedCadet.classification]}</p>
+              <p><strong>Start Date:</strong> {selectedCadet.startDate}</p>
+            </div>
+          ) : (
+            <p>No cadet selected.</p>
+          )}
+        </Popup>
+      )}
     </>
   );
 };
