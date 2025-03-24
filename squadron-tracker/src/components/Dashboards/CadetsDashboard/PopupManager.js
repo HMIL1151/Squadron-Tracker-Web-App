@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import Popup from "./Popup";
+import Popup from "../Popup";
 import SuccessMessage from "../SuccessMessage"; // Import SuccessMessage
 import CadetForm from "./CadetForm";
 import { doc, updateDoc, getFirestore } from "firebase/firestore"; // Import Firestore functions
@@ -33,7 +33,17 @@ const PopupManager = ({
 
   // Update the editedCadet state when the selectedCadet changes
   React.useEffect(() => {
-    setEditedCadet(selectedCadet || {});
+    if (selectedCadet) {
+      // Ensure startDate is in the correct format (YYYY-MM-DD)
+      const formattedStartDate = selectedCadet.startDate; // Assuming it's already in YYYY-MM-DD format
+
+      setEditedCadet({
+        ...selectedCadet,
+        startDate: formattedStartDate, // Pass the formatted date
+      });
+    } else {
+      setEditedCadet({});
+    }
   }, [selectedCadet]);
 
   const handleEditInputChange = (e) => {
@@ -108,7 +118,7 @@ const PopupManager = ({
         onClose={() => setIsAddPopupOpen(false)}
         onConfirm={handleAddCadet}
       >
-        <h3>Add Cadet</h3>
+        <h2>Add Cadet</h2>
         <CadetForm
           newCadet={newCadet}
           handleInputChange={handleInputChange}
@@ -127,89 +137,13 @@ const PopupManager = ({
         >
           <h2>Edit Cadet</h2>
           {editedCadet ? (
-            <form className="edit-cadet-form">
-              <div className="form-group">
-                <label className="form-label" htmlFor="forename">Forename:</label>
-                <input
-                  id="forename"
-                  type="text"
-                  name="forename"
-                  value={editedCadet.forename || ""}
-                  onChange={handleEditInputChange}
-                  className="form-input"
-                />
-              </div>
-              <div className="form-group">
-                <label className="form-label" htmlFor="surname">Surname:</label>
-                <input
-                  id="surname"
-                  type="text"
-                  name="surname"
-                  value={editedCadet.surname || ""}
-                  onChange={handleEditInputChange}
-                  className="form-input"
-                />
-              </div>
-              <div className="form-group">
-                <label className="form-label" htmlFor="rank">Rank:</label>
-                <select
-                  id="rank"
-                  name="rank"
-                  value={editedCadet.rank || ""}
-                  onChange={handleEditInputChange}
-                  className="form-select"
-                >
-                  {Object.entries(rankMap).map(([key, value]) => (
-                    <option key={key} value={key}>
-                      {value}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="form-group">
-                <label className="form-label" htmlFor="flight">Flight:</label>
-                <select
-                  id="flight"
-                  name="flight"
-                  value={editedCadet.flight || ""}
-                  onChange={handleEditInputChange}
-                  className="form-select"
-                >
-                  {Object.entries(flightMap).map(([key, value]) => (
-                    <option key={key} value={key}>
-                      {value}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="form-group">
-                <label className="form-label" htmlFor="classification">Classification:</label>
-                <select
-                  id="classification"
-                  name="classification"
-                  value={editedCadet.classification || ""}
-                  onChange={handleEditInputChange}
-                  className="form-select"
-                >
-                  {Object.entries(classificationMap).map(([key, value]) => (
-                    <option key={key} value={key}>
-                      {value}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="form-group">
-                <label className="form-label" htmlFor="startDate">Start Date:</label>
-                <input
-                  id="startDate"
-                  type="date"
-                  name="startDate"
-                  value={editedCadet.startDate || ""}
-                  onChange={handleEditInputChange}
-                  className="form-input"
-                />
-              </div>
-            </form>
+            <CadetForm
+              newCadet={editedCadet} // Pass the edited cadet object
+              handleInputChange={handleEditInputChange} // Handle input changes
+              classificationMap={classificationMap}
+              flightMap={flightMap}
+              rankMap={rankMap}
+            />
           ) : (
             <p>No cadet selected.</p>
           )}

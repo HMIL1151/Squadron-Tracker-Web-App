@@ -102,7 +102,7 @@ const CadetsDashboard = ({ user }) => {
 
       // Format the startDate to "DD-MM-YYYY"
       const date = new Date(startDate);
-      const formattedStartDate = `${String(date.getDate()).padStart(2, '0')}-${String(date.getMonth() + 1).padStart(2, '0')}-${date.getFullYear()}`;
+      const formattedStartDate = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 
 
       // Query Firestore to check if a cadet with the same forename and surname exists
@@ -167,25 +167,25 @@ const CadetsDashboard = ({ user }) => {
     const serviceLength = (() => {
       if (!cadet.startDate) return "N/A";
 
-      // Parse the startDate in "DD-MM-YYYY" format
-      const [day, month, year] = cadet.startDate.split("-").map(Number);
+            // Parse the startDate in "YYYY-MM-DD" format
+      const [year, month, day] = cadet.startDate.split("-").map(Number);
       const startDate = new Date(year, month - 1, day); // Create a valid Date object
       const today = new Date();
-
+      
       let years = today.getFullYear() - startDate.getFullYear();
       let months = today.getMonth() - startDate.getMonth();
       let days = today.getDate() - startDate.getDate();
-
+      
       if (days < 0) {
         months -= 1;
         days += new Date(today.getFullYear(), today.getMonth(), 0).getDate();
       }
-
+      
       if (months < 0) {
         years -= 1;
         months += 12;
       }
-
+      
       return `${years} Yrs, ${months} Mos, ${days} Days`;
     })();
 
