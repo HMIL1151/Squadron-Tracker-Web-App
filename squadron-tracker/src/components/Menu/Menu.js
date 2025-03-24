@@ -1,28 +1,20 @@
 import React from "react";
+import dashboardList from "../Dashboards/dashboardList";
 import "./Menu.css";
 
 const Menu = ({ activeMenu, setActiveMenu }) => {
   return (
     <nav className="menu">
       <ul>
-        <li
-          className={activeMenu === "dashboard" ? "active" : ""}
-          onClick={() => setActiveMenu("dashboard")}
-        >
-          Cadet List
-        </li>
-        <li
-          className={activeMenu === "masseventlog" ? "active" : ""}
-          onClick={() => setActiveMenu("masseventlog")}
-        >
-          Mass Event Log
-        </li>
-        <li
-          className={activeMenu === "eventcategoriesdashboard" ? "active" : ""}
-          onClick={() => setActiveMenu("eventcategoriesdashboard")}
-        >
-          Event Categories
-        </li>
+        {dashboardList.map((dashboard) => (
+          <li
+            key={dashboard.key}
+            className={activeMenu === dashboard.key ? "active" : ""}
+            onClick={() => setActiveMenu(dashboard.key)}
+          >
+            {dashboard.title}
+          </li>
+        ))}
       </ul>
     </nav>
   );
