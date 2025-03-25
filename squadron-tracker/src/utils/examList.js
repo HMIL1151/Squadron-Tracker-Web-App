@@ -1,4 +1,6 @@
 export const examList = [
+    "Second Class Cadet",
+    "First Class Cadet",
     "Principles of Flight",
     "Airmanship Knowledge",
     "Basic Navigation using a Map and Compass",
@@ -14,3 +16,10 @@ export const examList = [
     "Satellite and Data Communications",
     "Radio and Radar"
 ];
+
+export const badgeLevel = {
+    1: "Blue",
+    2: "Bronze",
+    3: "Silver",
+    4: "Gold"
+}

@@ -212,7 +212,8 @@ const CadetsDashboard = ({ user }) => {
       <Table
         columns={cadetListColumns}
         data={formattedCadets}
-        onRowClick={(row) => handleRowClick(row.id)} // Pass the row click handler
+        onRowClick={(row) => handleRowClick(row.id)}
+        disableHover={false} // Pass the row click handler
       />
       <PopupManager
         isPopupOpen={isPopupOpen}
