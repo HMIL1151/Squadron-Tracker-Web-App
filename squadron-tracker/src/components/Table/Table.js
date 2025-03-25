@@ -1,11 +1,23 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { rankMap, flightMap, classificationMap } from "../../utils/mappings"; // Import the mappings
 import "./Table.css";
 
-const Table = ({ columns, data, onRowClick }) => {
+const Table = ({ columns, data, onRowClick, disableHover = false }) => {
   const [filters, setFilters] = useState({});
   const [sortOrder, setSortOrder] = useState({});
   const [hoverbox, setHoverbox] = useState({ visible: false, content: "", position: { x: 0, y: 0 } });
+
+  useEffect(() => {
+    if (!disableHover) {
+      document.addEventListener("mousemove", handleMouseMove);
+    }
+
+    return () => {
+      if (!disableHover) {
+        document.removeEventListener("mousemove", handleMouseMove);
+      }
+    };
+  }, [disableHover]);
 
   const handleFilterChange = (col, value) => {
     setFilters((prev) => ({
@@ -60,6 +72,9 @@ const Table = ({ columns, data, onRowClick }) => {
     } else if (activeColumn === "Classification") {
       valA = parseInt(Object.keys(classificationMap).find((key) => classificationMap[key] === valA)) || 0;
       valB = parseInt(Object.keys(classificationMap).find((key) => classificationMap[key] === valB)) || 0;
+    } else if (activeColumn === "Points") {
+      valA = parseInt(valA);
+      valB = parseInt(valB);
     } else {
       valA = String(valA).toLowerCase();
       valB = String(valB).toLowerCase();
@@ -80,6 +95,7 @@ const Table = ({ columns, data, onRowClick }) => {
 
   // Hoverbox Event Handlers
   const handleMouseEnter = (row, e) => {
+    if (disableHover) return;
     const addedBy = row["AddedBy"]; // Access AddedBy by column name
     const createdAtTimestamp = row["CreatedAt"]; // Access CreatedAt by column name
   
@@ -104,6 +120,7 @@ const Table = ({ columns, data, onRowClick }) => {
   };
 
   const handleMouseMove = (e) => {
+    if (disableHover) return;
     setHoverbox((prev) => ({
       ...prev,
       position: { x: e.clientX, y: e.clientY },
@@ -111,6 +128,7 @@ const Table = ({ columns, data, onRowClick }) => {
   };
 
   const handleMouseLeave = () => {
+    if (disableHover) return;
     setHoverbox({ visible: false, content: "", position: { x: 0, y: 0 } });
   };
 
