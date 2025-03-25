@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { rankMap, flightMap, classificationMap } from "../../utils/mappings"; // Import the mappings
 import "./Table.css";
 
-const Table = ({ columns, data, onRowClick, disableHover = false }) => {
+const Table = ({ columns, data, onRowClick, disableHover = false, width = "90%" }) => {
   const [filters, setFilters] = useState({});
   const [sortOrder, setSortOrder] = useState({});
   const [hoverbox, setHoverbox] = useState({ visible: false, content: "", position: { x: 0, y: 0 } });
@@ -37,7 +37,6 @@ const Table = ({ columns, data, onRowClick, disableHover = false }) => {
   const handleSortChange = (col) => {
     setSortOrder((prev) => {
       const newSortOrder = { [col]: prev[col] === "asc" ? "desc" : "asc" }; // Toggle sort order for the selected column
-      //console.log("Updated sortOrder:", newSortOrder);
       return newSortOrder;
     });
   };
@@ -134,7 +133,7 @@ const Table = ({ columns, data, onRowClick, disableHover = false }) => {
 
   return (
     <div className="table-container">
-      <table className="custom-table">
+      <table className="custom-table" style={{ width }}>
         <thead>
           <tr>
             {columns.map((col, index) => (
