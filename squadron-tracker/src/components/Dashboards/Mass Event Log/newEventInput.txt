@@ -1,5 +1,21 @@
-Badge -> category (drop down) -> level (drop down)
+Badge -> category (drop down [fs]) -> level (drop down)
 Exam (drop down)
-Event (Text Entry) -> category (drop down)
-Special Award (drop down)
+Event (Text Entry) -> category (drop down [fs])
+Special Award (drop down [fs])
 
+
+FireStore Layout
+
+Flight Points
+	Event Category Points
+		Category 1 Points
+		Category 2 Points
+		...
+	Badges
+		Badges Array
+	Qual Points
+		Blue Badge Points
+		...
+		Special Award Points
+	Special Awards
+		Special Awards Arra
