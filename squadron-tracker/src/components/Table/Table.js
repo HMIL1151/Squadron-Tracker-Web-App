@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { rankMap, flightMap, classificationMap } from "../../utils/mappings"; // Import the mappings
 import "./Table.css";
 
@@ -6,6 +6,14 @@ const Table = ({ columns, data, onRowClick, disableHover = false }) => {
   const [filters, setFilters] = useState({});
   const [sortOrder, setSortOrder] = useState({});
   const [hoverbox, setHoverbox] = useState({ visible: false, content: "", position: { x: 0, y: 0 } });
+
+  const handleMouseMove = useCallback((e) => {
+    if (disableHover) return;
+    setHoverbox((prev) => ({
+      ...prev,
+      position: { x: e.clientX, y: e.clientY },
+    }));
+  }, [disableHover]);
 
   useEffect(() => {
     if (!disableHover) {
@@ -17,7 +25,7 @@ const Table = ({ columns, data, onRowClick, disableHover = false }) => {
         document.removeEventListener("mousemove", handleMouseMove);
       }
     };
-  }, [disableHover]);
+  }, [disableHover, handleMouseMove]);
 
   const handleFilterChange = (col, value) => {
     setFilters((prev) => ({
@@ -117,14 +125,6 @@ const Table = ({ columns, data, onRowClick, disableHover = false }) => {
       content: `Added by ${addedBy} at ${formattedCreatedAt}`,
       position: { x: e.clientX, y: e.clientY },
     });
-  };
-
-  const handleMouseMove = (e) => {
-    if (disableHover) return;
-    setHoverbox((prev) => ({
-      ...prev,
-      position: { x: e.clientX, y: e.clientY },
-    }));
   };
 
   const handleMouseLeave = () => {
