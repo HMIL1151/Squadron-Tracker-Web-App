@@ -1,0 +1,36 @@
+.event-categories-dashboard {
+  display: flex;
+  flex-direction: column;
+}
+
+.horizontal-menu {
+  display: flex;
+  justify-content: flex-start;
+  background-color: #ffffff;
+  padding: 10px;
+}
+
+.horizontal-menu button {
+  padding: 8px 16px; /* Adjusted padding for a sleeker look */
+  margin-right: 8px; /* Reduced margin for tighter spacing */
+  border: 1px solid #ccc; /* Added border for a subtle outline */
+  border-radius: 4px;
+  background-color: #ffffff; /* Neutral background color */
+  color: #333; /* Darker text for better contrast */
+  font-size: 14px; /* Adjusted font size for consistency */
+  cursor: pointer;
+  transition: all 0.3s ease; /* Smooth transition for hover effects */
+}
+
+.horizontal-menu button:hover {
+  background-color: #e0e0e0;
+}
+
+.horizontal-menu button.active {
+    background-color: #007bff;
+    color: white;
+  }
+
+.content-area {
+  padding: 20px;
+}
