@@ -5,7 +5,7 @@
 }
 
 .custom-table {
-    width: 80%;
+    width: 90%;
     border-collapse: collapse;
     background: white;
     border-radius: 10px;
@@ -21,7 +21,7 @@
 }
 
 .custom-table td {
-    padding: 10px;
+    padding: 2px;
     border-bottom: 1px solid #ddd;
     text-align: center; /* Center-align text in table cells */
 }

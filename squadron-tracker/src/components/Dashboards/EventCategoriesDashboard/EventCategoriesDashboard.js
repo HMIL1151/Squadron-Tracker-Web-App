@@ -151,7 +151,7 @@ const EventCategoriesDashboard = () => {
         {activeTab === "eventcategories" && (
           <div>
             <h2>Event Categories</h2>
-            <Table columns={eventCategoryColumns} data={categories} disableHover={true} />
+            <Table columns={eventCategoryColumns} data={categories} disableHover={true} width="30%"/>
           </div>
         )}
         {activeTab === "badges" && (
@@ -162,7 +162,7 @@ const EventCategoriesDashboard = () => {
                 Add New Badge Type
             </button>
             </div>
-            <Table columns={badgeColumns} data={badges} disableHover={true} />
+            <Table columns={badgeColumns} data={badges} disableHover={true} width="30%" />
             <AddEntry
               isOpen={isAddEntryOpen}
               onClose={() => setIsAddEntryOpen(false)}
@@ -178,7 +178,7 @@ const EventCategoriesDashboard = () => {
         {activeTab === "badgepoints" && (
           <div>
             <h2>Badge Points</h2>
-            <Table columns={badgePointsColumns} data={badgePoints} disableHover={true} />
+            <Table columns={badgePointsColumns} data={badgePoints} disableHover={true} width="30%"/>
           </div>
         )}
         {activeTab === "specialawards" && (
@@ -189,7 +189,7 @@ const EventCategoriesDashboard = () => {
                 Add New Special Award
             </button>
             </div>
-            <Table columns={specialAwardsColumns} data={specialAwards} disableHover={true} />
+            <Table columns={specialAwardsColumns} data={specialAwards} disableHover={true} width="30%"/>
             <AddEntry
               isOpen={isAddEntryOpen}
               onClose={() => setIsAddEntryOpen(false)}

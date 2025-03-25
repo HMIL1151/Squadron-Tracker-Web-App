@@ -214,6 +214,7 @@ const CadetsDashboard = ({ user }) => {
         data={formattedCadets}
         onRowClick={(row) => handleRowClick(row.id)}
         disableHover={false} // Pass the row click handler
+        width="95%"
       />
       <PopupManager
         isPopupOpen={isPopupOpen}
