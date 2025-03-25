@@ -18,4 +18,4 @@ Flight Points
 		...
 		Special Award Points
 	Special Awards
-		Special Awards Arra
+		Special Awards Array
