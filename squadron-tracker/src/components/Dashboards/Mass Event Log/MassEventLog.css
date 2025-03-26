@@ -25,3 +25,133 @@
     background-color: #45a049; /* Slightly darker green */
     transform: scale(1.05); /* Button grow effect on hover */
   }
+
+.popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.popup-content {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  width: 300px;
+  text-align: center;
+}
+
+.name-list {
+  list-style: none;
+  padding: 0;
+  margin: 10px 0;
+  max-height: 150px;
+  overflow-y: auto;
+}
+
+.name-list li {
+  margin: 5px 0;
+}
+
+.popup-button {
+  margin: 10px 5px;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.popup-button.cancel {
+  background-color: #f44336; /* Red */
+  color: white;
+}
+
+.popup-button:not(.cancel) {
+  background-color: #4caf50; /* Green */
+  color: white;
+}
+
+.flex-container {
+  display: flex;
+  align-items: center;
+  gap: 10px; /* Space between label and input */
+  margin-bottom: 10px; /* Space below the flex container */
+}
+
+.popup-label {
+  font-weight: bold;
+  white-space: nowrap; /* Prevent label text from wrapping */
+}
+
+.autocomplete-container {
+  position: relative;
+  margin-bottom: 10px;
+  flex: 1; /* Allow the input and suggestions to take up remaining space */
+}
+
+.autocomplete-input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+.autocomplete-suggestions {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: white;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  max-height: 150px;
+  overflow-y: auto;
+  z-index: 1000;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.autocomplete-suggestions li {
+  padding: 10px;
+  cursor: pointer;
+}
+
+.autocomplete-suggestions li:hover {
+  background-color: #f0f0f0;
+}
+
+.autocomplete-suggestions li.highlighted {
+  background-color: #007bff; /* Highlight color */
+  color: white;
+}
+
+.selected-names {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-bottom: 10px;
+}
+
+.selected-name {
+  background: #e0e0e0;
+  padding: 5px 10px;
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+}
+
+.remove-name-button {
+  background: none;
+  border: none;
+  color: #f44336;
+  font-size: 1rem;
+  margin-left: 5px;
+  cursor: pointer;
+}

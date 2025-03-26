@@ -4,14 +4,14 @@ import EventCategoriesDashboard from "./EventCategoriesDashboard/EventCategories
 
 const dashboardList = [
   {
-    key: "dashboard",
-    title: "Cadet List",
-    component: CadetsDashboard,
-  },
-  {
     key: "masseventlog",
     title: "Mass Event Log",
     component: MassEventLog,
+  },
+  {
+    key: "dashboard",
+    title: "Cadet List",
+    component: CadetsDashboard,
   },
   {
     key: "eventcategoriesdashboard",
