@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { fetchCollectionData } from "../../../firebase/firestoreUtils";
-import { getFirestore, doc, getDoc, addDoc, collection } from "firebase/firestore/lite";
+import { getFirestore, doc, getDoc, addDoc, collection, deleteDoc } from "firebase/firestore/lite";
 import Table from "../../Table/Table";
 import AddEventPopup from "./AddEventPopup";
 import "./MassEventLog.css";
@@ -214,10 +214,22 @@ const MassEventLog = ({ user }) => {
 
   const fetchEvents = async () => {
     try {
+      const db = getFirestore();
       const eventData = await fetchCollectionData("Event Log");
-      const formattedEvents = eventData.map((event) => {
-        const { badgeCategory, badgeLevel, examName, eventName, specialAward } = event;
-
+      const formattedEvents = [];
+  
+      for (const event of eventData) {
+        const { badgeCategory, badgeLevel, eventCategory, eventName, examName, specialAward, id } = event;
+  
+        // Check if all specified fields are empty
+        if (!badgeCategory && !badgeLevel && !eventCategory && !eventName && !examName && !specialAward) {
+          // Delete the document if all fields are empty
+          const docRef = doc(db, "Event Log", id);
+          await deleteDoc(docRef);
+          console.log(`Deleted document with ID: ${id}`);
+          continue; // Skip adding this event to the formattedEvents array
+        }
+  
         let eventDescription = "";
         if (badgeCategory) {
           eventDescription = `${badgeLevel} ${badgeCategory}`;
@@ -230,8 +242,8 @@ const MassEventLog = ({ user }) => {
         } else {
           throw new Error("Invalid event data: Missing required fields for event description.");
         }
-
-        return {
+  
+        formattedEvents.push({
           Name: event.cadetName,
           Event: eventDescription,
           Date: event.date,
@@ -239,14 +251,15 @@ const MassEventLog = ({ user }) => {
           AddedBy: event.addedBy,
           CreatedAt: event.createdAt,
           id: event.id,
-        };
-      });
-
+        });
+      }
+  
       setEvents(formattedEvents);
     } catch (error) {
       console.error("Error fetching events:", error);
     }
   };
+  
 
   useEffect(() => {
     fetchEvents();
