@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { fetchCollectionData } from "../../../firebase/firestoreUtils";
-import { getFirestore, doc, getDoc } from "firebase/firestore/lite";
+import { getFirestore, doc, getDoc, addDoc, collection } from "firebase/firestore/lite";
 import Table from "../../Table/Table";
 import AddEventPopup from "./AddEventPopup";
 import "./MassEventLog.css";
+import SuccessMessage from "../SuccessMessage";
+
 
 const MassEventLog = ({ user }) => {
   const [events, setEvents] = useState([]);
@@ -13,10 +15,19 @@ const MassEventLog = ({ user }) => {
   const [filteredNames, setFilteredNames] = useState([]);
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
   const [names, setNames] = useState([]);
-  const [eventDate, setEventDate] = useState(""); // New state for the date input
+  const [eventDate, setEventDate] = useState("");
   const [badgeTypes, setBadgeTypes] = useState([]);
   const [eventCategories, setEventCategories] = useState([]);
   const [specialAwards, setSpecialAwards] = useState([]);
+  const [selectedButton, setSelectedButton] = useState(null);
+  const [freeText, setFreeText] = useState("");
+  const [selectedBadgeType, setSelectedBadgeType] = useState("");
+  const [selectedBadgeLevel, setSelectedBadgeLevel] = useState("");
+  const [selectedExam, setSelectedExam] = useState("");
+  const [selectedEventCategory, setSelectedEventCategory] = useState("");
+  const [selectedSpecialAward, setSelectedSpecialAward] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
+  
 
   const columns = ["Name", "Event", "Date", "Points"];
 
@@ -125,53 +136,119 @@ const MassEventLog = ({ user }) => {
     }
   };
 
-  const handleAddEvent = () => {
-    console.log("Selected Names:", selectedNames);
-    console.log("Event Date:", eventDate); // Log the selected date
-    setIsPopupOpen(false);
+  const handleButtonSelect = (buttonText) => {
+    setSelectedButton(buttonText); // Update the selectedButton state
+    console.log(`Selected button: ${buttonText}`);
+  };
+
+  const handleAddEvent = async (eventData) => {
+    const {
+      selectedBadgeType,
+      selectedBadgeLevel,
+      selectedExam,
+      freeText,
+      selectedEventCategory,
+      selectedSpecialAward,
+    } = eventData;
+  
+    if (!selectedNames.length) {
+      alert("Please select at least one name.");
+      return;
+    }
+  
+    if (!eventDate) {
+      alert("Please select a date.");
+      return;
+    }
+  
+    try {
+      const db = getFirestore();
+      const createdAt = new Date(); // Current timestamp
+  
+      for (const name of selectedNames) {
+        const newEvent = {
+          addedBy: user.displayName,
+          createdAt,
+          cadetName: name,
+          date: eventDate,
+          badgeCategory: selectedButton === "Badge" ? selectedBadgeType : "",
+          badgeLevel: selectedButton === "Badge" ? selectedBadgeLevel : "",
+          examName: selectedButton === "Classification/Exam" ? selectedExam : "",
+          eventName: selectedButton === "Event/Other" ? freeText : "",
+          eventCategory: selectedButton === "Event/Other" ? selectedEventCategory : "",
+          specialAward: selectedButton === "Special" ? selectedSpecialAward : "",
+        };
+  
+        await addDoc(collection(db, "Event Log"), newEvent);
+      }
+
+      // Trigger the success message
+      setSuccessMessage(`Event successfully added.`);
+      setTimeout(() => setSuccessMessage(""), 1000); // Automatically hide after 1 second
+  
+      // Refresh the table data
+      await fetchEvents();
+  
+      // Reset the form and close the popup
+      setSelectedNames([]);
+      setInputValue("");
+      setEventDate("");
+      setSelectedButton(null);
+      setFreeText("");
+      setSelectedBadgeType("");
+      setSelectedBadgeLevel("");
+      setSelectedExam("");
+      setSelectedEventCategory("");
+      setSelectedSpecialAward("");
+      setIsPopupOpen(false);
+  
+    } catch (error) {
+      console.error("Error adding event:", error);
+      alert("An error occurred while adding the event.");
+    }
   };
 
   const closePopup = () => {
     setIsPopupOpen(false);
   };
 
+  const fetchEvents = async () => {
+    try {
+      const eventData = await fetchCollectionData("Event Log");
+      const formattedEvents = eventData.map((event) => {
+        const { badgeCategory, badgeLevel, examName, eventName, specialAward } = event;
+
+        let eventDescription = "";
+        if (badgeCategory) {
+          eventDescription = `${badgeLevel} ${badgeCategory}`;
+        } else if (examName) {
+          eventDescription = `${examName} Exam`;
+        } else if (eventName) {
+          eventDescription = eventName;
+        } else if (specialAward) {
+          eventDescription = specialAward;
+        } else {
+          throw new Error("Invalid event data: Missing required fields for event description.");
+        }
+
+        return {
+          Name: event.cadetName,
+          Event: eventDescription,
+          Date: event.date,
+          Points: Math.floor(Math.random() * 10) + 1,
+          AddedBy: event.addedBy,
+          CreatedAt: event.createdAt,
+          id: event.id,
+        };
+      });
+
+      setEvents(formattedEvents);
+    } catch (error) {
+      console.error("Error fetching events:", error);
+    }
+  };
+
   useEffect(() => {
-    const fetchEvents = async () => {
-      try {
-        const eventData = await fetchCollectionData("Event Log");
-        const formattedEvents = eventData.map((event) => {
-          const { badgeCategory, badgeLevel, examName, eventName, specialAward } = event;
-
-          let eventDescription = "";
-          if (badgeCategory) {
-            eventDescription = `${badgeLevel} ${badgeCategory}`;
-          } else if (examName) {
-            eventDescription = `${examName} Exam`;
-          } else if (eventName) {
-            eventDescription = eventName;
-          } else if (specialAward) {
-            eventDescription = specialAward;
-          } else {
-            throw new Error("Invalid event data: Missing required fields for event description.");
-          }
-
-          return {
-            Name: event.cadetName,
-            Event: eventDescription,
-            Date: event.date,
-            Points: Math.floor(Math.random() * 10) + 1,
-            AddedBy: event.addedBy,
-            CreatedAt: event.createdAt,
-            id: event.id,
-          };
-        });
-
-        setEvents(formattedEvents);
-      } catch (error) {
-        console.error("Error fetching events:", error);
-      }
-    };
-
     fetchEvents();
   }, []);
 
@@ -196,11 +273,13 @@ const MassEventLog = ({ user }) => {
         handleKeyDown={handleKeyDown}
         handleNameSelect={handleNameSelect}
         handleRemoveName={handleRemoveName}
-        handleAddEvent={handleAddEvent}
+        handleAddEvent={handleAddEvent} // Pass the function
         closePopup={closePopup}
-        eventDate={eventDate} // Pass the date state
-        handleDateChange={handleDateChange} // Pass the date change handler
+        eventDate={eventDate}
+        handleDateChange={handleDateChange}
+        onButtonSelect={handleButtonSelect}
       />
+      <SuccessMessage message={successMessage} />
     </div>
   );
 };

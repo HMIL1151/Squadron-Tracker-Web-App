@@ -8,7 +8,7 @@ import dashboardList from "./components/Dashboards/dashboardList";
 
 const App = () => {
   const [user, setUser] = useState(null);
-  const [activeMenu, setActiveMenu] = useState("dashboard");
+  const [activeMenu, setActiveMenu] = useState("masseventlog");
 
   const handleUserChange = (currentUser) => {
     setUser(currentUser);
@@ -18,7 +18,7 @@ const App = () => {
     signOut(auth)
       .then(() => {
         setUser(null); // Clear the user state
-        setActiveMenu("dashboard"); // Reset the menu to a default state
+        setActiveMenu("massseventlog"); // Reset the menu to a default state
         console.log("User successfully logged out.");
       })
       .catch((error) => {
