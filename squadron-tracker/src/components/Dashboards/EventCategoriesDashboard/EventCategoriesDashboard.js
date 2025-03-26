@@ -150,18 +150,14 @@ const EventCategoriesDashboard = () => {
       <div className="content-area">
         {activeTab === "eventcategories" && (
           <div>
-            <h2>Event Categories</h2>
             <Table columns={eventCategoryColumns} data={categories} disableHover={true} width="30%"/>
           </div>
         )}
         {activeTab === "badges" && (
           <div>
-            <div className="heading-with-button">
-            <h2>Badges</h2>
             <button className="add-entry-button" onClick={() => setIsAddEntryOpen(true)}>
-                Add New Badge Type
+              Add New Badge Type
             </button>
-            </div>
             <Table columns={badgeColumns} data={badges} disableHover={true} width="30%" />
             <AddEntry
               isOpen={isAddEntryOpen}
@@ -177,18 +173,14 @@ const EventCategoriesDashboard = () => {
         )}
         {activeTab === "badgepoints" && (
           <div>
-            <h2>Badge Points</h2>
             <Table columns={badgePointsColumns} data={badgePoints} disableHover={true} width="30%"/>
           </div>
         )}
         {activeTab === "specialawards" && (
-        <div>
-            <div className="heading-with-button">
-            <h2>Special Awards</h2>
+          <div>
             <button className="add-entry-button" onClick={() => setIsAddEntryOpen(true)}>
-                Add New Special Award
+              Add New Special Award
             </button>
-            </div>
             <Table columns={specialAwardsColumns} data={specialAwards} disableHover={true} width="30%"/>
             <AddEntry
               isOpen={isAddEntryOpen}
