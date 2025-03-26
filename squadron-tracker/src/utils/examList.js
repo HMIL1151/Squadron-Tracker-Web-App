@@ -17,9 +17,9 @@ export const examList = [
     "Radio and Radar"
 ];
 
-export const badgeLevel = {
-    1: "Blue",
-    2: "Bronze",
-    3: "Silver",
-    4: "Gold"
-}
+export const badgeLevel = [
+    "Blue",
+    "Bronze",
+    "Silver",
+    "Gold"
+];

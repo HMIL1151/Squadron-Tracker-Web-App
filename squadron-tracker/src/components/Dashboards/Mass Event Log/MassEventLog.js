@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { fetchCollectionData } from "../../../firebase/firestoreUtils";
+import { getFirestore, doc, getDoc } from "firebase/firestore/lite";
 import Table from "../../Table/Table";
 import AddEventPopup from "./AddEventPopup";
 import "./MassEventLog.css";
@@ -13,12 +14,16 @@ const MassEventLog = ({ user }) => {
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
   const [names, setNames] = useState([]);
   const [eventDate, setEventDate] = useState(""); // New state for the date input
+  const [badgeTypes, setBadgeTypes] = useState([]);
+  const [eventCategories, setEventCategories] = useState([]);
+  const [specialAwards, setSpecialAwards] = useState([]);
 
   const columns = ["Name", "Event", "Date", "Points"];
 
   useEffect(() => {
     const fetchCadetNames = async () => {
       try {
+        // Fetch cadet names
         const cadetData = await fetchCollectionData("Cadets");
         const cadetNames = cadetData.map((cadet) => `${cadet.forename} ${cadet.surname}`);
         setNames(cadetNames);
@@ -27,7 +32,49 @@ const MassEventLog = ({ user }) => {
       }
     };
 
+  const fetchBadgeTypes = async () => {
+    try {
+        const db = getFirestore();
+        // Fetch Badge Types
+        const badgesDocRef = doc(db, "Flight Points", "Badges");
+        const badgesDoc = await getDoc(badgesDocRef);
+        const badgeTypes = badgesDoc.data()["Badge Types"];
+        setBadgeTypes(badgeTypes);
+      } catch (error) {
+        console.error("Error fetching cadet names:", error);
+      }
+    };
+  
+  const fetchEventCategories = async () => {
+    try {
+        const db = getFirestore();
+        // Fetch Event Categories
+        const eventCategoryPointsDocRef = doc(db, "Flight Points", "Event Category Points");
+        const eventCategoryPointsDoc = await getDoc(eventCategoryPointsDocRef);
+        const eventCategories = Object.keys(eventCategoryPointsDoc.data());
+        setEventCategories(eventCategories);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+  
+  const fetchSpecialAwards = async () => {
+    try {
+        const db = getFirestore();
+        // Fetch Special Awards
+        const specialAwardsDocRef = doc(db, "Flight Points", "Special Awards");
+        const specialAwardsDoc = await getDoc(specialAwardsDocRef);
+        const specialAwards = specialAwardsDoc.data()["Special Awards"];
+        setSpecialAwards(specialAwards);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+    
     fetchCadetNames();
+    fetchBadgeTypes();
+    fetchEventCategories();
+    fetchSpecialAwards();
   }, []);
 
   const handleInputChange = (e) => {
@@ -140,6 +187,9 @@ const MassEventLog = ({ user }) => {
         isPopupOpen={isPopupOpen}
         inputValue={inputValue}
         filteredNames={filteredNames}
+        badgeTypes={badgeTypes}
+        eventCategories={eventCategories}
+        specialAwards={specialAwards}
         highlightedIndex={highlightedIndex}
         selectedNames={selectedNames}
         handleInputChange={handleInputChange}

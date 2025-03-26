@@ -43,7 +43,7 @@
   background: white;
   padding: 20px;
   border-radius: 8px;
-  width: 300px;
+  width: 400px;
   text-align: center;
 }
 
@@ -162,6 +162,7 @@
   justify-content: center; /* Center the grid horizontally */
   gap: 10px; /* Space between buttons */
   margin-top: 15px; /* Space above the grid */
+  margin-bottom: 15px; /* Space below the grid */
 }
 
 .grid-button {
@@ -184,4 +185,8 @@
   background-color: #007bff; /* Blue background for selected button */
   color: white;
   border-color: #007bff;
+}
+
+.dropdown option[value=""] {
+  color: grey; /* Make the default option text grey */
 }

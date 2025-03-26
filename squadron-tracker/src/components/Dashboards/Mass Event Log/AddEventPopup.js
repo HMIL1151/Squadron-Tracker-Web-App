@@ -1,10 +1,14 @@
 import React, { useState } from "react";
 import "./MassEventLog.css";
+import { examList, badgeLevel } from "../../../utils/examList";
 
 const AddEventPopup = ({
   isPopupOpen,
   inputValue,
   filteredNames,
+  badgeTypes,
+  eventCategories,
+  specialAwards,
   highlightedIndex,
   selectedNames,
   handleInputChange,
@@ -14,14 +18,27 @@ const AddEventPopup = ({
   handleAddEvent,
   closePopup,
   eventDate,
-  handleDateChange, // New prop for handling date input
+  handleDateChange,
 }) => {
-  const [selectedButton, setSelectedButton] = useState(null); // State to track the selected button
+  const [selectedButton, setSelectedButton] = useState(null);
+  const [freeText, setFreeText] = useState("");
+  const [selectedBadgeType, setSelectedBadgeType] = useState(""); 
+  const [selectedBadgeLevel, setSelectedBadgeLevel] = useState(""); 
+  const [selectedExam, setSelectedExam] = useState(""); 
+  const [selectedEventCategory, setSelectedEventCategory] = useState(""); 
+  const [selectedSpecialAward, setSelectedSpecialAward] = useState(""); 
 
   if (!isPopupOpen) return null;
 
   const handleButtonClick = (buttonText) => {
     setSelectedButton(buttonText); // Update the selected button
+    // Reset all fields when switching buttons
+    setFreeText("");
+    setSelectedBadgeType("");
+    setSelectedBadgeLevel("");
+    setSelectedExam("");
+    setSelectedEventCategory("");
+    setSelectedSpecialAward("");
   };
 
   return (
@@ -79,21 +96,149 @@ const AddEventPopup = ({
             type="date"
             className="date-input"
             value={eventDate}
-            onChange={handleDateChange} // Handle date input changes
+            onChange={handleDateChange}
           />
         </div>
         {/* 2x2 Button Grid */}
         <div className="button-grid">
-          {["Badge", "Classification/<br />Exam", "Event/<br />Other", "Special"].map((buttonText) => (
+          {["Badge", "Classification/Exam", "Event/Other", "Special"].map((buttonText) => (
             <button
               key={buttonText}
               className={`grid-button ${
                 selectedButton === buttonText ? "selected" : ""
               }`}
               onClick={() => handleButtonClick(buttonText)}
-              dangerouslySetInnerHTML={{ __html: buttonText }} // Use this to render HTML inside the button
+              dangerouslySetInnerHTML={{ __html: buttonText }}
             />
           ))}
+        </div>
+        {/* Dynamic Entry Fields */}
+        <div className="dynamic-fields">
+          {selectedButton === "Badge" && (
+            <>
+              <div className="flex-container">
+                <label className="popup-label" htmlFor="badge-type">
+                  Badge Type:
+                </label>
+                <select
+                  id="badge-type"
+                  className="dropdown"
+                  value={selectedBadgeType}
+                  onChange={(e) => setSelectedBadgeType(e.target.value)}
+                >
+                  <option value="" disabled>
+                    Select Badge Type
+                  </option>
+                  {badgeTypes.map((type) => (
+                    <option key={type} value={type}>
+                      {type}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="flex-container">
+                <label className="popup-label" htmlFor="badge-level">
+                  Badge Level:
+                </label>
+                <select
+                  id="badge-level"
+                  className="dropdown"
+                  value={selectedBadgeLevel}
+                  onChange={(e) => setSelectedBadgeLevel(e.target.value)}
+                >
+                  <option value="" disabled>
+                    Select Badge Level
+                  </option>
+                  {badgeLevel.map((level) => (
+                    <option key={level} value={level}>
+                      {level}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </>
+          )}
+          {selectedButton === "Classification/Exam" && (
+            <div className="flex-container">
+              <label className="popup-label" htmlFor="exam">
+                Exam:
+              </label>
+              <select
+                id="exam"
+                className="dropdown"
+                value={selectedExam}
+                onChange={(e) => setSelectedExam(e.target.value)}
+              >
+                <option value="" disabled>
+                  Select Exam
+                </option>
+                {examList.map((exam) => (
+                  <option key={exam} value={exam}>
+                    {exam}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+          {selectedButton === "Event/Other" && (
+            <>
+              <div className="flex-container">
+                <label className="popup-label" htmlFor="event-text">
+                  Event Description:
+                </label>
+                <input
+                  id="event-text"
+                  type="text"
+                  className="text-input"
+                  placeholder="Enter event description..."
+                  value={freeText}
+                  onChange={(e) => setFreeText(e.target.value)}
+                />
+              </div>
+              <div className="flex-container">  
+                <label className="popup-label" htmlFor="event-category">
+                  Event Category:
+                </label>
+                <select
+                  id="event-category"
+                  className="dropdown"
+                  value={selectedEventCategory}
+                  onChange={(e) => setSelectedEventCategory(e.target.value)}
+                >
+                  <option value="" disabled>
+                    Select Event Category
+                  </option>
+                  {eventCategories.map((category) => (
+                    <option key={category} value={category}>
+                      {category}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </>
+          )}
+          {selectedButton === "Special" && (
+            <div className="flex-container">
+              <label className="popup-label" htmlFor="special-award">
+                Special Award:
+              </label>
+              <select
+                id="special-award"
+                className="dropdown"
+                value={selectedSpecialAward}
+                onChange={(e) => setSelectedSpecialAward(e.target.value)}
+              >
+                <option value="" disabled>
+                  Select Special Award
+                </option>
+                {specialAwards.map((award) => (
+                  <option key={award} value={award}>
+                    {award}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
         </div>
         <button className="popup-button" onClick={handleAddEvent}>
           Add Event
