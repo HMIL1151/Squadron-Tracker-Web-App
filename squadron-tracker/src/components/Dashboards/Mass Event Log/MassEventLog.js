@@ -21,16 +21,9 @@ const MassEventLog = ({ user }) => {
   const [eventCategories, setEventCategories] = useState([]);
   const [specialAwards, setSpecialAwards] = useState([]);
   const [selectedButton, setSelectedButton] = useState(null);
-  const [freeText, setFreeText] = useState("");
-  const [selectedBadgeType, setSelectedBadgeType] = useState("");
-  const [selectedBadgeLevel, setSelectedBadgeLevel] = useState("");
-  const [selectedExam, setSelectedExam] = useState("");
-  const [selectedEventCategory, setSelectedEventCategory] = useState("");
-  const [selectedSpecialAward, setSelectedSpecialAward] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const [selectedEvent, setSelectedEvent] = useState(null); // State for the selected event
   const [isEventPopupOpen, setIsEventPopupOpen] = useState(false);
-  
 
   const columns = ["Name", "Event", "Date", "Points"];
 
@@ -197,12 +190,6 @@ const MassEventLog = ({ user }) => {
       setInputValue("");
       setEventDate("");
       setSelectedButton(null);
-      setFreeText("");
-      setSelectedBadgeType("");
-      setSelectedBadgeLevel("");
-      setSelectedExam("");
-      setSelectedEventCategory("");
-      setSelectedSpecialAward("");
       setIsPopupOpen(false);
   
     } catch (error) {
