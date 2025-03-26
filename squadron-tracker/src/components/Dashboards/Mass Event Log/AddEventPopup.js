@@ -15,10 +15,11 @@ const AddEventPopup = ({
   handleKeyDown,
   handleNameSelect,
   handleRemoveName,
-  handleAddEvent,
+  handleAddEvent, // This is the prop passed from the parent
   closePopup,
   eventDate,
   handleDateChange,
+  onButtonSelect,
 }) => {
   const [selectedButton, setSelectedButton] = useState(null);
   const [freeText, setFreeText] = useState("");
@@ -31,7 +32,8 @@ const AddEventPopup = ({
   if (!isPopupOpen) return null;
 
   const handleButtonClick = (buttonText) => {
-    setSelectedButton(buttonText); // Update the selected button
+    setSelectedButton(buttonText); // Update the local state
+    onButtonSelect(buttonText); // Notify the parent component
     // Reset all fields when switching buttons
     setFreeText("");
     setSelectedBadgeType("");
@@ -39,6 +41,19 @@ const AddEventPopup = ({
     setSelectedExam("");
     setSelectedEventCategory("");
     setSelectedSpecialAward("");
+  };
+
+  const onAddEventClick = () => { // Renamed local function
+    const eventData = {
+      selectedBadgeType,
+      selectedBadgeLevel,
+      selectedExam,
+      freeText,
+      selectedEventCategory,
+      selectedSpecialAward,
+    };
+
+    handleAddEvent(eventData); // Call the parent function
   };
 
   return (
@@ -240,7 +255,7 @@ const AddEventPopup = ({
             </div>
           )}
         </div>
-        <button className="popup-button" onClick={handleAddEvent}>
+        <button className="popup-button" onClick={onAddEventClick}>
           Add Event
         </button>
         <button className="popup-button cancel" onClick={closePopup}>
