@@ -1,10 +1,43 @@
+Add Entry interface
+
 Badge -> category (drop down [fs]) -> level (drop down)
 Exam (drop down)
 Event (Text Entry) -> category (drop down [fs])
 Special Award (drop down [fs])
 
 
-FireStore Layout
+
+
+Table Layout
+
+Name - Entry - Date - Points
+Entry:
+	[colour] [category] Badge
+	[Exam] Exam	
+	[Event Name]
+	[Special Award Name]
+
+
+
+FireStore Event Layout
+
+Collection: "Event Log"
+	Document: [one for each entry]
+		addedBy (string)
+		createdAt (firestore timestamp)
+		cadetName (string)
+		date (string)
+		badgeCategory (string)
+		badgeLevel (string)
+		examName (string)
+		eventName (string)
+		eventCategory (string)
+		specialAward (string)
+
+
+
+
+FireStore Categories Layout
 
 Flight Points
 	Event Category Points
