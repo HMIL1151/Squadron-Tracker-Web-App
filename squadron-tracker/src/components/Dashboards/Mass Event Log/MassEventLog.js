@@ -3,6 +3,7 @@ import { fetchCollectionData } from "../../../firebase/firestoreUtils";
 import { getFirestore, doc, getDoc, addDoc, collection, deleteDoc } from "firebase/firestore/lite";
 import Table from "../../Table/Table";
 import AddEventPopup from "./AddEventPopup";
+import EventDetailsPopup from "./EventDetailsPopup"; // Import the new popup
 import "./MassEventLog.css";
 import SuccessMessage from "../SuccessMessage";
 
@@ -27,6 +28,8 @@ const MassEventLog = ({ user }) => {
   const [selectedEventCategory, setSelectedEventCategory] = useState("");
   const [selectedSpecialAward, setSelectedSpecialAward] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
+  const [selectedEvent, setSelectedEvent] = useState(null); // State for the selected event
+  const [isEventPopupOpen, setIsEventPopupOpen] = useState(false);
   
 
   const columns = ["Name", "Event", "Date", "Points"];
@@ -260,6 +263,23 @@ const MassEventLog = ({ user }) => {
     }
   };
   
+  const handleRowClick = (eventData) => {
+    setSelectedEvent(eventData);
+    setIsEventPopupOpen(true);
+  };
+
+  const handleRemoveEvent = async (eventId) => {
+    try {
+      const db = getFirestore();
+      await deleteDoc(doc(db, "Event Log", eventId));
+      console.log(`Deleted event with ID: ${eventId}`);
+      setIsEventPopupOpen(false);
+      fetchEvents(); // Refresh the table data
+    } catch (error) {
+      console.error("Error removing event:", error);
+      alert("An error occurred while removing the event.");
+    }
+  };
 
   useEffect(() => {
     fetchEvents();
@@ -272,7 +292,13 @@ const MassEventLog = ({ user }) => {
           Add New Event
         </button>
       </div>
-      <Table columns={columns} data={events} disableHover={false} width="80%" />
+      <Table
+        columns={columns}
+        data={events}
+        disableHover={false}
+        width="80%"
+        onRowClick={handleRowClick} // Add row click handler
+      />
       <AddEventPopup
         isPopupOpen={isPopupOpen}
         inputValue={inputValue}
@@ -286,11 +312,17 @@ const MassEventLog = ({ user }) => {
         handleKeyDown={handleKeyDown}
         handleNameSelect={handleNameSelect}
         handleRemoveName={handleRemoveName}
-        handleAddEvent={handleAddEvent} // Pass the function
+        handleAddEvent={handleAddEvent}
         closePopup={closePopup}
         eventDate={eventDate}
         handleDateChange={handleDateChange}
         onButtonSelect={handleButtonSelect}
+      />
+      <EventDetailsPopup
+        isOpen={isEventPopupOpen}
+        eventData={selectedEvent}
+        onClose={() => setIsEventPopupOpen(false)}
+        onRemove={handleRemoveEvent}
       />
       <SuccessMessage message={successMessage} />
     </div>
