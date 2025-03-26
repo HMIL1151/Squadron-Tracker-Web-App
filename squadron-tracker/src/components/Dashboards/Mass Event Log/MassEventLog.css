@@ -155,3 +155,33 @@
   margin-left: 5px;
   cursor: pointer;
 }
+
+.button-grid {
+  display: grid;
+  grid-template-columns: repeat(2, auto); /* 2 columns with auto width */
+  justify-content: center; /* Center the grid horizontally */
+  gap: 10px; /* Space between buttons */
+  margin-top: 15px; /* Space above the grid */
+}
+
+.grid-button {
+  padding: 10px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  background-color: white;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  text-align: center;
+  min-width: 150px; /* Set a minimum width for all buttons */
+}
+
+.grid-button:hover {
+  background-color: #f0f0f0;
+}
+
+.grid-button.selected {
+  background-color: #007bff; /* Blue background for selected button */
+  color: white;
+  border-color: #007bff;
+}

@@ -1,20 +1,21 @@
 import React, { useState, useEffect } from "react";
 import { fetchCollectionData } from "../../../firebase/firestoreUtils";
 import Table from "../../Table/Table";
+import AddEventPopup from "./AddEventPopup";
 import "./MassEventLog.css";
 
 const MassEventLog = ({ user }) => {
   const [events, setEvents] = useState([]);
-  const [isPopupOpen, setIsPopupOpen] = useState(false); // State for popup visibility
-  const [selectedNames, setSelectedNames] = useState([]); // State for selected names
-  const [inputValue, setInputValue] = useState(""); // State for the input value
-  const [filteredNames, setFilteredNames] = useState([]); // State for filtered name suggestions
-  const [highlightedIndex, setHighlightedIndex] = useState(-1); // State for highlighted suggestion
-  const [names, setNames] = useState([]); // State for names fetched from Firestore
+  const [isPopupOpen, setIsPopupOpen] = useState(false);
+  const [selectedNames, setSelectedNames] = useState([]);
+  const [inputValue, setInputValue] = useState("");
+  const [filteredNames, setFilteredNames] = useState([]);
+  const [highlightedIndex, setHighlightedIndex] = useState(-1);
+  const [names, setNames] = useState([]);
+  const [eventDate, setEventDate] = useState(""); // New state for the date input
 
   const columns = ["Name", "Event", "Date", "Points"];
 
-  // Fetch cadet names from Firestore
   useEffect(() => {
     const fetchCadetNames = async () => {
       try {
@@ -33,25 +34,28 @@ const MassEventLog = ({ user }) => {
     const value = e.target.value;
     setInputValue(value);
 
-    // Filter names based on the input value
     if (value) {
       const suggestions = names.filter((name) =>
         name.toLowerCase().includes(value.toLowerCase())
       );
       setFilteredNames(suggestions);
-      setHighlightedIndex(-1); // Reset highlighted index
+      setHighlightedIndex(-1);
     } else {
       setFilteredNames([]);
     }
+  };
+
+  const handleDateChange = (e) => {
+    setEventDate(e.target.value); // Update the eventDate state
   };
 
   const handleNameSelect = (name) => {
     if (!selectedNames.includes(name)) {
       setSelectedNames((prev) => [...prev, name]);
     }
-    setInputValue(""); // Clear the input field after selection
-    setFilteredNames([]); // Clear suggestions
-    setHighlightedIndex(-1); // Reset highlighted index
+    setInputValue("");
+    setFilteredNames([]);
+    setHighlightedIndex(-1);
   };
 
   const handleRemoveName = (name) => {
@@ -61,15 +65,12 @@ const MassEventLog = ({ user }) => {
   const handleKeyDown = (e) => {
     if (filteredNames.length > 0) {
       if (e.key === "ArrowDown") {
-        // Move down the list
         setHighlightedIndex((prev) => (prev + 1) % filteredNames.length);
       } else if (e.key === "ArrowUp") {
-        // Move up the list
         setHighlightedIndex((prev) =>
           prev === -1 ? filteredNames.length - 1 : (prev - 1 + filteredNames.length) % filteredNames.length
         );
       } else if (e.key === "Enter") {
-        // Select the highlighted name
         if (highlightedIndex >= 0 && highlightedIndex < filteredNames.length) {
           handleNameSelect(filteredNames[highlightedIndex]);
         }
@@ -79,7 +80,12 @@ const MassEventLog = ({ user }) => {
 
   const handleAddEvent = () => {
     console.log("Selected Names:", selectedNames);
-    setIsPopupOpen(false); // Close the popup after adding
+    console.log("Event Date:", eventDate); // Log the selected date
+    setIsPopupOpen(false);
+  };
+
+  const closePopup = () => {
+    setIsPopupOpen(false);
   };
 
   useEffect(() => {
@@ -106,10 +112,10 @@ const MassEventLog = ({ user }) => {
             Name: event.cadetName,
             Event: eventDescription,
             Date: event.date,
-            Points: Math.floor(Math.random() * 10) + 1, // Random number between 1-10
+            Points: Math.floor(Math.random() * 10) + 1,
             AddedBy: event.addedBy,
             CreatedAt: event.createdAt,
-            id: event.id, // Add the event ID
+            id: event.id,
           };
         });
 
@@ -130,63 +136,21 @@ const MassEventLog = ({ user }) => {
         </button>
       </div>
       <Table columns={columns} data={events} disableHover={false} width="80%" />
-
-      {/* Popup for selecting names */}
-      {isPopupOpen && (
-        <div className="popup-overlay">
-          <div className="popup-content">
-            <h3>Add New Event</h3>
-            <div className="flex-container">
-              <label className="popup-label" htmlFor="autocomplete-input">
-                Name(s):
-              </label>
-              <div className="autocomplete-container">
-                <input
-                  id="autocomplete-input"
-                  type="text"
-                  className="autocomplete-input"
-                  placeholder="Enter name(s)..."
-                  value={inputValue}
-                  onChange={handleInputChange}
-                  onKeyDown={handleKeyDown}
-                />
-                {filteredNames.length > 0 && (
-                  <ul className="autocomplete-suggestions">
-                    {filteredNames.map((name, index) => (
-                      <li
-                        key={name}
-                        className={index === highlightedIndex ? "highlighted" : ""}
-                        onClick={() => handleNameSelect(name)}
-                      >
-                        {name}
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
-            </div>
-            <div className="selected-names">
-              {selectedNames.map((name) => (
-                <span key={name} className="selected-name">
-                  {name}
-                  <button
-                    className="remove-name-button"
-                    onClick={() => handleRemoveName(name)}
-                  >
-                    &times;
-                  </button>
-                </span>
-              ))}
-            </div>
-            <button className="popup-button" onClick={handleAddEvent}>
-              Add Event
-            </button>
-            <button className="popup-button cancel" onClick={() => setIsPopupOpen(false)}>
-              Cancel
-            </button>
-          </div>
-        </div>
-      )}
+      <AddEventPopup
+        isPopupOpen={isPopupOpen}
+        inputValue={inputValue}
+        filteredNames={filteredNames}
+        highlightedIndex={highlightedIndex}
+        selectedNames={selectedNames}
+        handleInputChange={handleInputChange}
+        handleKeyDown={handleKeyDown}
+        handleNameSelect={handleNameSelect}
+        handleRemoveName={handleRemoveName}
+        handleAddEvent={handleAddEvent}
+        closePopup={closePopup}
+        eventDate={eventDate} // Pass the date state
+        handleDateChange={handleDateChange} // Pass the date change handler
+      />
     </div>
   );
 };
