@@ -1,0 +1,3 @@
+cd squadron-tracker
+npm run build
+firebase deploy
