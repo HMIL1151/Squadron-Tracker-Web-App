@@ -5,6 +5,7 @@ import Table from "../../Table/Table";
 import AddEventPopup from "./AddEventPopup";
 import EventDetailsPopup from "./EventDetailsPopup"; // Import the new popup
 import "./MassEventLog.css";
+import "../dashboardStyles.css";
 import SuccessMessage from "../SuccessMessage";
 
 
@@ -290,7 +291,7 @@ const MassEventLog = ({ user }) => {
   return (
     <div className="table-dashboard-container">
       <div className="button-container">
-        <button className="table-button" onClick={() => setIsPopupOpen(true)}>
+        <button className="button-green" onClick={() => setIsPopupOpen(true)}>
           Add New Event
         </button>
       </div>

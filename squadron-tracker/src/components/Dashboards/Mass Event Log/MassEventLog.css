@@ -55,7 +55,7 @@
 
 /* Add spacing below dynamic fields */
 .dynamic-fields {
-  margin-bottom: 60px; /* Add space to prevent overlap with buttons */
+  margin-bottom: 0px; /* Add space to prevent overlap with buttons */
 }
 
 .name-list {
@@ -205,11 +205,13 @@
 /* Position the buttons at the bottom */
 .popup-actions {
   display: flex;
-  justify-content: space-between; /* Push buttons to opposite corners */
-  position: absolute; /* Position relative to .popup-content */
+  justify-content: space-between; /* Push buttons to opposite sides */
+  align-items: center; /* Ensure buttons are vertically aligned */
+  position: absolute; /* Position relative to the parent container */
   bottom: 20px; /* Add spacing from the bottom */
   left: 20px; /* Add spacing from the left */
   right: 20px; /* Add spacing from the right */
+  width: calc(100% - 40px); /* Ensure the box spans the width minus padding */
 }
 
 .cancel-button,

@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import "./MassEventLog.css";
+import "../dashboardStyles.css"
 import { examList, badgeLevel } from "../../../utils/examList";
 
 const AddEventPopup = ({
@@ -256,11 +257,11 @@ const AddEventPopup = ({
           )}
         </div>
 
-        <div className="popup-actions">
-            <button className="cancel-button" onClick={closePopup}>
+        <div className="popup-bottom-buttons">
+            <button className="popup-button-red" onClick={closePopup}>
             Cancel
             </button>
-            <button className="confirm-button" onClick={onAddEventClick}>
+            <button className="popup-button-green" onClick={onAddEventClick}>
             Add Event
             </button>
 

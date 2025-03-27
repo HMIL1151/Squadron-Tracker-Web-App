@@ -7,8 +7,9 @@
   
   .button-container {
     display: flex;
-    gap: min(20px, 5vw);;
-    align-items: center;
+    justify-content: center;
+    align-items: center; /* Ensures vertical alignment */
+    gap: 10px; /* Adds spacing between buttons */
     margin-bottom: 10px;
   }
   
