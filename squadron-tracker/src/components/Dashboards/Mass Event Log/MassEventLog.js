@@ -255,6 +255,7 @@ const MassEventLog = ({ user }) => {
           AddedBy: event.addedBy,
           CreatedAt: event.createdAt,
           id: event.id,
+          eventCategory: eventCategory || "", // Include eventCategory
         });
       }
   
