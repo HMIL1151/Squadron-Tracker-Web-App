@@ -122,7 +122,6 @@ const PopupManager = ({
         <CadetForm
           newCadet={newCadet}
           handleInputChange={handleInputChange}
-          classificationMap={classificationMap}
           flightMap={flightMap}
           rankMap={rankMap}
         />

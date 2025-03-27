@@ -4,7 +4,6 @@ import Form from "../Form";
 const CadetForm = ({
   newCadet,
   handleInputChange,
-  classificationMap,
   flightMap,
   rankMap,
 }) => {
@@ -42,15 +41,6 @@ const CadetForm = ({
       options: flightMap,
     },
     {
-      id: "classification",
-      name: "classification",
-      type: "select",
-      label: "Classification:",
-      value: newCadet.classification,
-      placeholder: "Select a classification",
-      options: classificationMap,
-    },
-    {
       id: "startDate",
       name: "startDate",
       type: "date",
@@ -59,7 +49,14 @@ const CadetForm = ({
     },
   ];
 
-  return <Form title="" fields={fields} handleInputChange={handleInputChange} />;
+  return (
+    <div className="cadet-form-container">
+      <Form title="" fields={fields} handleInputChange={handleInputChange} />
+      <div className="form-buttons-container">
+        {/* Buttons will be rendered here by the parent Popup component */}
+      </div>
+    </div>
+  );
 };
 
 export default CadetForm;

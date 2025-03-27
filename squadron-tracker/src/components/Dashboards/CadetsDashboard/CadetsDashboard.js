@@ -93,17 +93,20 @@ const CadetsDashboard = ({ user }) => {
         alert("User information is missing.");
         return;
       }
-      const { forename, surname, startDate, classification, flight, rank } = newCadet;
+      const { forename, surname, startDate, flight, rank } = newCadet;
 
-      if (!forename || !surname || !startDate || classification === "" || flight === "" || rank === "") {
+      if (!forename || !surname || !startDate || flight === "" || rank === "") {
         alert("Please fill in all fields.");
         return;
       }
 
-      // Format the startDate to "DD-MM-YYYY"
+      // Format the startDate to "YYYY-MM-DD"
       const date = new Date(startDate);
       const formattedStartDate = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 
+      // Assign a random classification from classificationMap
+      const classificationKeys = Object.keys(classificationMap);
+      const randomClassification = classificationKeys[Math.floor(Math.random() * classificationKeys.length)];
 
       // Query Firestore to check if a cadet with the same forename and surname exists
       const cadetsRef = collection(db, "Cadets");
@@ -117,12 +120,12 @@ const CadetsDashboard = ({ user }) => {
 
       await addDoc(collection(db, "Cadets"), {
         addedBy: user.displayName,
-        classification: parseInt(classification, 10),
+        classification: parseInt(randomClassification, 10), // Use the random classification
         createdAt: new Date(),
         flight: parseInt(flight, 10),
         forename,
         rank: parseInt(rank, 10),
-        startDate: formattedStartDate, // Use the formatted date here
+        startDate: formattedStartDate,
         surname,
       });
 
@@ -138,7 +141,6 @@ const CadetsDashboard = ({ user }) => {
         forename: "",
         surname: "",
         startDate: "",
-        classification: "",
         flight: "",
         rank: "",
       });
@@ -167,25 +169,24 @@ const CadetsDashboard = ({ user }) => {
     const serviceLength = (() => {
       if (!cadet.startDate) return "N/A";
 
-            // Parse the startDate in "YYYY-MM-DD" format
       const [year, month, day] = cadet.startDate.split("-").map(Number);
-      const startDate = new Date(year, month - 1, day); // Create a valid Date object
+      const startDate = new Date(year, month - 1, day);
       const today = new Date();
-      
+
       let years = today.getFullYear() - startDate.getFullYear();
       let months = today.getMonth() - startDate.getMonth();
       let days = today.getDate() - startDate.getDate();
-      
+
       if (days < 0) {
         months -= 1;
         days += new Date(today.getFullYear(), today.getMonth(), 0).getDate();
       }
-      
+
       if (months < 0) {
         years -= 1;
         months += 12;
       }
-      
+
       return `${years} Yrs, ${months} Mos, ${days} Days`;
     })();
 
@@ -194,8 +195,9 @@ const CadetsDashboard = ({ user }) => {
         acc[key] = cadet[cadetListColumnMapping[key]];
         return acc;
       }, {}),
-      "Service Length": serviceLength, // Add the calculated service length
-      id: cadet.id, // Include the cadet ID for row click handling
+      Classification: classificationMap[cadet.classification], // Map classification to its label
+      "Service Length": serviceLength,
+      id: cadet.id,
     };
   });
 
