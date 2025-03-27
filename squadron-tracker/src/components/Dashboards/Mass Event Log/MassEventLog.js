@@ -221,14 +221,28 @@ const MassEventLog = ({ user }) => {
         }
   
         let eventDescription = "";
+        let flightPoints = 0;
+  
         if (badgeCategory) {
           eventDescription = `${badgeLevel} ${badgeCategory}`;
+          const badgePointsDocRef = doc(db, "Flight Points", "Badge Points");
+          const badgePointsDoc = await getDoc(badgePointsDocRef);
+          flightPoints = badgePointsDoc.data()[`${badgeLevel} Badge`] || 0; // Fetch points for the badge
         } else if (examName) {
           eventDescription = `${examName} Exam`;
+          const badgePointsDocRef = doc(db, "Flight Points", "Badge Points");
+          const badgePointsDoc = await getDoc(badgePointsDocRef);
+          flightPoints = badgePointsDoc.data()["Exam"] || 0; // Fetch points for the exam
         } else if (eventName) {
           eventDescription = eventName;
+          const eventCategoryPointsDocRef = doc(db, "Flight Points", "Event Category Points");
+          const eventCategoryPointsDoc = await getDoc(eventCategoryPointsDocRef);
+          flightPoints = eventCategoryPointsDoc.data()[eventCategory] || 0; // Fetch points for the event category
         } else if (specialAward) {
           eventDescription = specialAward;
+          const badgePointsDocRef = doc(db, "Flight Points", "Badge Points");
+          const badgePointsDoc = await getDoc(badgePointsDocRef);
+          flightPoints = badgePointsDoc.data()["Special"] || 0; // Fetch points for the special award
         } else {
           throw new Error("Invalid event data: Missing required fields for event description.");
         }
@@ -237,7 +251,7 @@ const MassEventLog = ({ user }) => {
           Name: event.cadetName,
           Event: eventDescription,
           Date: event.date,
-          Points: Math.floor(Math.random() * 10) + 1,
+          Points: flightPoints,
           AddedBy: event.addedBy,
           CreatedAt: event.createdAt,
           id: event.id,
