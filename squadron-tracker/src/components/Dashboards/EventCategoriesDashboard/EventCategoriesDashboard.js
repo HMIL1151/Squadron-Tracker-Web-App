@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { getFirestore, doc, getDoc } from "firebase/firestore/lite";
+import { getFirestore, doc, getDoc, updateDoc, deleteField } from "firebase/firestore/lite";
 import Table from "../../Table/Table";
 import AddEntry from "./addEntry";
 import AddCategory from "./AddCategory"; // Import the new AddCategory component
 import AddBadgePoints from "./AddBadgePoints"; // Import the new AddBadgePoints component
+import EditPopup from "./EditPopup";
 import "./EventCategoriesDashboard.css";
 import "../dashboardStyles.css";
 
@@ -20,6 +21,9 @@ const EventCategoriesDashboard = () => {
   const [isAddEntryOpen, setIsAddEntryOpen] = useState(false);
   const [isAddCategoryOpen, setIsAddCategoryOpen] = useState(false); // State for AddCategory popup
   const [isAddBadgePointsOpen, setIsAddBadgePointsOpen] = useState(false); // State for AddBadgePoints popup
+  const [isEditPopupOpen, setIsEditPopupOpen] = useState(false);
+  const [editData, setEditData] = useState(null); // Holds the data of the row being edited
+  const [editType, setEditType] = useState(""); // Tracks the type of table being edited
 
   const fetchSpecialAwards = async () => {
     try {
@@ -112,6 +116,12 @@ const EventCategoriesDashboard = () => {
     }
   };
 
+  const handleRowClick = (rowData, type) => {
+    setEditData(rowData);
+    setEditType(type);
+    setIsEditPopupOpen(true);
+  };
+
   useEffect(() => {
 
 
@@ -166,6 +176,7 @@ const EventCategoriesDashboard = () => {
               data={categories}
               disableHover={true}
               width="30%"
+              onRowClick={(rowData) => handleRowClick(rowData, "eventcategories")}
             />
             <AddCategory
               isOpen={isAddCategoryOpen}
@@ -181,7 +192,13 @@ const EventCategoriesDashboard = () => {
             <button className="button-green" onClick={() => setIsAddEntryOpen(true)}>
               Add New Badge Type
             </button>
-            <Table columns={badgeColumns} data={badges} disableHover={true} width="30%" />
+            <Table
+              columns={badgeColumns}
+              data={badges}
+              disableHover={true}
+              width="30%"
+              onRowClick={(rowData) => handleRowClick(rowData, "badges")}
+            />
             <AddEntry
               isOpen={isAddEntryOpen}
               onClose={() => setIsAddEntryOpen(false)}
@@ -202,7 +219,13 @@ const EventCategoriesDashboard = () => {
             >
               Add Badge Points
             </button>
-            <Table columns={badgePointsColumns} data={badgePoints} disableHover={true} width="30%"/>
+            <Table
+              columns={badgePointsColumns}
+              data={badgePoints}
+              disableHover={true}
+              width="30%"
+              onRowClick={(rowData) => handleRowClick(rowData, "badgepoints")}
+            />
             <AddBadgePoints
               isOpen={isAddBadgePointsOpen}
               onClose={() => setIsAddBadgePointsOpen(false)}
@@ -217,7 +240,13 @@ const EventCategoriesDashboard = () => {
             <button className="button-green" onClick={() => setIsAddEntryOpen(true)}>
               Add New Special Award
             </button>
-            <Table columns={specialAwardsColumns} data={specialAwards} disableHover={true} width="30%"/>
+            <Table
+              columns={specialAwardsColumns}
+              data={specialAwards}
+              disableHover={true}
+              width="30%"
+              onRowClick={(rowData) => handleRowClick(rowData, "specialawards")}
+            />
             <AddEntry
               isOpen={isAddEntryOpen}
               onClose={() => setIsAddEntryOpen(false)}
@@ -231,6 +260,76 @@ const EventCategoriesDashboard = () => {
           </div>
         )}
       </div>
+      {editData && (
+        <EditPopup
+          isOpen={isEditPopupOpen}
+          onClose={() => setIsEditPopupOpen(false)}
+          onConfirm={async (updatedData) => {
+            const db = getFirestore();
+            const docRef = doc(
+              db,
+              "Flight Points",
+              editType === "eventcategories"
+                ? "Event Category Points"
+                : editType === "badgepoints"
+                ? "Badge Points"
+                : editType === "badges"
+                ? "Badges"
+                : "Special Awards"
+            );
+
+            if (editType === "eventcategories" || editType === "badgepoints") {
+              // Handle key-value pair updates
+              const oldKey = editData.Category || editData["Badge Types"];
+              const newKey = updatedData.Category || updatedData["Badge Types"];
+              const newValue = updatedData.Points;
+
+              try {
+                // Delete the old field if the key has changed
+                if (oldKey !== newKey) {
+                  await updateDoc(docRef, { [oldKey]: deleteField() });
+                }
+
+                // Add the new field with the updated key and value
+                await updateDoc(docRef, { [newKey]: newValue });
+
+                // Refresh the table
+                if (editType === "eventcategories") {
+                  fetchEventCategories();
+                } else {
+                  fetchBadgePoints();
+                }
+              } catch (error) {
+                console.error("Error updating document:", error);
+              }
+            } else {
+              // Handle array updates for badges and special awards
+              const arrayName = editType === "badges" ? "Badge Types" : "Special Awards";
+              try {
+                const docSnap = await getDoc(docRef);
+                if (docSnap.exists()) {
+                  const data = docSnap.data();
+                  const updatedArray = data[arrayName].map((item) =>
+                    item === editData[arrayName] ? updatedData[arrayName] : item
+                  );
+                  await updateDoc(docRef, { [arrayName]: updatedArray });
+
+                  // Refresh the table
+                  if (editType === "badges") {
+                    fetchBadges();
+                  } else {
+                    fetchSpecialAwards();
+                  }
+                }
+              } catch (error) {
+                console.error("Error updating array:", error);
+              }
+            }
+          }}
+          data={editData}
+          type={editType}
+        />
+      )}
     </div>
   );
 };

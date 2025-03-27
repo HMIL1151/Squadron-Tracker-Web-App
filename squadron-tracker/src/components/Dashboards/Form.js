@@ -1,4 +1,5 @@
 import React from "react";
+import "./dashboardStyles.css";
 
 const Form = ({ title, fields, handleInputChange }) => {
   return (
