@@ -27,7 +27,7 @@ const EventDetailsPopup = ({ isOpen, eventData, onClose, onRemove }) => {
     <div className="popup-overlay" onClick={handleOverlayClick}>
       <div className="popup-content">
         <button className="close-icon" onClick={onClose}>
-        <svg
+          <svg
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 24 24"
             width="24"
@@ -57,6 +57,9 @@ const EventDetailsPopup = ({ isOpen, eventData, onClose, onRemove }) => {
         <h2>Event Details</h2>
         <p><strong>Name:</strong> {eventData.Name}</p>
         <p><strong>Event:</strong> {eventData.Event}</p>
+        {eventData.eventCategory && (
+          <p><strong>Category:</strong> {eventData.eventCategory}</p>
+        )}
         <p><strong>Date:</strong> {eventData.Date}</p>
         <p><strong>Points:</strong> {eventData.Points}</p>
         <p><strong>Added By:</strong> {eventData.AddedBy}</p>
