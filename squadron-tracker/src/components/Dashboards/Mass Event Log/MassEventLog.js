@@ -4,6 +4,7 @@ import { getFirestore, doc, getDoc, addDoc, collection, deleteDoc } from "fireba
 import Table from "../../Table/Table";
 import AddEventPopup from "./AddEventPopup";
 import EventDetailsPopup from "./EventDetailsPopup"; // Import the new popup
+import LoadingPopup from "../LoadingPopup"; // Import the new LoadingPopup component
 import "./MassEventLog.css";
 import "../dashboardStyles.css";
 import SuccessMessage from "../SuccessMessage";
@@ -25,6 +26,7 @@ const MassEventLog = ({ user }) => {
   const [successMessage, setSuccessMessage] = useState("");
   const [selectedEvent, setSelectedEvent] = useState(null); // State for the selected event
   const [isEventPopupOpen, setIsEventPopupOpen] = useState(false);
+  const [loading, setLoading] = useState(true); // Add loading state
 
   const columns = ["Name", "Event", "Date", "Points"];
 
@@ -204,6 +206,7 @@ const MassEventLog = ({ user }) => {
   };
 
   const fetchEvents = async () => {
+    setLoading(true); // Set loading to true before fetching data
     try {
       const db = getFirestore();
       const eventData = await fetchCollectionData("Event Log");
@@ -263,6 +266,8 @@ const MassEventLog = ({ user }) => {
       setEvents(formattedEvents);
     } catch (error) {
       console.error("Error fetching events:", error);
+    } finally {
+      setLoading(false); // Set loading to false after data is fetched
     }
   };
   
@@ -290,6 +295,7 @@ const MassEventLog = ({ user }) => {
 
   return (
     <div className="table-dashboard-container">
+      {loading && <LoadingPopup />} {/* Show loading popup while loading */}
       <div className="button-container">
         <button className="button-green" onClick={() => setIsPopupOpen(true)}>
           Add New Event

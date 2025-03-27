@@ -1,5 +1,6 @@
 import React from "react";
 import Form from "../Form";
+import "../dashboardStyles.css";
 
 const CadetForm = ({
   newCadet,
