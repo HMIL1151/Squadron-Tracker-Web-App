@@ -11,11 +11,11 @@ const Popup = ({ isOpen, onClose, onConfirm, children }) => {
           &times;
         </span>
         {children}
-        <div className="popup-actions">
-          <button className="table-button-red" onClick={onClose}>
+        <div className="popup-bottom-buttons">
+          <button className="popup-button-red" onClick={onClose}>
             Cancel
           </button>
-          <button className="table-button" onClick={onConfirm}>
+          <button className="popup-button-green" onClick={onConfirm}>
             Confirm
           </button>
         </div>

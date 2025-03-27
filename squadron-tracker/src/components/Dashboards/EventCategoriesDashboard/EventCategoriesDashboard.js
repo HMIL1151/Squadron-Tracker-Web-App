@@ -2,7 +2,10 @@ import React, { useEffect, useState } from "react";
 import { getFirestore, doc, getDoc } from "firebase/firestore/lite";
 import Table from "../../Table/Table";
 import AddEntry from "./addEntry";
+import AddCategory from "./AddCategory"; // Import the new AddCategory component
+import AddBadgePoints from "./AddBadgePoints"; // Import the new AddBadgePoints component
 import "./EventCategoriesDashboard.css";
+import "../dashboardStyles.css";
 
 const EventCategoriesDashboard = () => {
   const [categories, setCategories] = useState([]);
@@ -15,6 +18,8 @@ const EventCategoriesDashboard = () => {
   const specialAwardsColumns = ["Special Awards"]; // Columns for special awards
   const badgePointsColumns = ["Badge Types", "Points"]; // Columns for badge points
   const [isAddEntryOpen, setIsAddEntryOpen] = useState(false);
+  const [isAddCategoryOpen, setIsAddCategoryOpen] = useState(false); // State for AddCategory popup
+  const [isAddBadgePointsOpen, setIsAddBadgePointsOpen] = useState(false); // State for AddBadgePoints popup
 
   const fetchSpecialAwards = async () => {
     try {
@@ -149,13 +154,31 @@ const EventCategoriesDashboard = () => {
       {/* Content Area */}
       <div className="content-area">
         {activeTab === "eventcategories" && (
-          <div>
-            <Table columns={eventCategoryColumns} data={categories} disableHover={true} width="30%"/>
+          <div style={{ textAlign: "center" }}>
+            <button
+              className="button-green"
+              onClick={() => setIsAddCategoryOpen(true)}
+            >
+              Add New Category
+            </button>
+            <Table
+              columns={eventCategoryColumns}
+              data={categories}
+              disableHover={true}
+              width="30%"
+            />
+            <AddCategory
+              isOpen={isAddCategoryOpen}
+              onClose={() => setIsAddCategoryOpen(false)}
+              onConfirm={() => {
+                fetchEventCategories(); // Refresh the table data after adding a category
+              }}
+            />
           </div>
         )}
         {activeTab === "badges" && (
-          <div>
-            <button className="add-entry-button" onClick={() => setIsAddEntryOpen(true)}>
+          <div style={{ textAlign: "center" }}>
+            <button className="button-green" onClick={() => setIsAddEntryOpen(true)}>
               Add New Badge Type
             </button>
             <Table columns={badgeColumns} data={badges} disableHover={true} width="30%" />
@@ -172,13 +195,26 @@ const EventCategoriesDashboard = () => {
           </div>
         )}
         {activeTab === "badgepoints" && (
-          <div>
+          <div style={{ textAlign: "center" }}>
+            <button
+              className="button-green"
+              onClick={() => setIsAddBadgePointsOpen(true)}
+            >
+              Add Badge Points
+            </button>
             <Table columns={badgePointsColumns} data={badgePoints} disableHover={true} width="30%"/>
+            <AddBadgePoints
+              isOpen={isAddBadgePointsOpen}
+              onClose={() => setIsAddBadgePointsOpen(false)}
+              onConfirm={() => {
+                fetchBadgePoints(); // Refresh the table data after adding badge points
+              }}
+            />
           </div>
         )}
         {activeTab === "specialawards" && (
-          <div>
-            <button className="add-entry-button" onClick={() => setIsAddEntryOpen(true)}>
+          <div style={{ textAlign: "center" }}>
+            <button className="button-green" onClick={() => setIsAddEntryOpen(true)}>
               Add New Special Award
             </button>
             <Table columns={specialAwardsColumns} data={specialAwards} disableHover={true} width="30%"/>

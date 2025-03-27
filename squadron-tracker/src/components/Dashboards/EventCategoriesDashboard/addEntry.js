@@ -43,11 +43,11 @@ const AddEntry = ({ isOpen, onClose, onConfirm, collection, document, arrayName 
             placeholder="Enter new entry"
           />
         </div>
-        <div className="popup-actions">
-          <button className="cancel-button" onClick={onClose}>
+        <div className="popup-bottom-buttons">
+          <button className="popup-button-red" onClick={onClose}>
             Cancel
           </button>
-          <button className="confirm-button" onClick={handleConfirm}>
+          <button className="popup-button-green" onClick={handleConfirm}>
             Confirm
           </button>
         </div>

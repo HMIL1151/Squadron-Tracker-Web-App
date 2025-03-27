@@ -1,0 +1,67 @@
+.button-green,
+.button-red {
+    padding: 10px 20px;
+    font-size: 1rem;
+    border: none;
+    color: white;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    margin-bottom: 5px;
+}
+
+.button-green {
+    background-color: #4CAF50;
+}
+
+.button-green:hover {
+    background-color: #45a049;
+    transform: scale(1.05);
+}
+
+.button-red {
+    background-color: #D32F2F;
+}
+
+.button-red:hover {
+    background-color: #B71C1C;
+    transform: scale(1.05);
+}
+
+
+.popup-button-green,
+.popup-button-red {
+    padding: 10px 20px;
+    font-size: 14px;
+    border: none;
+    color: white;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.popup-button-green {
+    background-color: #4CAF50;
+}
+
+.popup-button-green:hover {
+    background-color: #45a049;
+    transform: scale(1.05);
+}
+
+.popup-button-red {
+    background-color: #D32F2F;
+}
+
+.popup-button-red:hover {
+    background-color: #B71C1C;
+    transform: scale(1.05);
+}
+
+.popup-bottom-buttons {
+    display: flex;
+    justify-content: space-between; /* Push buttons to opposite ends */
+    align-items: center; /* Vertically align buttons */
+    width: 100%; /* Ensure the flexbox spans the full width of the container */
+    padding: 10px 0; /* Optional: Add some vertical padding */
+}

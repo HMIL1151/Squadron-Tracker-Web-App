@@ -204,10 +204,10 @@ const CadetsDashboard = ({ user }) => {
   return (
     <div className="table-dashboard-container">
       <div className="button-container">
-        <button className="table-button-red" onClick={() => setIsPopupOpen(true)}>
+        <button className="button-red" onClick={() => setIsPopupOpen(true)}>
           Discharge Cadet
         </button>
-        <button className="table-button" onClick={() => setIsAddPopupOpen(true)}>
+        <button className="button-green" onClick={() => setIsAddPopupOpen(true)}>
           Add Cadet
         </button>
       </div>
