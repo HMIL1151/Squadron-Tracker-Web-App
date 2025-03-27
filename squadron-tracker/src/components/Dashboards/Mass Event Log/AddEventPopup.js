@@ -255,14 +255,19 @@ const AddEventPopup = ({
             </div>
           )}
         </div>
-        <button className="popup-button" onClick={onAddEventClick}>
-          Add Event
-        </button>
-        <button className="popup-button cancel" onClick={closePopup}>
-          Cancel
-        </button>
+
+        <div className="popup-actions">
+            <button className="cancel-button" onClick={closePopup}>
+            Cancel
+            </button>
+            <button className="confirm-button" onClick={onAddEventClick}>
+            Add Event
+            </button>
+
+            </div>
+
+        </div>
       </div>
-    </div>
   );
 };
 
