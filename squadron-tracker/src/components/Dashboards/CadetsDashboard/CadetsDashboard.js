@@ -10,6 +10,7 @@ import LoadingPopup from "../LoadingPopup"; // Import the new LoadingPopup compo
 
 const CadetsDashboard = ({ user }) => {
   const [cadets, setCadets] = useState([]);
+  const [eventLogData, setEventLogData] = useState([]); // New state for event log data
   const [isAddPopupOpen, setIsAddPopupOpen] = useState(false);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [isConfirmationOpen, setIsConfirmationOpen] = useState(false);
@@ -47,16 +48,24 @@ const CadetsDashboard = ({ user }) => {
     CreatedAt: "createdAt",
   };
 
+  const fetchCadetsWithClassification = async () => {
+    setLoading(true); // Set loading to true before fetching data
+    const cadetsData = await fetchCollectionData("Cadets");
+
+    // Fetch Event Log data
+    const db = getFirestore();
+    const eventLogRef = collection(db, "Event Log");
+    const eventLogSnapshot = await getDocs(eventLogRef);
+    const eventLogData = eventLogSnapshot.docs.map((doc) => doc.data());
+
+    // Set cadets and event log data
+    setCadets(cadetsData);
+    setEventLogData(eventLogData); // Store event log data in state
+    setLoading(false); // Set loading to false after fetching data
+  };
+
   useEffect(() => {
-    const fetchCadets = async () => {
-      setLoading(true); // Set loading to true before fetching data
-      const cadetsData = await fetchCollectionData("Cadets");
-      setCadets(cadetsData);
-      setLoading(false); // Set loading to true before fetching data
-
-    };
-
-    fetchCadets();
+    fetchCadetsWithClassification();
   }, []);
 
   const handleDischarge = async () => {
@@ -109,10 +118,6 @@ const CadetsDashboard = ({ user }) => {
       const date = new Date(startDate);
       const formattedStartDate = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 
-      // Assign a random classification from classificationMap
-      const classificationKeys = Object.keys(classificationMap);
-      const randomClassification = classificationKeys[Math.floor(Math.random() * classificationKeys.length)];
-
       // Query Firestore to check if a cadet with the same forename and surname exists
       const cadetsRef = collection(db, "Cadets");
       const q = query(cadetsRef, where("forename", "==", forename), where("surname", "==", surname));
@@ -125,7 +130,6 @@ const CadetsDashboard = ({ user }) => {
 
       await addDoc(collection(db, "Cadets"), {
         addedBy: user.displayName,
-        classification: parseInt(randomClassification, 10), // Use the random classification
         createdAt: new Date(),
         flight: parseInt(flight, 10),
         forename,
@@ -150,9 +154,8 @@ const CadetsDashboard = ({ user }) => {
         rank: "",
       });
 
-      // Refresh the cadets list
-      const cadetsData = await fetchCollectionData("Cadets");
-      setCadets(cadetsData);
+      // Re-fetch cadets and recalculate classification
+      await fetchCadetsWithClassification(); // Ensure classification is recalculated
     } catch (error) {
       console.error("Error adding cadet:", error);
       alert("An error occurred while adding the cadet.");
@@ -195,12 +198,21 @@ const CadetsDashboard = ({ user }) => {
       return `${years} Yrs, ${months} Mos, ${days} Days`;
     })();
 
+    // Calculate classification dynamically
+    const matchingEvents = eventLogData.filter(
+      (event) =>
+        event.cadetName === `${cadet.forename} ${cadet.surname}` &&
+        event.examName !== ""
+    );
+
+    const classificationCount = matchingEvents.length + 1;
+
     return {
       ...Object.keys(cadetListColumnMapping).reduce((acc, key) => {
         acc[key] = cadet[cadetListColumnMapping[key]];
         return acc;
       }, {}),
-      Classification: classificationMap[cadet.classification], // Map classification to its label
+      Classification: classificationMap[classificationCount] || classificationCount, // Map classification to its label or use the count
       "Service Length": serviceLength,
       id: cadet.id,
     };

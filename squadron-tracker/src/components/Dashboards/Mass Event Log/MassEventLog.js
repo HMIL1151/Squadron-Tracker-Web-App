@@ -233,7 +233,7 @@ const MassEventLog = ({ user }) => {
           const badgePointsDoc = await getDoc(badgePointsDocRef);
           flightPoints = badgePointsDoc.data()[`${badgeLevel} Badge`] || 0; // Fetch points for the badge
         } else if (examName) {
-          eventDescription = `${examName} Exam`;
+          eventDescription = `${examName}`;
           const badgePointsDocRef = doc(db, "Flight Points", "Badge Points");
           const badgePointsDoc = await getDoc(badgePointsDocRef);
           flightPoints = badgePointsDoc.data()["Exam"] || 0; // Fetch points for the exam
