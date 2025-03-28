@@ -28,7 +28,7 @@ const MassEventLog = ({ user }) => {
   const [isEventPopupOpen, setIsEventPopupOpen] = useState(false);
   const [loading, setLoading] = useState(true); // Add loading state
 
-  const columns = ["Name", "Event", "Date", "Points"];
+  const columns = ["Name", "Record", "Date", "Points"];
 
   useEffect(() => {
     const fetchCadetNames = async () => {
@@ -253,7 +253,7 @@ const MassEventLog = ({ user }) => {
   
         formattedEvents.push({
           Name: event.cadetName,
-          Event: eventDescription,
+          Record: eventDescription, // Update key to "Record"
           Date: event.date,
           Points: flightPoints,
           AddedBy: event.addedBy,
@@ -298,7 +298,7 @@ const MassEventLog = ({ user }) => {
       {loading && <LoadingPopup />} {/* Show loading popup while loading */}
       <div className="button-container">
         <button className="button-green" onClick={() => setIsPopupOpen(true)}>
-          Add New Event
+          Add New Record
         </button>
       </div>
       <Table

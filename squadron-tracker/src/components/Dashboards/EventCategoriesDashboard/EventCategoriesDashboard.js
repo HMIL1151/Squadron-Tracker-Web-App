@@ -205,7 +205,7 @@ const EventCategoriesDashboard = () => {
           className={activeTab === "eventcategories" ? "active" : ""}
           onClick={() => setActiveTab("eventcategories")}
         >
-          Event Categories
+          Record Categories
         </button>
         <button
           className={activeTab === "badges" ? "active" : ""}
