@@ -13,7 +13,7 @@ const EventCategoriesDashboard = () => {
   const [badges, setBadges] = useState([]); // State for badges
   const [specialAwards, setSpecialAwards] = useState([]); // State for special awards
   const [badgePoints, setBadgePoints] = useState([]); // State for badge points
-  const [activeTab, setActiveTab] = useState("table"); // State to track active tab
+  const [activeTab, setActiveTab] = useState("eventcategories"); // Default to "Event Categories"
   const eventCategoryColumns = ["Category", "Points"];
   const badgeColumns = ["Badge Types"]; // Columns for badges
   const specialAwardsColumns = ["Special Awards"]; // Columns for special awards
@@ -50,6 +50,7 @@ const EventCategoriesDashboard = () => {
       console.error("Error fetching special awards:", error);
     }
   };
+
   const fetchEventCategories = async () => {
     try {
       const db = getFirestore();
@@ -123,8 +124,6 @@ const EventCategoriesDashboard = () => {
   };
 
   useEffect(() => {
-
-
     fetchSpecialAwards();
     fetchBadgePoints();
     fetchEventCategories();
