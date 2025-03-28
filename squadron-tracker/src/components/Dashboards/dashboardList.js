@@ -18,7 +18,7 @@ const dashboardList = [
   },
   {
     key: "eventcategoriesdashboard",
-    title: "Event Categories",
+    title: "Record Categories",
     component: EventCategoriesDashboard,
     adminOnly: false, // Accessible to all users
   },
