@@ -5,13 +5,34 @@ import Menu from "./components/Menu/Menu"; // Import the Menu component
 import { signOut } from "firebase/auth";
 import { auth } from "./firebase/firebase"; // Adjust the import path to your Firebase configuration
 import dashboardList from "./components/Dashboards/dashboardList";
+import { getFirestore, doc, getDoc } from "firebase/firestore/lite"; // Import Firestore functions
 
 const App = () => {
   const [user, setUser] = useState(null);
+  const [isAdmin, setIsAdmin] = useState(false); // Track if the user is an admin
   const [activeMenu, setActiveMenu] = useState("masseventlog");
 
-  const handleUserChange = (currentUser) => {
+  const handleUserChange = async (currentUser) => {
     setUser(currentUser);
+
+    if (currentUser) {
+      try {
+        const db = getFirestore();
+        const userDocRef = doc(db, "AuthorizedUsers", currentUser.uid);
+        const userDoc = await getDoc(userDocRef);
+
+        if (userDoc.exists() && userDoc.data().role === "admin") {
+          setIsAdmin(true); // Set admin status
+        } else {
+          setIsAdmin(false);
+        }
+      } catch (error) {
+        console.error("Error checking admin role:", error);
+        setIsAdmin(false);
+      }
+    } else {
+      setIsAdmin(false);
+    }
   };
 
   const handleLogout = () => {
@@ -27,6 +48,8 @@ const App = () => {
   };
 
   const renderMainContent = () => {
+
+
     const activeDashboard = dashboardList.find((d) => d.key === activeMenu);
     if (activeDashboard) {
       const DashboardComponent = activeDashboard.component;
@@ -56,7 +79,7 @@ const App = () => {
         </div>
       ) : (
         <>
-          <Menu activeMenu={activeMenu} setActiveMenu={setActiveMenu} />
+          <Menu activeMenu={activeMenu} setActiveMenu={setActiveMenu} isAdmin={isAdmin} />
           <main className="main-content">{renderMainContent()}</main>
         </>
       )}
