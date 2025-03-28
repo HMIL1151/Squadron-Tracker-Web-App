@@ -176,12 +176,12 @@ const Table = ({ columns, data, onRowClick, disableHover = false, width = "90%" 
           className="hoverbox"
           style={{
             position: 'absolute',
-            top: hoverbox.position.y + 10, // 10px offset
-            left: hoverbox.position.x + 20, // 10px offset
+            top: hoverbox.position.y - 50, // 10px offset
+            left: hoverbox.position.x - 180, // 10px offset
             backgroundColor: "white",
             padding: "5px",
             border: "1px solid gray",
-            borderRadius: "15px",
+            borderRadius: "10px",
             boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
             zIndex: 1000,
           }}

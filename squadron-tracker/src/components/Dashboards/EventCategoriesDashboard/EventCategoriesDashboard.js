@@ -5,6 +5,7 @@ import AddEntry from "./addEntry";
 import AddCategory from "./AddCategory"; // Import the new AddCategory component
 import AddBadgePoints from "./AddBadgePoints"; // Import the new AddBadgePoints component
 import EditPopup from "./EditPopup";
+import DeletePopup from "./DeletePopup"; // Import the DeletePopup component
 import "./EventCategoriesDashboard.css";
 import "../dashboardStyles.css";
 
@@ -24,6 +25,9 @@ const EventCategoriesDashboard = () => {
   const [isEditPopupOpen, setIsEditPopupOpen] = useState(false);
   const [editData, setEditData] = useState(null); // Holds the data of the row being edited
   const [editType, setEditType] = useState(""); // Tracks the type of table being edited
+  const [isDeletePopupOpen, setIsDeletePopupOpen] = useState(false);
+  const [deleteOptions, setDeleteOptions] = useState([]);
+  const [deleteType, setDeleteType] = useState("");
 
   const fetchSpecialAwards = async () => {
     try {
@@ -123,6 +127,69 @@ const EventCategoriesDashboard = () => {
     setIsEditPopupOpen(true);
   };
 
+  const handleDeleteClick = (type) => {
+    setDeleteType(type);
+    if (type === "eventcategories") {
+      setDeleteOptions(categories);
+    } else if (type === "badges") {
+      setDeleteOptions(badges);
+    } else if (type === "badgepoints") {
+      setDeleteOptions(badgePoints);
+    } else if (type === "specialawards") {
+      setDeleteOptions(specialAwards);
+    }
+    setIsDeletePopupOpen(true);
+  };
+
+  const handleDeleteConfirm = async (selectedItem) => {
+    const db = getFirestore();
+    const docRef = doc(
+      db,
+      "Flight Points",
+      deleteType === "eventcategories"
+        ? "Event Category Points"
+        : deleteType === "badgepoints"
+        ? "Badge Points"
+        : deleteType === "badges"
+        ? "Badges"
+        : "Special Awards"
+    );
+
+    try {
+      if (deleteType === "eventcategories" || deleteType === "badgepoints") {
+        // Delete key-value pair
+        await updateDoc(docRef, { [selectedItem]: deleteField() });
+      } else {
+        // Delete from array
+        const arrayName =
+          deleteType === "badges" ? "Badge Types" : "Special Awards";
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          const updatedArray = data[arrayName].filter(
+            (item) => item !== selectedItem
+          );
+          await updateDoc(docRef, { [arrayName]: updatedArray });
+        }
+      }
+
+      // Refresh the table data
+      if (deleteType === "eventcategories") {
+        fetchEventCategories();
+      } else if (deleteType === "badgepoints") {
+        fetchBadgePoints();
+      } else if (deleteType === "badges") {
+        fetchBadges();
+      } else if (deleteType === "specialawards") {
+        fetchSpecialAwards();
+      }
+    } catch (error) {
+      console.error("Error deleting item:", error);
+    }
+
+    setIsDeletePopupOpen(false);
+  };
+
   useEffect(() => {
     fetchSpecialAwards();
     fetchBadgePoints();
@@ -164,12 +231,20 @@ const EventCategoriesDashboard = () => {
       <div className="content-area">
         {activeTab === "eventcategories" && (
           <div style={{ textAlign: "center" }}>
-            <button
-              className="button-green"
-              onClick={() => setIsAddCategoryOpen(true)}
-            >
-              Add New Category
-            </button>
+            <div className="button-container">
+              <button
+                className="button-green"
+                onClick={() => setIsAddCategoryOpen(true)}
+              >
+                Add New Category
+              </button>
+              <button
+                className="button-red"
+                onClick={() => handleDeleteClick("eventcategories")}
+              >
+                Delete Category
+              </button>
+            </div>
             <Table
               columns={eventCategoryColumns}
               data={categories}
@@ -188,9 +263,17 @@ const EventCategoriesDashboard = () => {
         )}
         {activeTab === "badges" && (
           <div style={{ textAlign: "center" }}>
-            <button className="button-green" onClick={() => setIsAddEntryOpen(true)}>
-              Add New Badge Type
-            </button>
+            <div className="button-container">
+              <button className="button-green" onClick={() => setIsAddEntryOpen(true)}>
+                Add New Badge
+              </button>
+              <button
+                className="button-red"
+                onClick={() => handleDeleteClick("badges")}
+              >
+                Delete Badge
+              </button>
+            </div>
             <Table
               columns={badgeColumns}
               data={badges}
@@ -212,12 +295,20 @@ const EventCategoriesDashboard = () => {
         )}
         {activeTab === "badgepoints" && (
           <div style={{ textAlign: "center" }}>
-            <button
-              className="button-green"
-              onClick={() => setIsAddBadgePointsOpen(true)}
-            >
-              Add Badge Points
-            </button>
+            <div className="button-container">
+              <button
+                className="button-green"
+                onClick={() => setIsAddBadgePointsOpen(true)}
+              >
+                Add Badge Type
+              </button>
+              <button
+                className="button-red"
+                onClick={() => handleDeleteClick("badgepoints")}
+              >
+                Delete Badge Type
+              </button>
+            </div>
             <Table
               columns={badgePointsColumns}
               data={badgePoints}
@@ -236,9 +327,14 @@ const EventCategoriesDashboard = () => {
         )}
         {activeTab === "specialawards" && (
           <div style={{ textAlign: "center" }}>
-            <button className="button-green" onClick={() => setIsAddEntryOpen(true)}>
-              Add New Special Award
-            </button>
+            <div className="button-container">
+              <button className="button-green" onClick={() => setIsAddEntryOpen(true)}>
+                Add New Special Award
+              </button>
+              <button className="button-red" onClick={() => handleDeleteClick("specialawards")}>
+                Delete Special Award
+              </button>
+            </div>
             <Table
               columns={specialAwardsColumns}
               data={specialAwards}
@@ -329,6 +425,22 @@ const EventCategoriesDashboard = () => {
           type={editType}
         />
       )}
+      <DeletePopup
+        isOpen={isDeletePopupOpen}
+        onClose={() => setIsDeletePopupOpen(false)}
+        onConfirm={handleDeleteConfirm}
+        options={deleteOptions}
+        labelKey={
+          deleteType === "eventcategories"
+            ? "Category"
+            : deleteType === "badgepoints"
+            ? "Badge Types"
+            : deleteType === "badges"
+            ? "Badge Types"
+            : "Special Awards"
+        }
+        className="add-entry-modal" // Use the same class as AddEntry for consistent styling
+      />
     </div>
   );
 };
