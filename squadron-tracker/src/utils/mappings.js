@@ -18,11 +18,14 @@ export const classificationMap = {
     1: "Junior",
     2: "Second Class",
     3: "First Class",
-    4: "Leading",
-    5: "Leading + 1",
-    6: "Leading + 2",
-    7: "Senior",
-    8: "Senior + 1",
-    9: "Senior + 2",
-    10: "Master"
+    4: "First Class +1",
+    5: "First Class +2",
+    6: "Leading",
+    7: "Leading +1",
+    8: "Leading +2",
+    9: "Senior",
+    10: "Senior +1",
+    11: "Senior +2",
+    12: "Master",
+    13: " "
     };
