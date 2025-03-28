@@ -6,6 +6,7 @@ import Table from "../../Table/Table";
 import PopupManager from "./CadetsDashboardPopupManager";
 import SuccessMessage from "../SuccessMessage";
 import "./CadetsDashboard.css";
+import LoadingPopup from "../LoadingPopup"; // Import the new LoadingPopup component
 
 const CadetsDashboard = ({ user }) => {
   const [cadets, setCadets] = useState([]);
@@ -15,6 +16,7 @@ const CadetsDashboard = ({ user }) => {
   const [isEditPopupOpen, setIsEditPopupOpen] = useState(false); // New state for edit popup
   const [successMessage, setSuccessMessage] = useState("");
   const [selectedCadet, setSelectedCadet] = useState("");
+  const [loading, setLoading] = useState(true); // Add loading state
   const [newCadet, setNewCadet] = useState({
     forename: "",
     surname: "",
@@ -47,8 +49,11 @@ const CadetsDashboard = ({ user }) => {
 
   useEffect(() => {
     const fetchCadets = async () => {
+      setLoading(true); // Set loading to true before fetching data
       const cadetsData = await fetchCollectionData("Cadets");
       setCadets(cadetsData);
+      setLoading(false); // Set loading to true before fetching data
+
     };
 
     fetchCadets();
@@ -203,6 +208,7 @@ const CadetsDashboard = ({ user }) => {
 
   return (
     <div className="table-dashboard-container">
+      {loading && <LoadingPopup />} {/* Show loading popup while loading */}
       <div className="button-container">
         <button className="button-red" onClick={() => setIsPopupOpen(true)}>
           Discharge Cadet
