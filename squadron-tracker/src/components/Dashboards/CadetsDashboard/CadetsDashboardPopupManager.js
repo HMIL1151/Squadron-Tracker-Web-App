@@ -108,7 +108,7 @@ const PopupManager = ({
         onClose={() => setIsConfirmationOpen(false)}
         onConfirm={handleDischarge}
       >
-        <h3>Are you sure?</h3>
+        <h3>Are You Sure?</h3>
         <p>Do you really want to discharge this cadet?</p>
       </Popup>
 

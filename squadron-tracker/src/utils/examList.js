@@ -1,20 +1,20 @@
 export const examList = [
     "Second Class Cadet",
     "First Class Cadet",
-    "Principles of Flight",
-    "Airmanship Knowledge",
-    "Basic Navigation using a Map and Compass",
-    "Air Power",
-    "Airframes",
-    "Piston Engine Propulsion",
-    "Jet Engine Propulsion",
-    "Principles of Rocketry",
-    "Aircraft Handling and Flying Techniques",
-    "Air Navigation",
-    "Pilot Navigation",
-    "Military Aircraft Systems",
-    "Satellite and Data Communications",
-    "Radio and Radar"
+    "Principles of Flight Exam",
+    "Airmanship Knowledge Exam",
+    "Basic Navigation using a Map and Compass Exam",
+    "Air Power Exam",
+    "Airframes Exam",
+    "Piston Engine Propulsion Exam",
+    "Jet Engine Propulsion Exam",
+    "Principles of Rocketry Exam",
+    "Aircraft Handling and Flying Techniques Exam",
+    "Air Navigation Exam",
+    "Pilot Navigation Exam",
+    "Military Aircraft Systems Exam",
+    "Satellite and Data Communications Exam",
+    "Radio and Radar Exam"
 ];
 
 export const badgeLevel = [
