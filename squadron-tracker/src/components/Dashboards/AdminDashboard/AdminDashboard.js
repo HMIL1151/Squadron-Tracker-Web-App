@@ -10,6 +10,7 @@ const AdminDashboard = () => {
   const [selectedRequest, setSelectedRequest] = useState(null); // Track the selected request for editing
   const [selectedRole, setSelectedRole] = useState("user"); // Track the selected role when granting access
   const [newStatus, setNewStatus] = useState(""); // Track the new status to be confirmed
+  const [activeTab, setActiveTab] = useState("pending"); // Track the active tab (default: "pending")
 
   useEffect(() => {
     const fetchRequests = async () => {
@@ -109,6 +110,8 @@ const AdminDashboard = () => {
     setNewStatus(""); // Reset the new status
   };
 
+  const filteredRequests = requests.filter((request) => request.progress === activeTab);
+
   if (loading) {
     return <p>Loading requests...</p>;
   }
@@ -120,11 +123,34 @@ const AdminDashboard = () => {
   return (
     <div className="admin-dashboard">
       <h2>Access Requests</h2>
-      {requests.length === 0 ? (
-        <p>No access requests found.</p>
+
+      {/* Tabs for filtering requests */}
+      <div className="tabs">
+        <button
+          className={activeTab === "pending" ? "active-tab" : ""}
+          onClick={() => setActiveTab("pending")}
+        >
+          Pending
+        </button>
+        <button
+          className={activeTab === "granted" ? "active-tab" : ""}
+          onClick={() => setActiveTab("granted")}
+        >
+          Granted
+        </button>
+        <button
+          className={activeTab === "denied" ? "active-tab" : ""}
+          onClick={() => setActiveTab("denied")}
+        >
+          Denied
+        </button>
+      </div>
+
+      {filteredRequests.length === 0 ? (
+        <p>No {capitalize(activeTab)} requests found.</p>
       ) : (
         <div className="requests-cards">
-          {requests.map((request) => (
+          {filteredRequests.map((request) => (
             <div
               key={request.id}
               className={`request-card ${request.progress.toLowerCase()}`}
