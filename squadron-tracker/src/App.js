@@ -10,7 +10,7 @@ import { getFirestore, doc, getDoc } from "firebase/firestore/lite"; // Import F
 const App = () => {
   const [user, setUser] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false); // Track if the user is an admin
-  const [activeMenu, setActiveMenu] = useState("masseventlog");
+  const [activeMenu, setActiveMenu] = useState(dashboardList[0]?.key || ""); // Default to the first dashboard key
 
   const handleUserChange = async (currentUser) => {
     setUser(currentUser);
@@ -39,7 +39,7 @@ const App = () => {
     signOut(auth)
       .then(() => {
         setUser(null); // Clear the user state
-        setActiveMenu("massseventlog"); // Reset the menu to a default state
+        setActiveMenu(dashboardList[0]?.key || ""); // Reset the menu to the first dashboard
         console.log("User successfully logged out.");
       })
       .catch((error) => {
@@ -48,14 +48,15 @@ const App = () => {
   };
 
   const renderMainContent = () => {
+    // If no active menu is set, default to the first dashboard in the list
+    const activeDashboard = dashboardList.find((d) => d.key === activeMenu) || dashboardList[0];
 
-
-    const activeDashboard = dashboardList.find((d) => d.key === activeMenu);
     if (activeDashboard) {
       const DashboardComponent = activeDashboard.component;
       return <DashboardComponent user={user} />;
     }
-    return <h2>Default</h2>;
+
+    return <h2>No Dashboards Available</h2>;
   };
 
   return (
