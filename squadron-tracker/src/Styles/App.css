@@ -104,7 +104,6 @@
   background-color: #ff1a1a;
 }
 
-
 /* Content Section */
 .main-content {
   grid-area: content;
@@ -112,4 +111,13 @@
   overflow-y: auto;
   box-sizing: border-box;
   position: relative; /* Add this to make it the parent for absolute positioning */
+}
+
+.version-number {
+  position: fixed;
+  bottom: 10px;
+  right: 10px;
+  font-size: 14px;
+  color: grey;
+  opacity: 0.8;
 }
