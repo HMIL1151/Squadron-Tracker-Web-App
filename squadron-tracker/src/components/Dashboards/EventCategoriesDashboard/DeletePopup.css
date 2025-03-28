@@ -1,0 +1,32 @@
+.delete-popup {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  max-width: 400px;
+  margin: auto;
+  text-align: center;
+}
+
+.popup-buttons {
+  margin-top: 20px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.button-red {
+  background-color: #ff4d4d;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.button-gray {
+  background-color: #ccc;
+  color: black;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+}

@@ -65,3 +65,11 @@
     width: 100%; /* Ensure the flexbox spans the full width of the container */
     padding: 10px 0; /* Optional: Add some vertical padding */
 }
+
+.button-container {
+    display: flex;
+    justify-content: center;
+    align-items: center; /* Ensures vertical alignment */
+    gap: 10px; /* Adds spacing between buttons */
+    margin-bottom: 10px;
+  }
