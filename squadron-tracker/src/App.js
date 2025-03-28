@@ -8,6 +8,7 @@ import dashboardList from "./components/Dashboards/dashboardList";
 import { getFirestore, doc, getDoc } from "firebase/firestore/lite"; // Import Firestore functions
 
 const App = () => {
+  const version = "v0.3.0"; // Define the version number
   const [user, setUser] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false); // Track if the user is an admin
   const [activeMenu, setActiveMenu] = useState(dashboardList[0]?.key || ""); // Default to the first dashboard key
@@ -84,6 +85,8 @@ const App = () => {
           <main className="main-content">{renderMainContent()}</main>
         </>
       )}
+      {/* Version number in the bottom-right corner */}
+      <div className="version-number">{version}</div>
     </div>
   );
 };
