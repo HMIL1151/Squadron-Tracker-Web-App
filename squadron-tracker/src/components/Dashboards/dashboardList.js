@@ -1,6 +1,7 @@
 import CadetsDashboard from "./CadetsDashboard/CadetsDashboard";
 import MassEventLog from "./Mass Event Log/MassEventLog";
 import EventCategoriesDashboard from "./EventCategoriesDashboard/EventCategoriesDashboard";
+import ClassificationDashboard from "./ClassificationDashboard/ClassificationDashboard";
 import AdminDashboard from "./AdminDashboard/AdminDashboard";
 
 const dashboardList = [
@@ -22,6 +23,15 @@ const dashboardList = [
     component: EventCategoriesDashboard,
     adminOnly: false, // Accessible to all users
   },
+  {
+    key: "classificationdashboard",
+    title: "Classification Dashboard",
+    component: ClassificationDashboard,
+    adminOnly: false, // Accessible to all users
+  },
+
+
+
   {
     key: "admin",
     title: "Admin Area",
