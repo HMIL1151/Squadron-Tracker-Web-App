@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { rankMap, flightMap, classificationMap } from "../../utils/mappings"; // Import the mappings
 import "./Table.css";
 
-const Table = ({ columns, data, onRowClick, disableHover = false, width = "90%", hoveredCadet }) => {
+const Table = ({ columns, data, onRowClick, disableHover = false, width = "90%", hoveredCadet, rowColors = [] }) => {
   const [filters, setFilters] = useState({});
   const [sortOrder, setSortOrder] = useState({});
   const [hoverbox, setHoverbox] = useState({ visible: false, content: "", position: { x: 0, y: 0 } });
@@ -131,6 +131,11 @@ const Table = ({ columns, data, onRowClick, disableHover = false, width = "90%",
     setHoverbox({ visible: false, content: "", position: { x: 0, y: 0 } });
   };
 
+  const getRowColor = (row) => {
+    const colorMapping = rowColors.find((mapping) => mapping.row === row.Name); // Assuming "Name" uniquely identifies a row
+    return colorMapping ? colorMapping.color : "white"; // Default to white if no color is specified
+  };
+
   return (
     <div className="table-container">
       <table className="custom-table" style={{ width }}>
@@ -159,8 +164,14 @@ const Table = ({ columns, data, onRowClick, disableHover = false, width = "90%",
               onMouseLeave={handleMouseLeave}
               onClick={() => onRowClick && onRowClick(row)} // Trigger onRowClick if provided
               className={`${
-                hoveredCadet === row.Name ? "highlighted-row" : ""
+                hoveredCadet && hoveredCadet === row.Name ? "highlighted-row" : ""
               } ${onRowClick ? "clickable-row" : ""}`}
+              style={{
+                backgroundColor:
+                  hoveredCadet && hoveredCadet === row.Name
+                    ? "#ffff99" // Highlighted row color
+                    : getRowColor(row), // Use rowColors mapping
+              }}
             >
               {columns.map((col, colIndex) => (
                 <td key={colIndex}>

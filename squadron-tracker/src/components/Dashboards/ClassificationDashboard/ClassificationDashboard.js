@@ -1,5 +1,3 @@
-//TODO: Crosshair when you hover over point, if below red line, it goes up to the red line then when it intersects, goes left to axis
-//TODO: Off/On track colouring in table
 //TODO: Hovering over point bolds table row and vice versa
 //TODO: Clicking on point or row opens popup which lists the 'exams' on that cadet's record
 //TODO: %On track and %Off track somewhere
@@ -184,6 +182,13 @@ const ClassificationDashboard = () => {
               // Add logic to handle row click, e.g., open a popup
             }}
             disableHover={true} // Pass the row click handler
+            rowColors={cadetData.map((cadet) => ({
+              row: cadet.cadetName,
+              color:
+                cadet.classification >= cadet.targetClassification
+                  ? "#d4edda" // Green for on-track
+                  : "#f8d7da", // Red for off-track
+            }))}
           />
         </div>
       </div>
