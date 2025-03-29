@@ -27,6 +27,7 @@ const ClassificationDashboard = () => {
   const [cadetData, setCadetData] = useState([]);
   const [dividerPosition, setDividerPosition] = useState(55); // Initial width of the Graph section in percentage
   const [isDragging, setIsDragging] = useState(false);
+  const [hoveredCadet, setHoveredCadet] = useState(null); // Track the hovered cadet
 
   // Function to determine target classification based on service length
   const getTargetClassification = (serviceLengthInMonths) => {
@@ -140,7 +141,7 @@ const ClassificationDashboard = () => {
       <div style={{ display: "flex", alignItems: "center", height: "100vh" }}>
         {/* Graph Section */}
         <div style={{ width: `${dividerPosition}%`, height: "100%", overflow: "hidden" }}>
-          <Graph cadetData={cadetData} />
+          <Graph cadetData={cadetData} onPointHover={setHoveredCadet} />
         </div>
 
         {/* Divider */}
@@ -177,6 +178,7 @@ const ClassificationDashboard = () => {
               Classification: cadet.classificationLabel,
               "Target Classification": cadet.targetClassificationLabel,
             }))}
+            hoveredCadet={hoveredCadet} // Pass hovered cadet name
             onRowClick={(row) => {
               console.log("Row clicked:", row);
               // Add logic to handle row click, e.g., open a popup

@@ -99,7 +99,7 @@ ChartJS.register(
   crosshairPlugin
 );
 
-const Graph = ({ cadetData }) => {
+const Graph = ({ cadetData, onPointHover }) => {
   const scatterData = {
     datasets: [
       {
@@ -156,6 +156,14 @@ const Graph = ({ cadetData }) => {
     interaction: {
       mode: "nearest",
       intersect: true,
+    },
+    onHover: (event, elements) => {
+      if (elements.length > 0) {
+        const index = elements[0].index;
+        onPointHover(cadetData[index].cadetName); // Notify parent of the hovered cadet
+      } else {
+        onPointHover(null); // Clear hover when no point is hovered
+      }
     },
     scales: {
       x: {
