@@ -48,6 +48,41 @@ const crosshairPlugin = {
         ctx.fillText(`${xValue}`, x, bottom + 18); // Adjust position as needed
       }
 
+      // Calculate intersection with the red "Target Classification" line
+      const targetDataset = chart.data.datasets.find(
+        (dataset) => dataset.label === "Target Classification"
+      );
+      if (targetDataset) {
+        const targetData = targetDataset.data;
+        for (let i = 0; i < targetData.length - 1; i++) {
+          const point1 = targetData[i];
+          const point2 = targetData[i + 1];
+
+          if (xValue >= point1.x && xValue <= point2.x) {
+            // Linear interpolation to find the y-value on the target line
+            const slope = (point2.y - point1.y) / (point2.x - point1.x);
+            const yTarget = point1.y + slope * (xValue - point1.x);
+            const yTargetPixel = chart.scales.y.getPixelForValue(yTarget);
+
+            // Only draw the lines if the hovered point is below the red line
+            if (chart.scales.y.getValueForPixel(y) < yTarget) {
+              // Vertical line: from point up to the target line
+              ctx.beginPath();
+              ctx.moveTo(x, y);
+              ctx.lineTo(x, yTargetPixel);
+              ctx.stroke();
+
+              // Horizontal line: from the intersection point to the y-axis
+              ctx.beginPath();
+              ctx.moveTo(x, yTargetPixel);
+              ctx.lineTo(left, yTargetPixel);
+              ctx.stroke();
+            }
+            break;
+          }
+        }
+      }
+
       ctx.restore();
     }
   },
@@ -157,7 +192,11 @@ const Graph = ({ cadetData }) => {
     },
   };
 
-  return <Scatter data={scatterData} options={scatterOptions} />;
+  return (
+    <div style={{ width: "100%", height: "100%" }}>
+      <Scatter data={scatterData} options={scatterOptions} />
+    </div>
+  );
 };
 
 export default Graph;
