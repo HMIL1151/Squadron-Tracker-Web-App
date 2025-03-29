@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { rankMap, flightMap, classificationMap } from "../../utils/mappings"; // Import the mappings
 import "./Table.css";
 
-const Table = ({ columns, data, onRowClick, disableHover = false, width = "90%", hoveredCadet, rowColors = [] }) => {
+const Table = ({ columns, data, onRowClick, onRowHover, disableHover = false, width = "90%", hoveredCadet, rowColors = [] }) => {
   const [filters, setFilters] = useState({});
   const [sortOrder, setSortOrder] = useState({});
   const [hoverbox, setHoverbox] = useState({ visible: false, content: "", position: { x: 0, y: 0 } });
@@ -159,9 +159,9 @@ const Table = ({ columns, data, onRowClick, disableHover = false, width = "90%",
           {sortedData.map((row, rowIndex) => (
             <tr
               key={rowIndex}
-              onMouseEnter={(e) => handleMouseEnter(row, e)} // Pass the row to handleMouseEnter
+              onMouseEnter={() => onRowHover && onRowHover(row.Name)} // Trigger hover
               onMouseMove={handleMouseMove}
-              onMouseLeave={handleMouseLeave}
+              onMouseLeave={() => onRowHover && onRowHover(null)} // Clear hover
               onClick={() => onRowClick && onRowClick(row)} // Trigger onRowClick if provided
               className={`${
                 hoveredCadet && hoveredCadet === row.Name ? "highlighted-row" : ""
