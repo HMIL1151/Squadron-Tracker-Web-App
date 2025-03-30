@@ -131,11 +131,11 @@ const Table = ({ columns, data, onRowClick, onRowHover, disableHover = false, wi
               onMouseLeave={() => onRowHover && onRowHover(null)} // Clear hover
               onClick={() => onRowClick && onRowClick(row)} // Trigger onRowClick if provided
               className={`${
-                hoveredCadet && hoveredCadet === row.Name ? "highlighted-row" : ""
+                hoveredCadet && hoveredCadet.includes(row.Name) ? "highlighted-row" : ""
               } ${onRowClick ? "clickable-row" : ""}`}
               style={{
                 backgroundColor:
-                  hoveredCadet && hoveredCadet === row.Name
+                  hoveredCadet && hoveredCadet.includes(row.Name)
                     ? "#ffff99" // Highlighted row color
                     : getRowColor(row), // Use rowColors mapping
               }}

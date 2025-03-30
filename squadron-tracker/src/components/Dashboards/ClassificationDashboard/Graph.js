@@ -102,36 +102,34 @@ ChartJS.register(
 const Graph = ({ cadetData, onPointHover, hoveredCadet, onPointClick }) => {
   const chartRef = useRef(null);
 
-  useEffect(() => {
-    if (hoveredCadet && chartRef.current) {
-      const chart = chartRef.current;
-      const datasetIndex = 0; // Assuming the "Cadets" dataset is at index 0
-      const cadetIndex = cadetData.findIndex((cadet) => cadet.cadetName === hoveredCadet);
+  const handleHover = (event) => {
+    if (!chartRef.current || !event) return; // Ensure chartRef and event are defined
 
-      if (cadetIndex !== -1) {
-        // Get the corresponding point element
-        const meta = chart.getDatasetMeta(datasetIndex);
-        const point = meta.data[cadetIndex];
+    const chart = chartRef.current;
+    const elements = chart.getElementsAtEventForMode(
+      event, // Pass the event directly
+      "nearest", // Interaction mode
+      { intersect: false }, // Include all points near the cursor
+      false
+    );
 
-        if (point) {
-          // Simulate hover behavior
-          chart.tooltip.setActiveElements([{ datasetIndex, index: cadetIndex }], {
-            x: point.x,
-            y: point.y,
-          });
-          chart.update();
+    if (elements.length > 0) {
+      const hoveredCadets = elements.map((element) => {
+        const { datasetIndex, index } = element;
+        if (chart.data.datasets[datasetIndex].label === "Cadets") {
+          return cadetData[index].cadetName; // Get the cadet name for each point
         }
-      }
-    } else if (chartRef.current) {
-      // Clear hover state when no cadet is hovered
-      const chart = chartRef.current;
-      chart.tooltip.setActiveElements([]);
-      chart.update();
+        return null;
+      }).filter(Boolean); // Remove any null values
+
+      onPointHover(hoveredCadets); // Pass all hovered cadet names to the callback
+    } else {
+      onPointHover([]); // Clear hover when no points are near the cursor
     }
-  }, [hoveredCadet, cadetData]);
+  };
 
   const handlePointClick = (event) => {
-    if (!chartRef.current) return;
+    if (!chartRef.current || !event) return;
 
     const chart = chartRef.current;
     const elements = chart.getElementsAtEventForMode(
@@ -144,8 +142,7 @@ const Graph = ({ cadetData, onPointHover, hoveredCadet, onPointClick }) => {
     if (elements.length > 0) {
       const { datasetIndex, index } = elements[0];
       if (chart.data.datasets[datasetIndex].label === "Cadets") {
-        const cadet = cadetData[index];
-        onPointClick(cadet.cadetName);
+        onPointClick(cadetData[index].cadetName);
       }
     }
   };
@@ -204,23 +201,19 @@ const Graph = ({ cadetData, onPointHover, hoveredCadet, onPointClick }) => {
       },
     },
     interaction: {
-      mode: "nearest",
-      intersect: true,
+      mode: "nearest", // Keep nearest mode
+      intersect: false, // Allow hovering near points without intersecting
+      axis: "xy", // Consider both x and y axes
+      distance: 1, // Set a proximity threshold (in pixels)
     },
-    onHover: (event, elements) => {
-      const chart = event.chart;
-      if (elements.length > 0) {
-        chart.canvas.style.cursor = "pointer"; // Change cursor to pointer
-        const { datasetIndex, index } = elements[0];
-        if (chart.data.datasets[datasetIndex].label === "Cadets") {
-          const cadet = cadetData[index];
-          onPointHover(cadet.cadetName); // Call the onPointHover callback
-        }
+    onHover: (event, chartElement) => {
+      if (chartElement.length > 0) {
+        handleHover(event.native); // Pass the native event
       } else {
-        chart.canvas.style.cursor = "default"; // Reset cursor
-        onPointHover(null); // Clear the hovered cadet when not hovering over a point
+        onPointHover([]); // Clear hover when no points are near the cursor
       }
     },
+    onClick: handlePointClick, // Attach the click handler
     scales: {
       x: {
         title: {
@@ -258,7 +251,7 @@ const Graph = ({ cadetData, onPointHover, hoveredCadet, onPointClick }) => {
 
   return (
     <div style={{ width: "100%", height: "100%" }}>
-      <Scatter ref={chartRef} data={scatterData} options={scatterOptions} onClick={handlePointClick} />
+      <Scatter ref={chartRef} data={scatterData} options={scatterOptions} />
     </div>
   );
 };
