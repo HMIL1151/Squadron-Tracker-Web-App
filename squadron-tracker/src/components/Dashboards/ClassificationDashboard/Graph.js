@@ -99,7 +99,7 @@ ChartJS.register(
   crosshairPlugin
 );
 
-const Graph = ({ cadetData, onPointHover, hoveredCadet }) => {
+const Graph = ({ cadetData, onPointHover, hoveredCadet, onPointClick }) => {
   const chartRef = useRef(null);
 
   useEffect(() => {
@@ -129,6 +129,27 @@ const Graph = ({ cadetData, onPointHover, hoveredCadet }) => {
       chart.update();
     }
   }, [hoveredCadet, cadetData]);
+
+  const handlePointClick = (event) => {
+    if (!chartRef.current) return;
+
+    const chart = chartRef.current;
+    const elements = chart.getElementsAtEventForMode(
+      event,
+      "nearest",
+      { intersect: true },
+      false
+    );
+
+    if (elements.length > 0) {
+      const { datasetIndex, index } = elements[0];
+      if (chart.data.datasets[datasetIndex].label === "Cadets") {
+        const cadet = cadetData[index];
+        console.log("Point clicked:", cadet.cadetName); // Debugging
+        onPointClick(cadet.cadetName);
+      }
+    }
+  };
 
   const scatterData = {
     datasets: [
@@ -187,17 +208,21 @@ const Graph = ({ cadetData, onPointHover, hoveredCadet }) => {
       mode: "nearest",
       intersect: true,
     },
-
-    //notify parent of hover event
     onHover: (event, elements) => {
+      const chart = event.chart;
       if (elements.length > 0) {
-        const index = elements[0].index;
-        onPointHover(cadetData[index].cadetName); 
+        chart.canvas.style.cursor = "pointer"; // Change cursor to pointer
+        const { datasetIndex, index } = elements[0];
+        if (chart.data.datasets[datasetIndex].label === "Cadets") {
+          const cadet = cadetData[index];
+          console.log("Hovered over point:", cadet.cadetName); // Debugging
+          onPointHover(cadet.cadetName); // Call the onPointHover callback
+        }
       } else {
-        onPointHover(null);
+        chart.canvas.style.cursor = "default"; // Reset cursor
+        onPointHover(null); // Clear the hovered cadet when not hovering over a point
       }
     },
-    
     scales: {
       x: {
         title: {
@@ -235,7 +260,7 @@ const Graph = ({ cadetData, onPointHover, hoveredCadet }) => {
 
   return (
     <div style={{ width: "100%", height: "100%" }}>
-      <Scatter ref={chartRef} data={scatterData} options={scatterOptions} />
+      <Scatter ref={chartRef} data={scatterData} options={scatterOptions} onClick={handlePointClick} />
     </div>
   );
 };
