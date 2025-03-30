@@ -169,7 +169,15 @@ const CadetsDashboard = ({ user }) => {
 
   const handleRowClick = (cadetId) => {
     const cadet = cadets.find((c) => c.id === cadetId); // Find the selected cadet
-    setSelectedCadet(cadet); // Set the selected cadet's data
+
+    if (cadet) {
+      setSelectedCadet({
+        ...cadet,
+        addedBy: cadet.addedBy || "Unknown", // Ensure addedBy is set
+        createdAt: cadet.createdAt || null, // Ensure createdAt is set
+      });
+    }
+
     setIsEditPopupOpen(true); // Open the edit popup
   };
 

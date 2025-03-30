@@ -97,39 +97,6 @@ const Table = ({ columns, data, onRowClick, onRowHover, disableHover = false, wi
     }
     return 0; // If values are equal, maintain original order
   });
-  
-  
-
-  // Hoverbox Event Handlers
-  const handleMouseEnter = (row, e) => {
-    if (disableHover) return;
-    const addedBy = row["AddedBy"]; // Access AddedBy by column name
-    const createdAtTimestamp = row["CreatedAt"]; // Access CreatedAt by column name
-  
-    // Convert Firestore Timestamp to JavaScript Date object
-    const createdAtDate = createdAtTimestamp.toDate(); // toDate() converts Firestore Timestamp to Date
-  
-    // Format the date as DD-MM-YYYY HH:MM
-    const formattedCreatedAt = createdAtDate.toLocaleString("en-GB", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: false, // Use 24-hour format
-    });
-  
-    setHoverbox({
-      visible: true,
-      content: `Added by ${addedBy} at ${formattedCreatedAt}`,
-      position: { x: e.clientX, y: e.clientY },
-    });
-  };
-
-  const handleMouseLeave = () => {
-    if (disableHover) return;
-    setHoverbox({ visible: false, content: "", position: { x: 0, y: 0 } });
-  };
 
   const getRowColor = (row) => {
     const colorMapping = rowColors.find((mapping) => mapping.row === row.Name); // Assuming "Name" uniquely identifies a row

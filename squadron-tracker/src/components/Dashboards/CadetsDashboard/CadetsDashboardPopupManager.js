@@ -136,13 +136,25 @@ const PopupManager = ({
         >
           <h2>Edit Cadet</h2>
           {editedCadet ? (
-            <CadetForm
-              newCadet={editedCadet} // Pass the edited cadet object
-              handleInputChange={handleEditInputChange} // Handle input changes
-              classificationMap={classificationMap}
-              flightMap={flightMap}
-              rankMap={rankMap}
-            />
+            <>
+              <CadetForm
+                newCadet={editedCadet} // Pass the edited cadet object
+                handleInputChange={handleEditInputChange} // Handle input changes
+                classificationMap={classificationMap}
+                flightMap={flightMap}
+                rankMap={rankMap}
+              />
+              {/* Display addedBy and createdAt at the bottom */}
+              <div style={{ marginTop: "0px", fontSize: "0.9em", color: "#555" }}> {/* Reduced marginTop */}
+                <p><strong>Added By:</strong> {editedCadet.addedBy || "Unknown"}</p>
+                <p>
+                  <strong>Created At:</strong>{" "}
+                  {editedCadet.createdAt && editedCadet.createdAt.seconds
+                    ? new Date(editedCadet.createdAt.seconds * 1000).toLocaleString()
+                    : "Unknown"}
+                </p>
+              </div>
+            </>
           ) : (
             <p>No cadet selected.</p>
           )}
