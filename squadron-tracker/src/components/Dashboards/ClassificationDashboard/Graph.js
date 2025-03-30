@@ -145,7 +145,6 @@ const Graph = ({ cadetData, onPointHover, hoveredCadet, onPointClick }) => {
       const { datasetIndex, index } = elements[0];
       if (chart.data.datasets[datasetIndex].label === "Cadets") {
         const cadet = cadetData[index];
-        console.log("Point clicked:", cadet.cadetName); // Debugging
         onPointClick(cadet.cadetName);
       }
     }
@@ -215,7 +214,6 @@ const Graph = ({ cadetData, onPointHover, hoveredCadet, onPointClick }) => {
         const { datasetIndex, index } = elements[0];
         if (chart.data.datasets[datasetIndex].label === "Cadets") {
           const cadet = cadetData[index];
-          console.log("Hovered over point:", cadet.cadetName); // Debugging
           onPointHover(cadet.cadetName); // Call the onPointHover callback
         }
       } else {
