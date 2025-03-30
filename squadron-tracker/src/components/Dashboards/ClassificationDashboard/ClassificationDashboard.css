@@ -1,6 +1,4 @@
 .table-dashboard-container table tr:hover td {
-    font-weight: bold;
     text-decoration: underline;
     cursor: pointer;
-    
   }

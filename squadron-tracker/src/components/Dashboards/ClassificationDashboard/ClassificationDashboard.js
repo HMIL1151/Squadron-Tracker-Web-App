@@ -157,7 +157,6 @@ const ClassificationDashboard = () => {
           <Graph
             cadetData={cadetData}
             onPointHover={(cadetName) => {
-              console.log("Hovered cadet from Graph:", cadetName); // Debugging
               setHoveredCadet(cadetName); // Update the hoveredCadet state
             }}
             hoveredCadet={hoveredCadet}
