@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import { Scatter } from "react-chartjs-2";
 import {
   Chart as ChartJS,
@@ -6,7 +6,7 @@ import {
   Tooltip,
   Legend,
   PointElement,
-  LineElement, // Register LineElement
+  LineElement,
   LinearScale,
   CategoryScale,
 } from "chart.js";
@@ -99,7 +99,37 @@ ChartJS.register(
   crosshairPlugin
 );
 
-const Graph = ({ cadetData, onPointHover }) => {
+const Graph = ({ cadetData, onPointHover, hoveredCadet }) => {
+  const chartRef = useRef(null);
+
+  useEffect(() => {
+    if (hoveredCadet && chartRef.current) {
+      const chart = chartRef.current;
+      const datasetIndex = 0; // Assuming the "Cadets" dataset is at index 0
+      const cadetIndex = cadetData.findIndex((cadet) => cadet.cadetName === hoveredCadet);
+
+      if (cadetIndex !== -1) {
+        // Get the corresponding point element
+        const meta = chart.getDatasetMeta(datasetIndex);
+        const point = meta.data[cadetIndex];
+
+        if (point) {
+          // Simulate hover behavior
+          chart.tooltip.setActiveElements([{ datasetIndex, index: cadetIndex }], {
+            x: point.x,
+            y: point.y,
+          });
+          chart.update();
+        }
+      }
+    } else if (chartRef.current) {
+      // Clear hover state when no cadet is hovered
+      const chart = chartRef.current;
+      chart.tooltip.setActiveElements([]);
+      chart.update();
+    }
+  }, [hoveredCadet, cadetData]);
+
   const scatterData = {
     datasets: [
       {
@@ -157,14 +187,17 @@ const Graph = ({ cadetData, onPointHover }) => {
       mode: "nearest",
       intersect: true,
     },
+
+    //notify parent of hover event
     onHover: (event, elements) => {
       if (elements.length > 0) {
         const index = elements[0].index;
-        onPointHover(cadetData[index].cadetName); // Notify parent of the hovered cadet
+        onPointHover(cadetData[index].cadetName); 
       } else {
-        onPointHover(null); // Clear hover when no point is hovered
+        onPointHover(null);
       }
     },
+    
     scales: {
       x: {
         title: {
@@ -202,7 +235,7 @@ const Graph = ({ cadetData, onPointHover }) => {
 
   return (
     <div style={{ width: "100%", height: "100%" }}>
-      <Scatter data={scatterData} options={scatterOptions} />
+      <Scatter ref={chartRef} data={scatterData} options={scatterOptions} />
     </div>
   );
 };

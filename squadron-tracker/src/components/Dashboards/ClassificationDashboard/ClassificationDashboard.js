@@ -1,4 +1,3 @@
-//TODO: Hovering over point bolds table row and vice versa
 //TODO: Clicking on point or row opens popup which lists the 'exams' on that cadet's record
 //TODO: %On track and %Off track somewhere
 //TODO: Handle overlapping points
@@ -100,6 +99,9 @@ const ClassificationDashboard = () => {
     fetchCadetsWithClassification();
   }, []);
 
+  useEffect(() => {
+  }, [cadetData]);
+
   const handleMouseDown = () => {
     setIsDragging(true);
   };
@@ -139,7 +141,7 @@ const ClassificationDashboard = () => {
       <div style={{ display: "flex", alignItems: "center", height: "100vh" }}>
         {/* Graph Section */}
         <div style={{ width: `${dividerPosition}%`, height: "100%", overflow: "hidden" }}>
-          <Graph cadetData={cadetData} onPointHover={setHoveredCadet} />
+          <Graph cadetData={cadetData} onPointHover={setHoveredCadet} hoveredCadet={hoveredCadet} />
         </div>
 
         {/* Divider */}
@@ -177,11 +179,11 @@ const ClassificationDashboard = () => {
               "Target Classification": cadet.targetClassificationLabel,
             }))}
             hoveredCadet={hoveredCadet} // Pass hovered cadet name
-            onRowClick={(row) => {
-              console.log("Row clicked:", row);
-              // Add logic to handle row click, e.g., open a popup
+
+            onRowHover={(rowName) => {
+              setHoveredCadet(rowName); // Update hoveredCadet state
             }}
-            disableHover={true} // Pass the row click handler
+            disableHover={false} // Ensure hover is enabled
             rowColors={cadetData.map((cadet) => ({
               row: cadet.cadetName,
               color:
