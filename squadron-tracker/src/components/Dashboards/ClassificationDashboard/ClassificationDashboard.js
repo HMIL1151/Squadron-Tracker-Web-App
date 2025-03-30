@@ -190,8 +190,11 @@ const ClassificationDashboard = () => {
               <Graph
                 key={dividerPosition} // Force re-render when dividerPosition changes
                 cadetData={cadetData}
-                onPointHover={(cadetName) => {
-                  setHoveredCadet(cadetName);
+                onPointHover={(cadetNames) => {
+                  // Only update state if the hovered cadet names have changed
+                  if (JSON.stringify(cadetNames) !== JSON.stringify(hoveredCadet)) {
+                    setHoveredCadet(cadetNames);
+                  }
                 }}
                 hoveredCadet={hoveredCadet}
                 onPointClick={(cadetName) => {
@@ -259,10 +262,20 @@ const ClassificationDashboard = () => {
               Classification: cadet.classificationLabel,
               "Target Classification": cadet.targetClassificationLabel,
             }))}
-            hoveredCadet={hoveredCadet} // Pass hovered cadet name
-
+            hoveredCadet={hoveredCadet} // Pass the hoveredCadet state here
             onRowHover={(rowName) => {
-              setHoveredCadet(rowName); // Update hoveredCadet state
+              if (rowName) {
+                setHoveredCadet((prev) => {
+                  // Add the hovered cadet name if not already in the array
+                  if (!prev.includes(rowName)) {
+                    return [...prev, rowName];
+                  }
+                  return prev;
+                });
+              } else {
+                // Clear the hovered cadet names when the mouse leaves
+                setHoveredCadet([]);
+              }
             }}
             disableHover={false} // Ensure hover is enabled
             rowColors={cadetData.map((cadet) => ({
