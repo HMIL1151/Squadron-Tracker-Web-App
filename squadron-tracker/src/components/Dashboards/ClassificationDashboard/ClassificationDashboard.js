@@ -1,8 +1,7 @@
-//TODO: Clicking on point or row opens popup which lists the 'exams' on that cadet's record
 //TODO: %On track and %Off track somewhere
 //TODO: Handle overlapping points
 
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useRef } from "react";
 import { fetchCollectionData } from "../../../firebase/firestoreUtils"; // Assuming this utility exists
 import { getFirestore, collection, getDocs } from "firebase/firestore/lite"; // Firestore imports
 import { classificationMap } from "../../../utils/mappings"; // Import classificationMap
@@ -21,6 +20,27 @@ import "./ClassificationDashboard.css"; // Import CSS for styling
 
 // Register Chart.js components
 ChartJS.register(Title, Tooltip, Legend, PointElement, LinearScale);
+
+const GraphContainer = ({ children }) => {
+  const containerRef = useRef();
+
+  useEffect(() => {
+    const currentRef = containerRef.current; // Copy the ref value to a local variable
+    const observer = new ResizeObserver(() => {
+      // Trigger a re-render or notify the Graph of size changes
+    });
+    if (currentRef) {
+      observer.observe(currentRef);
+    }
+    return () => {
+      if (currentRef) {
+        observer.unobserve(currentRef); // Use the local variable in cleanup
+      }
+    };
+  }, []);
+
+  return <div ref={containerRef} style={{ width: "100%", height: "100%" }}>{children}</div>;
+};
 
 const ClassificationDashboard = () => {
   const [cadetData, setCadetData] = useState([]);
@@ -147,25 +167,61 @@ const ClassificationDashboard = () => {
     };
   }, [isDragging, handleMouseMove, handleMouseUp]);
 
+  // Calculate the percentage of cadets on track
+  const calculateOnTrackPercentage = () => {
+    if (cadetData.length === 0) return 0; // Return 0 if there are no cadets
+    const onTrackCount = cadetData.filter(
+      (cadet) => cadet.classification >= cadet.targetClassification
+    ).length;
+    return (onTrackCount / cadetData.length) * 100; // Ensure this always returns a number
+  };
+
+  const onTrackPercentage = calculateOnTrackPercentage();
+
   return (
     <div>
       <h1>Classification Dashboard</h1>
       {/* Split content into two halves */}
       <div style={{ display: "flex", alignItems: "center", height: "100vh" }}>
         {/* Graph Section */}
-        <div style={{ width: `${dividerPosition}%`, height: "100%", overflow: "hidden" }}>
-          <Graph
-            cadetData={cadetData}
-            onPointHover={(cadetName) => {
-              setHoveredCadet(cadetName); // Update the hoveredCadet state
-            }}
-            hoveredCadet={hoveredCadet}
-            onPointClick={(cadetName) => {
-              const cadet = cadetData.find((c) => c.cadetName === cadetName);
-              if (cadet) openPopup(cadet.cadetName, cadet.classificationLabel);
-            }}
-          />
+        <div style={{ width: `${dividerPosition}%`, height: "100%", overflow: "visible" }}>
+          <GraphContainer>
+            <div style={{ display: "block", width: "100%", textAlign: "center" }}>
+              <Graph
+                key={dividerPosition} // Force re-render when dividerPosition changes
+                cadetData={cadetData}
+                onPointHover={(cadetName) => {
+                  setHoveredCadet(cadetName);
+                }}
+                hoveredCadet={hoveredCadet}
+                onPointClick={(cadetName) => {
+                  const cadet = cadetData.find((c) => c.cadetName === cadetName);
+                  if (cadet) openPopup(cadet.cadetName, cadet.classificationLabel);
+                }}
+              />
+              {/* Percentage On Track Graphic */}
+              <div style={{ marginTop: "15px", display: "flex", justifyContent: "center" }}>
+                <div
+                  style={{
+                    backgroundColor: "#e9ecef", // Neutral light gray background
+                    border: "1px solid #6c757d", // Subtle gray border
+                    borderRadius: "8px", // Slightly rounded corners
+                    padding: "10px 15px", // Padding inside the box
+                    boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)", // Subtle shadow for depth
+                    textAlign: "center", // Center the text
+                    width: "fit-content", // Adjust width to fit content
+                  }}
+                >
+                  <h3 style={{ color: "#343a40", margin: 0, fontSize: "1.2rem" }}>
+                    {onTrackPercentage.toFixed(1)}% On Track
+                  </h3>
+                </div>
+              </div>
+            </div>
+          </GraphContainer>
         </div>
+
+        
 
         {/* Divider */}
         <div
@@ -188,6 +244,7 @@ const ClassificationDashboard = () => {
             height: "100%", // Ensure it takes the full height of the container
           }}
         >
+          
           <div className="table-dashboard-container">
           <Table
             columns={[
