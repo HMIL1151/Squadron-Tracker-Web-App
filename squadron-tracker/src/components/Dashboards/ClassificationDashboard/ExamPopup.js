@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { getFirestore, collection, getDocs, query, where } from "firebase/firestore/lite";
+import { examList } from "../../../utils/examList"; // Import the examList
 import "./ExamPopup.css"; // Optional: Add styles for the popup
 
 const ExamPopup = ({ isOpen, onClose, cadetName, classification }) => {
@@ -23,7 +24,13 @@ const ExamPopup = ({ isOpen, onClose, cadetName, classification }) => {
         const fetchedExams = querySnapshot.docs
           .map((doc) => doc.data().examName)
           .filter((examName) => examName && examName.trim() !== ""); // Ensure examName is not blank
-        setExams(fetchedExams);
+
+        // Sort the exams based on the order in examList
+        const sortedExams = fetchedExams.sort(
+          (a, b) => examList.indexOf(a) - examList.indexOf(b)
+        );
+
+        setExams(sortedExams);
       } catch (error) {
         console.error("Error fetching exams:", error);
         setExams([]); // Reset exams on error
@@ -37,6 +44,31 @@ const ExamPopup = ({ isOpen, onClose, cadetName, classification }) => {
     }
   }, [isOpen, cadetName]);
 
+  // Close the popup when clicking outside of it
+  useEffect(() => {
+    const handleOutsideClick = (event) => {
+      if (isOpen && event.target.classList.contains("popup-overlay")) {
+        onClose();
+      }
+    };
+
+    const handleEscKey = (event) => {
+      if (isOpen && event.key === "Escape") {
+        onClose();
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener("click", handleOutsideClick);
+      document.addEventListener("keydown", handleEscKey);
+    }
+
+    return () => {
+      document.removeEventListener("click", handleOutsideClick);
+      document.removeEventListener("keydown", handleEscKey);
+    };
+  }, [isOpen, onClose]);
+
   if (!isOpen) return null;
 
   return (
@@ -48,17 +80,17 @@ const ExamPopup = ({ isOpen, onClose, cadetName, classification }) => {
         <h2>Cadet Details</h2>
         <p><strong>Name:</strong> {cadetName}</p>
         <p><strong>Classification:</strong> {classification}</p>
-        <h3>Classification Records</h3>
+        <h3>Classification Records:</h3>
         {loading ? (
           <p>Loading exams...</p>
         ) : exams.length > 0 ? (
           <div>
             {exams.map((exam, index) => (
-              <p key={index}>{exam}</p> // Display each exam as a plain paragraph
+              <span key={index} className="exam-item">{exam}</span> // Add a class for styling
             ))}
           </div>
         ) : (
-          <p>No exams found for this cadet.</p>
+          <p>No classification records found for this cadet.</p>
         )}
       </div>
     </div>

@@ -29,3 +29,18 @@
   font-size: 20px;
   cursor: pointer;
 }
+
+.exam-item {
+    display: block; /* Ensures each span is on a new line */
+    margin-bottom: 5px; /* Optional: Add spacing between lines */
+  }
+
+  .remove-button {
+    background: #D32F2F;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    margin-top: 20px;
+    cursor: pointer;
+    border-radius: 4px;
+  }
