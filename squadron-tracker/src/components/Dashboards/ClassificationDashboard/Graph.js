@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useRef } from "react";
 import { Scatter } from "react-chartjs-2";
 import {
   Chart as ChartJS,

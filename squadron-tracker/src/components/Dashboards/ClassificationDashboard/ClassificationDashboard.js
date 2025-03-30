@@ -180,7 +180,6 @@ const ClassificationDashboard = () => {
 
   return (
     <div>
-      <h1>Classification Dashboard</h1>
       {/* Split content into two halves */}
       <div style={{ display: "flex", alignItems: "center", height: "100vh" }}>
         {/* Graph Section */}
