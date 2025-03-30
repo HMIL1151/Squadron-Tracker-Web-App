@@ -16,6 +16,8 @@ import {
 } from "chart.js";
 import Graph from "./Graph"; // Moved this import to the top
 import Table from "../../Table/Table"; // Import the Table component
+import ExamPopup from "./ExamPopup"; // Import ExamPopup component
+import "./ClassificationDashboard.css"; // Import CSS for styling
 
 // Register Chart.js components
 ChartJS.register(Title, Tooltip, Legend, PointElement, LinearScale);
@@ -25,6 +27,17 @@ const ClassificationDashboard = () => {
   const [dividerPosition, setDividerPosition] = useState(55); // Initial width of the Graph section in percentage
   const [isDragging, setIsDragging] = useState(false);
   const [hoveredCadet, setHoveredCadet] = useState(null); // Track the hovered cadet
+  const [isPopupOpen, setIsPopupOpen] = useState(false);
+  const [selectedCadet, setSelectedCadet] = useState({ name: "", classification: "" });
+
+  const openPopup = (cadetName, classification) => {
+    setSelectedCadet({ name: cadetName, classification });
+    setIsPopupOpen(true);
+  };
+
+  const closePopup = () => {
+    setIsPopupOpen(false);
+  };
 
   // Function to determine target classification based on service length
   const getTargetClassification = (serviceLengthInMonths) => {
@@ -141,7 +154,18 @@ const ClassificationDashboard = () => {
       <div style={{ display: "flex", alignItems: "center", height: "100vh" }}>
         {/* Graph Section */}
         <div style={{ width: `${dividerPosition}%`, height: "100%", overflow: "hidden" }}>
-          <Graph cadetData={cadetData} onPointHover={setHoveredCadet} hoveredCadet={hoveredCadet} />
+          <Graph
+            cadetData={cadetData}
+            onPointHover={(cadetName) => {
+              console.log("Hovered cadet from Graph:", cadetName); // Debugging
+              setHoveredCadet(cadetName); // Update the hoveredCadet state
+            }}
+            hoveredCadet={hoveredCadet}
+            onPointClick={(cadetName) => {
+              const cadet = cadetData.find((c) => c.cadetName === cadetName);
+              if (cadet) openPopup(cadet.cadetName, cadet.classificationLabel);
+            }}
+          />
         </div>
 
         {/* Divider */}
@@ -165,6 +189,7 @@ const ClassificationDashboard = () => {
             height: "100%", // Ensure it takes the full height of the container
           }}
         >
+          <div className="table-dashboard-container">
           <Table
             columns={[
               "Name",
@@ -191,9 +216,23 @@ const ClassificationDashboard = () => {
                   ? "#d4edda" // Green for on-track
                   : "#f8d7da", // Red for off-track
             }))}
+            onRowClick={(rowName) => {
+              const cadetName = rowName.Name; // Extract the Name property
+              const cadet = cadetData.find((c) => c.cadetName === cadetName);
+              if (cadet) openPopup(cadet.cadetName, cadet.classificationLabel);
+            }}
           />
+          </div>
         </div>
       </div>
+      <ExamPopup
+        isOpen={isPopupOpen}
+        onClose={() => {
+          closePopup();
+        }}
+        cadetName={selectedCadet.name}
+        classification={selectedCadet.classification}
+      />
     </div>
   );
 };
