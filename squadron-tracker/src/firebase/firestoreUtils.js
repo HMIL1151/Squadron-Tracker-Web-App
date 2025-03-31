@@ -163,3 +163,34 @@ export const getPointsForAllCadets = async () => {
     return [];
   }
 };
+
+export const getCadetFlight = async (cadetName) => {
+  try {
+    const cadetsData = await fetchCollectionData("Cadets");
+    const cadet = cadetsData.find((cadet) => `${cadet.forename} ${cadet.surname}` === cadetName);
+
+    if (cadet) {
+      console.log(`Flight for Cadet ${cadetName}:`, cadet.flight);
+      return cadet.flight;
+    } else {
+      console.warn(`Cadet ${cadetName} not found in the database.`);
+      return null;
+    }
+  } catch (error) {
+    console.error(`Error fetching flight for cadet ${cadetName}:`, error);
+    return null;
+  }
+};
+
+export const getAllCadetNames = async () => {
+  try {
+    const cadetsData = await fetchCollectionData("Cadets");
+    const cadetNames = cadetsData.map((cadet) => `${cadet.forename} ${cadet.surname}`);
+    console.log("All Cadet Names:", cadetNames);
+    return cadetNames;
+  } catch (error) {
+    console.error("Error fetching all cadet names:", error);
+    return [];
+  }
+};
+

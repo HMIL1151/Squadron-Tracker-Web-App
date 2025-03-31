@@ -1,7 +1,7 @@
 //TODO: Mass add Cadets from old tracker/from CSV file
 
 import React, { useState, useEffect } from "react";
-import { fetchCollectionData, getPointsForAllCadets } from "../../../firebase/firestoreUtils";
+import { fetchCollectionData } from "../../../firebase/firestoreUtils";
 import { getFirestore, collection, addDoc, doc, deleteDoc, query, where, getDocs } from "firebase/firestore/lite";
 import { rankMap, flightMap, classificationMap } from "../../../utils/mappings";
 import Table from "../../Table/Table";
@@ -53,9 +53,6 @@ const CadetsDashboard = ({ user }) => {
   const fetchCadetsWithClassification = async () => {
     setLoading(true); // Set loading to true before fetching data
     const cadetsData = await fetchCollectionData("Cadets");
-    const allPoints = await getPointsForAllCadets();
-    console.log("All Points:", allPoints); // Log all points for debugging
-
     // Fetch Event Log data
     const db = getFirestore();
     const eventLogRef = collection(db, "Event Log");

@@ -8,6 +8,7 @@ import MassEventLog from ".././Mass Event Log/MassEventLog";
 import EventCategoriesDashboard from "../Event Categories Dashboard/EventCategoriesDashboard";
 import ClassificationDashboard from "../Classification Dashboard/ClassificationDashboard";
 import AdminDashboard from "../Admin Dashboard/AdminDashboard";
+import FightPointsDashboard from "../Flight Points Dashboard/FightPointsDashboard";
 
 const dashboardList = [
   {
@@ -34,7 +35,12 @@ const dashboardList = [
     component: ClassificationDashboard,
     adminOnly: false, // Accessible to all users
   },
-
+  {
+    key: "flightpointsdashboard",
+    title: "Flight Points Dashboard",
+    component: FightPointsDashboard,
+    adminOnly: false, // Accessible to all users
+  },
 
 
   {
