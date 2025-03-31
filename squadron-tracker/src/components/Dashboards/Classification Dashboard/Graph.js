@@ -230,7 +230,6 @@ const Graph = ({ cadetData, onPointHover, hoveredCadet, onPointClick }) => {
       },
     },
     interaction: {
-      mode: "nearest",
       intersect: false,
       axis: "xy",
     },
