@@ -16,9 +16,7 @@ const FightPointsDashboard = () => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                console.log("Fetching cadet names...");
                 const cadetNames = await getAllCadetNames();
-                console.log("Cadet names fetched:", cadetNames);
 
                 const flightPoints = {}; // To store total points for each flight
 
@@ -27,7 +25,6 @@ const FightPointsDashboard = () => {
                         const pointsEarned = await getTotalPointsForCadet(cadetName, year);
                         const flight = await getCadetFlight(cadetName); // Fetch the flight for each cadet
 
-                        console.log(`Cadet: ${cadetName}, Points: ${pointsEarned}, Flight: ${flight}`);
 
                         // Calculate total points for the flight
                         if (!flightPoints[flight]) {
@@ -39,8 +36,6 @@ const FightPointsDashboard = () => {
                     })
                 );
 
-                console.log("Points data fetched:", pointsData);
-                console.log("Flight points map:", flightPoints);
 
                 setCadetPoints(pointsData);
                 setFlightPointsMap(flightPoints);
@@ -75,8 +70,6 @@ const FightPointsDashboard = () => {
         return acc;
     }, {});
 
-    console.log("Top cadets by flight:", topCadets);
-
     // Create rowColors array for the Table component
     const rowColors = cadetPoints.map(({ cadetName, flight }) => {
         let color = "white"; // Default color for all rows
@@ -93,7 +86,6 @@ const FightPointsDashboard = () => {
         };
     });
 
-    console.log("Row colors for table:", rowColors);
 
     return (
         <div>
