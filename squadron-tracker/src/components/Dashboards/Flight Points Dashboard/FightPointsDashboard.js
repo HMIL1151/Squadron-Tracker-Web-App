@@ -16,7 +16,9 @@ const FightPointsDashboard = () => {
     useEffect(() => {
         const fetchData = async () => {
             try {
+                console.log("Fetching cadet names...");
                 const cadetNames = await getAllCadetNames();
+                console.log("Cadet names fetched:", cadetNames);
 
                 const flightPoints = {}; // To store total points for each flight
 
@@ -24,6 +26,8 @@ const FightPointsDashboard = () => {
                     cadetNames.map(async (cadetName) => {
                         const pointsEarned = await getTotalPointsForCadet(cadetName, year);
                         const flight = await getCadetFlight(cadetName); // Fetch the flight for each cadet
+
+                        console.log(`Cadet: ${cadetName}, Points: ${pointsEarned}, Flight: ${flight}`);
 
                         // Calculate total points for the flight
                         if (!flightPoints[flight]) {
@@ -34,6 +38,9 @@ const FightPointsDashboard = () => {
                         return { cadetName, pointsEarned, flight };
                     })
                 );
+
+                console.log("Points data fetched:", pointsData);
+                console.log("Flight points map:", flightPoints);
 
                 setCadetPoints(pointsData);
                 setFlightPointsMap(flightPoints);
@@ -52,12 +59,39 @@ const FightPointsDashboard = () => {
     }
 
     const formattedData = cadetPoints.map(({ cadetName, pointsEarned, flight }) => ({
-        "Cadet Name": cadetName,
+        "Name": cadetName,
         "Points Earned": pointsEarned,
         "Flight": flight,
     }));
 
+    // Define the colors array first
     const colors = ["#6C91C2", "#88C0A9", "#F4A261", "#E76F51", "#A8DADC"]; // Softer, pastel-like colors
+
+    // Determine the cadets with the most points in their flight
+    const topCadets = cadetPoints.reduce((acc, { cadetName, pointsEarned, flight }) => {
+        if (!acc[flight] || pointsEarned > acc[flight].pointsEarned) {
+            acc[flight] = { cadetName, pointsEarned };
+        }
+        return acc;
+    }, {});
+
+    console.log("Top cadets by flight:", topCadets);
+
+    // Create rowColors array for the Table component
+    const rowColors = cadetPoints.map(({ cadetName, flight }) => {
+        let color = "white"; // Default color for flight 1 and others
+        if (flight === 2 && topCadets[flight]?.cadetName === cadetName) {
+            color = colors[0]; // Use the first color in the bar chart for flight 2
+        } else if (flight === 3 && topCadets[flight]?.cadetName === cadetName) {
+            color = colors[1]; // Use the second color in the bar chart for flight 3
+        }
+        return {
+            row: cadetName,
+            color,
+        };
+    });
+
+    console.log("Row colors for table:", rowColors);
 
     return (
         <div>
@@ -91,14 +125,16 @@ const FightPointsDashboard = () => {
                         </option>
                     ))}
                 </select>
-
             </div>
 
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "20px" }}>
-                
                 {/* Table Section */}
                 <div style={{ flex: "1", minWidth: "300px" }}>
-                    <Table data={formattedData} columns={["Cadet Name", "Points Earned", "Flight"]} />
+                    <Table
+                        data={formattedData}
+                        columns={["Name", "Points Earned", "Flight"]}
+                        rowColors={rowColors} // Pass the rowColors prop
+                    />
                 </div>
 
                 {/* Bar Chart Section */}
@@ -114,7 +150,7 @@ const FightPointsDashboard = () => {
 
                                 // Handle empty data or zero points for both flights
                                 const maxPoints = filteredPoints.length > 0 && Math.max(...filteredPoints) > 0 ? Math.max(...filteredPoints) : 0;
-                                const scaleFactor = maxPoints > 0 ? 400 / maxPoints : 0; // Scale only if maxPoints > 0
+                                const scaleFactor = maxPoints > 0 ? 500 / maxPoints : 0; // Scale only if maxPoints > 0
 
                                 return Object.entries(flightPointsMap)
                                     .filter(([flight]) => flight === "2" || flight === "3") // Only include flights 2 and 3
@@ -129,6 +165,7 @@ const FightPointsDashboard = () => {
                                                 position: "relative", // Enable positioning for the label
                                                 borderRadius: "5px", // Rounded corners for a modern look
                                                 boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)", // Subtle shadow for depth
+                                                transition: "height 0.5s ease-in-out", // Add smooth transition for height
                                             }}
                                         >
                                             {/* Points Label */}
