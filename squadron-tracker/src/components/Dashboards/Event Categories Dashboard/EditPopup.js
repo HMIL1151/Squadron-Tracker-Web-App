@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import "../dashboardStyles.css";
+import "../Dashboard Components/dashboardStyles.css";
 
 const EditPopup = ({ isOpen, onClose, onConfirm, data, type }) => {
   const [formData, setFormData] = useState({});

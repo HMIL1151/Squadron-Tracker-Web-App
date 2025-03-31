@@ -1,12 +1,14 @@
+//TODO: Mass add Cadets from old tracker/from CSV file
+
 import React, { useState, useEffect } from "react";
 import { fetchCollectionData } from "../../../firebase/firestoreUtils";
 import { getFirestore, collection, addDoc, doc, deleteDoc, query, where, getDocs } from "firebase/firestore/lite";
 import { rankMap, flightMap, classificationMap } from "../../../utils/mappings";
 import Table from "../../Table/Table";
 import PopupManager from "./CadetsDashboardPopupManager";
-import SuccessMessage from "../SuccessMessage";
+import SuccessMessage from "../Dashboard Components/SuccessMessage";
 import "./CadetsDashboard.css";
-import LoadingPopup from "../LoadingPopup"; // Import the new LoadingPopup component
+import LoadingPopup from "../Dashboard Components/LoadingPopup"; // Import the new LoadingPopup component
 
 const CadetsDashboard = ({ user }) => {
   const [cadets, setCadets] = useState([]);

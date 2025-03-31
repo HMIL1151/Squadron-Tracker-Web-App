@@ -4,7 +4,7 @@ import Auth from "./components/Auth/Auth";
 import Menu from "./components/Menu/Menu"; // Import the Menu component
 import { signOut } from "firebase/auth";
 import { auth } from "./firebase/firebase"; // Adjust the import path to your Firebase configuration
-import dashboardList from "./components/Dashboards/dashboardList";
+import dashboardList from "./components/Dashboards/Dashboard Components/dashboardList";
 import { getFirestore, doc, getDoc } from "firebase/firestore/lite"; // Import Firestore functions
 
 const App = () => {

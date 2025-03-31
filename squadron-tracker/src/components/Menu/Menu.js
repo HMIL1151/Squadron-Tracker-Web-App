@@ -1,5 +1,7 @@
+//TODO: Collapsing Menu
+
 import React from "react";
-import dashboardList from "../Dashboards/dashboardList";
+import dashboardList from "../Dashboards/Dashboard Components/dashboardList";
 import "./Menu.css";
 
 const Menu = ({ activeMenu, setActiveMenu, isAdmin }) => {

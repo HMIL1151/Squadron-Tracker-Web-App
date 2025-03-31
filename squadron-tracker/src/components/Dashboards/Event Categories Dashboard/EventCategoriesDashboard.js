@@ -7,7 +7,7 @@ import AddBadgePoints from "./AddBadgePoints"; // Import the new AddBadgePoints 
 import EditPopup from "./EditPopup";
 import DeletePopup from "./DeletePopup"; // Import the DeletePopup component
 import "./EventCategoriesDashboard.css";
-import "../dashboardStyles.css";
+import "../Dashboard Components/dashboardStyles.css";
 
 const EventCategoriesDashboard = () => {
   const [categories, setCategories] = useState([]);
