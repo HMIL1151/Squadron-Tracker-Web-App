@@ -10,8 +10,7 @@ export const fetchCollectionData = async (collectionName) => {
   return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
 };
 
-// Function to calculate total flight points for a given cadet
-export const getTotalPointsForCadet = async (cadetName) => {
+export const getTotalPointsForCadet = async (cadetName, year) => {
   try {
     const db = getFirestore(app);
 
@@ -28,8 +27,11 @@ export const getTotalPointsForCadet = async (cadetName) => {
     const eventCategoryPointsDoc = await getDoc(eventCategoryPointsDocRef);
     const eventCategoryPoints = eventCategoryPointsDoc.data();
 
-    // Filter events for the given cadet
-    const cadetEvents = eventsData.filter((event) => event.cadetName === cadetName);
+    // Filter events for the given cadet and year
+    const cadetEvents = eventsData.filter((event) => {
+      const eventYear = event.date?.substring(0, 4); // Extract the first 4 characters of the date string
+      return event.cadetName === cadetName && eventYear === String(year);
+    });
 
     // Calculate total points
     const totalPoints = cadetEvents.reduce((sum, event) => {
@@ -48,10 +50,10 @@ export const getTotalPointsForCadet = async (cadetName) => {
       return sum;
     }, 0);
 
-    console.log(`Total Points for Cadet ${cadetName}:`, totalPoints);
+    console.log(`Total Points for Cadet ${cadetName} in ${year}:`, totalPoints);
     return totalPoints;
   } catch (error) {
-    console.error(`Error fetching total points for cadet ${cadetName}:`, error);
+    console.error(`Error fetching total points for cadet ${cadetName} in ${year}:`, error);
     return 0;
   }
 };
@@ -75,7 +77,6 @@ export const getTotalPointsForFlight = async (flightNumber) => {
 
     const flightTotalPoints = totalPoints.reduce((sum, points) => sum + points, 0);
 
-    console.log(`Total Points for Flight ${flightNumber}:`, flightTotalPoints);
     return flightTotalPoints;
   } catch (error) {
     console.error(`Error fetching total points for flight ${flightNumber}:`, error);
@@ -114,7 +115,6 @@ export const getEventsForCadet = async (cadetName) => {
       });
     }
 
-    console.log(`Events for Cadet ${cadetName}:`, formattedEvents);
     return formattedEvents;
   } catch (error) {
     console.error(`Error fetching events for cadet ${cadetName}:`, error);
@@ -134,7 +134,6 @@ export const getBadgesForCadet = async (cadetName) => {
         date: event.date, // Include the date
       }));
 
-    console.log(`Badges for Cadet ${cadetName}:`, badges);
     return badges;
   } catch (error) {
     console.error(`Error fetching badges for cadet ${cadetName}:`, error);
@@ -156,7 +155,6 @@ export const getPointsForAllCadets = async () => {
       })
     );
 
-    console.log("Points for all cadets:", cadetPoints);
     return cadetPoints;
   } catch (error) {
     console.error("Error fetching points for all cadets:", error);
@@ -170,7 +168,6 @@ export const getCadetFlight = async (cadetName) => {
     const cadet = cadetsData.find((cadet) => `${cadet.forename} ${cadet.surname}` === cadetName);
 
     if (cadet) {
-      console.log(`Flight for Cadet ${cadetName}:`, cadet.flight);
       return cadet.flight;
     } else {
       console.warn(`Cadet ${cadetName} not found in the database.`);
@@ -186,11 +183,9 @@ export const getAllCadetNames = async () => {
   try {
     const cadetsData = await fetchCollectionData("Cadets");
     const cadetNames = cadetsData.map((cadet) => `${cadet.forename} ${cadet.surname}`);
-    console.log("All Cadet Names:", cadetNames);
     return cadetNames;
   } catch (error) {
     console.error("Error fetching all cadet names:", error);
     return [];
   }
 };
-
