@@ -11,7 +11,7 @@ export const rankMap = {
 export const flightMap = {
     1: "Staff Team",
     2: "Atlas",
-    3: "Tempe st"
+    3: "Tempest"
     };
 
 export const classificationMap = {
