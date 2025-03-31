@@ -1,4 +1,4 @@
-import { getFirestore, collection, getDocs } from "firebase/firestore/lite";
+import { getFirestore, collection, getDocs, doc, getDoc } from "firebase/firestore/lite";
 import { app } from "./firebase";
 
 // Function to fetch data from a specific Firestore collection
@@ -8,4 +8,116 @@ export const fetchCollectionData = async (collectionName) => {
   const snapshot = await getDocs(collectionRef);
 
   return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+};
+
+// Function to calculate total flight points for a given cadet
+export const getTotalPointsForCadet = async (cadetName) => {
+  try {
+    const db = getFirestore(app);
+
+    // Fetch events for the given cadet
+    const eventsData = await fetchCollectionData("Event Log");
+
+    // Fetch badge points
+    const badgePointsDocRef = doc(db, "Flight Points", "Badge Points");
+    const badgePointsDoc = await getDoc(badgePointsDocRef);
+    const badgePoints = badgePointsDoc.data();
+
+    // Fetch event category points
+    const eventCategoryPointsDocRef = doc(db, "Flight Points", "Event Category Points");
+    const eventCategoryPointsDoc = await getDoc(eventCategoryPointsDocRef);
+    const eventCategoryPoints = eventCategoryPointsDoc.data();
+
+    // Filter events for the given cadet
+    const cadetEvents = eventsData.filter((event) => event.cadetName === cadetName);
+
+    // Calculate total points
+    const totalPoints = cadetEvents.reduce((sum, event) => {
+      const { badgeCategory, badgeLevel, eventCategory, examName, specialAward } = event;
+
+      if (badgeCategory) {
+        return sum + Number(badgePoints[`${badgeLevel} Badge`] || 0);
+      } else if (examName) {
+        return sum + Number(badgePoints["Exam"] || 0);
+      } else if (eventCategory) {
+        return sum + Number(eventCategoryPoints[eventCategory] || 0);
+      } else if (specialAward) {
+        return sum + Number(badgePoints["Special"] || 0);
+      }
+
+      return sum;
+    }, 0);
+
+    console.log(`Total Points for Cadet ${cadetName}:`, totalPoints);
+    return totalPoints;
+  } catch (error) {
+    console.error(`Error fetching total points for cadet ${cadetName}:`, error);
+    return 0;
+  }
+};
+
+// Function to calculate total flight points for a given flight
+export const getTotalPointsForFlight = async (flightNumber) => {
+  try {
+    // Fetch all cadets
+    const cadetsData = await fetchCollectionData("Cadets");
+
+    // Filter cadets belonging to the given flight
+    const cadetsInFlight = cadetsData.filter((cadet) => cadet.flight === flightNumber);
+
+    // Calculate total points for the flight
+    const totalPoints = await Promise.all(
+      cadetsInFlight.map(async (cadet) => {
+        const cadetName = `${cadet.forename} ${cadet.surname}`;
+        return await getTotalPointsForCadet(cadetName);
+      })
+    );
+
+    const flightTotalPoints = totalPoints.reduce((sum, points) => sum + points, 0);
+
+    console.log(`Total Points for Flight ${flightNumber}:`, flightTotalPoints);
+    return flightTotalPoints;
+  } catch (error) {
+    console.error(`Error fetching total points for flight ${flightNumber}:`, error);
+    return 0;
+  }
+};
+
+export const getEventsForCadet = async (cadetName) => {
+  try {
+    const eventData = await fetchCollectionData("Event Log");
+    const cadetEvents = eventData.filter((event) => event.cadetName === cadetName);
+
+    const formattedEvents = [];
+
+    for (const event of cadetEvents) {
+      const { badgeCategory, badgeLevel, eventName, examName, specialAward, date } = event;
+
+      let eventDescription = "";
+
+      if (badgeCategory) {
+        eventDescription = `${badgeLevel} ${badgeCategory}`;
+      } else if (examName) {
+        eventDescription = `${examName}`;
+      } else if (eventName) {
+        eventDescription = eventName;
+      } else if (specialAward) {
+        eventDescription = specialAward;
+      } else {
+        console.warn(`Event for cadet ${cadetName} has missing fields:`, event);
+        continue; // Skip invalid events
+      }
+
+      formattedEvents.push({
+        event: eventDescription,
+        date: date,
+      });
+    }
+
+    console.log(`Events for Cadet ${cadetName}:`, formattedEvents);
+    return formattedEvents;
+  } catch (error) {
+    console.error(`Error fetching events for cadet ${cadetName}:`, error);
+    return [];
+  }
 };
