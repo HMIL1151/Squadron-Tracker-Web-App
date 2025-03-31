@@ -1,13 +1,15 @@
+//TODO: Mass add Events from old tracker/from CSV file
+
 import React, { useState, useEffect } from "react";
 import { fetchCollectionData } from "../../../firebase/firestoreUtils";
 import { getFirestore, doc, getDoc, addDoc, collection, deleteDoc } from "firebase/firestore/lite";
 import Table from "../../Table/Table";
 import AddEventPopup from "./AddEventPopup";
 import EventDetailsPopup from "./EventDetailsPopup"; // Import the new popup
-import LoadingPopup from "../LoadingPopup"; // Import the new LoadingPopup component
+import LoadingPopup from "../Dashboard Components/LoadingPopup"; // Import the new LoadingPopup component
 import "./MassEventLog.css";
-import "../dashboardStyles.css";
-import SuccessMessage from "../SuccessMessage";
+import "../Dashboard Components/dashboardStyles.css";
+import SuccessMessage from "../Dashboard Components/SuccessMessage";
 
 
 const MassEventLog = ({ user }) => {

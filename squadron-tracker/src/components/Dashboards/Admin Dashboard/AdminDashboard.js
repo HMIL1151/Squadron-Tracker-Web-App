@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { getFirestore, collection, getDocs, doc, updateDoc, setDoc, deleteDoc } from "firebase/firestore/lite";
 import "./AdminDashboard.css";
-import "../dashboardStyles.css";
+import "../Dashboard Components/dashboardStyles.css";
 
 const AdminDashboard = () => {
   const [requests, setRequests] = useState([]);

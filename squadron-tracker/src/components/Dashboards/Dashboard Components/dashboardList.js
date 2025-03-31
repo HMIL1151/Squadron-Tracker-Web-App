@@ -1,8 +1,13 @@
-import CadetsDashboard from "./CadetsDashboard/CadetsDashboard";
-import MassEventLog from "./Mass Event Log/MassEventLog";
-import EventCategoriesDashboard from "./EventCategoriesDashboard/EventCategoriesDashboard";
-import ClassificationDashboard from "./ClassificationDashboard/ClassificationDashboard";
-import AdminDashboard from "./AdminDashboard/AdminDashboard";
+//TODO: Flight Points Dashboard
+//TODO: End of Year Certificate Dashboard
+//TODO: Uniform & Attendance Dashboard
+//TODO: PTS Dashboard
+
+import CadetsDashboard from "../Cadets Dashboard/CadetsDashboard";
+import MassEventLog from ".././Mass Event Log/MassEventLog";
+import EventCategoriesDashboard from "../Event Categories Dashboard/EventCategoriesDashboard";
+import ClassificationDashboard from "../Classification Dashboard/ClassificationDashboard";
+import AdminDashboard from "../Admin Dashboard/AdminDashboard";
 
 const dashboardList = [
   {

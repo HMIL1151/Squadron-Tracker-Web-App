@@ -1,6 +1,8 @@
+//TODO: Cadet Profile Page
+
 import React from "react";
-import Form from "../Form";
-import "../dashboardStyles.css";
+import Form from "../Dashboard Components/Form";
+import "../Dashboard Components/dashboardStyles.css";
 
 const CadetForm = ({
   newCadet,

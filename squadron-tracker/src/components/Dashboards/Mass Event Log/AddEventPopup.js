@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import "./MassEventLog.css";
-import "../dashboardStyles.css"
+import "../Dashboard Components/dashboardStyles.css"
 import { examList, badgeLevel } from "../../../utils/examList";
 
 const AddEventPopup = ({
