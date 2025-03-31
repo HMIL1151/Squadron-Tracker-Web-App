@@ -121,3 +121,23 @@ export const getEventsForCadet = async (cadetName) => {
     return [];
   }
 };
+
+export const getBadgesForCadet = async (cadetName) => {
+  try {
+    const eventData = await fetchCollectionData("Event Log");
+    const cadetEvents = eventData.filter((event) => event.cadetName === cadetName);
+
+    const badges = cadetEvents
+      .filter((event) => event.badgeLevel && event.badgeCategory) // Filter only badge events
+      .map((event) => ({
+        badge: `${event.badgeLevel} ${event.badgeCategory}`, // Combine badgeLevel and badgeCategory
+        date: event.date, // Include the date
+      }));
+
+    console.log(`Badges for Cadet ${cadetName}:`, badges);
+    return badges;
+  } catch (error) {
+    console.error(`Error fetching badges for cadet ${cadetName}:`, error);
+    return [];
+  }
+};
