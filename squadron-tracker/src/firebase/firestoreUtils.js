@@ -141,3 +141,25 @@ export const getBadgesForCadet = async (cadetName) => {
     return [];
   }
 };
+
+export const getPointsForAllCadets = async () => {
+  try {
+    // Fetch all cadets
+    const cadetsData = await fetchCollectionData("Cadets");
+
+    // Calculate points for each cadet
+    const cadetPoints = await Promise.all(
+      cadetsData.map(async (cadet) => {
+        const cadetName = `${cadet.forename} ${cadet.surname}`;
+        const pointsEarned = await getTotalPointsForCadet(cadetName);
+        return { cadetName, pointsEarned };
+      })
+    );
+
+    console.log("Points for all cadets:", cadetPoints);
+    return cadetPoints;
+  } catch (error) {
+    console.error("Error fetching points for all cadets:", error);
+    return [];
+  }
+};
