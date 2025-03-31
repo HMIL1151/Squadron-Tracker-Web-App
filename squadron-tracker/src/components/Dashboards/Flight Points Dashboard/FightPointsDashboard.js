@@ -79,11 +79,13 @@ const FightPointsDashboard = () => {
 
     // Create rowColors array for the Table component
     const rowColors = cadetPoints.map(({ cadetName, flight }) => {
-        let color = "white"; // Default color for flight 1 and others
-        if (flight === 2 && topCadets[flight]?.cadetName === cadetName) {
-            color = colors[0]; // Use the first color in the bar chart for flight 2
-        } else if (flight === 3 && topCadets[flight]?.cadetName === cadetName) {
-            color = colors[1]; // Use the second color in the bar chart for flight 3
+        let color = "white"; // Default color for all rows
+        if (topCadets[flight]?.cadetName === cadetName && topCadets[flight]?.pointsEarned > 0) {
+            if (flight === 2) {
+                color = colors[0]; // Use the first color in the bar chart for flight 2
+            } else if (flight === 3) {
+                color = colors[1]; // Use the second color in the bar chart for flight 3
+            }
         }
         return {
             row: cadetName,
