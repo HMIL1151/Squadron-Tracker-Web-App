@@ -41,6 +41,8 @@ const GraphContainer = ({ children }) => {
   return <div ref={containerRef} style={{ width: "100%", height: "100%" }}>{children}</div>;
 };
 
+
+
 const ClassificationDashboard = () => {
   const [cadetData, setCadetData] = useState([]);
   const [dividerPosition, setDividerPosition] = useState(55); // Initial width of the Graph section in percentage
@@ -56,6 +58,10 @@ const ClassificationDashboard = () => {
 
   const closePopup = () => {
     setIsPopupOpen(false);
+  };
+
+  const triggerScatterPointHover = (cadetNames) => {
+    setHoveredCadet(cadetNames); // Update the hovered cadet state
   };
 
   // Function to determine target classification based on service length
@@ -263,16 +269,10 @@ const ClassificationDashboard = () => {
             hoveredCadet={hoveredCadet} // Pass the hoveredCadet state here
             onRowHover={(rowName) => {
               if (rowName) {
-                setHoveredCadet((prev) => {
-                  // Add the hovered cadet name if not already in the array
-                  if (!prev.includes(rowName)) {
-                    return [...prev, rowName];
-                  }
-                  return prev;
-                });
+                triggerScatterPointHover([rowName]);
               } else {
                 // Clear the hovered cadet names when the mouse leaves
-                setHoveredCadet([]);
+                triggerScatterPointHover([]);
               }
             }}
             disableHover={false} // Ensure hover is enabled

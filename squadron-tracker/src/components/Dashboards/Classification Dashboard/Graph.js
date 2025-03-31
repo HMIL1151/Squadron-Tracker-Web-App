@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React, { useRef, useEffect } from "react";
 import { Scatter } from "react-chartjs-2";
 import {
   Chart as ChartJS,
@@ -10,7 +10,7 @@ import {
   LinearScale,
   CategoryScale,
 } from "chart.js";
-import { classificationMap } from "../../../utils/mappings"; // Import classificationMap
+import { classificationMap } from "../../../utils/mappings";
 
 // Crosshair plugin
 const crosshairPlugin = {
@@ -93,7 +93,7 @@ ChartJS.register(
   Tooltip,
   Legend,
   PointElement,
-  LineElement, // Register LineElement
+  LineElement,
   LinearScale,
   CategoryScale,
   crosshairPlugin
@@ -102,29 +102,58 @@ ChartJS.register(
 const Graph = ({ cadetData, onPointHover, hoveredCadet, onPointClick }) => {
   const chartRef = useRef(null);
 
+  // Trigger hover logic when hoveredCadet changes
+  useEffect(() => {
+    if (!chartRef.current || !hoveredCadet || hoveredCadet.length === 0) return;
+    const chart = chartRef.current;
+    const dataset = chart.data.datasets.find((ds) => ds.label === "Cadets");
+
+    if (dataset) {
+      const index = cadetData.findIndex((cadet) => {
+        return hoveredCadet.includes(cadet.cadetName); // Check if hoveredCadet array contains cadet.cadetName
+      });
+
+      if (index !== -1) {
+        const meta = chart.getDatasetMeta(0); // Assuming "Cadets" is the first dataset
+        const point = meta.data[index];
+
+        if (point) {
+          // Simulate hover by setting the tooltip and triggering the hover effect
+          chart.tooltip.setActiveElements(
+            [{ datasetIndex: 0, index }],
+            { x: point.x, y: point.y }
+          );
+          chart.update();
+        }
+      }
+    }
+  }, [hoveredCadet, cadetData]);
+
   const handleHover = (event) => {
-    if (!chartRef.current || !event) return; // Ensure chartRef and event are defined
+    if (!chartRef.current || !event) return;
 
     const chart = chartRef.current;
     const elements = chart.getElementsAtEventForMode(
-      event, // Pass the event directly
-      "nearest", // Interaction mode
-      { intersect: false }, // Include all points near the cursor
+      event,
+      "nearest",
+      { intersect: false },
       false
     );
 
     if (elements.length > 0) {
-      const hoveredCadets = elements.map((element) => {
-        const { datasetIndex, index } = element;
-        if (chart.data.datasets[datasetIndex].label === "Cadets") {
-          return cadetData[index].cadetName; // Get the cadet name for each point
-        }
-        return null;
-      }).filter(Boolean); // Remove any null values
+      const hoveredCadets = elements
+        .map((element) => {
+          const { datasetIndex, index } = element;
+          if (chart.data.datasets[datasetIndex].label === "Cadets") {
+            return cadetData[index].cadetName;
+          }
+          return null;
+        })
+        .filter(Boolean);
 
-      onPointHover(hoveredCadets); // Pass all hovered cadet names to the callback
+      onPointHover(hoveredCadets);
     } else {
-      onPointHover([]); // Clear hover when no points are near the cursor
+      onPointHover([]);
     }
   };
 
@@ -173,9 +202,9 @@ const Graph = ({ cadetData, onPointHover, hoveredCadet, onPointClick }) => {
         backgroundColor: "rgba(255, 99, 132, 0.6)",
         borderColor: "rgba(255, 99, 132, 1)",
         borderWidth: 2,
-        showLine: true, // Ensures the points are connected with a line
-        pointRadius: 0, // Hides the points
-        hoverRadius: 0, // Hides hover effect on points
+        showLine: true,
+        pointRadius: 0,
+        hoverRadius: 0,
       },
     ],
   };
@@ -195,25 +224,24 @@ const Graph = ({ cadetData, onPointHover, hoveredCadet, onPointClick }) => {
               const cadet = cadetData[context.dataIndex];
               return `${cadet.cadetName}`;
             }
-            return null; // No tooltip for the guideline
+            return null;
           },
         },
       },
     },
     interaction: {
-      mode: "nearest", // Keep nearest mode
-      intersect: false, // Allow hovering near points without intersecting
-      axis: "xy", // Consider both x and y axes
-      distance: 1, // Set a proximity threshold (in pixels)
+      mode: "nearest",
+      intersect: false,
+      axis: "xy",
     },
     onHover: (event, chartElement) => {
       if (chartElement.length > 0) {
-        handleHover(event.native); // Pass the native event
+        handleHover(event.native);
       } else {
-        onPointHover([]); // Clear hover when no points are near the cursor
+        onPointHover([]);
       }
     },
-    onClick: handlePointClick, // Attach the click handler
+    onClick: handlePointClick,
     scales: {
       x: {
         title: {
