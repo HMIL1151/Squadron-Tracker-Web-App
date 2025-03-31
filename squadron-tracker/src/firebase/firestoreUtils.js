@@ -50,7 +50,6 @@ export const getTotalPointsForCadet = async (cadetName, year) => {
       return sum;
     }, 0);
 
-    console.log(`Total Points for Cadet ${cadetName} in ${year}:`, totalPoints);
     return totalPoints;
   } catch (error) {
     console.error(`Error fetching total points for cadet ${cadetName} in ${year}:`, error);
