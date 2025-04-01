@@ -1,5 +1,3 @@
-//TODO: Table hover set scatter points to hover mode
-
 import React, { useEffect, useState, useCallback, useRef } from "react";
 import { fetchCollectionData } from "../../../firebase/firestoreUtils"; // Assuming this utility exists
 import { getFirestore, collection, getDocs } from "firebase/firestore/lite"; // Firestore imports
