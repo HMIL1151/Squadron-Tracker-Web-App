@@ -234,10 +234,13 @@ const Graph = ({ cadetData, onPointHover, hoveredCadet, onPointClick }) => {
       axis: "xy",
     },
     onHover: (event, chartElement) => {
+      const canvas = event.native?.target;
       if (chartElement.length > 0) {
         handleHover(event.native);
+        canvas.style.cursor = "pointer"; 
       } else {
         onPointHover([]);
+        canvas.style.cursor = "default";
       }
     },
     onClick: handlePointClick,
