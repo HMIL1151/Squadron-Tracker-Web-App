@@ -1,6 +1,6 @@
 .table-dashboard-container table tr:hover td {
-    font-weight: bold;
     text-decoration: underline;
+    font-weight: normal;
     cursor: pointer;
   }
   .graph-container {
