@@ -1,3 +1,5 @@
+//TODO: Add a change log txt (not sure how to do this in firestore )
+
 import "./Styles/App.css";
 import { useState } from "react";
 import Auth from "./components/Auth/Auth";
@@ -8,7 +10,7 @@ import dashboardList from "./components/Dashboards/Dashboard Components/dashboar
 import { getFirestore, doc, getDoc } from "firebase/firestore/lite"; // Import Firestore functions
 
 const App = () => {
-  const version = "v0.5.0"; // Define the version number
+  const version = "v0.5.1"; // Define the version number
   const [user, setUser] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false); // Track if the user is an admin
   const [activeMenu, setActiveMenu] = useState(dashboardList[0]?.key || ""); // Default to the first dashboard key
