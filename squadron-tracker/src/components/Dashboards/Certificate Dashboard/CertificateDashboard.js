@@ -62,6 +62,12 @@ const CertificateDashboard = () => {
         generateCertificatePDF(selectedCadet, selectedYear, eventStrings);
     };
 
+    const handleRemoveEvent = (index) => {
+        // Remove the event at the specified index
+        const updatedEvents = eventStrings.filter((_, i) => i !== index);
+        setEventStrings(updatedEvents);
+    };
+
     return (
         <div>
             <h1>Certificate Dashboard</h1>
@@ -101,7 +107,14 @@ const CertificateDashboard = () => {
                 {eventStrings.length > 0 ? (
                     <div>
                         {eventStrings.map((eventString, index) => (
-                            <p key={index}>{eventString}</p>
+                            <p
+                                key={index}
+                                onClick={() => handleRemoveEvent(index)} // Add click handler
+                                style={{ cursor: "pointer", color: "red" }} // Add styling to indicate interactivity
+                                title="Click to remove this event"
+                            >
+                                {eventString}
+                            </p>
                         ))}
                     </div>
                 ) : (
