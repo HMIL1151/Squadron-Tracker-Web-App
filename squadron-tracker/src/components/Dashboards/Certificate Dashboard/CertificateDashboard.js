@@ -3,7 +3,6 @@ import { getAllCadetNames, getEventsForCadet } from "../../../firebase/firestore
 import generateCertificatePDF from "./CertificatePDF";
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
-import jsPDF from "jspdf"; // Import jsPDF
 import "./CertificateDashboard.css";
 
 const CertificateDashboard = () => {
@@ -17,6 +16,7 @@ const CertificateDashboard = () => {
     const [generatedPdfBlob, setGeneratedPdfBlob] = useState(null); // State to store the generated PDF Blob
     const [isLoading, setIsLoading] = useState(false); // State to track loading
     const [loadingMessage, setLoadingMessage] = useState(""); // State to store the loading message
+    const [progress, setProgress] = useState(0); // State to track progress percentage
 
     useEffect(() => {
         const fetchCadetNames = async () => {
@@ -115,6 +115,7 @@ const CertificateDashboard = () => {
 
         const zip = new JSZip();
         setIsLoading(true); // Show loading popup
+        setProgress(0); // Reset progress
 
         for (let i = 0; i < cadetNames.length; i++) {
             const cadet = cadetNames[i];
@@ -137,13 +138,17 @@ const CertificateDashboard = () => {
             } catch (error) {
                 console.error(`Error generating certificate for ${cadet}:`, error);
             }
+
+            // Update progress
+            setProgress(Math.round(((i + 1) / cadetNames.length) * 100));
         }
 
         setLoadingMessage("Finalizing ZIP file...");
         zip.generateAsync({ type: "blob" }).then(content => {
-            saveAs(content, `Certificates_${selectedYear}.zip`);
+            saveAs(content, `End of Year Certificates_${selectedYear}.zip`);
             setIsLoading(false); // Hide loading popup
             setLoadingMessage(""); // Clear loading message
+            setProgress(0); // Reset progress
         });
     };
 
@@ -282,13 +287,15 @@ const CertificateDashboard = () => {
                 {isLoading && (
                     <div className="loading-popup">
                         <p>{loadingMessage || "Loading..."}</p>
+                        <div className="progress-bar-container">
+                            <div
+                                className="progress-bar"
+                                style={{ width: `${progress}%` }}
+                            ></div>
+                        </div>
                     </div>
                 )}
-                {isLoading ? (
-                    <div className="loading-popup">
-                        <p>{loadingMessage || "Generating PDF..."}</p>
-                    </div>
-                ) : pdfBlobUrl ? (
+                {!isLoading && pdfBlobUrl ? (
                     <div className="pdf-preview">
                         <h2>Certificate Preview</h2>
                         <iframe
@@ -300,7 +307,7 @@ const CertificateDashboard = () => {
                         />
                     </div>
                 ) : (
-                    <p className="no-preview">No preview available</p>
+                    !isLoading && <p className="no-preview">No preview available</p>
                 )}
             </div>
         </div>

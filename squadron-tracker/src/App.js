@@ -10,7 +10,7 @@ import dashboardList from "./components/Dashboards/Dashboard Components/dashboar
 import { getFirestore, doc, getDoc } from "firebase/firestore/lite"; // Import Firestore functions
 
 const App = () => {
-  const version = "v0.5.1"; // Define the version number
+  const version = "v0.6.1"; // Define the version number
   const [user, setUser] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false); // Track if the user is an admin
   const [activeMenu, setActiveMenu] = useState(dashboardList[0]?.key || ""); // Default to the first dashboard key

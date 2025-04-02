@@ -32,19 +32,19 @@ const dashboardList = [
   },
   {
     key: "classificationdashboard",
-    title: "Classification Dashboard",
+    title: "Classification Tracker",
     component: ClassificationDashboard,
     adminOnly: false, // Accessible to all users
   },
   {
     key: "flightpointsdashboard",
-    title: "Flight Points Dashboard",
+    title: "Flight Points",
     component: FightPointsDashboard,
     adminOnly: false, // Accessible to all users
   },
   {
     key: "certificatedashboard",
-    title: "End of Year Certificate Dashboard",
+    title: "End of Year Certificates",
     component: CertificateDashboard,
     adminOnly: false, // Accessible to all users
   },
