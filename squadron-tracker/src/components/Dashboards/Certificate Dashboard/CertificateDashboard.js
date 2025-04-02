@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { getAllCadetNames, getEventsForCadet } from "../../../firebase/firestoreUtils";
 import generateCertificatePDF from "./CertificatePDF";
-import JSZip from "jszip"; // Import JSZip
-import { saveAs } from "file-saver"; // Import FileSaver
-import "./CertificateDashboard.css"; // Import the new CSS file
+import JSZip from "jszip";
+import { saveAs } from "file-saver";
+import jsPDF from "jspdf"; // Import jsPDF
+import "./CertificateDashboard.css";
 
 const CertificateDashboard = () => {
     const [cadetNames, setCadetNames] = useState([]);
@@ -11,7 +12,9 @@ const CertificateDashboard = () => {
     const [selectedYear, setSelectedYear] = useState("");
     const [years, setYears] = useState([]);
     const [eventStrings, setEventStrings] = useState([]);
-    const [isGenerateClicked, setIsGenerateClicked] = useState(false); // Track if Generate button is clicked
+    const [isGenerateClicked, setIsGenerateClicked] = useState(false);
+    const [pdfBlobUrl, setPdfBlobUrl] = useState(null); // State to store the PDF Blob URL
+    const [generatedPdfBlob, setGeneratedPdfBlob] = useState(null); // State to store the generated PDF Blob
 
     useEffect(() => {
         const fetchCadetNames = async () => {
@@ -48,7 +51,7 @@ const CertificateDashboard = () => {
                 `${event.event} (${formatDate(event.date)})`
             );
             setEventStrings(formattedEvents);
-            setIsGenerateClicked(true); // Mark Generate button as clicked
+            setIsGenerateClicked(true);
         } catch (error) {
             console.error("Error fetching cadet events:", error);
         }
@@ -59,16 +62,41 @@ const CertificateDashboard = () => {
         return new Date(dateString).toLocaleDateString("en-GB", options);
     };
 
-    const handleGeneratePDF = () => {
+    const handleGeneratePDF = async () => {
         if (!selectedCadet || !selectedYear) {
             alert("Please select both a cadet and a year.");
             return;
         }
-        generateCertificatePDF(selectedCadet, selectedYear, eventStrings);
+
+        try {
+            // Generate the PDF using the updated generateCertificatePDF function
+            const pdfBlob = await generateCertificatePDF(selectedCadet, selectedYear, eventStrings);
+
+            // Create a Blob URL for preview
+            const blobUrl = URL.createObjectURL(pdfBlob);
+            setPdfBlobUrl(blobUrl); // Set the Blob URL to state
+
+            // Store the Blob for download
+            setGeneratedPdfBlob(pdfBlob); // Store the Blob for later download
+        } catch (error) {
+            console.error("Error generating PDF:", error);
+        }
+    };
+
+    const handleDownloadPDF = () => {
+        if (!generatedPdfBlob) {
+            alert("No PDF available to download. Please generate the PDF first.");
+            return;
+        }
+
+        // Trigger download of the generated PDF
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(generatedPdfBlob);
+        link.download = `${selectedCadet}_Certificate_${selectedYear}.pdf`;
+        link.click();
     };
 
     const handleRemoveEvent = (index) => {
-        // Remove the event at the specified index
         const updatedEvents = eventStrings.filter((_, i) => i !== index);
         setEventStrings(updatedEvents);
     };
@@ -94,14 +122,13 @@ const CertificateDashboard = () => {
                     `${event.event} (${formatDate(event.date)})`
                 );
 
-                const pdfBlob = await generateCertificatePDF(cadet, selectedYear, formattedEvents, true); // Pass `true` to return Blob
+                const pdfBlob = await generateCertificatePDF(cadet, selectedYear, formattedEvents, true);
                 zip.file(`${cadet}_Certificate_${selectedYear}.pdf`, pdfBlob);
             } catch (error) {
                 console.error(`Error generating certificate for ${cadet}:`, error);
             }
         }
 
-        // Generate the zip file and trigger download
         zip.generateAsync({ type: "blob" }).then(content => {
             saveAs(content, `Certificates_${selectedYear}.zip`);
         });
@@ -109,14 +136,16 @@ const CertificateDashboard = () => {
 
     const handleCadetChange = (value) => {
         setSelectedCadet(value);
-        setIsGenerateClicked(false); // Reset the generate state
-        setEventStrings([]); // Clear the events list
+        setIsGenerateClicked(false);
+        setEventStrings([]);
+        setPdfBlobUrl(null); // Clear the PDF preview
     };
 
     const handleYearChange = (value) => {
         setSelectedYear(value);
-        setIsGenerateClicked(false); // Reset the generate state
-        setEventStrings([]); // Clear the events list
+        setIsGenerateClicked(false);
+        setEventStrings([]);
+        setPdfBlobUrl(null); // Clear the PDF preview
     };
 
     useEffect(() => {
@@ -135,13 +164,11 @@ const CertificateDashboard = () => {
         const handleMouseMove = (e) => {
             if (!isDragging) return;
 
-            // Calculate the mouse position relative to the container
             const containerRect = container.getBoundingClientRect();
             const mouseX = e.clientX - containerRect.left;
 
-            // Calculate the new widths for the panels
             const containerWidth = container.offsetWidth;
-            const leftWidth = Math.min(Math.max((mouseX / containerWidth) * 100, 10), 90); // Restrict to 10%-90%
+            const leftWidth = Math.min(Math.max((mouseX / containerWidth) * 100, 10), 90);
 
             leftPanel.style.width = `${leftWidth}%`;
             rightPanel.style.width = `${100 - leftWidth}%`;
@@ -186,7 +213,7 @@ const CertificateDashboard = () => {
                     <select
                         id="year-select"
                         value={selectedYear}
-                        onChange={(e) => handleYearChange(e.target.value)} // Use the new handler
+                        onChange={(e) => handleYearChange(e.target.value)}
                     >
                         <option value="">-- Select a Year --</option>
                         {years.map((year, index) => (
@@ -230,13 +257,29 @@ const CertificateDashboard = () => {
                     )}
 
                     {isGenerateClicked && selectedCadet !== "all" && eventStrings.length > 0 && (
-                        <button className="download-button" onClick={handleGeneratePDF}>Download PDF</button>
+                        <>
+                            <button className="preview-button" onClick={handleGeneratePDF}>Preview PDF</button>
+                            <button className="download-button" onClick={handleDownloadPDF}>Download PDF</button>
+                        </>
                     )}
                 </div>
             </div>
             <div className="divider" />
             <div className="right-panel">
-                {/* Right panel is intentionally left blank for now */}
+                {pdfBlobUrl ? (
+                    <div className="pdf-preview">
+                        <h2>Certificate Preview</h2>
+                        <iframe
+                            src={pdfBlobUrl}
+                            title="PDF Preview"
+                            width="100%"
+                            height="100%"
+                            style={{ border: "none" }}
+                        />
+                    </div>
+                ) : (
+                    <p className="no-preview">No preview available</p>
+                )}
             </div>
         </div>
     );

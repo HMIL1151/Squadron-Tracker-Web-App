@@ -1,7 +1,7 @@
 import jsPDF from "jspdf";
 import { getCadetRank } from "../../../firebase/firestoreUtils"; // Import getCadetRank
 
-const generateCertificatePDF = async (cadetName, year, events, returnBlob = false) => {
+const generateCertificatePDF = async (cadetName, year, events) => {
     const doc = new jsPDF();
 
     // Fetch the cadet's rank
@@ -102,13 +102,8 @@ const generateCertificatePDF = async (cadetName, year, events, returnBlob = fals
         );
     }
 
-    if (returnBlob) {
-        // Return the PDF as a Blob
-        return doc.output("blob");
-    } else {
-        // Save the PDF directly
-        doc.save(`${cadetName} Certificate ${year}.pdf`);
-    }
+    // Return the PDF as a Blob
+    return doc.output("blob");
 };
 
 export default generateCertificatePDF;
