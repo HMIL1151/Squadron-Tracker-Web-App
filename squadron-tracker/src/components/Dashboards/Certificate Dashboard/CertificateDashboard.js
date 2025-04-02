@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { getAllCadetNames, getEventsForCadet } from "../../../firebase/firestoreUtils";
+import generateCertificatePDF from "./CertificatePDF";
 
 const CertificateDashboard = () => {
     const [cadetNames, setCadetNames] = useState([]);
     const [selectedCadet, setSelectedCadet] = useState("");
     const [selectedYear, setSelectedYear] = useState("");
     const [years, setYears] = useState([]);
-    const [eventStrings, setEventStrings] = useState([]); // Array to store formatted event strings
+    const [eventStrings, setEventStrings] = useState([]);
 
-    // Fetch cadet names on component mount
     useEffect(() => {
         const fetchCadetNames = async () => {
             try {
@@ -21,7 +21,6 @@ const CertificateDashboard = () => {
 
         fetchCadetNames();
 
-        // Generate a list of years (e.g., last 10 years)
         const currentYear = new Date().getFullYear();
         const yearList = Array.from({ length: 10 }, (_, i) => currentYear - i);
         setYears(yearList);
@@ -35,38 +34,38 @@ const CertificateDashboard = () => {
 
         try {
             const events = await getEventsForCadet(selectedCadet);
-
-            // Filter events by the selected year
             const filteredEvents = events.filter(event => {
                 const eventYear = new Date(event.date).getFullYear();
                 return eventYear === parseInt(selectedYear, 10);
             });
 
-            // Sort events by date (oldest first)
             const sortedEvents = filteredEvents.sort((a, b) => new Date(a.date) - new Date(b.date));
-
-            // Create an array of formatted event strings
             const formattedEvents = sortedEvents.map(event => 
                 `${event.event} (${formatDate(event.date)})`
             );
-            setEventStrings(formattedEvents); // Store the formatted strings
-            console.log(formattedEvents); // Log the formatted events for debugging
+            setEventStrings(formattedEvents);
         } catch (error) {
             console.error("Error fetching cadet events:", error);
         }
     };
 
-    // Helper function to format the date
     const formatDate = (dateString) => {
         const options = { day: "2-digit", month: "short", year: "numeric" };
         return new Date(dateString).toLocaleDateString("en-GB", options);
+    };
+
+    const handleGeneratePDF = () => {
+        if (!selectedCadet || !selectedYear) {
+            alert("Please select both a cadet and a year.");
+            return;
+        }
+        generateCertificatePDF(selectedCadet, selectedYear, eventStrings);
     };
 
     return (
         <div>
             <h1>Certificate Dashboard</h1>
 
-            {/* Cadet Dropdown */}
             <label htmlFor="cadet-select">Select Cadet:</label>
             <select
                 id="cadet-select"
@@ -81,7 +80,6 @@ const CertificateDashboard = () => {
                 ))}
             </select>
 
-            {/* Year Dropdown */}
             <label htmlFor="year-select">Select Year:</label>
             <select
                 id="year-select"
@@ -96,10 +94,8 @@ const CertificateDashboard = () => {
                 ))}
             </select>
 
-            {/* Generate Button */}
             <button onClick={fetchCadetEvents}>Generate</button>
 
-            {/* Display Events */}
             <div>
                 <h2>Events</h2>
                 {eventStrings.length > 0 ? (
@@ -112,6 +108,9 @@ const CertificateDashboard = () => {
                     <p>No events found for the selected cadet and year.</p>
                 )}
             </div>
+
+            {/* Button to generate PDF */}
+            <button onClick={handleGeneratePDF}>Download PDF</button>
         </div>
     );
 };
