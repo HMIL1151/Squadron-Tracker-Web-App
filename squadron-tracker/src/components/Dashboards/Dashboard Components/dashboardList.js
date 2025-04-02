@@ -10,6 +10,7 @@ import ClassificationDashboard from "../Classification Dashboard/ClassificationD
 import AdminDashboard from "../Admin Dashboard/AdminDashboard";
 import FightPointsDashboard from "../Flight Points Dashboard/FightPointsDashboard";
 import CertificateDashboard from "../Certificate Dashboard/CertificateDashboard";
+import PTSTracker from "../PTS Tracker/PTSTracker";
 
 const dashboardList = [
   {
@@ -46,6 +47,12 @@ const dashboardList = [
     key: "certificatedashboard",
     title: "End of Year Certificates",
     component: CertificateDashboard,
+    adminOnly: false, // Accessible to all users
+  },
+  {
+    key: "ptstracker",
+    title: "PTS Tracker",
+    component: PTSTracker,
     adminOnly: false, // Accessible to all users
   },
 
