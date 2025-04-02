@@ -213,3 +213,71 @@ export const getCadetRank = async (cadetName) => {
     return "Error Fetching Rank";
   }
 };
+
+export const getBadgeTypeList = async () => {
+  try {
+    const db = getFirestore(app);
+
+    // Reference the 'Badges' document in the 'Flight Points' collection
+    const badgesDocRef = doc(db, "Flight Points", "Badges");
+
+    // Fetch the document
+    const badgesDoc = await getDoc(badgesDocRef);
+
+    if (badgesDoc.exists()) {
+      // Extract the 'Badge Types' array field
+      const badgeTypes = badgesDoc.data()["Badge Types"]; // Ensure correct field name
+
+      if (Array.isArray(badgeTypes)) {
+        return badgeTypes;
+      } else {
+        console.warn("'Badge Types' field is not an array or is missing.");
+        return [];
+      }
+    } else {
+      console.warn("Badges document does not exist in the 'Flight Points' collection.");
+      return [];
+    }
+  } catch (error) {
+    console.error("Error fetching badge types:", error);
+    return [];
+  }
+};
+
+export const getAllBadges = async () => {
+  try {
+    // Fetch all cadets
+    const cadetsData = await fetchCollectionData("Cadets");
+
+    // Fetch all events
+    const eventData = await fetchCollectionData("Event Log");
+
+    // Create an array to store all badges
+    const allBadges = [];
+
+    // Iterate over each cadet
+    cadetsData.forEach((cadet) => {
+      const cadetName = `${cadet.forename} ${cadet.surname}`;
+
+      // Filter events for the current cadet
+      const cadetEvents = eventData.filter((event) => event.cadetName === cadetName);
+
+      // Extract badge events and format them
+      const badges = cadetEvents
+        .filter((event) => event.badgeLevel && event.badgeCategory) // Filter only badge events
+        .map((event) => ({
+          cadetName,
+          badge: `${event.badgeLevel} ${event.badgeCategory}`, // Combine badgeLevel and badgeCategory
+          date: event.date, // Include the date
+        }));
+
+      // Add the cadet's badges to the allBadges array
+      allBadges.push(...badges);
+    });
+
+    return allBadges;
+  } catch (error) {
+    console.error("Error fetching all badges:", error);
+    return [];
+  }
+};
