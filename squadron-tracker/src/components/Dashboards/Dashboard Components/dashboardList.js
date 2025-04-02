@@ -9,6 +9,7 @@ import EventCategoriesDashboard from "../Event Categories Dashboard/EventCategor
 import ClassificationDashboard from "../Classification Dashboard/ClassificationDashboard";
 import AdminDashboard from "../Admin Dashboard/AdminDashboard";
 import FightPointsDashboard from "../Flight Points Dashboard/FightPointsDashboard";
+import CertificateDashboard from "../Certificate Dashboard/CertificateDashboard";
 
 const dashboardList = [
   {
@@ -39,6 +40,12 @@ const dashboardList = [
     key: "flightpointsdashboard",
     title: "Flight Points Dashboard",
     component: FightPointsDashboard,
+    adminOnly: false, // Accessible to all users
+  },
+  {
+    key: "certificatedashboard",
+    title: "End of Year Certificate Dashboard",
+    component: CertificateDashboard,
     adminOnly: false, // Accessible to all users
   },
 
