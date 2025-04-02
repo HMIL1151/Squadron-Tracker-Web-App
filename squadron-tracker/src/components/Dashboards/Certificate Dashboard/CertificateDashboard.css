@@ -1,0 +1,109 @@
+/* General Layout */
+.certificate-dashboard {
+  padding: 20px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: #333;
+}
+
+.certificate-dashboard h1 {
+  font-size: 2rem;
+  color: #007bff;
+  text-align: center;
+  margin-bottom: 20px;
+  border-bottom: 2px solid #007bff;
+  display: inline-block;
+  padding-bottom: 5px;
+}
+
+/* Dropdowns */
+.certificate-dashboard label {
+  font-weight: bold;
+  margin-right: 10px;
+}
+
+.certificate-dashboard select {
+  padding: 10px;
+  font-size: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  margin-bottom: 20px;
+  transition: border-color 0.3s ease;
+}
+
+.certificate-dashboard select:focus {
+  border-color: #007bff;
+  outline: none;
+  box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+}
+
+/* Buttons */
+.certificate-dashboard button {
+  padding: 10px 20px;
+  font-size: 1rem;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  margin: 10px 5px;
+}
+
+.certificate-dashboard button:hover {
+  transform: scale(1.05);
+}
+
+.certificate-dashboard button:active {
+  transform: scale(0.95);
+}
+
+.certificate-dashboard .generate-button {
+  background-color: #4caf50;
+  color: white;
+}
+
+.certificate-dashboard .generate-button:hover {
+  background-color: #45a049;
+}
+
+.certificate-dashboard .download-button {
+  background-color: #007bff;
+  color: white;
+}
+
+.certificate-dashboard .download-button:hover {
+  background-color: #0056b3;
+}
+
+/* Events Section */
+.certificate-dashboard .events-section {
+  margin-top: 20px;
+}
+
+.certificate-dashboard .events-section h2 {
+  font-size: 1.5rem;
+  color: #333;
+  margin-bottom: 10px;
+}
+
+.certificate-dashboard .events-section p {
+  padding: 10px;
+  background-color: #f8f9fa;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  margin-bottom: 10px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.certificate-dashboard .events-section p:hover {
+  background-color: #f1f1f1;
+  transform: scale(1.02);
+  color: #d32f2f;
+}
+
+/* No Events Message */
+.certificate-dashboard .no-events {
+  font-size: 1rem;
+  color: #666;
+  text-align: center;
+  margin-top: 20px;
+}
