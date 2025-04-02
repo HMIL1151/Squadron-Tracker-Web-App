@@ -16,6 +16,7 @@ const CertificateDashboard = () => {
     const [pdfBlobUrl, setPdfBlobUrl] = useState(null); // State to store the PDF Blob URL
     const [generatedPdfBlob, setGeneratedPdfBlob] = useState(null); // State to store the generated PDF Blob
     const [isLoading, setIsLoading] = useState(false); // State to track loading
+    const [loadingMessage, setLoadingMessage] = useState(""); // State to store the loading message
 
     useEffect(() => {
         const fetchCadetNames = async () => {
@@ -113,8 +114,12 @@ const CertificateDashboard = () => {
         }
 
         const zip = new JSZip();
+        setIsLoading(true); // Show loading popup
 
-        for (const cadet of cadetNames) {
+        for (let i = 0; i < cadetNames.length; i++) {
+            const cadet = cadetNames[i];
+            setLoadingMessage(`Generating certificate for ${cadet}... (${i + 1}/${cadetNames.length})`);
+
             try {
                 const events = await getEventsForCadet(cadet);
                 const filteredEvents = events.filter(event => {
@@ -134,8 +139,11 @@ const CertificateDashboard = () => {
             }
         }
 
+        setLoadingMessage("Finalizing ZIP file...");
         zip.generateAsync({ type: "blob" }).then(content => {
             saveAs(content, `Certificates_${selectedYear}.zip`);
+            setIsLoading(false); // Hide loading popup
+            setLoadingMessage(""); // Clear loading message
         });
     };
 
@@ -271,9 +279,14 @@ const CertificateDashboard = () => {
             </div>
             <div className="divider" />
             <div className="right-panel" style={{ position: "relative" }}>
+                {isLoading && (
+                    <div className="loading-popup">
+                        <p>{loadingMessage || "Loading..."}</p>
+                    </div>
+                )}
                 {isLoading ? (
                     <div className="loading-popup">
-                        <p>Generating PDF...</p>
+                        <p>{loadingMessage || "Generating PDF..."}</p>
                     </div>
                 ) : pdfBlobUrl ? (
                     <div className="pdf-preview">
