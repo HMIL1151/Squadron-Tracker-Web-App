@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { getAllCadetNames, getBadgeTypeList, getAllBadges } from "../../../firebase/firestoreUtils";
 import { badgeLevel } from "../../../utils/examList";
+import "./PTSTracker.css";
 
 const PTSTracker = () => {
   const [cadetNames, setCadetNames] = useState([]);
@@ -56,66 +57,65 @@ const PTSTracker = () => {
   };
 
   return (
-    <div>
+    <div className="PTSTracker">
       <h1>PTS Tracker</h1>
       {/* Tabs for badge types */}
-      <div style={{ display: "flex", marginBottom: "1rem", cursor: "pointer" }}>
+      <div className="PTSTracker-tabs">
         {Object.keys(groupedBadgeColumns).map((type, index) => (
           <div
             key={`tab-${index}`}
-            onClick={() => toggleTab(type)} // Toggle the tab
-            style={{
-              padding: "0.5rem 1rem",
-              border: "1px solid #ccc",
-              backgroundColor: expandedTabs[type] ? "#ddd" : "#fff",
-              marginRight: "0.5rem",
-            }}
+            onClick={() => toggleTab(type)}
+            className={`PTSTracker-tab ${expandedTabs[type] ? "expanded" : ""}`}
           >
             {type} {expandedTabs[type] ? "(-)" : "(+)"}
           </div>
         ))}
       </div>
 
-      {/* Single Table */}
-      <table border="1">
-        <thead>
-          <tr>
-            <th rowSpan="2">Cadet Name</th>
-            {Object.keys(groupedBadgeColumns).map((type, index) =>
-              expandedTabs[type] ? (
-                <th key={`type-${index}`} colSpan={badgeLevel.length}>
-                  {type}
-                </th>
-              ) : null
-            )}
-          </tr>
-          <tr>
-            {Object.entries(groupedBadgeColumns).flatMap(([type, levels]) =>
-              expandedTabs[type]
-                ? levels.map((level, index) => (
-                    <th key={`level-${type}-${index}`}>{level.split(" ")[0]}</th>
-                  ))
-                : []
-            )}
-          </tr>
-        </thead>
-        <tbody>
-          {cadetNames.map((name, rowIndex) => (
-            <tr key={`cadet-${rowIndex}`}>
-              <td>{name}</td>
+      {/* Scrollable Table Container */}
+      <div className="PTSTracker-table-container">
+        <table className="PTSTracker-table">
+          <thead>
+            <tr>
+              <th rowSpan="2">Cadet Name</th>
+              {Object.keys(groupedBadgeColumns).map((type, index) =>
+                expandedTabs[type] ? (
+                  <th key={`type-${index}`} colSpan={badgeLevel.length}>
+                    {type}
+                  </th>
+                ) : null
+              )}
+            </tr>
+            <tr>
               {Object.entries(groupedBadgeColumns).flatMap(([type, levels]) =>
                 expandedTabs[type]
-                  ? levels.map((level, colIndex) => (
-                      <td key={`badge-${rowIndex}-${type}-${colIndex}`}>
-                        {getBadgeDate(name, level)}
-                      </td>
+                  ? levels.map((level, index) => (
+                      <th key={`level-${type}-${index}`}>
+                        {level.split(" ")[0]}
+                      </th>
                     ))
                   : []
               )}
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {cadetNames.map((name, rowIndex) => (
+              <tr key={`cadet-${rowIndex}`}>
+                <td>{name}</td>
+                {Object.entries(groupedBadgeColumns).flatMap(([type, levels]) =>
+                  expandedTabs[type]
+                    ? levels.map((level, colIndex) => (
+                        <td key={`badge-${rowIndex}-${type}-${colIndex}`}>
+                          {getBadgeDate(name, level)}
+                        </td>
+                      ))
+                    : []
+                )}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 };
