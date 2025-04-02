@@ -3,6 +3,7 @@ import { getAllCadetNames, getEventsForCadet } from "../../../firebase/firestore
 import generateCertificatePDF from "./CertificatePDF";
 import JSZip from "jszip"; // Import JSZip
 import { saveAs } from "file-saver"; // Import FileSaver
+import "./CertificateDashboard.css"; // Import the new CSS file
 
 const CertificateDashboard = () => {
     const [cadetNames, setCadetNames] = useState([]);
@@ -10,6 +11,7 @@ const CertificateDashboard = () => {
     const [selectedYear, setSelectedYear] = useState("");
     const [years, setYears] = useState([]);
     const [eventStrings, setEventStrings] = useState([]);
+    const [isGenerateClicked, setIsGenerateClicked] = useState(false); // Track if Generate button is clicked
 
     useEffect(() => {
         const fetchCadetNames = async () => {
@@ -42,10 +44,11 @@ const CertificateDashboard = () => {
             });
 
             const sortedEvents = filteredEvents.sort((a, b) => new Date(a.date) - new Date(b.date));
-            const formattedEvents = sortedEvents.map(event => 
+            const formattedEvents = sortedEvents.map(event =>
                 `${event.event} (${formatDate(event.date)})`
             );
             setEventStrings(formattedEvents);
+            setIsGenerateClicked(true); // Mark Generate button as clicked
         } catch (error) {
             console.error("Error fetching cadet events:", error);
         }
@@ -104,18 +107,29 @@ const CertificateDashboard = () => {
         });
     };
 
-    return (
-        <div>
-            <h1>Certificate Dashboard</h1>
+    const handleCadetChange = (value) => {
+        setSelectedCadet(value);
+        setIsGenerateClicked(false); // Reset the generate state
+        setEventStrings([]); // Clear the events list
+    };
 
+    const handleYearChange = (value) => {
+        setSelectedYear(value);
+        setIsGenerateClicked(false); // Reset the generate state
+        setEventStrings([]); // Clear the events list
+    };
+
+    return (
+        <div className="certificate-dashboard">
+            {/* Cadet and Year Dropdowns */}
             <label htmlFor="cadet-select">Select Cadet:</label>
             <select
                 id="cadet-select"
                 value={selectedCadet}
-                onChange={(e) => setSelectedCadet(e.target.value)}
+                onChange={(e) => handleCadetChange(e.target.value)}
             >
                 <option value="">-- Select a Cadet --</option>
-                <option value="all">All Cadets</option> {/* Add "All Cadets" option */}
+                <option value="all">All Cadets</option>
                 {cadetNames.map((name, index) => (
                     <option key={index} value={name}>
                         {name}
@@ -127,7 +141,7 @@ const CertificateDashboard = () => {
             <select
                 id="year-select"
                 value={selectedYear}
-                onChange={(e) => setSelectedYear(e.target.value)}
+                onChange={(e) => handleYearChange(e.target.value)} // Use the new handler
             >
                 <option value="">-- Select a Year --</option>
                 {years.map((year, index) => (
@@ -137,37 +151,46 @@ const CertificateDashboard = () => {
                 ))}
             </select>
 
-            <button onClick={fetchCadetEvents}>Generate</button>
+            {/* Generate Button */}
+            {selectedCadet && selectedCadet !== "all" && selectedYear && (
+                <button className="generate-button" onClick={fetchCadetEvents}>
+                    Generate
+                </button>
+            )}
 
-            <div>
-                <h2>Events</h2>
-                {eventStrings.length > 0 ? (
-                    <div>
-                        {eventStrings.map((eventString, index) => (
-                            <p
-                                key={index}
-                                onClick={() => handleRemoveEvent(index)} // Add click handler
-                                style={{ cursor: "pointer", color: "red" }} // Add styling to indicate interactivity
-                                title="Click to remove this event"
-                            >
-                                {eventString}
-                            </p>
-                        ))}
-                    </div>
-                ) : (
-                    <p>No events found for the selected cadet and year.</p>
-                )}
-            </div>
+            {/* Events Section (only visible after Generate is clicked and not for "All Cadets") */}
+            {isGenerateClicked && selectedCadet !== "all" && (
+                <div className="events-section">
+                    <h2>Events</h2>
+                    {eventStrings.length > 0 ? (
+                        <div>
+                            {eventStrings.map((eventString, index) => (
+                                <p
+                                    key={index}
+                                    onClick={() => handleRemoveEvent(index)}
+                                    title="Click to remove this event"
+                                >
+                                    {eventString}
+                                </p>
+                            ))}
+                        </div>
+                    ) : (
+                        <p className="no-events">No events found for the selected cadet and year.</p>
+                    )}
+                </div>
+            )}
 
-            {/* Show the "Download All Certificates" button if "All Cadets" is selected */}
-            {selectedCadet === "all" && (
-                <button onClick={handleDownloadAllCertificates}>
+            {/* Download All Certificates Button */}
+            {selectedCadet === "all" && selectedYear && (
+                <button className="download-button" onClick={handleDownloadAllCertificates}>
                     Download All Certificates as .zip Folder
                 </button>
             )}
 
-            {/* Button to generate PDF */}
-            <button onClick={handleGeneratePDF}>Download PDF</button>
+            {/* Download PDF Button (only visible when not "All Cadets" and events list is not empty) */}
+            {isGenerateClicked && selectedCadet !== "all" && eventStrings.length > 0 && (
+                <button className="download-button" onClick={handleGeneratePDF}>Download PDF</button>
+            )}
         </div>
     );
 };
