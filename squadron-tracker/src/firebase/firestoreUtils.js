@@ -1,5 +1,6 @@
 import { getFirestore, collection, getDocs, doc, getDoc } from "firebase/firestore/lite";
 import { app } from "./firebase";
+import { rankMap } from "../utils/mappings";
 
 // Function to fetch data from a specific Firestore collection
 export const fetchCollectionData = async (collectionName) => {
@@ -186,5 +187,29 @@ export const getAllCadetNames = async () => {
   } catch (error) {
     console.error("Error fetching all cadet names:", error);
     return [];
+  }
+};
+
+export const getCadetRank = async (cadetName) => {
+  try {
+    // Fetch all cadets
+    const cadetsData = await fetchCollectionData("Cadets");
+
+    // Find the cadet with the matching name
+    const cadet = cadetsData.find(
+      (cadet) => `${cadet.forename} ${cadet.surname}` === cadetName
+    );
+
+    if (cadet) {
+      const rankInt = cadet.rank; // Assuming rank is stored as an integer
+      const rankString = rankMap[rankInt] || "Unknown Rank"; // Convert to string using rankMap
+      return rankString;
+    } else {
+      console.warn(`Cadet ${cadetName} not found in the database.`);
+      return "Cadet Not Found";
+    }
+  } catch (error) {
+    console.error(`Error fetching rank for cadet ${cadetName}:`, error);
+    return "Error Fetching Rank";
   }
 };
