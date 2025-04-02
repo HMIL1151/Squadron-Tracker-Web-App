@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { getAllCadetNames, getEventsForCadet } from "../../../firebase/firestoreUtils";
 import generateCertificatePDF from "./CertificatePDF";
+import JSZip from "jszip"; // Import JSZip
+import { saveAs } from "file-saver"; // Import FileSaver
 
 const CertificateDashboard = () => {
     const [cadetNames, setCadetNames] = useState([]);
@@ -68,6 +70,40 @@ const CertificateDashboard = () => {
         setEventStrings(updatedEvents);
     };
 
+    const handleDownloadAllCertificates = async () => {
+        if (!selectedYear) {
+            alert("Please select a year.");
+            return;
+        }
+
+        const zip = new JSZip();
+
+        for (const cadet of cadetNames) {
+            try {
+                const events = await getEventsForCadet(cadet);
+                const filteredEvents = events.filter(event => {
+                    const eventYear = new Date(event.date).getFullYear();
+                    return eventYear === parseInt(selectedYear, 10);
+                });
+
+                const sortedEvents = filteredEvents.sort((a, b) => new Date(a.date) - new Date(b.date));
+                const formattedEvents = sortedEvents.map(event =>
+                    `${event.event} (${formatDate(event.date)})`
+                );
+
+                const pdfBlob = await generateCertificatePDF(cadet, selectedYear, formattedEvents, true); // Pass `true` to return Blob
+                zip.file(`${cadet}_Certificate_${selectedYear}.pdf`, pdfBlob);
+            } catch (error) {
+                console.error(`Error generating certificate for ${cadet}:`, error);
+            }
+        }
+
+        // Generate the zip file and trigger download
+        zip.generateAsync({ type: "blob" }).then(content => {
+            saveAs(content, `Certificates_${selectedYear}.zip`);
+        });
+    };
+
     return (
         <div>
             <h1>Certificate Dashboard</h1>
@@ -79,6 +115,7 @@ const CertificateDashboard = () => {
                 onChange={(e) => setSelectedCadet(e.target.value)}
             >
                 <option value="">-- Select a Cadet --</option>
+                <option value="all">All Cadets</option> {/* Add "All Cadets" option */}
                 {cadetNames.map((name, index) => (
                     <option key={index} value={name}>
                         {name}
@@ -121,6 +158,13 @@ const CertificateDashboard = () => {
                     <p>No events found for the selected cadet and year.</p>
                 )}
             </div>
+
+            {/* Show the "Download All Certificates" button if "All Cadets" is selected */}
+            {selectedCadet === "all" && (
+                <button onClick={handleDownloadAllCertificates}>
+                    Download All Certificates as .zip Folder
+                </button>
+            )}
 
             {/* Button to generate PDF */}
             <button onClick={handleGeneratePDF}>Download PDF</button>

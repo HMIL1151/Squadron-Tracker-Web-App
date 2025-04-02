@@ -1,7 +1,7 @@
 import jsPDF from "jspdf";
 import { getCadetRank } from "../../../firebase/firestoreUtils"; // Import getCadetRank
 
-const generateCertificatePDF = async (cadetName, year, events) => {
+const generateCertificatePDF = async (cadetName, year, events, returnBlob = false) => {
     const doc = new jsPDF();
 
     // Fetch the cadet's rank
@@ -70,20 +70,45 @@ const generateCertificatePDF = async (cadetName, year, events) => {
     // Add events
     doc.setFontSize(12);
     if (events.length > 0) {
+        const lineHeight = 5; // Line height for each event
+        const startY = 100; // Starting Y position for events
+        const pageHeight = doc.internal.pageSize.getHeight(); // Height of the page
+        const marginBottom = 20; // Bottom margin to avoid overflow
+
+        let currentY = startY;
+
         events.forEach((event, index) => {
+            if (currentY + lineHeight > pageHeight - marginBottom) {
+                // Add a new page if the current Y position exceeds the page height
+                doc.addPage();
+                currentY = 20; // Reset Y position for the new page
+            }
+
             doc.text(
-                `${event}`, // Removed numbering
+                `${event}`,
                 doc.internal.pageSize.getWidth() / 2,
-                100 + index * 5, // Reduced line spacing
+                currentY,
                 { align: "center" }
             );
+
+            currentY += lineHeight; // Move to the next line
         });
     } else {
-        doc.text("No events found for the selected cadet and year.", doc.internal.pageSize.getWidth() / 2, 100, { align: "center" });
+        doc.text(
+            "No events found for the selected cadet and year.",
+            doc.internal.pageSize.getWidth() / 2,
+            100,
+            { align: "center" }
+        );
     }
 
-    // Save the PDF
-    doc.save(`${cadetName}_Certificate_${year}.pdf`);
+    if (returnBlob) {
+        // Return the PDF as a Blob
+        return doc.output("blob");
+    } else {
+        // Save the PDF directly
+        doc.save(`${cadetName} Certificate ${year}.pdf`);
+    }
 };
 
 export default generateCertificatePDF;
