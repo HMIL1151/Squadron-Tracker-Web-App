@@ -1,0 +1,60 @@
+/* General container styles */
+.PTSTracker {
+  padding: 1rem;
+}
+
+.PTSTracker h1 {
+  margin-bottom: 1rem;
+}
+
+/* Tabs for badge types */
+.PTSTracker-tabs {
+  display: flex;
+  margin-bottom: 1rem;
+  cursor: pointer;
+}
+
+.PTSTracker-tab {
+  padding: 0.5rem 1rem;
+  border: 1px solid #ccc;
+  margin-right: 0.5rem;
+  background-color: #fff;
+  transition: background-color 0.3s ease;
+}
+
+.PTSTracker-tab.expanded {
+  background-color: #ddd;
+}
+
+/* Scrollable table container */
+.PTSTracker-table-container {
+  overflow-x: auto;
+}
+
+/* Table styles */
+.PTSTracker-table {
+  border-collapse: collapse;
+  min-width: 100px;
+}
+
+.PTSTracker-table th,
+.PTSTracker-table td {
+  border: 1px solid #ccc;
+  text-align: center;
+  width: 100px;
+  min-width: 100px;
+  max-width: 100px;
+}
+
+/* First column (Cadet Name) specific styles */
+.PTSTracker-table th:first-child,
+.PTSTracker-table td:first-child {
+  width: auto; /* Allow the column to adjust dynamically */
+  min-width: 0; /* Remove the minimum width restriction */
+  max-width: none; /* Remove the maximum width restriction */
+  white-space: nowrap; /* Prevent text wrapping */
+}
+
+.PTSTracker-table th[rowspan="2"] {
+  width: auto;
+}
