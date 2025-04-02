@@ -107,3 +107,42 @@
   text-align: center;
   margin-top: 20px;
 }
+
+.certificate-dashboard-container {
+    display: flex;
+    height: 100%;
+    width: 100%;
+    position: relative;
+}
+
+.left-panel,
+.right-panel {
+    overflow: auto;
+    height: 100%;
+}
+
+.left-panel {
+    width: 50%; /* Default width */
+    background-color: #f9f9f9;
+}
+
+.right-panel {
+    width: 50%; /* Default width */
+    background-color: #ffffff;
+}
+
+.divider {
+    width: 5px;
+    background-color: #ccc;
+    cursor: col-resize;
+    position: relative;
+    z-index: 1;
+}
+
+.divider:hover {
+    background-color: #aaa;
+}
+
+.divider.dragging {
+    background-color: #888;
+}
