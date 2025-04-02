@@ -188,3 +188,25 @@
 .divider.dragging {
     background-color: #888;
 }
+
+/* Loading popup styles */
+.loading-popup {
+    position: absolute; /* Position it relative to the right panel */
+    top: 50%; /* Center vertically */
+    left: 50%; /* Center horizontally */
+    transform: translate(-50%, -50%); /* Adjust for the element's size */
+    display: flex;
+    justify-content: center; /* Center text horizontally */
+    align-items: center; /* Center text vertically */
+    background-color: rgba(255, 255, 255, 0.8); /* Semi-transparent background */
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #007bff; /* Blue text color */
+    text-align: center;
+    z-index: 10; /* Ensure it appears above other content */
+    width: auto; /* Adjust width to fit content */
+    height: auto; /* Adjust height to fit content */
+    padding: 20px; /* Add padding for better appearance */
+    border-radius: 10px; /* Optional: Add rounded corners */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Optional: Add a subtle shadow */
+}

@@ -15,6 +15,7 @@ const CertificateDashboard = () => {
     const [isGenerateClicked, setIsGenerateClicked] = useState(false);
     const [pdfBlobUrl, setPdfBlobUrl] = useState(null); // State to store the PDF Blob URL
     const [generatedPdfBlob, setGeneratedPdfBlob] = useState(null); // State to store the generated PDF Blob
+    const [isLoading, setIsLoading] = useState(false); // State to track loading
 
     useEffect(() => {
         const fetchCadetNames = async () => {
@@ -68,6 +69,8 @@ const CertificateDashboard = () => {
             return;
         }
 
+        setIsLoading(true); // Show loading popup
+
         try {
             // Generate the PDF using the updated generateCertificatePDF function
             const pdfBlob = await generateCertificatePDF(selectedCadet, selectedYear, eventStrings);
@@ -80,6 +83,8 @@ const CertificateDashboard = () => {
             setGeneratedPdfBlob(pdfBlob); // Store the Blob for later download
         } catch (error) {
             console.error("Error generating PDF:", error);
+        } finally {
+            setIsLoading(false); // Hide loading popup
         }
     };
 
@@ -265,8 +270,12 @@ const CertificateDashboard = () => {
                 </div>
             </div>
             <div className="divider" />
-            <div className="right-panel">
-                {pdfBlobUrl ? (
+            <div className="right-panel" style={{ position: "relative" }}>
+                {isLoading ? (
+                    <div className="loading-popup">
+                        <p>Generating PDF...</p>
+                    </div>
+                ) : pdfBlobUrl ? (
                     <div className="pdf-preview">
                         <h2>Certificate Preview</h2>
                         <iframe
