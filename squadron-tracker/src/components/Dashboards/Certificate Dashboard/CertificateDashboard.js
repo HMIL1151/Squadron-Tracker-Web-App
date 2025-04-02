@@ -119,78 +119,125 @@ const CertificateDashboard = () => {
         setEventStrings([]); // Clear the events list
     };
 
+    useEffect(() => {
+        const divider = document.querySelector(".divider");
+        const container = document.querySelector(".certificate-dashboard-container");
+        const leftPanel = document.querySelector(".left-panel");
+        const rightPanel = document.querySelector(".right-panel");
+
+        let isDragging = false;
+
+        const handleMouseDown = (e) => {
+            isDragging = true;
+            divider.classList.add("dragging");
+        };
+
+        const handleMouseMove = (e) => {
+            if (!isDragging) return;
+
+            // Calculate the mouse position relative to the container
+            const containerRect = container.getBoundingClientRect();
+            const mouseX = e.clientX - containerRect.left;
+
+            // Calculate the new widths for the panels
+            const containerWidth = container.offsetWidth;
+            const leftWidth = Math.min(Math.max((mouseX / containerWidth) * 100, 10), 90); // Restrict to 10%-90%
+
+            leftPanel.style.width = `${leftWidth}%`;
+            rightPanel.style.width = `${100 - leftWidth}%`;
+        };
+
+        const handleMouseUp = () => {
+            isDragging = false;
+            divider.classList.remove("dragging");
+        };
+
+        divider.addEventListener("mousedown", handleMouseDown);
+        window.addEventListener("mousemove", handleMouseMove);
+        window.addEventListener("mouseup", handleMouseUp);
+
+        return () => {
+            divider.removeEventListener("mousedown", handleMouseDown);
+            window.removeEventListener("mousemove", handleMouseMove);
+            window.removeEventListener("mouseup", handleMouseUp);
+        };
+    }, []);
+
     return (
-        <div className="certificate-dashboard">
-            {/* Cadet and Year Dropdowns */}
-            <label htmlFor="cadet-select">Select Cadet:</label>
-            <select
-                id="cadet-select"
-                value={selectedCadet}
-                onChange={(e) => handleCadetChange(e.target.value)}
-            >
-                <option value="">-- Select a Cadet --</option>
-                <option value="all">All Cadets</option>
-                {cadetNames.map((name, index) => (
-                    <option key={index} value={name}>
-                        {name}
-                    </option>
-                ))}
-            </select>
+        <div className="certificate-dashboard-container">
+            <div className="left-panel">
+                <div className="certificate-dashboard">
+                    <label htmlFor="cadet-select">Select Cadet:</label>
+                    <select
+                        id="cadet-select"
+                        value={selectedCadet}
+                        onChange={(e) => handleCadetChange(e.target.value)}
+                    >
+                        <option value="">-- Select a Cadet --</option>
+                        <option value="all">All Cadets</option>
+                        {cadetNames.map((name, index) => (
+                            <option key={index} value={name}>
+                                {name}
+                            </option>
+                        ))}
+                    </select>
 
-            <label htmlFor="year-select">Select Year:</label>
-            <select
-                id="year-select"
-                value={selectedYear}
-                onChange={(e) => handleYearChange(e.target.value)} // Use the new handler
-            >
-                <option value="">-- Select a Year --</option>
-                {years.map((year, index) => (
-                    <option key={index} value={year}>
-                        {year}
-                    </option>
-                ))}
-            </select>
+                    <label htmlFor="year-select">Select Year:</label>
+                    <select
+                        id="year-select"
+                        value={selectedYear}
+                        onChange={(e) => handleYearChange(e.target.value)} // Use the new handler
+                    >
+                        <option value="">-- Select a Year --</option>
+                        {years.map((year, index) => (
+                            <option key={index} value={year}>
+                                {year}
+                            </option>
+                        ))}
+                    </select>
 
-            {/* Generate Button */}
-            {selectedCadet && selectedCadet !== "all" && selectedYear && (
-                <button className="generate-button" onClick={fetchCadetEvents}>
-                    Generate
-                </button>
-            )}
+                    {selectedCadet && selectedCadet !== "all" && selectedYear && (
+                        <button className="generate-button" onClick={fetchCadetEvents}>
+                            Generate
+                        </button>
+                    )}
 
-            {/* Events Section (only visible after Generate is clicked and not for "All Cadets") */}
-            {isGenerateClicked && selectedCadet !== "all" && (
-                <div className="events-section">
-                    <h2>Events</h2>
-                    {eventStrings.length > 0 ? (
-                        <div>
-                            {eventStrings.map((eventString, index) => (
-                                <p
-                                    key={index}
-                                    onClick={() => handleRemoveEvent(index)}
-                                    title="Click to remove this event"
-                                >
-                                    {eventString}
-                                </p>
-                            ))}
+                    {isGenerateClicked && selectedCadet !== "all" && (
+                        <div className="events-section">
+                            <h2>Review Certificate Lines</h2>
+                            {eventStrings.length > 0 ? (
+                                <div>
+                                    {eventStrings.map((eventString, index) => (
+                                        <p
+                                            key={index}
+                                            onClick={() => handleRemoveEvent(index)}
+                                            title="Click to remove from Certificate"
+                                        >
+                                            {eventString}
+                                        </p>
+                                    ))}
+                                </div>
+                            ) : (
+                                <p className="no-events">No events found for the selected cadet and year.</p>
+                            )}
                         </div>
-                    ) : (
-                        <p className="no-events">No events found for the selected cadet and year.</p>
+                    )}
+
+                    {selectedCadet === "all" && selectedYear && (
+                        <button className="download-button" onClick={handleDownloadAllCertificates}>
+                            Download All Certificates as .zip Folder
+                        </button>
+                    )}
+
+                    {isGenerateClicked && selectedCadet !== "all" && eventStrings.length > 0 && (
+                        <button className="download-button" onClick={handleGeneratePDF}>Download PDF</button>
                     )}
                 </div>
-            )}
-
-            {/* Download All Certificates Button */}
-            {selectedCadet === "all" && selectedYear && (
-                <button className="download-button" onClick={handleDownloadAllCertificates}>
-                    Download All Certificates as .zip Folder
-                </button>
-            )}
-
-            {/* Download PDF Button (only visible when not "All Cadets" and events list is not empty) */}
-            {isGenerateClicked && selectedCadet !== "all" && eventStrings.length > 0 && (
-                <button className="download-button" onClick={handleGeneratePDF}>Download PDF</button>
-            )}
+            </div>
+            <div className="divider" />
+            <div className="right-panel">
+                {/* Right panel is intentionally left blank for now */}
+            </div>
         </div>
     );
 };
