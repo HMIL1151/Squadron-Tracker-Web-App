@@ -26,9 +26,11 @@
   cursor: pointer;
 }
 
+/* General tab hover effect */
 .PTSTracker-tab:hover {
   background-color: #e0e0e0; /* Slightly darker blue on hover */
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); /* More pronounced shadow on hover */
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2); /* Add shadow on hover */
 }
 
 .PTSTracker-tab.expanded {
@@ -43,14 +45,17 @@
   border: 2px solid #ccc;
   padding: 10px 20px;
   font-weight: bold;
+  font-size: 16px; /* Explicitly set font size to match */
   cursor: pointer;
   border-radius: 5px;
   transition: all 0.3s ease;
 }
 
+/* Prevent "Show all Badge Types" button from having shadow on hover */
 .PTSTracker-tab.show-all:hover {
   background-color: #e0e0e0;
   border-color: #999;
+  box-shadow: none; /* No shadow on hover */
 }
 
 /* Remove unnecessary container styles */
@@ -255,6 +260,7 @@
   transform: scale(1); /* Default size */
 }
 
+/* General button hover effect */
 .PTSTracker-button:hover {
   transform: scale(1.1); /* Grow slightly on hover */
 }
@@ -305,6 +311,7 @@
   border: 2px solid #ccc;
   padding: 10px 20px;
   font-weight: bold;
+  font-size: 16px; /* Explicitly set font size */
   cursor: pointer;
   border-radius: 5px;
   transition: all 0.3s ease;
@@ -313,4 +320,5 @@
 .PTSTracker-button.show-all:hover {
   background-color: #e0e0e0;
   border-color: #999;
+  transform: scale(1); /* No scaling on hover */
 }

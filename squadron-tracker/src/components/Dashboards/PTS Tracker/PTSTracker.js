@@ -9,7 +9,7 @@ const PTSTracker = () => {
   const [badgeData, setBadgeData] = useState([]);
   const [groupedBadgeColumns, setGroupedBadgeColumns] = useState({});
   const [expandedTabs, setExpandedTabs] = useState({});
-  const [selectedButton, setSelectedButton] = useState([]); // State for selected buttons
+  const [selectedButton, setSelectedButton] = useState(["Blue", "Bronze", "Silver", "Gold"]); // Default state: all selected
 
   useEffect(() => {
     const fetchData = async () => {
@@ -81,12 +81,16 @@ const PTSTracker = () => {
       {/* Badge Colors Buttons */}
       <div className="PTSTracker-buttons">
         <button
-          onClick={() => setSelectedButton(["Blue", "Bronze", "Silver", "Gold"])} // Select all colors
+          onClick={() =>
+            setSelectedButton(
+              selectedButton.length === 4 ? [] : ["Blue", "Bronze", "Silver", "Gold"]
+            ) // Toggle between selecting all and deselecting all
+          }
           className="PTSTracker-button show-all"
         >
-          Show All
+          {selectedButton.length === 4 ? "Hide All Badge Levels" : "Show All Badge Levels"}
         </button>
-        {["Blue", "Bronze", "Silver", "Gold"].map((color, index) => (
+        {["Blue", "Bronze", "Silver", "Gold"].map((color) => (
           <button
             key={color}
             onClick={() => handleButtonClick(color)}
@@ -108,14 +112,16 @@ const PTSTracker = () => {
           onClick={() =>
             setExpandedTabs(
               Object.keys(groupedBadgeColumns).reduce((acc, type) => {
-                acc[type] = true; // Expand all tabs
+                acc[type] = !Object.values(expandedTabs).every((isExpanded) => isExpanded); // Toggle between expanding all and collapsing all
                 return acc;
               }, {})
             )
           }
           className="PTSTracker-tab show-all"
         >
-          Show All
+          {Object.values(expandedTabs).every((isExpanded) => isExpanded)
+            ? "Hide All Badge Types"
+            : "Show All Badge Types"}
         </button>
         {Object.keys(groupedBadgeColumns).map((type, index) => (
           <div
