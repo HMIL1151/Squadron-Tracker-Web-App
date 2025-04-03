@@ -1,4 +1,4 @@
-import { getFirestore, collection, getDocs, doc, getDoc, query, limit } from "firebase/firestore/lite";
+import { getFirestore, collection, getDocs, doc, getDoc, query, limit, where } from "firebase/firestore/lite";
 import { app } from "./firebase";
 import { rankMap } from "../utils/mappings";
 
@@ -297,5 +297,40 @@ export const doesCollectionExist = async (number) => {
   } catch (error) {
     console.error(`Error checking if collection ${number} exists:`, error);
     return false; // Return false if an error occurs
+  }
+};
+
+export const checkUserRole = async (uid) => {
+  try {
+    const db = getFirestore(app);
+    const collectionRef = collection(db, "Mass User List");
+
+    // Query the collection for a document where the UID field matches the given UID
+    const userQuery = query(collectionRef, where("UID", "==", uid));
+    const snapshot = await getDocs(userQuery);
+
+    if (!snapshot.empty) {
+      // Get the first matching document
+      const userDoc = snapshot.docs[0].data();
+
+      // Check if the user is a system admin
+      if (userDoc.systemAdmin === true) {
+        return "System Admin";
+      }
+
+      // If not a system admin, return the squadron number
+      if (userDoc.Squadron) {
+        return userDoc.Squadron; // Return the squadron number
+      }
+
+      // If no systemAdmin or Squadron field exists
+      return "No Role Assigned";
+    } else {
+      // No document found with the matching UID
+      return "First Login";
+    }
+  } catch (error) {
+    console.error(`Error checking user role for UID ${uid}:`, error);
+    return "Error";
   }
 };
