@@ -45,6 +45,67 @@
   margin: 1rem 0; /* Adds space around the table to make the shadow visible */
 }
 
+/* Apply styles to all table header cells */
+.PTSTracker-table th {
+  background-color: black; /* Black background */
+  color: white; /* White text */
+  font-weight: bold; /* Make the text bold */
+  text-align: center; /* Center-align the text */
+  padding: 10px; /* Add padding for better spacing */
+  border: 1px solid #ccc; /* Keep grid lines consistent */
+}
+
+/* Ensure the merged cells (badge types) also follow the same style */
+.PTSTracker-table th[colspan] {
+  background-color: black; /* Black background for merged cells */
+  color: white; /* White text */
+}
+
+/* Badge levels (second row of the header) */
+.PTSTracker-table thead tr:nth-child(2) th {
+  color: rgb(0, 0, 0, 0.7); /* White text for better contrast */
+  font-weight: bold; /* Make the text bold */
+  text-align: center; /* Center-align the text */
+}
+
+/* Specific colors for badge levels */
+.PTSTracker-table thead tr:nth-child(2) th:contains("Blue") {
+  background-color: blue;
+}
+
+.PTSTracker-table thead tr:nth-child(2) th:contains("Bronze") {
+  background-color: #cd7f32; /* Bronze color */
+}
+
+.PTSTracker-table thead tr:nth-child(2) th:contains("Silver") {
+  background-color: silver;
+}
+
+.PTSTracker-table thead tr:nth-child(2) th:contains("Gold") {
+  background-color: gold;
+}
+
+/* Badge level colors with pastel shades */
+.PTSTracker-table th.badge-level-blue {
+  background-color: #8EA9DB; /* Pastel blue */
+  color: black; /* Black text for better contrast */
+}
+
+.PTSTracker-table th.badge-level-bronze {
+  background-color: #d2a679; /* Pastel bronze */
+  color: black; /* Black text for better contrast */
+}
+
+.PTSTracker-table th.badge-level-silver {
+  background-color: #c0c0c0; /* Pastel silver */
+  color: black; /* Black text for better contrast */
+}
+
+.PTSTracker-table th.badge-level-gold {
+  background-color: #ffd700; /* Pastel gold */
+  color: black; /* Black text for better contrast */
+}
+
 /* Table cells */
 .PTSTracker-table th,
 .PTSTracker-table td {
