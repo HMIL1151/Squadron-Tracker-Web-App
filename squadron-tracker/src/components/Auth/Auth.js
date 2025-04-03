@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { auth, googleProvider } from "../../firebase/firebase";
 import { signInWithPopup, signOut, onAuthStateChanged } from "firebase/auth";
-import { getFirestore, doc, getDoc, setDoc } from "firebase/firestore/lite"; // Import Firestore functions
+import { getFirestore, doc, getDoc, setDoc } from "firebase/firestore/lite";
+import { doesCollectionExist } from "../../firebase/firestoreUtils"; // Import the function
 import "./Auth.css";
 
 const Auth = ({ onUserChange }) => {
@@ -9,6 +10,7 @@ const Auth = ({ onUserChange }) => {
   const [errorMessage, setErrorMessage] = useState(""); // State for error messages
   const [isUnauthorized, setIsUnauthorized] = useState(false); // State for unauthorized users
   const [signedOutUser, setSignedOutUser] = useState(null); // Store signed-out user info
+  const [squadronNumber, setSquadronNumber] = useState(""); // State for squadron number
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
@@ -49,7 +51,30 @@ const Auth = ({ onUserChange }) => {
     return () => unsubscribe();
   }, [onUserChange]);
 
+  const handleSquadronNumberChange = (e) => {
+    setSquadronNumber(e.target.value);  
+  };
+
+  const handleSquadronSubmit = async () => {
+    if (!squadronNumber) {
+      setErrorMessage("Please enter a squadron number.");
+      return;
+    }
+
+    try {
+      const exists = await doesCollectionExist(parseInt(squadronNumber, 10)); // Call the function
+      console.log(`Does collection ${squadronNumber} exist?`, exists); // Print the result to the console
+    } catch (error) {
+      console.error("Error checking squadron collection existence:", error);
+    }
+  };
+
   const handleSignIn = async () => {
+    if (!squadronNumber) {
+      setErrorMessage("Please enter your squadron number before signing in.");
+      return;
+    }
+
     try {
       await signInWithPopup(auth, googleProvider);
       console.log("Signed in user:", auth.currentUser); // Debugging line
@@ -107,7 +132,28 @@ const Auth = ({ onUserChange }) => {
 
   return (
     <div className="auth-container">
-      {user ? (
+      {!user && (
+        <div>
+          <div className="squadron-input">
+            <label htmlFor="squadron-number">Enter Squadron Number:</label>
+            <input
+              type="number"
+              id="squadron-number"
+              placeholder="e.g., 1151"
+              value={squadronNumber}
+              onChange={handleSquadronNumberChange} // Update state on input change
+            />
+            <button className="auth-button submit" onClick={handleSquadronSubmit}>
+              Submit
+            </button>
+          </div>
+          <button className="auth-button sign-in" onClick={handleSignIn}>
+            Sign In with Google
+          </button>
+          {errorMessage && <p className="error-message">{errorMessage}</p>}
+        </div>
+      )}
+      {user && (
         <div>
           <p>Welcome, {user.displayName}!</p>
           <button className="auth-button sign-out" onClick={handleSignOut}>
@@ -118,18 +164,6 @@ const Auth = ({ onUserChange }) => {
               Request Access
             </button>
           )}
-        </div>
-      ) : (
-        <div>
-          <button className="auth-button sign-in" onClick={handleSignIn}>
-            Sign In with Google
-          </button>
-          {(user || signedOutUser) && isUnauthorized && (
-            <button className="auth-button request-access" onClick={handleRequestAccess}>
-              Request Access
-            </button>
-          )}
-          {errorMessage && <p className="error-message">{errorMessage}</p>}
         </div>
       )}
       <hr />
