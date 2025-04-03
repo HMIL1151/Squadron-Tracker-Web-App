@@ -61,21 +61,62 @@ const PTSTracker = () => {
     );
   };
 
+  const getColorHex = (color) => {
+    switch (color) {
+      case "Blue":
+        return "#8EA9DB";
+      case "Bronze":
+        return "#d2a679";
+      case "Silver":
+        return "#c0c0c0";
+      case "Gold":
+        return "#ffd700";
+      default:
+        return "#000000"; // Fallback color
+    }
+  };
+
   return (
     <div className="PTSTracker">
+      {/* Badge Colors Buttons */}
       <div className="PTSTracker-buttons">
-        {["Blue", "Bronze", "Silver", "Gold"].map((color) => (
+        <button
+          onClick={() => setSelectedButton(["Blue", "Bronze", "Silver", "Gold"])} // Select all colors
+          className="PTSTracker-button show-all"
+        >
+          Show All
+        </button>
+        {["Blue", "Bronze", "Silver", "Gold"].map((color, index) => (
           <button
             key={color}
             onClick={() => handleButtonClick(color)}
             className={`PTSTracker-button ${selectedButton.includes(color) ? "selected" : ""}`}
+            style={{
+              borderColor: getColorHex(color),
+              backgroundColor: selectedButton.includes(color) ? getColorHex(color) : "transparent",
+              color: selectedButton.includes(color) ? "white" : getColorHex(color),
+            }}
           >
             {color}
           </button>
         ))}
       </div>
 
+      {/* Badge Types Tabs */}
       <div className="PTSTracker-tabs">
+        <button
+          onClick={() =>
+            setExpandedTabs(
+              Object.keys(groupedBadgeColumns).reduce((acc, type) => {
+                acc[type] = true; // Expand all tabs
+                return acc;
+              }, {})
+            )
+          }
+          className="PTSTracker-tab show-all"
+        >
+          Show All
+        </button>
         {Object.keys(groupedBadgeColumns).map((type, index) => (
           <div
             key={`tab-${index}`}
@@ -87,8 +128,9 @@ const PTSTracker = () => {
         ))}
       </div>
 
-      <motion.div 
-        className="PTSTracker-table-container" 
+      {/* Table */}
+      <motion.div
+        className="PTSTracker-table-container"
         style={{ textAlign: "left" }}
         initial={{ opacity: 0, x: -50 }}
         animate={{ opacity: 1, x: 0 }}
@@ -103,18 +145,21 @@ const PTSTracker = () => {
         >
           <thead>
             <tr>
-              <th rowSpan="2" style={{ whiteSpace: "nowrap", padding: "8px" }}>Cadet<br /> Name</th>
+              <th rowSpan="2" style={{ whiteSpace: "nowrap", padding: "8px" }}>
+                Cadet<br /> Name
+              </th>
               {Object.entries(groupedBadgeColumns).map(([type, levels], index) => {
-                // Calculate the number of visible badge levels for this category
+                // Filter visible levels based on selected buttons
                 const visibleLevels = levels.filter((level) => {
                   const levelName = level.split(" ")[0];
-                  return selectedButton.length === 0 || selectedButton.includes(levelName);
+                  return selectedButton.includes(levelName);
                 });
 
+                // Only render the badge type header if there are visible levels
                 return expandedTabs[type] && visibleLevels.length > 0 ? (
                   <motion.th
                     key={`type-${index}`}
-                    colSpan={visibleLevels.length} // Adjust colSpan dynamically
+                    colSpan={visibleLevels.length}
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ duration: 0.5, delay: 0.1 }}
@@ -130,14 +175,15 @@ const PTSTracker = () => {
                 expandedTabs[type]
                   ? levels.map((level, index) => {
                       const levelName = level.split(" ")[0];
-                      return selectedButton.length === 0 || selectedButton.includes(levelName) ? (
+                      // Only render the badge level header if it is selected
+                      return selectedButton.includes(levelName) ? (
                         <motion.th
                           key={`level-${type}-${index}`}
                           initial={{ opacity: 0, x: -10 }}
                           animate={{ opacity: 1, x: 0 }}
                           transition={{ duration: 0.5, delay: 0.1 }}
                           style={{ minWidth: "90px", padding: "1px" }}
-                          className={`badge-level-${levelName.toLowerCase()}`} // Add dynamic class
+                          className={`badge-level-${levelName.toLowerCase()}`}
                         >
                           {levelName}
                         </motion.th>
@@ -157,14 +203,15 @@ const PTSTracker = () => {
                         const levelName = level.split(" ")[0];
                         const badgeDate = getBadgeDate(name, level);
                         const badgeLevelClass = badgeDate ? `badge-level-${levelName.toLowerCase()}` : "";
-                        return selectedButton.length === 0 || selectedButton.includes(levelName) ? (
+                        // Only render the badge level cell if it is selected
+                        return selectedButton.includes(levelName) ? (
                           <motion.td
                             key={`badge-${rowIndex}-${type}-${colIndex}`}
                             initial={{ opacity: 0, x: -10 }}
                             animate={{ opacity: 1, x: 0 }}
                             transition={{ duration: 0.5, delay: 0.1 }}
                             style={{ minWidth: "90px", padding: "1px" }}
-                            className={badgeLevelClass} // Dynamically assign class
+                            className={badgeLevelClass}
                           >
                             {badgeDate}
                           </motion.td>
