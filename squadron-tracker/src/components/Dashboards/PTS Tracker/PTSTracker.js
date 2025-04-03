@@ -9,6 +9,7 @@ const PTSTracker = () => {
   const [badgeData, setBadgeData] = useState([]);
   const [groupedBadgeColumns, setGroupedBadgeColumns] = useState({});
   const [expandedTabs, setExpandedTabs] = useState({});
+  const [selectedButton, setSelectedButton] = useState([]); // State for selected button
 
   useEffect(() => {
     const fetchData = async () => {
@@ -52,8 +53,28 @@ const PTSTracker = () => {
     }));
   };
 
+  const handleButtonClick = (button) => {
+    setSelectedButton((prevSelected) =>
+      prevSelected.includes(button)
+        ? prevSelected.filter((b) => b !== button) // Deselect if already selected
+        : [...prevSelected, button] // Add to selected if not already selected
+    );
+  };
+
   return (
     <div className="PTSTracker">
+      <div className="PTSTracker-buttons">
+        {["Blue", "Bronze", "Silver", "Gold"].map((color) => (
+          <button
+            key={color}
+            onClick={() => handleButtonClick(color)}
+            className={`PTSTracker-button ${selectedButton.includes(color) ? "selected" : ""}`}
+          >
+            {color}
+          </button>
+        ))}
+      </div>
+
       <div className="PTSTracker-tabs">
         {Object.keys(groupedBadgeColumns).map((type, index) => (
           <div
