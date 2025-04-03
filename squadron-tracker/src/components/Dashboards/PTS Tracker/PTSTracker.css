@@ -106,6 +106,27 @@
   color: black; /* Black text for better contrast */
 }
 
+/* Badge level colors for filled cells */
+.PTSTracker-table td.badge-level-blue {
+  background-color: #8EA9DB; /* Pastel blue */
+  color: black; /* Black text for better contrast */
+}
+
+.PTSTracker-table td.badge-level-bronze {
+  background-color: #d2a679; /* Pastel bronze */
+  color: black; /* Black text for better contrast */
+}
+
+.PTSTracker-table td.badge-level-silver {
+  background-color: #c0c0c0; /* Pastel silver */
+  color: black; /* Black text for better contrast */
+}
+
+.PTSTracker-table td.badge-level-gold {
+  background-color: #ffd700; /* Pastel gold */
+  color: black; /* Black text for better contrast */
+}
+
 /* Table cells */
 .PTSTracker-table th,
 .PTSTracker-table td {
