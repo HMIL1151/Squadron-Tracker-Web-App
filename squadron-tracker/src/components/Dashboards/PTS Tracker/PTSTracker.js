@@ -9,7 +9,7 @@ const PTSTracker = () => {
   const [badgeData, setBadgeData] = useState([]);
   const [groupedBadgeColumns, setGroupedBadgeColumns] = useState({});
   const [expandedTabs, setExpandedTabs] = useState({});
-  const [selectedButton, setSelectedButton] = useState([]); // State for selected button
+  const [selectedButton, setSelectedButton] = useState([]); // State for selected buttons
 
   useEffect(() => {
     const fetchData = async () => {
@@ -104,11 +104,17 @@ const PTSTracker = () => {
           <thead>
             <tr>
               <th rowSpan="2" style={{ whiteSpace: "nowrap", padding: "8px" }}>Cadet<br /> Name</th>
-              {Object.keys(groupedBadgeColumns).map((type, index) =>
-                expandedTabs[type] ? (
+              {Object.entries(groupedBadgeColumns).map(([type, levels], index) => {
+                // Calculate the number of visible badge levels for this category
+                const visibleLevels = levels.filter((level) => {
+                  const levelName = level.split(" ")[0];
+                  return selectedButton.length === 0 || selectedButton.includes(levelName);
+                });
+
+                return expandedTabs[type] && visibleLevels.length > 0 ? (
                   <motion.th
                     key={`type-${index}`}
-                    colSpan={badgeLevel.length}
+                    colSpan={visibleLevels.length} // Adjust colSpan dynamically
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ duration: 0.5, delay: 0.1 }}
@@ -116,24 +122,27 @@ const PTSTracker = () => {
                   >
                     {type}
                   </motion.th>
-                ) : null
-              )}
+                ) : null;
+              })}
             </tr>
             <tr>
               {Object.entries(groupedBadgeColumns).flatMap(([type, levels]) =>
                 expandedTabs[type]
-                  ? levels.map((level, index) => (
-                      <motion.th
-                        key={`level-${type}-${index}`}
-                        initial={{ opacity: 0, x: -10 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ duration: 0.5, delay: 0.1 }}
-                        style={{ minWidth: "90px", padding: "1px" }}
-                        className={`badge-level-${level.split(" ")[0].toLowerCase()}`} // Add dynamic class
-                      >
-                        {level.split(" ")[0]}
-                      </motion.th>
-                    ))
+                  ? levels.map((level, index) => {
+                      const levelName = level.split(" ")[0];
+                      return selectedButton.length === 0 || selectedButton.includes(levelName) ? (
+                        <motion.th
+                          key={`level-${type}-${index}`}
+                          initial={{ opacity: 0, x: -10 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ duration: 0.5, delay: 0.1 }}
+                          style={{ minWidth: "90px", padding: "1px" }}
+                          className={`badge-level-${levelName.toLowerCase()}`} // Add dynamic class
+                        >
+                          {levelName}
+                        </motion.th>
+                      ) : null;
+                    })
                   : []
               )}
             </tr>
@@ -145,9 +154,10 @@ const PTSTracker = () => {
                 {Object.entries(groupedBadgeColumns).flatMap(([type, levels]) =>
                   expandedTabs[type]
                     ? levels.map((level, colIndex) => {
+                        const levelName = level.split(" ")[0];
                         const badgeDate = getBadgeDate(name, level);
-                        const badgeLevelClass = badgeDate ? `badge-level-${level.split(" ")[0].toLowerCase()}` : "";
-                        return (
+                        const badgeLevelClass = badgeDate ? `badge-level-${levelName.toLowerCase()}` : "";
+                        return selectedButton.length === 0 || selectedButton.includes(levelName) ? (
                           <motion.td
                             key={`badge-${rowIndex}-${type}-${colIndex}`}
                             initial={{ opacity: 0, x: -10 }}
@@ -158,7 +168,7 @@ const PTSTracker = () => {
                           >
                             {badgeDate}
                           </motion.td>
-                        );
+                        ) : null;
                       })
                     : []
                 )}
