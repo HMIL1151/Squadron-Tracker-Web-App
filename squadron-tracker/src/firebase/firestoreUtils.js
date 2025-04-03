@@ -282,24 +282,6 @@ export const getAllBadges = async () => {
   }
 };
 
-export const doesCollectionExist = async (number) => {
-  try {
-    const db = getFirestore(app);
-    const collectionName = number.toString(); // Convert the number to a string
-    const collectionRef = collection(db, collectionName);
-
-    // Query the collection with a limit of 1 to check for existence
-    const collectionQuery = query(collectionRef, limit(1));
-    const snapshot = await getDocs(collectionQuery);
-
-    // If the snapshot is empty, the collection does not exist
-    return !snapshot.empty;
-  } catch (error) {
-    console.error(`Error checking if collection ${number} exists:`, error);
-    return false; // Return false if an error occurs
-  }
-};
-
 export const checkUserRole = async (uid) => {
   try {
     const db = getFirestore(app);
@@ -332,5 +314,21 @@ export const checkUserRole = async (uid) => {
   } catch (error) {
     console.error(`Error checking user role for UID ${uid}:`, error);
     return "Error";
+  }
+};
+
+export const doesSquadronAccountExist = async (number) => {
+  try {
+    const db = getFirestore(app);
+    const squadronDocRef = doc(db, "Squadron Databases", number.toString()); // Reference the document by the squadron number
+
+    // Check if the document exists
+    const squadronDoc = await getDoc(squadronDocRef);
+
+    // Return true if the document exists, false otherwise
+    return squadronDoc.exists();
+  } catch (error) {
+    console.error(`Error checking if squadron account ${number} exists:`, error);
+    return false; // Return false if an error occurs
   }
 };

@@ -1,11 +1,11 @@
 import React, { useState } from "react";
 import { getAuth, signInWithPopup, GoogleAuthProvider, signOut } from "firebase/auth"; // Import Firebase Auth
-import { getFirestore, collection, doc, setDoc } from "firebase/firestore"; // Import Firestore functions
-import { checkUserRole, doesCollectionExist } from "../../firebase/firestoreUtils"; // Import Firestore utility functions
+import { getFirestore, collection, doc, setDoc, getDocs, writeBatch, query, where, getDoc } from "firebase/firestore"; // Import Firestore functions
+import { checkUserRole, doesSquadronAccountExist } from "../../firebase/firestoreUtils"; // Import Firestore utility functions
 import "./WelcomePage.css"; // Optional: Add styles for the welcome page
 import "../Dashboards/Dashboard Components/dashboardStyles.css"; // Import styles for buttons and popups
 
-const WelcomePage = () => {
+const WelcomePage = ({ onUserChange }) => {
   const [user, setUser] = useState(null); // Track the logged-in user
   const [error, setError] = useState(null);
   const [role, setRole] = useState(null); // Track the user's role
@@ -35,6 +35,41 @@ const WelcomePage = () => {
       const userRole = await checkUserRole(uid);
       console.log("User Role Response:", userRole);
 
+      // If the user role is a number, check the User Requests subcollection
+      if (!isNaN(userRole)) {
+        const squadronNumber = userRole.toString(); // Convert role to string for document lookup
+        const squadronDatabaseDocRef = doc(db, "Squadron Databases", squadronNumber);
+        const userRequestsCollectionRef = collection(squadronDatabaseDocRef, "User Requests");
+
+        // Query the User Requests subcollection for a matching document
+        const userQuery = query(
+          userRequestsCollectionRef,
+          where("displayName", "==", displayName),
+          where("email", "==", email),
+          where("progress", "==", "granted")
+        );
+        const userRequestSnapshot = await getDocs(userQuery);
+
+        if (!userRequestSnapshot.empty) {
+          // Fetch the squadron name from the Squadron List collection
+          const squadronName = await fetchSquadronName(squadronNumber);
+
+          if (!squadronName) {
+            setError("Failed to fetch squadron name. Please try again.");
+            return;
+          }
+
+          // Navigate to main content and pass user and squadron data
+          navigateToMainContent({
+            displayName,
+            uid,
+            squadronName,
+            squadronNumber: parseInt(squadronNumber, 10),
+          });
+          return;
+        }
+      }
+
       // Update the user state and role
       setUser({ uid, email, displayName });
       setRole(userRole);
@@ -63,16 +98,62 @@ const WelcomePage = () => {
     try {
       console.log("Squadron Number Submitted:", squadronNumber);
 
-      // Check if the collection exists
-      const collectionExists = await doesCollectionExist(squadronNumber);
+      // Check if the squadron account exists
+      const collectionExists = await doesSquadronAccountExist(squadronNumber);
       console.log("Does Squadron Collection Exist:", collectionExists);
 
-      if (!collectionExists) {
+      if (role === "First Login" && collectionExists) {
+        // Fetch the squadron name from the Squadron List collection
+        const squadronName = await fetchSquadronName(squadronNumber);
+
+        if (!squadronName) {
+          setError("Failed to fetch squadron name. Please try again.");
+          return;
+        }
+
+        // Add a new document to the 'User Requests' subcollection
+        const squadronDatabaseDocRef = doc(db, "Squadron Databases", squadronNumber);
+        const userRequestsDocRef = doc(collection(squadronDatabaseDocRef, "User Requests"));
+        await setDoc(userRequestsDocRef, {
+          displayName: user.displayName,
+          email: user.email,
+          progress: "pending",
+          timestamp: new Date().toISOString(), // Current timestamp in ISO format
+        });
+        console.log("User request added to 'User Requests' subcollection with status 'pending'.");
+
+        // Add a new document to the top-level 'Mass User List' collection
+        const massUserListDocRef = doc(collection(db, "Mass User List"));
+        await setDoc(massUserListDocRef, {
+          UID: user.uid,
+          Squadron: parseInt(squadronNumber, 10),
+        });
+        console.log("User added to 'Mass User List' collection.");
+
+        // Notify the user
+        setError("Your request to join the squadron is pending approval.");
+      } else if (role === "System Admin" && collectionExists) {
+        // Fetch the squadron name from the Squadron List collection
+        const squadronName = await fetchSquadronName(squadronNumber);
+
+        if (!squadronName) {
+          setError("Failed to fetch squadron name. Please try again.");
+          return;
+        }
+
+        // Navigate to main content and pass user and squadron data
+        navigateToMainContent({
+          displayName: user.displayName,
+          uid: user.uid,
+          squadronName,
+          squadronNumber: parseInt(squadronNumber, 10),
+        });
+      } else if (!collectionExists) {
         setShowSetupPopup(true); // Show the setup popup if the collection does not exist
       }
     } catch (err) {
-      console.error("Error checking Squadron collection existence:", err);
-      setError("Failed to verify Squadron number. Please try again.");
+      console.error("Error checking Squadron collection existence or adding user request:", err);
+      setError("Failed to verify Squadron number or submit your request. Please try again.");
     }
   };
 
@@ -109,20 +190,122 @@ const WelcomePage = () => {
         await setDoc(authorisedUsersDocRef, {
           displayName: user.displayName,
           email: user.email,
-          role: "Admin",
+          role: "admin",
         });
         console.log("Admin user added to 'Authorised Users' subcollection.");
 
-        // Close the popup and reset the form
+        // Reproduce the 'Flight Points' collection in the new Squadron Database
+        const topLevelFlightPointsRef = collection(db, "Flight Points");
+        const newFlightPointsRef = collection(squadronDatabaseDocRef, "Flight Points");
+
+        const topLevelFlightPointsSnapshot = await getDocs(topLevelFlightPointsRef);
+        const batch = writeBatch(db); // Use a batch for efficient writes
+
+        topLevelFlightPointsSnapshot.forEach((topLevelDoc) => {
+          const newDocRef = doc(newFlightPointsRef, topLevelDoc.id); // Correct usage of doc
+          batch.set(newDocRef, topLevelDoc.data()); // Copy the document data
+        });
+
+        await batch.commit(); // Commit the batch write
+        console.log("Flight Points collection successfully reproduced.");
+
+        // Add a new document to the 'User Requests' collection
+        const userRequestsDocRef = doc(collection(squadronDatabaseDocRef, "User Requests"));
+        await setDoc(userRequestsDocRef, {
+          displayName: user.displayName,
+          email: user.email,
+          progress: "granted",
+          timestamp: new Date().toISOString(), // Current timestamp in ISO format
+        });
+        console.log("User request added to 'User Requests' collection.");
+
+        // Add a new document to the top-level 'Mass User List' collection
+        const massUserListDocRef = doc(collection(db, "Mass User List"));
+        await setDoc(massUserListDocRef, {
+          UID: user.uid,
+          Squadron: parseInt(squadronNumber, 10),
+        });
+        console.log("User added to 'Mass User List' collection.");
+
+        // Close all popups
+        setShowSetupPopup(false);
         setShowBlankPopup(false);
-        setSquadronName("");
-        setSquadronNumber("");
-        setIsAdmin(false);
-        alert("Squadron setup successfully completed!");
+
+        // Log the user out and return to the login screen
+        await handleLogout();
       } catch (err) {
         console.error("Error during squadron setup:", err);
         setError("Failed to set up the squadron. Please try again.");
       }
+    }
+  };
+
+  const navigateToMainContent = async ({ displayName, uid, squadronName, squadronNumber }) => {
+    let userRole = role; // Default to the role from checkUserRole
+  
+    if (role !== "System Admin") {
+      try {
+        // Navigate to Authorized Users subcollection
+        const authorizedUsersCollectionRef = collection(
+          db,
+          "Squadron Databases",
+          squadronNumber.toString(),
+          "Authorised Users"
+        );
+  
+        // Query for the document where displayName matches the user's displayName
+        const userQuery = query(authorizedUsersCollectionRef, where("displayName", "==", displayName));
+        const userSnapshot = await getDocs(userQuery);
+  
+        if (!userSnapshot.empty) {
+          // Get the first matching document
+          const userDoc = userSnapshot.docs[0];
+          userRole = userDoc.data().role; // Extract the role from the document
+        } else {
+          console.error(`No matching user found in Authorized Users for squadron ${squadronNumber}.`);
+          userRole = "unknown"; // Default to "unknown" if no match is found
+        }
+      } catch (err) {
+        console.error("Error fetching user role from Authorized Users:", err);
+        userRole = "unknown"; // Default to "unknown" in case of an error
+      }
+    } else {
+      userRole = "admin"; // If the role is System Admin, set it to "admin"
+    }
+  
+    console.log("Navigating to main content with data:", {
+      displayName,
+      uid,
+      squadronName,
+      squadronNumber,
+      role: userRole,
+    });
+  
+    // Call the onUserChange prop to pass the user and squadron data to App.js
+    onUserChange(
+      { displayName, uid, squadronName, squadronNumber, role: userRole }, // User data
+      userRole === "admin" // isAdmin status
+    );
+  };
+  
+
+  const fetchSquadronName = async (squadronNumber) => {
+    try {
+      const squadronListCollectionRef = collection(db, "Squadron List");
+      const squadronQuery = query(squadronListCollectionRef, where("Number", "==", parseInt(squadronNumber, 10)));
+      const squadronSnapshot = await getDocs(squadronQuery);
+
+      if (!squadronSnapshot.empty) {
+        // Get the first matching document
+        const squadronDoc = squadronSnapshot.docs[0];
+        return squadronDoc.data().Name; // Return the squadron name
+      } else {
+        console.error(`Squadron with number ${squadronNumber} not found in Squadron List.`);
+        return null;
+      }
+    } catch (err) {
+      console.error("Error fetching squadron name:", err);
+      return null;
     }
   };
 
