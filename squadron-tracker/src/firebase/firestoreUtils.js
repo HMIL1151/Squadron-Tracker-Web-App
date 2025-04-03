@@ -1,4 +1,4 @@
-import { getFirestore, collection, getDocs, doc, getDoc } from "firebase/firestore/lite";
+import { getFirestore, collection, getDocs, doc, getDoc, query, limit } from "firebase/firestore/lite";
 import { app } from "./firebase";
 import { rankMap } from "../utils/mappings";
 
@@ -279,5 +279,23 @@ export const getAllBadges = async () => {
   } catch (error) {
     console.error("Error fetching all badges:", error);
     return [];
+  }
+};
+
+export const doesCollectionExist = async (number) => {
+  try {
+    const db = getFirestore(app);
+    const collectionName = number.toString(); // Convert the number to a string
+    const collectionRef = collection(db, collectionName);
+
+    // Query the collection with a limit of 1 to check for existence
+    const collectionQuery = query(collectionRef, limit(1));
+    const snapshot = await getDocs(collectionQuery);
+
+    // If the snapshot is empty, the collection does not exist
+    return !snapshot.empty;
+  } catch (error) {
+    console.error(`Error checking if collection ${number} exists:`, error);
+    return false; // Return false if an error occurs
   }
 };
