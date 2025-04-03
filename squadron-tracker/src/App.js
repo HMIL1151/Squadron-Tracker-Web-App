@@ -8,6 +8,7 @@ import { signOut } from "firebase/auth";
 import { auth } from "./firebase/firebase"; // Adjust the import path to your Firebase configuration
 import dashboardList from "./components/Dashboards/Dashboard Components/dashboardList";
 import { getFirestore, doc, getDoc } from "firebase/firestore/lite"; // Import Firestore functions
+import { useSquadron } from "./context/SquadronContext"; // Import the custom hook
 
 const App = () => {
   const version = "v0.6.1"; // Define the version number
@@ -15,9 +16,13 @@ const App = () => {
   const [isAdmin, setIsAdmin] = useState(false); // Track if the user is an admin
   const [activeMenu, setActiveMenu] = useState(dashboardList[0]?.key || ""); // Default to the first dashboard key
 
+  const { setSquadronNumber } = useSquadron(); // Access the context
+
   const handleUserChange = (currentUser, isAdminStatus) => {
-    setUser(currentUser);
-    setIsAdmin(isAdminStatus);
+    setUser(currentUser); // Update the user state with all user data
+    setIsAdmin(isAdminStatus); // Update the admin status
+    setSquadronNumber(currentUser.squadronNumber); // Set the squadron number in the context
+    console.log("User data updated:", currentUser);
   };
 
   const handleLogout = () => {
@@ -25,6 +30,7 @@ const App = () => {
       .then(() => {
         setUser(null); // Clear the user state
         setActiveMenu(dashboardList[0]?.key || ""); // Reset the menu to the first dashboard
+        setSquadronNumber(null); // Clear the squadron number in the context
         console.log("User successfully logged out.");
       })
       .catch((error) => {
@@ -48,10 +54,18 @@ const App = () => {
     return <WelcomePage onUserChange={handleUserChange} />;
   }
 
+  if (user) {
+    console.log("User Display Name:", user.displayName);
+    console.log("User UID:", user.uid);
+    console.log("Squadron Name:", user.squadronName);
+    console.log("Squadron Number:", user.squadronNumber);
+    console.log("User Role:", user.role);
+  }
+
   return (
     <div className="App">
       <header className="app-header">
-        <div className="title">Squadron Tracker, 1151 (Wallsend) Squadron ATC</div>
+        <div className="title">Squadron Tracker, {user.squadronNumber} ({user.squadronName}) Squadron ATC</div>
         <div className="user-info">
           <span>Logged in as {user.displayName}</span>
           <button className="logout-button" onClick={handleLogout}>
