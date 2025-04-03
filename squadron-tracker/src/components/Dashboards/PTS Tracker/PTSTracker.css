@@ -221,3 +221,64 @@
 .PTSTracker-table tr:last-child td:last-child {
   border-bottom-right-radius: 12px; /* Bottom-right corner */
 }
+
+.PTSTracker-buttons {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.PTSTracker-button {
+  padding: 10px 20px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  border-radius: 5px;
+  transition: all 0.3s ease;
+  border: 2px solid transparent; /* Default border */
+  transform: scale(1); /* Default size */
+}
+
+.PTSTracker-button:hover {
+  transform: scale(1.1); /* Grow slightly on hover */
+}
+
+.PTSTracker-button:nth-child(1) {
+  border-color: #8EA9DB; /* Blue */
+  color: #8EA9DB;
+}
+
+.PTSTracker-button:nth-child(2) {
+  border-color: #d2a679; /* Bronze */
+  color: #d2a679;
+}
+
+.PTSTracker-button:nth-child(3) {
+  border-color: #c0c0c0; /* Silver */
+  color: #c0c0c0;
+}
+
+.PTSTracker-button:nth-child(4) {
+  border-color: #ffd700; /* Gold */
+  color: #ffd700;
+}
+
+.PTSTracker-button.selected:nth-child(1) {
+  background-color: #8EA9DB; /* Blue */
+  color: white;
+}
+
+.PTSTracker-button.selected:nth-child(2) {
+  background-color: #d2a679; /* Bronze */
+  color: white;
+}
+
+.PTSTracker-button.selected:nth-child(3) {
+  background-color: #c0c0c0; /* Silver */
+  color: white;
+}
+
+.PTSTracker-button.selected:nth-child(4) {
+  background-color: #ffd700; /* Gold */
+  color: white;
+}
