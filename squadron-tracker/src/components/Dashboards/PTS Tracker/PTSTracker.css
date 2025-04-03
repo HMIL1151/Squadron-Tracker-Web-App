@@ -26,23 +26,30 @@
   background-color: #ddd;
 }
 
-/* Scrollable table container */
+/* Remove unnecessary container styles */
 .PTSTracker-table-container {
-  overflow-x: auto;
+  overflow: visible; /* Allows the shadow to extend outside the container */
+  padding: 0; /* Remove padding to avoid extra space around the table */
+  box-shadow: none; /* Remove shadow from the container */
+  border-radius: 0; /* Remove rounded corners from the container */
 }
 
-/* Table styles */
+/* Apply shadow and rounded corners directly to the table */
 .PTSTracker-table {
   border-collapse: separate;
   border-spacing: 0;
-  min-width: 100px;
-  border-radius: 12px;
-  overflow: hidden;
+  width: 100%; /* Ensures the table takes up the full width of the container */
+  border-radius: 12px; /* Rounds the table itself */
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15); /* Adds a more prominent shadow */
+  background-color: white; /* Ensures the table background is white */
+  overflow: hidden; /* Ensures rounded corners are visible */
+  margin: 1rem 0; /* Adds space around the table to make the shadow visible */
 }
 
+/* Table cells */
 .PTSTracker-table th,
 .PTSTracker-table td {
-  border: 1px solid #ccc;
+  border: none; /* Removes borders between cells */
   text-align: center;
   width: 95px;
   min-width: 95px;
@@ -52,11 +59,11 @@
 /* First column (Cadet Name) specific styles */
 .PTSTracker-table th:first-child,
 .PTSTracker-table td:first-child {
-  width: 100px; /* Allow the column to adjust dynamically */
+  width: auto; /* Allow the column to adjust dynamically */
   padding-left: 3px;
   padding-right: 3px;
-  min-width: 100px; /* Remove the minimum width restriction */
-  max-width: 200px; /* Remove the maximum width restriction */
+  min-width: 0; /* Remove the minimum width restriction */
+  max-width: none; /* Remove the maximum width restriction */
   white-space: nowrap; /* Prevent text wrapping */
 }
 
@@ -72,17 +79,33 @@
 
 /* Ensure only the four outermost corners are rounded */
 .PTSTracker-table tr:first-child th:first-child {
-    border-top-left-radius: 12px;
-  }
-  
-  .PTSTracker-table tr:first-child th:last-child {
-    border-top-right-radius: 12px;
-  }
-  
-  .PTSTracker-table tr:last-child td:first-child {
-    border-bottom-left-radius: 12px;
-  }
-  
-  .PTSTracker-table tr:last-child td:last-child {
-    border-bottom-right-radius: 12px;
-  }
+  border-top-left-radius: 12px;
+}
+
+.PTSTracker-table tr:first-child th:last-child {
+  border-top-right-radius: 12px;
+}
+
+.PTSTracker-table tr:last-child td:first-child {
+  border-bottom-left-radius: 12px;
+}
+
+.PTSTracker-table tr:last-child td:last-child {
+  border-bottom-right-radius: 12px;
+}
+
+.PTSTracker-table th:first-child {
+  border-top-left-radius: 12px; /* Top-left corner */
+}
+
+.PTSTracker-table th:last-child {
+  border-top-right-radius: 12px; /* Top-right corner */
+}
+
+.PTSTracker-table tr:last-child td:first-child {
+  border-bottom-left-radius: 12px; /* Bottom-left corner */
+}
+
+.PTSTracker-table tr:last-child td:last-child {
+  border-bottom-right-radius: 12px; /* Bottom-right corner */
+}
