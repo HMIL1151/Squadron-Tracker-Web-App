@@ -91,7 +91,7 @@ const PTSTracker = () => {
                     colSpan={badgeLevel.length}
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.5, delay: index * 0.1 }}
+                    transition={{ duration: 0.5, delay: 0.1 }}
                     style={{ minWidth: "90px", padding: "1px" }}
                   >
                     {type}
@@ -107,7 +107,7 @@ const PTSTracker = () => {
                         key={`level-${type}-${index}`}
                         initial={{ opacity: 0, x: -10 }}
                         animate={{ opacity: 1, x: 0 }}
-                        transition={{ duration: 0.5, delay: index * 0.1 }}
+                        transition={{ duration: 0.5, delay: 0.1 }}
                         style={{ minWidth: "90px", padding: "1px" }}
                         className={`badge-level-${level.split(" ")[0].toLowerCase()}`} // Add dynamic class
                       >
@@ -124,17 +124,22 @@ const PTSTracker = () => {
                 <td style={{ whiteSpace: "nowrap", padding: "4px" }}>{name}</td>
                 {Object.entries(groupedBadgeColumns).flatMap(([type, levels]) =>
                   expandedTabs[type]
-                    ? levels.map((level, colIndex) => (
-                        <motion.td
-                          key={`badge-${rowIndex}-${type}-${colIndex}`}
-                          initial={{ opacity: 0, x: -10 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ duration: 0.5, delay: colIndex * 0.1 }}
-                          style={{ minWidth: "90px", padding: "1px" }}
-                        >
-                          {getBadgeDate(name, level)}
-                        </motion.td>
-                      ))
+                    ? levels.map((level, colIndex) => {
+                        const badgeDate = getBadgeDate(name, level);
+                        const badgeLevelClass = badgeDate ? `badge-level-${level.split(" ")[0].toLowerCase()}` : "";
+                        return (
+                          <motion.td
+                            key={`badge-${rowIndex}-${type}-${colIndex}`}
+                            initial={{ opacity: 0, x: -10 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ duration: 0.5, delay: 0.1 }}
+                            style={{ minWidth: "90px", padding: "1px" }}
+                            className={badgeLevelClass} // Dynamically assign class
+                          >
+                            {badgeDate}
+                          </motion.td>
+                        );
+                      })
                     : []
                 )}
               </tr>
