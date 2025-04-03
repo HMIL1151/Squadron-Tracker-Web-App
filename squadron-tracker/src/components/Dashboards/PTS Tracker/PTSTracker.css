@@ -36,11 +36,10 @@
 
 /* Apply shadow and rounded corners directly to the table */
 .PTSTracker-table {
-  border-collapse: separate;
-  border-spacing: 0;
+  border-collapse: collapse; /* Ensures grid lines are consistent */
   width: 100%; /* Ensures the table takes up the full width of the container */
   border-radius: 12px; /* Rounds the table itself */
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15); /* Adds a more prominent shadow */
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15); /* Adds a shadow around the table */
   background-color: white; /* Ensures the table background is white */
   overflow: hidden; /* Ensures rounded corners are visible */
   margin: 1rem 0; /* Adds space around the table to make the shadow visible */
@@ -49,11 +48,31 @@
 /* Table cells */
 .PTSTracker-table th,
 .PTSTracker-table td {
-  border: none; /* Removes borders between cells */
+  border: 1px solid #ccc; /* Adds grid lines between cells */
   text-align: center;
   width: 95px;
   min-width: 95px;
   max-width: 95px;
+  padding: 8px; /* Adds padding inside the cells */
+}
+
+/* Remove borders from the outer edges of the table */
+.PTSTracker-table tr:first-child th {
+  border-top: none; /* Remove top border */
+}
+
+.PTSTracker-table tr:last-child td {
+  border-bottom: none; /* Remove bottom border */
+}
+
+.PTSTracker-table th:first-child,
+.PTSTracker-table td:first-child {
+  border-left: none; /* Remove left border */
+}
+
+.PTSTracker-table th:last-child,
+.PTSTracker-table td:last-child {
+  border-right: none; /* Remove right border */
 }
 
 /* First column (Cadet Name) specific styles */
