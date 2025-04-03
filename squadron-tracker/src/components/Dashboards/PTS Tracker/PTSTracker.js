@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { motion } from "framer-motion";
 import { getAllCadetNames, getBadgeTypeList, getAllBadges } from "../../../firebase/firestoreUtils";
 import { badgeLevel } from "../../../utils/examList";
 import "./PTSTracker.css";
@@ -7,16 +8,14 @@ const PTSTracker = () => {
   const [cadetNames, setCadetNames] = useState([]);
   const [badgeData, setBadgeData] = useState([]);
   const [groupedBadgeColumns, setGroupedBadgeColumns] = useState({});
-  const [expandedTabs, setExpandedTabs] = useState({}); // Tracks expanded state for each badge type
+  const [expandedTabs, setExpandedTabs] = useState({});
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Fetch cadet names
         const names = await getAllCadetNames();
         setCadetNames(names);
 
-        // Fetch badge types and generate grouped badge columns
         const badgeTypes = await getBadgeTypeList();
         const groupedColumns = badgeTypes.reduce((acc, type) => {
           acc[type] = badgeLevel.map((level) => `${level} ${type}`);
@@ -24,13 +23,11 @@ const PTSTracker = () => {
         }, {});
         setGroupedBadgeColumns(groupedColumns);
 
-        // Fetch all badges data
         const badges = await getAllBadges();
         setBadgeData(badges);
 
-        // Initialize expanded state for each badge type
         const initialExpandedState = badgeTypes.reduce((acc, type) => {
-          acc[type] = false; // All badge types start collapsed
+          acc[type] = false;
           return acc;
         }, {});
         setExpandedTabs(initialExpandedState);
@@ -38,7 +35,6 @@ const PTSTracker = () => {
         console.error("Error fetching data:", error);
       }
     };
-
     fetchData();
   }, []);
 
@@ -52,14 +48,13 @@ const PTSTracker = () => {
   const toggleTab = (type) => {
     setExpandedTabs((prevState) => ({
       ...prevState,
-      [type]: !prevState[type], // Toggle the expanded state for the clicked badge type
+      [type]: !prevState[type],
     }));
   };
 
   return (
     <div className="PTSTracker">
       <h1>PTS Tracker</h1>
-      {/* Tabs for badge types */}
       <div className="PTSTracker-tabs">
         {Object.keys(groupedBadgeColumns).map((type, index) => (
           <div
@@ -72,17 +67,35 @@ const PTSTracker = () => {
         ))}
       </div>
 
-      {/* Scrollable Table Container */}
-      <div className="PTSTracker-table-container">
-        <table className="PTSTracker-table">
+      <motion.div 
+        className="PTSTracker-table-container" 
+        style={{ textAlign: "left" }}
+        initial={{ opacity: 0, x: -50 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.5 }}
+      >
+        <motion.table
+          initial={{ width: "auto" }}
+          animate={{ width: "auto" }}
+          transition={{ duration: 0.5 }}
+          className="PTSTracker-table"
+          style={{ borderCollapse: "collapse" }}
+        >
           <thead>
             <tr>
-              <th rowSpan="2">Cadet Name</th>
+              <th rowSpan="2" style={{ whiteSpace: "nowrap", padding: "22px" }}>Cadet<br /> Name</th>
               {Object.keys(groupedBadgeColumns).map((type, index) =>
                 expandedTabs[type] ? (
-                  <th key={`type-${index}`} colSpan={badgeLevel.length}>
+                  <motion.th
+                    key={`type-${index}`}
+                    colSpan={badgeLevel.length}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.5, delay: index * 0.1 }}
+                    style={{ minWidth: "100px", padding: "8px" }}
+                  >
                     {type}
-                  </th>
+                  </motion.th>
                 ) : null
               )}
             </tr>
@@ -90,9 +103,15 @@ const PTSTracker = () => {
               {Object.entries(groupedBadgeColumns).flatMap(([type, levels]) =>
                 expandedTabs[type]
                   ? levels.map((level, index) => (
-                      <th key={`level-${type}-${index}`}>
+                      <motion.th
+                        key={`level-${type}-${index}`}
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ duration: 0.5, delay: index * 0.1 }}
+                        style={{ minWidth: "100px", padding: "8px" }}
+                      >
                         {level.split(" ")[0]}
-                      </th>
+                      </motion.th>
                     ))
                   : []
               )}
@@ -101,21 +120,27 @@ const PTSTracker = () => {
           <tbody>
             {cadetNames.map((name, rowIndex) => (
               <tr key={`cadet-${rowIndex}`}>
-                <td>{name}</td>
+                <td style={{ whiteSpace: "nowrap", padding: "8px" }}>{name}</td>
                 {Object.entries(groupedBadgeColumns).flatMap(([type, levels]) =>
                   expandedTabs[type]
                     ? levels.map((level, colIndex) => (
-                        <td key={`badge-${rowIndex}-${type}-${colIndex}`}>
+                        <motion.td
+                          key={`badge-${rowIndex}-${type}-${colIndex}`}
+                          initial={{ opacity: 0, x: -10 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ duration: 0.5, delay: colIndex * 0.1 }}
+                          style={{ minWidth: "100px", padding: "8px" }}
+                        >
                           {getBadgeDate(name, level)}
-                        </td>
+                        </motion.td>
                       ))
                     : []
                 )}
               </tr>
             ))}
           </tbody>
-        </table>
-      </div>
+        </motion.table>
+      </motion.div>
     </div>
   );
 };

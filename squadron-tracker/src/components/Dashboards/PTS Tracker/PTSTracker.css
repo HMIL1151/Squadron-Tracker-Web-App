@@ -52,11 +52,11 @@
 /* First column (Cadet Name) specific styles */
 .PTSTracker-table th:first-child,
 .PTSTracker-table td:first-child {
-  width: auto; /* Allow the column to adjust dynamically */
+  width: 100px; /* Allow the column to adjust dynamically */
   padding-left: 3px;
   padding-right: 3px;
-  min-width: 0; /* Remove the minimum width restriction */
-  max-width: none; /* Remove the maximum width restriction */
+  min-width: 100px; /* Remove the minimum width restriction */
+  max-width: 200px; /* Remove the maximum width restriction */
   white-space: nowrap; /* Prevent text wrapping */
 }
 
