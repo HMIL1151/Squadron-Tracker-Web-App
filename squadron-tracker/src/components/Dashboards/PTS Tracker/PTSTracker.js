@@ -83,7 +83,7 @@ const PTSTracker = () => {
         >
           <thead>
             <tr>
-              <th rowSpan="2" style={{ whiteSpace: "nowrap", padding: "22px" }}>Cadet<br /> Name</th>
+              <th rowSpan="2" style={{ whiteSpace: "nowrap", padding: "8px" }}>Cadet<br /> Name</th>
               {Object.keys(groupedBadgeColumns).map((type, index) =>
                 expandedTabs[type] ? (
                   <motion.th
@@ -109,6 +109,7 @@ const PTSTracker = () => {
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ duration: 0.5, delay: index * 0.1 }}
                         style={{ minWidth: "90px", padding: "1px" }}
+                        className={`badge-level-${level.split(" ")[0].toLowerCase()}`} // Add dynamic class
                       >
                         {level.split(" ")[0]}
                       </motion.th>
