@@ -2,8 +2,8 @@
 
 import "./Styles/App.css";
 import { useState } from "react";
-import Auth from "./components/Auth/Auth";
 import Menu from "./components/Menu/Menu"; // Import the Menu component
+import WelcomePage from "./components/WelcomePage/WelcomePage"; // Import the new WelcomePage component
 import { signOut } from "firebase/auth";
 import { auth } from "./firebase/firebase"; // Adjust the import path to your Firebase configuration
 import dashboardList from "./components/Dashboards/Dashboard Components/dashboardList";
@@ -15,27 +15,9 @@ const App = () => {
   const [isAdmin, setIsAdmin] = useState(false); // Track if the user is an admin
   const [activeMenu, setActiveMenu] = useState(dashboardList[0]?.key || ""); // Default to the first dashboard key
 
-  const handleUserChange = async (currentUser) => {
+  const handleUserChange = (currentUser, isAdminStatus) => {
     setUser(currentUser);
-
-    if (currentUser) {
-      try {
-        const db = getFirestore();
-        const userDocRef = doc(db, "AuthorizedUsers", currentUser.uid);
-        const userDoc = await getDoc(userDocRef);
-
-        if (userDoc.exists() && userDoc.data().role === "admin") {
-          setIsAdmin(true); // Set admin status
-        } else {
-          setIsAdmin(false);
-        }
-      } catch (error) {
-        console.error("Error checking admin role:", error);
-        setIsAdmin(false);
-      }
-    } else {
-      setIsAdmin(false);
-    }
+    setIsAdmin(isAdminStatus);
   };
 
   const handleLogout = () => {
@@ -62,31 +44,23 @@ const App = () => {
     return <h2>No Dashboards Available</h2>;
   };
 
+  if (!user) {
+    return <WelcomePage onUserChange={handleUserChange} />;
+  }
+
   return (
     <div className="App">
       <header className="app-header">
         <div className="title">Squadron Tracker, 1151 (Wallsend) Squadron ATC</div>
-        {user && (
-          <div className="user-info">
-            <span>Logged in as {user.displayName}</span>
-            <button className="logout-button" onClick={handleLogout}>
-              Log Out
-            </button>
-          </div>
-        )}
-      </header>
-      {!user ? (
-        <div className="auth-modal">
-          <h2>Welcome to Squadron Tracker</h2>
-          <p>Please sign in to continue.</p>
-          <Auth onUserChange={handleUserChange} />
+        <div className="user-info">
+          <span>Logged in as {user.displayName}</span>
+          <button className="logout-button" onClick={handleLogout}>
+            Log Out
+          </button>
         </div>
-      ) : (
-        <>
-          <Menu activeMenu={activeMenu} setActiveMenu={setActiveMenu} isAdmin={isAdmin} />
-          <main className="main-content">{renderMainContent()}</main>
-        </>
-      )}
+      </header>
+      <Menu activeMenu={activeMenu} setActiveMenu={setActiveMenu} isAdmin={isAdmin} />
+      <main className="main-content">{renderMainContent()}</main>
       {/* Version number in the bottom-right corner */}
       <div className="version-number">{version}</div>
     </div>
