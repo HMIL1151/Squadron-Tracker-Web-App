@@ -16,14 +16,25 @@
 
 .PTSTracker-tab {
   padding: 0.5rem 1rem;
-  border: 1px solid #ccc;
+  border: 1px solid #ccc; /* Blue border */
   margin-right: 0.5rem;
-  background-color: #fff;
-  transition: background-color 0.3s ease;
+  background-color: #ffffff; /* Light blue background */
+  border-radius: 8px; /* Rounded corners */
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+  color: #333; /* Blue text */
+  transition: all 0.3s ease; /* Smooth transition for hover effects */
+  cursor: pointer;
+}
+
+.PTSTracker-tab:hover {
+  background-color: #e0e0e0; /* Slightly darker blue on hover */
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); /* More pronounced shadow on hover */
 }
 
 .PTSTracker-tab.expanded {
-  background-color: #ddd;
+  background-color: #007bff; /* Solid blue background for expanded state */
+  color: white; /* White text for expanded state */
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); /* Match hover shadow */
 }
 
 /* Remove unnecessary container styles */
