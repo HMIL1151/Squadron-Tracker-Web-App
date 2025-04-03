@@ -3,12 +3,20 @@ import { app } from "./firebase";
 import { rankMap } from "../utils/mappings";
 
 // Function to fetch data from a specific Firestore collection
-export const fetchCollectionData = async (collectionName) => {
-  const db = getFirestore(app);
-  const collectionRef = collection(db, collectionName);
-  const snapshot = await getDocs(collectionRef);
+export const fetchCollectionData = async (...pathSegments) => {
+  try {
+    const db = getFirestore();
+    const collectionRef = collection(db, ...pathSegments); // Dynamically construct the path
+    const snapshot = await getDocs(collectionRef);
 
-  return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+    return snapshot.docs.map((doc) => ({
+      id: doc.id, // Include the document ID
+      ...doc.data(), // Include the document data
+    }));
+  } catch (error) {
+    console.error("Error fetching collection data:", error);
+    throw error;
+  }
 };
 
 export const getTotalPointsForCadet = async (cadetName, year) => {
@@ -332,3 +340,4 @@ export const doesSquadronAccountExist = async (number) => {
     return false; // Return false if an error occurs
   }
 };
+

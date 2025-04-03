@@ -9,6 +9,7 @@ import PopupManager from "./CadetsDashboardPopupManager";
 import SuccessMessage from "../Dashboard Components/SuccessMessage";
 import "./CadetsDashboard.css";
 import LoadingPopup from "../Dashboard Components/LoadingPopup"; // Import the new LoadingPopup component
+import { useSquadron } from "../../../context/SquadronContext";
 
 const CadetsDashboard = ({ user }) => {
   const [cadets, setCadets] = useState([]);
@@ -20,6 +21,7 @@ const CadetsDashboard = ({ user }) => {
   const [successMessage, setSuccessMessage] = useState("");
   const [selectedCadet, setSelectedCadet] = useState("");
   const [loading, setLoading] = useState(true); // Add loading state
+  const { squadronNumber } = useSquadron(); // Get the squadron number from the utils
   const [newCadet, setNewCadet] = useState({
     forename: "",
     surname: "",
@@ -52,10 +54,11 @@ const CadetsDashboard = ({ user }) => {
 
   const fetchCadetsWithClassification = async () => {
     setLoading(true); // Set loading to true before fetching data
-    const cadetsData = await fetchCollectionData("Cadets");
+    const cadetsData = await fetchCollectionData("Squadron Databases", squadronNumber.toString(), "Cadets");
+    console.log("Fetched cadets data:", cadetsData); // Log the fetched data
     // Fetch Event Log data
     const db = getFirestore();
-    const eventLogRef = collection(db, "Event Log");
+    const eventLogRef = collection(db,"Squadron Databases", squadronNumber.toString(),  "Event Log");
     const eventLogSnapshot = await getDocs(eventLogRef);
     const eventLogData = eventLogSnapshot.docs.map((doc) => doc.data());
 
@@ -77,7 +80,7 @@ const CadetsDashboard = ({ user }) => {
       }
 
       const db = getFirestore();
-      await deleteDoc(doc(db, "Cadets", selectedCadet));
+      await deleteDoc(doc(db,"Squadron Databases", squadronNumber.toString(),  "Cadets", selectedCadet));
 
       const dischargedCadet = cadets.find((cadet) => cadet.id === selectedCadet);
       setSuccessMessage(`${dischargedCadet.forename} ${dischargedCadet.surname} successfully discharged`);
@@ -93,7 +96,7 @@ const CadetsDashboard = ({ user }) => {
       setSelectedCadet("");
 
       // Refresh the cadets list
-      const cadetsData = await fetchCollectionData("Cadets");
+      const cadetsData = await fetchCollectionData("Squadron Databases", squadronNumber.toString(), "Cadets");
       setCadets(cadetsData);
     } catch (error) {
       console.error("Error discharging cadet:", error);
@@ -120,7 +123,7 @@ const CadetsDashboard = ({ user }) => {
       const formattedStartDate = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 
       // Query Firestore to check if a cadet with the same forename and surname exists
-      const cadetsRef = collection(db, "Cadets");
+      const cadetsRef = collection(db,"Squadron Databases", squadronNumber.toString(),  "Cadets");
       const q = query(cadetsRef, where("forename", "==", forename), where("surname", "==", surname));
       const querySnapshot = await getDocs(q);
 
@@ -129,7 +132,7 @@ const CadetsDashboard = ({ user }) => {
         return;
       }
 
-      await addDoc(collection(db, "Cadets"), {
+      await addDoc(collection(db,"Squadron Databases", squadronNumber.toString(),  "Cadets"), {
         addedBy: user.displayName,
         createdAt: new Date(),
         flight: parseInt(flight, 10),
