@@ -37,6 +37,22 @@
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); /* Match hover shadow */
 }
 
+.PTSTracker-tab.show-all {
+  background-color: #f0f0f0;
+  color: #333;
+  border: 2px solid #ccc;
+  padding: 10px 20px;
+  font-weight: bold;
+  cursor: pointer;
+  border-radius: 5px;
+  transition: all 0.3s ease;
+}
+
+.PTSTracker-tab.show-all:hover {
+  background-color: #e0e0e0;
+  border-color: #999;
+}
+
 /* Remove unnecessary container styles */
 .PTSTracker-table-container {
   overflow: visible; /* Allows the shadow to extend outside the container */
@@ -281,4 +297,20 @@
 .PTSTracker-button.selected:nth-child(4) {
   background-color: #ffd700; /* Gold */
   color: white;
+}
+
+.PTSTracker-button.show-all {
+  background-color: #f0f0f0;
+  color: #333;
+  border: 2px solid #ccc;
+  padding: 10px 20px;
+  font-weight: bold;
+  cursor: pointer;
+  border-radius: 5px;
+  transition: all 0.3s ease;
+}
+
+.PTSTracker-button.show-all:hover {
+  background-color: #e0e0e0;
+  border-color: #999;
 }
