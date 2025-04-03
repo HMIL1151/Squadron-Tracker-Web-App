@@ -54,7 +54,6 @@ const PTSTracker = () => {
 
   return (
     <div className="PTSTracker">
-      <h1>PTS Tracker</h1>
       <div className="PTSTracker-tabs">
         {Object.keys(groupedBadgeColumns).map((type, index) => (
           <div
@@ -62,7 +61,7 @@ const PTSTracker = () => {
             onClick={() => toggleTab(type)}
             className={`PTSTracker-tab ${expandedTabs[type] ? "expanded" : ""}`}
           >
-            {type} {expandedTabs[type] ? "(-)" : "(+)"}
+            {type}
           </div>
         ))}
       </div>
