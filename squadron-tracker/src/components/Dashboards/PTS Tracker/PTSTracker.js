@@ -92,7 +92,7 @@ const PTSTracker = () => {
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ duration: 0.5, delay: index * 0.1 }}
-                    style={{ minWidth: "100px", padding: "8px" }}
+                    style={{ minWidth: "90px", padding: "1px" }}
                   >
                     {type}
                   </motion.th>
@@ -108,7 +108,7 @@ const PTSTracker = () => {
                         initial={{ opacity: 0, x: -10 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ duration: 0.5, delay: index * 0.1 }}
-                        style={{ minWidth: "100px", padding: "8px" }}
+                        style={{ minWidth: "90px", padding: "1px" }}
                       >
                         {level.split(" ")[0]}
                       </motion.th>
@@ -120,7 +120,7 @@ const PTSTracker = () => {
           <tbody>
             {cadetNames.map((name, rowIndex) => (
               <tr key={`cadet-${rowIndex}`}>
-                <td style={{ whiteSpace: "nowrap", padding: "8px" }}>{name}</td>
+                <td style={{ whiteSpace: "nowrap", padding: "4px" }}>{name}</td>
                 {Object.entries(groupedBadgeColumns).flatMap(([type, levels]) =>
                   expandedTabs[type]
                     ? levels.map((level, colIndex) => (
@@ -129,7 +129,7 @@ const PTSTracker = () => {
                           initial={{ opacity: 0, x: -10 }}
                           animate={{ opacity: 1, x: 0 }}
                           transition={{ duration: 0.5, delay: colIndex * 0.1 }}
-                          style={{ minWidth: "100px", padding: "8px" }}
+                          style={{ minWidth: "90px", padding: "1px" }}
                         >
                           {getBadgeDate(name, level)}
                         </motion.td>
