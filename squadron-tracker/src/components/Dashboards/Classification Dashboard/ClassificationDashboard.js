@@ -259,7 +259,8 @@ const ClassificationDashboard = () => {
         <div
           style={{
             width: `${100 - dividerPosition}%`,
-            overflow: "hidden",
+            overflowY: "auto", // Enable vertical scrolling
+            overflowX: "hidden", // Prevent horizontal scrolling
             display: "flex", // Use flexbox
             alignItems: "flex-start", // Align the table to the top
             height: "100%", // Ensure it takes the full height of the container
