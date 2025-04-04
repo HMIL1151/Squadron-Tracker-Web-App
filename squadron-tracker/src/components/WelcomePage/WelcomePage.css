@@ -1,0 +1,69 @@
+.welcome-page {
+  text-align: center;
+  margin-top: 50px;
+}
+
+.welcome-page h1 {
+  font-size: 2.5rem;
+  color: #333;
+}
+
+.welcome-page p {
+  font-size: 1.2rem;
+  color: #666;
+}
+
+.google-login-button {
+  background-color: #4285f4;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  font-size: 16px;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-top: 20px;
+}
+
+.google-login-button:hover {
+  background-color: #357ae8;
+}
+
+/* Overlay to dim the background */
+.popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent black */
+  z-index: 999; /* Ensure it appears above all content */
+}
+
+/* Popup container */
+.popup {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%); /* Center the popup */
+  background-color: white;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 20px;
+  width: 300px;
+  text-align: center;
+  z-index: 1000; /* Ensure it appears above the overlay */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Popup content spacing */
+.popup p {
+  margin-bottom: 20px;
+}
+
+/* Popup buttons container */
+.popup-bottom-buttons {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 20px;
+}

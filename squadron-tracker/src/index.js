@@ -1,13 +1,19 @@
-import React from 'react';
-import ReactDOM from 'react-dom/client';
-import './Styles/index.css';
-import App from './App';
-import reportWebVitals from './misc/reportWebVitals';
+import React from "react";
+import ReactDOM from "react-dom/client"; // Import the new createRoot API
+import "./Styles/index.css";
+import App from "./App";
+import reportWebVitals from "./misc/reportWebVitals";
+import { SquadronProvider } from "./context/SquadronContext"; // Import the provider
 
-const root = ReactDOM.createRoot(document.getElementById('root'));
+// Create the root element
+const rootElement = document.getElementById("root");
+const root = ReactDOM.createRoot(rootElement); // Use createRoot instead of render
+
 root.render(
   <React.StrictMode>
-    <App />
+    <SquadronProvider>
+      <App />
+    </SquadronProvider>
   </React.StrictMode>
 );
 

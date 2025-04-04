@@ -2,10 +2,13 @@ import React, { useEffect, useState } from "react";
 import { getFirestore, collection, getDocs, query, where } from "firebase/firestore/lite";
 import { examList } from "../../../utils/examList"; // Import the examList
 import "./ExamPopup.css"; // Optional: Add styles for the popup
+import { useSquadron } from "../../../context/SquadronContext";
+
 
 const ExamPopup = ({ isOpen, onClose, cadetName, classification }) => {
   const [exams, setExams] = useState([]); // State to store the list of exams
   const [loading, setLoading] = useState(true); // State to track loading status
+  const { squadronNumber } = useSquadron(); // Access the squadron number from context
 
   useEffect(() => {
     const fetchExams = async () => {
@@ -16,7 +19,7 @@ const ExamPopup = ({ isOpen, onClose, cadetName, classification }) => {
 
       try {
         // Query the "Event Log" collection for documents matching the cadetName
-        const eventLogRef = collection(db, "Event Log");
+        const eventLogRef = collection(db, "Squadron Databases", squadronNumber.toString(), "Event Log");
         const q = query(eventLogRef, where("cadetName", "==", cadetName));
         const querySnapshot = await getDocs(q);
 
@@ -42,7 +45,7 @@ const ExamPopup = ({ isOpen, onClose, cadetName, classification }) => {
     if (isOpen) {
       fetchExams();
     }
-  }, [isOpen, cadetName]);
+  }, [isOpen, cadetName, squadronNumber]);
 
   // Close the popup when clicking outside of it
   useEffect(() => {

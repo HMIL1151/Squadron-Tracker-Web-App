@@ -1,8 +1,9 @@
 //TODO: Mass add Events from old tracker/from CSV file
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
+import { useSquadron } from "../../../context/SquadronContext";
 import { fetchCollectionData } from "../../../firebase/firestoreUtils";
-import { getFirestore, doc, getDoc, addDoc, collection, deleteDoc } from "firebase/firestore/lite";
+import { getFirestore, doc, getDoc, addDoc, collection, deleteDoc, getDocs } from "firebase/firestore/lite";
 import Table from "../../Table/Table";
 import AddEventPopup from "./AddEventPopup";
 import EventDetailsPopup from "./EventDetailsPopup"; // Import the new popup
@@ -29,16 +30,31 @@ const MassEventLog = ({ user }) => {
   const [selectedEvent, setSelectedEvent] = useState(null); // State for the selected event
   const [isEventPopupOpen, setIsEventPopupOpen] = useState(false);
   const [loading, setLoading] = useState(true); // Add loading state
+  const { squadronNumber } = useSquadron(); // Access the squadron number from context
 
   const columns = ["Name", "Record", "Date", "Points"];
 
   useEffect(() => {
+    console.log("Squadron Number:", squadronNumber); // Log the squadron number
     const fetchCadetNames = async () => {
       try {
-        // Fetch cadet names
-        const cadetData = await fetchCollectionData("Cadets");
-        const cadetNames = cadetData.map((cadet) => `${cadet.forename} ${cadet.surname}`);
-        setNames(cadetNames);
+        if (!squadronNumber) {
+          console.error("Squadron number is not set.");
+          return;
+        }
+    
+        const db = getFirestore();
+        // Construct the path to the Cadets collection
+        const cadetsCollectionRef = collection(db, "Squadron Databases", squadronNumber.toString(), "Cadets");
+        const cadetSnapshot = await getDocs(cadetsCollectionRef);
+    
+        // Map the cadet data to an array of names
+        const cadetNames = cadetSnapshot.docs.map((doc) => {
+          const cadet = doc.data();
+          return `${cadet.forename} ${cadet.surname}`;
+        });
+    
+        setNames(cadetNames); // Update the state with the cadet names
       } catch (error) {
         console.error("Error fetching cadet names:", error);
       }
@@ -48,7 +64,7 @@ const MassEventLog = ({ user }) => {
     try {
         const db = getFirestore();
         // Fetch Badge Types
-        const badgesDocRef = doc(db, "Flight Points", "Badges");
+        const badgesDocRef = doc(db, "Squadron Databases", squadronNumber.toString(), "Flight Points", "Badges");
         const badgesDoc = await getDoc(badgesDocRef);
         const badgeTypes = badgesDoc.data()["Badge Types"];
         setBadgeTypes(badgeTypes);
@@ -61,7 +77,7 @@ const MassEventLog = ({ user }) => {
     try {
         const db = getFirestore();
         // Fetch Event Categories
-        const eventCategoryPointsDocRef = doc(db, "Flight Points", "Event Category Points");
+        const eventCategoryPointsDocRef = doc(db, "Squadron Databases", squadronNumber.toString(), "Flight Points", "Event Category Points");
         const eventCategoryPointsDoc = await getDoc(eventCategoryPointsDocRef);
         const eventCategories = Object.keys(eventCategoryPointsDoc.data());
         setEventCategories(eventCategories);
@@ -74,7 +90,7 @@ const MassEventLog = ({ user }) => {
     try {
         const db = getFirestore();
         // Fetch Special Awards
-        const specialAwardsDocRef = doc(db, "Flight Points", "Special Awards");
+        const specialAwardsDocRef = doc(db,"Squadron Databases", squadronNumber.toString(), "Flight Points", "Special Awards");
         const specialAwardsDoc = await getDoc(specialAwardsDocRef);
         const specialAwards = specialAwardsDoc.data()["Special Awards"];
         setSpecialAwards(specialAwards);
@@ -87,7 +103,7 @@ const MassEventLog = ({ user }) => {
     fetchBadgeTypes();
     fetchEventCategories();
     fetchSpecialAwards();
-  }, []);
+  }, [squadronNumber]);
 
   const handleInputChange = (e) => {
     const value = e.target.value;
@@ -180,7 +196,7 @@ const MassEventLog = ({ user }) => {
           specialAward: selectedButton === "Special" ? selectedSpecialAward : "",
         };
   
-        await addDoc(collection(db, "Event Log"), newEvent);
+        await addDoc(collection(db,"Squadron Databases", squadronNumber.toString(), "Event Log"), newEvent);
       }
 
       // Trigger the success message
@@ -207,11 +223,11 @@ const MassEventLog = ({ user }) => {
     setIsPopupOpen(false);
   };
 
-  const fetchEvents = async () => {
+  const fetchEvents = useCallback(async () => {
     setLoading(true); // Set loading to true before fetching data
     try {
       const db = getFirestore();
-      const eventData = await fetchCollectionData("Event Log");
+      const eventData = await fetchCollectionData("Squadron Databases", squadronNumber.toString(), "Event Log");
       const formattedEvents = [];
   
       for (const event of eventData) {
@@ -220,7 +236,7 @@ const MassEventLog = ({ user }) => {
         // Check if all specified fields are empty
         if (!badgeCategory && !badgeLevel && !eventCategory && !eventName && !examName && !specialAward) {
           // Delete the document if all fields are empty
-          const docRef = doc(db, "Event Log", id);
+          const docRef = doc(db,"Squadron Databases", squadronNumber.toString(),  "Event Log", id);
           await deleteDoc(docRef);
           console.log(`Deleted document with ID: ${id}`);
           continue; // Skip adding this event to the formattedEvents array
@@ -231,22 +247,22 @@ const MassEventLog = ({ user }) => {
   
         if (badgeCategory) {
           eventDescription = `${badgeLevel} ${badgeCategory}`;
-          const badgePointsDocRef = doc(db, "Flight Points", "Badge Points");
+          const badgePointsDocRef = doc(db,"Squadron Databases", squadronNumber.toString(),  "Flight Points", "Badge Points");
           const badgePointsDoc = await getDoc(badgePointsDocRef);
           flightPoints = badgePointsDoc.data()[`${badgeLevel} Badge`] || 0; // Fetch points for the badge
         } else if (examName) {
           eventDescription = `${examName}`;
-          const badgePointsDocRef = doc(db, "Flight Points", "Badge Points");
+          const badgePointsDocRef = doc(db,"Squadron Databases", squadronNumber.toString(),  "Flight Points", "Badge Points");
           const badgePointsDoc = await getDoc(badgePointsDocRef);
           flightPoints = badgePointsDoc.data()["Exam"] || 0; // Fetch points for the exam
         } else if (eventName) {
           eventDescription = eventName;
-          const eventCategoryPointsDocRef = doc(db, "Flight Points", "Event Category Points");
+          const eventCategoryPointsDocRef = doc(db,"Squadron Databases", squadronNumber.toString(),  "Flight Points", "Event Category Points");
           const eventCategoryPointsDoc = await getDoc(eventCategoryPointsDocRef);
           flightPoints = eventCategoryPointsDoc.data()[eventCategory] || 0; // Fetch points for the event category
         } else if (specialAward) {
           eventDescription = specialAward;
-          const badgePointsDocRef = doc(db, "Flight Points", "Badge Points");
+          const badgePointsDocRef = doc(db,"Squadron Databases", squadronNumber.toString(),  "Flight Points", "Badge Points");
           const badgePointsDoc = await getDoc(badgePointsDocRef);
           flightPoints = badgePointsDoc.data()["Special"] || 0; // Fetch points for the special award
         } else {
@@ -271,8 +287,12 @@ const MassEventLog = ({ user }) => {
     } finally {
       setLoading(false); // Set loading to false after data is fetched
     }
-  };
-  
+  }, [squadronNumber]);
+
+  useEffect(() => {
+    fetchEvents();
+  }, [fetchEvents]); // Add fetchEvents as a dependency
+
   const handleRowClick = (eventData) => {
     setSelectedEvent(eventData);
     setIsEventPopupOpen(true);
@@ -281,7 +301,7 @@ const MassEventLog = ({ user }) => {
   const handleRemoveEvent = async (eventId) => {
     try {
       const db = getFirestore();
-      await deleteDoc(doc(db, "Event Log", eventId));
+      await deleteDoc(doc(db,"Squadron Databases", squadronNumber.toString(),  "Event Log", eventId));
       console.log(`Deleted event with ID: ${eventId}`);
       setIsEventPopupOpen(false);
       fetchEvents(); // Refresh the table data
@@ -290,10 +310,6 @@ const MassEventLog = ({ user }) => {
       alert("An error occurred while removing the event.");
     }
   };
-
-  useEffect(() => {
-    fetchEvents();
-  }, []);
 
   return (
     <div className="table-dashboard-container">

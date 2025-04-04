@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import Table from "../../Table/Table"; // Import the Table component
 import { getTotalPointsForCadet, getCadetFlight, getAllCadetNames } from "../../../firebase/firestoreUtils";
 import { flightMap } from "../../../utils/mappings"; // Import flightMap from mappings.js
+import { useSquadron } from "../../../context/SquadronContext";
 
 const FightPointsDashboard = () => {
     const [cadetPoints, setCadetPoints] = useState([]);
@@ -12,18 +13,19 @@ const FightPointsDashboard = () => {
     // Generate a list of years for the dropdown (e.g., last 10 years)
     const currentYear = new Date().getFullYear();
     const years = Array.from({ length: 10 }, (_, i) => currentYear - i);
+    const { squadronNumber } = useSquadron(); // Access the squadron number from context
 
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const cadetNames = await getAllCadetNames();
+                const cadetNames = await getAllCadetNames(squadronNumber);
 
                 const flightPoints = {}; // To store total points for each flight
 
                 const pointsData = await Promise.all(
                     cadetNames.map(async (cadetName) => {
-                        const pointsEarned = await getTotalPointsForCadet(cadetName, year);
-                        const flight = await getCadetFlight(cadetName); // Fetch the flight for each cadet
+                        const pointsEarned = await getTotalPointsForCadet(cadetName, year, squadronNumber);
+                        const flight = await getCadetFlight(cadetName, squadronNumber); // Fetch the flight for each cadet
 
 
                         // Calculate total points for the flight
@@ -47,7 +49,7 @@ const FightPointsDashboard = () => {
         };
 
         fetchData();
-    }, [year]); // Re-fetch data when the year changes
+    }, [year, squadronNumber]); // Re-fetch data when the year changes
 
     if (loading) {
         return <div>Loading...</div>; // Show loading message while fetching data
