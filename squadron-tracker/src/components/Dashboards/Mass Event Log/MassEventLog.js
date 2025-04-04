@@ -1,6 +1,6 @@
 //TODO: Mass add Events from old tracker/from CSV file
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useSquadron } from "../../../context/SquadronContext";
 import { fetchCollectionData } from "../../../firebase/firestoreUtils";
 import { getFirestore, doc, getDoc, addDoc, collection, deleteDoc, getDocs } from "firebase/firestore/lite";
@@ -103,7 +103,7 @@ const MassEventLog = ({ user }) => {
     fetchBadgeTypes();
     fetchEventCategories();
     fetchSpecialAwards();
-  }, []);
+  }, [squadronNumber]);
 
   const handleInputChange = (e) => {
     const value = e.target.value;
@@ -223,7 +223,7 @@ const MassEventLog = ({ user }) => {
     setIsPopupOpen(false);
   };
 
-  const fetchEvents = async () => {
+  const fetchEvents = useCallback(async () => {
     setLoading(true); // Set loading to true before fetching data
     try {
       const db = getFirestore();
@@ -287,8 +287,12 @@ const MassEventLog = ({ user }) => {
     } finally {
       setLoading(false); // Set loading to false after data is fetched
     }
-  };
-  
+  }, [squadronNumber]);
+
+  useEffect(() => {
+    fetchEvents();
+  }, [fetchEvents]); // Add fetchEvents as a dependency
+
   const handleRowClick = (eventData) => {
     setSelectedEvent(eventData);
     setIsEventPopupOpen(true);
@@ -306,10 +310,6 @@ const MassEventLog = ({ user }) => {
       alert("An error occurred while removing the event.");
     }
   };
-
-  useEffect(() => {
-    fetchEvents();
-  }, []);
 
   return (
     <div className="table-dashboard-container">

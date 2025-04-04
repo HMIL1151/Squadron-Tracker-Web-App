@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { getFirestore, doc, getDoc, updateDoc, deleteField } from "firebase/firestore/lite";
 import Table from "../../Table/Table";
 import AddEntry from "./addEntry";
@@ -8,6 +8,7 @@ import EditPopup from "./EditPopup";
 import DeletePopup from "./DeletePopup"; // Import the DeletePopup component
 import "./EventCategoriesDashboard.css";
 import "../Dashboard Components/dashboardStyles.css";
+import { useSquadron } from "../../../context/SquadronContext";
 
 const EventCategoriesDashboard = () => {
   const [categories, setCategories] = useState([]);
@@ -28,18 +29,18 @@ const EventCategoriesDashboard = () => {
   const [isDeletePopupOpen, setIsDeletePopupOpen] = useState(false);
   const [deleteOptions, setDeleteOptions] = useState([]);
   const [deleteType, setDeleteType] = useState("");
+  const { squadronNumber } = useSquadron(); // Access the squadron number from context
 
-  const fetchSpecialAwards = async () => {
+  const fetchSpecialAwards = useCallback(async () => {
     try {
       const db = getFirestore();
-      const docRef = doc(db, "Flight Points", "Special Awards");
+      const docRef = doc(db, "Squadron Databases", squadronNumber.toString(), "Flight Points", "Special Awards");
       const docSnap = await getDoc(docRef);
 
       if (docSnap.exists()) {
         const data = docSnap.data();
         const specialAwardTypes = data["Special Awards"];
         if (Array.isArray(specialAwardTypes)) {
-          // Transform the array into an array of objects
           const formattedSpecialAwards = specialAwardTypes.map((special) => ({
             "Special Awards": special,
           }));
@@ -53,12 +54,12 @@ const EventCategoriesDashboard = () => {
     } catch (error) {
       console.error("Error fetching special awards:", error);
     }
-  };
+  }, [squadronNumber]);
 
-  const fetchEventCategories = async () => {
+  const fetchEventCategories = useCallback(async () => {
     try {
       const db = getFirestore();
-      const docRef = doc(db, "Flight Points", "Event Category Points");
+      const docRef = doc(db, "Squadron Databases", squadronNumber.toString(), "Flight Points", "Event Category Points");
       const docSnap = await getDoc(docRef);
 
       if (docSnap.exists()) {
@@ -74,12 +75,12 @@ const EventCategoriesDashboard = () => {
     } catch (error) {
       console.error("Error fetching event categories:", error);
     }
-  };
+  }, [squadronNumber]);
 
-  const fetchBadgePoints = async () => {
+  const fetchBadgePoints = useCallback(async () => {
     try {
       const db = getFirestore();
-      const docRef = doc(db, "Flight Points", "Badge Points");
+      const docRef = doc(db, "Squadron Databases", squadronNumber.toString(), "Flight Points", "Badge Points");
       const docSnap = await getDoc(docRef);
 
       if (docSnap.exists()) {
@@ -95,19 +96,18 @@ const EventCategoriesDashboard = () => {
     } catch (error) {
       console.error("Error fetching badge points:", error);
     }
-  };
+  }, [squadronNumber]);
 
-  const fetchBadges = async () => {
+  const fetchBadges = useCallback(async () => {
     try {
       const db = getFirestore();
-      const docRef = doc(db, "Flight Points", "Badges");
+      const docRef = doc(db, "Squadron Databases", squadronNumber.toString(), "Flight Points", "Badges");
       const docSnap = await getDoc(docRef);
 
       if (docSnap.exists()) {
         const data = docSnap.data();
         const badgeTypes = data["Badge Types"];
         if (Array.isArray(badgeTypes)) {
-          // Transform the array into an array of objects
           const formattedBadges = badgeTypes.map((badge) => ({ "Badge Types": badge }));
           setBadges(formattedBadges);
         } else {
@@ -119,7 +119,7 @@ const EventCategoriesDashboard = () => {
     } catch (error) {
       console.error("Error fetching badges:", error);
     }
-  };
+  }, [squadronNumber]);
 
   const handleRowClick = (rowData, type) => {
     setEditData(rowData);
@@ -144,7 +144,7 @@ const EventCategoriesDashboard = () => {
   const handleDeleteConfirm = async (selectedItem) => {
     const db = getFirestore();
     const docRef = doc(
-      db,
+      db, "Squadron Databases", squadronNumber.toString(), 
       "Flight Points",
       deleteType === "eventcategories"
         ? "Event Category Points"
@@ -195,7 +195,7 @@ const EventCategoriesDashboard = () => {
     fetchBadgePoints();
     fetchEventCategories();
     fetchBadges();
-  }, []);
+  }, [fetchSpecialAwards, fetchBadgePoints, fetchEventCategories, fetchBadges]); // Add the memoized functions as dependencies
 
   return (
     <div className="event-categories-dashboard">

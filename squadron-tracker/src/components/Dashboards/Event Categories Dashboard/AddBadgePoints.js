@@ -1,10 +1,13 @@
 import React, { useState } from "react";
 import { getFirestore, doc, updateDoc } from "firebase/firestore/lite";
 import "./addBadgePoints.css";
+import { useSquadron } from "../../../context/SquadronContext";
 
 const AddBadgePoints = ({ isOpen, onClose, onConfirm }) => {
   const [badgeType, setBadgeType] = useState("");
   const [points, setPoints] = useState("");
+  const { squadronNumber } = useSquadron(); // Access the squadron number from context
+  
 
   const handleConfirm = async () => {
     if (!badgeType || !points) {
@@ -14,7 +17,7 @@ const AddBadgePoints = ({ isOpen, onClose, onConfirm }) => {
 
     try {
       const db = getFirestore();
-      const docRef = doc(db, "Flight Points", "Badge Points");
+      const docRef = doc(db, "Squadron Databases", squadronNumber.toString(), "Flight Points", "Badge Points");
 
       // Update Firestore with the new badge type and points
       await updateDoc(docRef, {

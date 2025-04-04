@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { getAllCadetNames, getBadgeTypeList, getAllBadges } from "../../../firebase/firestoreUtils";
 import { badgeLevel } from "../../../utils/examList";
 import "./PTSTracker.css";
+import { useSquadron } from "../../../context/SquadronContext";
 
 const PTSTracker = () => {
   const [cadetNames, setCadetNames] = useState([]);
@@ -10,21 +11,23 @@ const PTSTracker = () => {
   const [groupedBadgeColumns, setGroupedBadgeColumns] = useState({});
   const [expandedTabs, setExpandedTabs] = useState({});
   const [selectedButton, setSelectedButton] = useState(["Blue", "Bronze", "Silver", "Gold"]); // Default state: all selected
+  const { squadronNumber } = useSquadron(); // Access the squadron number from context
+
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const names = await getAllCadetNames();
+        const names = await getAllCadetNames(squadronNumber);
         setCadetNames(names);
 
-        const badgeTypes = await getBadgeTypeList();
+        const badgeTypes = await getBadgeTypeList(squadronNumber);
         const groupedColumns = badgeTypes.reduce((acc, type) => {
           acc[type] = badgeLevel.map((level) => `${level} ${type}`);
           return acc;
         }, {});
         setGroupedBadgeColumns(groupedColumns);
 
-        const badges = await getAllBadges();
+        const badges = await getAllBadges(squadronNumber);
         setBadgeData(badges);
 
         const initialExpandedState = badgeTypes.reduce((acc, type) => {
@@ -37,7 +40,7 @@ const PTSTracker = () => {
       }
     };
     fetchData();
-  }, []);
+  }, [squadronNumber]);
 
   const getBadgeDate = (cadetName, badge) => {
     const badgeEntry = badgeData.find(

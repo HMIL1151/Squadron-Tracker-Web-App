@@ -4,6 +4,7 @@ import { signInWithPopup, signOut, onAuthStateChanged } from "firebase/auth";
 import { getFirestore, doc, getDoc, setDoc } from "firebase/firestore/lite";
 import { doesCollectionExist } from "../../firebase/firestoreUtils"; // Import the function
 import "./Auth.css";
+import { useSquadron } from "../../../context/SquadronContext";
 
 const Auth = ({ onUserChange }) => {
   const [user, setUser] = useState(null);
@@ -11,6 +12,9 @@ const Auth = ({ onUserChange }) => {
   const [isUnauthorized, setIsUnauthorized] = useState(false); // State for unauthorized users
   const [signedOutUser, setSignedOutUser] = useState(null); // Store signed-out user info
   const [squadronNumber, setSquadronNumber] = useState(""); // State for squadron number
+  
+  
+  const { sqnNo } = useSquadron(); // Access the squadron number from context
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
@@ -18,7 +22,7 @@ const Auth = ({ onUserChange }) => {
 
       if (currentUser) {
         const db = getFirestore();
-        const userDocRef = doc(db, "AuthorizedUsers", currentUser.uid);
+        const userDocRef = doc(db,"Squadron Databases", sqnNo.toString(),  "Authorised Users", currentUser.uid);
         console.log("Checking Firestore for authorized user:", currentUser.uid);
 
         try {
@@ -107,7 +111,7 @@ const Auth = ({ onUserChange }) => {
     try {
       console.log("Requesting Access");
       const db = getFirestore();
-      const requestDocRef = doc(db, "UserRequests", userToRequestAccess.uid);
+      const requestDocRef = doc(db, "Squadron Databases", sqnNo.toString(), "User Requests", userToRequestAccess.uid);
 
       // Check if a request already exists
       const existingRequest = await getDoc(requestDocRef);

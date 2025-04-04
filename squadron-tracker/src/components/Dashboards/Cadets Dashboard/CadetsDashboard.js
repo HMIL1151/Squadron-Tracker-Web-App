@@ -1,6 +1,6 @@
 //TODO: Mass add Cadets from old tracker/from CSV file
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { fetchCollectionData } from "../../../firebase/firestoreUtils";
 import { getFirestore, collection, addDoc, doc, deleteDoc, query, where, getDocs } from "firebase/firestore/lite";
 import { rankMap, flightMap, classificationMap } from "../../../utils/mappings";
@@ -52,25 +52,29 @@ const CadetsDashboard = ({ user }) => {
     CreatedAt: "createdAt",
   };
 
-  const fetchCadetsWithClassification = async () => {
+  const fetchCadetsWithClassification = useCallback(async () => {
     setLoading(true); // Set loading to true before fetching data
-    const cadetsData = await fetchCollectionData("Squadron Databases", squadronNumber.toString(), "Cadets");
-    console.log("Fetched cadets data:", cadetsData); // Log the fetched data
-    // Fetch Event Log data
-    const db = getFirestore();
-    const eventLogRef = collection(db,"Squadron Databases", squadronNumber.toString(),  "Event Log");
-    const eventLogSnapshot = await getDocs(eventLogRef);
-    const eventLogData = eventLogSnapshot.docs.map((doc) => doc.data());
+    try {
+      const cadetsData = await fetchCollectionData("Squadron Databases", squadronNumber.toString(), "Cadets");
+      console.log("Fetched cadets data:", cadetsData);
 
-    // Set cadets and event log data
-    setCadets(cadetsData);
-    setEventLogData(eventLogData); // Store event log data in state
-    setLoading(false); // Set loading to false after fetching data
-  };
+      const db = getFirestore();
+      const eventLogRef = collection(db, "Squadron Databases", squadronNumber.toString(), "Event Log");
+      const eventLogSnapshot = await getDocs(eventLogRef);
+      const eventLogData = eventLogSnapshot.docs.map((doc) => doc.data());
+
+      setCadets(cadetsData);
+      setEventLogData(eventLogData);
+    } catch (error) {
+      console.error("Error fetching cadets or event log data:", error);
+    } finally {
+      setLoading(false); // Set loading to false after fetching data
+    }
+  }, [squadronNumber]); // Add squadronNumber as a dependency
 
   useEffect(() => {
     fetchCadetsWithClassification();
-  }, []);
+  }, [fetchCadetsWithClassification]); // Add fetchCadetsWithClassification as a dependency
 
   const handleDischarge = async () => {
     try {

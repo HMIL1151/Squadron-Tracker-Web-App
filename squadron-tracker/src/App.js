@@ -7,7 +7,6 @@ import WelcomePage from "./components/WelcomePage/WelcomePage"; // Import the ne
 import { signOut } from "firebase/auth";
 import { auth } from "./firebase/firebase"; // Adjust the import path to your Firebase configuration
 import dashboardList from "./components/Dashboards/Dashboard Components/dashboardList";
-import { getFirestore, doc, getDoc } from "firebase/firestore/lite"; // Import Firestore functions
 import { useSquadron } from "./context/SquadronContext"; // Import the custom hook
 
 const App = () => {

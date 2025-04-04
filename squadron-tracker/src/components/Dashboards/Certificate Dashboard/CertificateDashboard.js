@@ -4,6 +4,7 @@ import generateCertificatePDF from "./CertificatePDF";
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
 import "./CertificateDashboard.css";
+import { useSquadron } from "../../../context/SquadronContext";
 
 const CertificateDashboard = () => {
     const [cadetNames, setCadetNames] = useState([]);
@@ -17,11 +18,12 @@ const CertificateDashboard = () => {
     const [isLoading, setIsLoading] = useState(false); // State to track loading
     const [loadingMessage, setLoadingMessage] = useState(""); // State to store the loading message
     const [progress, setProgress] = useState(0); // State to track progress percentage
+    const { squadronNumber } = useSquadron(); // Access the squadron number from context
 
     useEffect(() => {
         const fetchCadetNames = async () => {
             try {
-                const names = await getAllCadetNames();
+                const names = await getAllCadetNames(squadronNumber);
                 setCadetNames(names);
             } catch (error) {
                 console.error("Error fetching cadet names:", error);
@@ -33,7 +35,7 @@ const CertificateDashboard = () => {
         const currentYear = new Date().getFullYear();
         const yearList = Array.from({ length: 10 }, (_, i) => currentYear - i);
         setYears(yearList);
-    }, []);
+    }, [squadronNumber]);
 
     const fetchCadetEvents = async () => {
         if (!selectedCadet || !selectedYear) {
@@ -42,7 +44,7 @@ const CertificateDashboard = () => {
         }
 
         try {
-            const events = await getEventsForCadet(selectedCadet);
+            const events = await getEventsForCadet(selectedCadet, squadronNumber);
             const filteredEvents = events.filter(event => {
                 const eventYear = new Date(event.date).getFullYear();
                 return eventYear === parseInt(selectedYear, 10);
@@ -74,7 +76,7 @@ const CertificateDashboard = () => {
 
         try {
             // Generate the PDF using the updated generateCertificatePDF function
-            const pdfBlob = await generateCertificatePDF(selectedCadet, selectedYear, eventStrings);
+            const pdfBlob = await generateCertificatePDF(selectedCadet, selectedYear, eventStrings, squadronNumber);
 
             // Create a Blob URL for preview
             const blobUrl = URL.createObjectURL(pdfBlob);
@@ -122,7 +124,7 @@ const CertificateDashboard = () => {
             setLoadingMessage(`Generating certificate for ${cadet}... (${i + 1}/${cadetNames.length})`);
 
             try {
-                const events = await getEventsForCadet(cadet);
+                const events = await getEventsForCadet(cadet, squadronNumber);
                 const filteredEvents = events.filter(event => {
                     const eventYear = new Date(event.date).getFullYear();
                     return eventYear === parseInt(selectedYear, 10);
@@ -133,7 +135,7 @@ const CertificateDashboard = () => {
                     `${event.event} (${formatDate(event.date)})`
                 );
 
-                const pdfBlob = await generateCertificatePDF(cadet, selectedYear, formattedEvents, true);
+                const pdfBlob = await generateCertificatePDF(cadet, selectedYear, formattedEvents, squadronNumber, true);
                 zip.file(`${cadet}_Certificate_${selectedYear}.pdf`, pdfBlob);
             } catch (error) {
                 console.error(`Error generating certificate for ${cadet}:`, error);
