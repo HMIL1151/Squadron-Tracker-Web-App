@@ -21,7 +21,6 @@ const App = () => {
     setUser(currentUser); // Update the user state with all user data
     setIsAdmin(isAdminStatus); // Update the admin status
     setSquadronNumber(currentUser.squadronNumber); // Set the squadron number in the context
-    console.log("User data updated:", currentUser);
   };
 
   const handleLogout = () => {
@@ -30,7 +29,6 @@ const App = () => {
         setUser(null); // Clear the user state
         setActiveMenu(dashboardList[0]?.key || ""); // Reset the menu to the first dashboard
         setSquadronNumber(null); // Clear the squadron number in the context
-        console.log("User successfully logged out.");
       })
       .catch((error) => {
         console.error("Error logging out:", error);
@@ -51,14 +49,6 @@ const App = () => {
 
   if (!user) {
     return <WelcomePage onUserChange={handleUserChange} />;
-  }
-
-  if (user) {
-    console.log("User Display Name:", user.displayName);
-    console.log("User UID:", user.uid);
-    console.log("Squadron Name:", user.squadronName);
-    console.log("Squadron Number:", user.squadronNumber);
-    console.log("User Role:", user.role);
   }
 
   return (

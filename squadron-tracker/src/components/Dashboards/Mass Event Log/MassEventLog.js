@@ -35,7 +35,6 @@ const MassEventLog = ({ user }) => {
   const columns = ["Name", "Record", "Date", "Points"];
 
   useEffect(() => {
-    console.log("Squadron Number:", squadronNumber); // Log the squadron number
     const fetchCadetNames = async () => {
       try {
         if (!squadronNumber) {
@@ -155,7 +154,6 @@ const MassEventLog = ({ user }) => {
 
   const handleButtonSelect = (buttonText) => {
     setSelectedButton(buttonText); // Update the selectedButton state
-    console.log(`Selected button: ${buttonText}`);
   };
 
   const handleAddEvent = async (eventData) => {
@@ -238,7 +236,6 @@ const MassEventLog = ({ user }) => {
           // Delete the document if all fields are empty
           const docRef = doc(db,"Squadron Databases", squadronNumber.toString(),  "Event Log", id);
           await deleteDoc(docRef);
-          console.log(`Deleted document with ID: ${id}`);
           continue; // Skip adding this event to the formattedEvents array
         }
   
@@ -302,7 +299,6 @@ const MassEventLog = ({ user }) => {
     try {
       const db = getFirestore();
       await deleteDoc(doc(db,"Squadron Databases", squadronNumber.toString(),  "Event Log", eventId));
-      console.log(`Deleted event with ID: ${eventId}`);
       setIsEventPopupOpen(false);
       fetchEvents(); // Refresh the table data
     } catch (error) {

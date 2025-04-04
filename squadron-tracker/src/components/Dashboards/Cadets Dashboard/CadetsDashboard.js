@@ -56,7 +56,6 @@ const CadetsDashboard = ({ user }) => {
     setLoading(true); // Set loading to true before fetching data
     try {
       const cadetsData = await fetchCollectionData("Squadron Databases", squadronNumber.toString(), "Cadets");
-      console.log("Fetched cadets data:", cadetsData);
 
       const db = getFirestore();
       const eventLogRef = collection(db, "Squadron Databases", squadronNumber.toString(), "Event Log");

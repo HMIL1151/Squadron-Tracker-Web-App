@@ -58,7 +58,6 @@ let unsubscribe;
 auth.onAuthStateChanged(user => {
 
     if (user) {
-        console.log('Logged in as: ' + user.displayName + ' (' + user.uid + ')');
         // Database Reference
         cadetListRef = db.collection('Cadets')
 
@@ -105,7 +104,6 @@ auth.onAuthStateChanged(user => {
                 startDate: formattedDate,
                 createdAt: firebase.firestore.FieldValue.serverTimestamp()
             }).then(() => {
-                console.log('Cadet added successfully!');
                 addCadetModal.style.display = 'none'; // Close the modal
                 addCadetForm.reset(); // Reset the form
             }).catch((error) => {
@@ -163,7 +161,6 @@ auth.onAuthStateChanged(user => {
 
 
     } else {
-        console.log('Logged out');
         // Unsubscribe when the user signs out
         unsubscribe && unsubscribe();
         
