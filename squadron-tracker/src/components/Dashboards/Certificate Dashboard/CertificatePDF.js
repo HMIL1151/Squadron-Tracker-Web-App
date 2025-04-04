@@ -25,16 +25,57 @@ const generateCertificatePDF = async (cadetName, year, events, squadronNumber) =
     }
 
     // Load the watermark image
-    const logoUrl = `${process.env.PUBLIC_URL}/${squadronNumber}.png`; // Public folder path
-    const logoImage = await fetch(logoUrl)
-        .then((response) => response.blob())
-        .then((blob) => {
-            return new Promise((resolve) => {
-                const reader = new FileReader();
-                reader.onload = () => resolve(reader.result);
-                reader.readAsDataURL(blob);
+    const logoUrl = `${process.env.PUBLIC_URL}/${squadronNumber}.png?timestamp=${new Date().getTime()}`; // Add a timestamp to bypass cache
+    let logoImage;
+
+    try {
+        console.log(`Attempting to fetch squadron logo from URL: ${logoUrl}`);
+        // Attempt to fetch the squadron-specific logo
+        logoImage = await fetch(logoUrl)
+            .then((response) => {
+                const contentType = response.headers.get("Content-Type");
+                if (!response.ok || !contentType || !contentType.startsWith("image/")) {
+                    throw new Error("Squadron logo not found or invalid content type");
+                }
+                return response.blob();
+            })
+            .then((blob) => {
+                console.log("Squadron logo fetched successfully, converting to Base64...");
+                return new Promise((resolve) => {
+                    const reader = new FileReader();
+                    reader.onload = () => {
+                        resolve(reader.result);
+                    };
+                    reader.readAsDataURL(blob);
+                });
             });
-        });
+    } catch (error) {
+        console.warn("Squadron logo not found or invalid, defaulting to RAFAC logo:", error);
+
+        // Default to RAFAC.png if the squadron logo is not found or invalid
+        const defaultLogoUrl = `${process.env.PUBLIC_URL}/RAFAC.png?timestamp=${new Date().getTime()}`; // Add a timestamp to bypass cache
+        logoImage = await fetch(defaultLogoUrl)
+            .then((response) => {
+                const contentType = response.headers.get("Content-Type");
+                if (!response.ok || !contentType || !contentType.startsWith("image/")) {
+                    throw new Error("Default RAFAC logo not found or invalid content type");
+                }
+                return response.blob();
+            })
+            .then((blob) => {
+                return new Promise((resolve) => {
+                    const reader = new FileReader();
+                    reader.onload = () => {
+                        resolve(reader.result);
+                    };
+                    reader.readAsDataURL(blob);
+                });
+            })
+            .catch((error) => {
+                console.error("Error fetching default RAFAC logo:", error);
+                throw error; // Re-throw the error to handle it further up the chain if needed
+            });
+    }
 
     // Create a canvas to adjust the opacity of the image
     const canvas = document.createElement("canvas");
