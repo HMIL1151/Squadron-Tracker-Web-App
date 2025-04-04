@@ -1,3 +1,5 @@
+//TODO: Fix unscorllable table
+
 import React, { useEffect, useState, useCallback, useRef } from "react";
 import { fetchCollectionData } from "../../../firebase/firestoreUtils"; // Assuming this utility exists
 import { getFirestore, collection, getDocs } from "firebase/firestore/lite"; // Firestore imports
@@ -44,6 +46,7 @@ const GraphContainer = ({ children }) => {
 
 const ClassificationDashboard = () => {
   const [cadetData, setCadetData] = useState([]);
+  const [longestServiceInMonths, setLongestServiceInMonths] = useState(0); // State for the longest service length
   const [dividerPosition, setDividerPosition] = useState(55); // Initial width of the Graph section in percentage
   const [isDragging, setIsDragging] = useState(false);
   const [hoveredCadet, setHoveredCadet] = useState(null); // Track the hovered cadet
@@ -132,6 +135,16 @@ const ClassificationDashboard = () => {
       });
 
       setCadetData(formattedCadets);
+
+      // Calculate the longest service length in months
+      const maxServiceLength = Math.max(
+        ...formattedCadets.map((cadet) => cadet.serviceLengthInMonths)
+      );
+
+      // Adjust the max service length based on the condition
+      const adjustedMaxServiceLength = maxServiceLength < 50 ? 50 : maxServiceLength + 1;
+
+      setLongestServiceInMonths(adjustedMaxServiceLength); // Update the state
     };
 
     fetchCadetsWithClassification(squadronNumber);
@@ -194,6 +207,7 @@ const ClassificationDashboard = () => {
               <Graph
                 key={dividerPosition} // Force re-render when dividerPosition changes
                 cadetData={cadetData}
+                longestServiceInMonths={longestServiceInMonths} // Pass the longest service length
                 onPointHover={(cadetNames) => {
                   // Only update state if the hovered cadet names have changed
                   if (JSON.stringify(cadetNames) !== JSON.stringify(hoveredCadet)) {

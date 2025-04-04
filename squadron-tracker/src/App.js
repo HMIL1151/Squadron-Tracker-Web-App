@@ -10,7 +10,7 @@ import dashboardList from "./components/Dashboards/Dashboard Components/dashboar
 import { useSquadron } from "./context/SquadronContext"; // Import the custom hook
 
 const App = () => {
-  const version = "v0.6.1"; // Define the version number
+  const version = "v0.7.1"; // Define the version number
   const [user, setUser] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false); // Track if the user is an admin
   const [activeMenu, setActiveMenu] = useState(dashboardList[0]?.key || ""); // Default to the first dashboard key

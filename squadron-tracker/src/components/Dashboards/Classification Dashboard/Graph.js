@@ -99,7 +99,7 @@ ChartJS.register(
   crosshairPlugin
 );
 
-const Graph = ({ cadetData, onPointHover, hoveredCadet, onPointClick }) => {
+const Graph = ({ cadetData, longestServiceInMonths, onPointHover, hoveredCadet, onPointClick }) => {
   const chartRef = useRef(null);
 
   // Trigger hover logic when hoveredCadet changes
@@ -197,7 +197,7 @@ const Graph = ({ cadetData, onPointHover, hoveredCadet, onPointClick }) => {
           { x: 6, y: 3 },
           { x: 12, y: 6 },
           { x: 36, y: 12 },
-          { x: 50, y: 12 },
+          { x: longestServiceInMonths, y: 12 },
         ],
         backgroundColor: "rgba(255, 99, 132, 0.6)",
         borderColor: "rgba(255, 99, 132, 1)",
@@ -251,7 +251,7 @@ const Graph = ({ cadetData, onPointHover, hoveredCadet, onPointClick }) => {
           text: "Service Length (Months)",
         },
         min: 0,
-        max: 50,
+        max: longestServiceInMonths,
         grid: {
           drawOnChartArea: true,
         },

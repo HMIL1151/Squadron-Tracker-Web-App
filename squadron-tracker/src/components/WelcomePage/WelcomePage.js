@@ -1,3 +1,5 @@
+//TODO: Squadrons declare flight bnames
+
 import React, { useState } from "react";
 import { getAuth, signInWithPopup, GoogleAuthProvider, signOut } from "firebase/auth"; // Import Firebase Auth
 import { getFirestore, collection, doc, setDoc, getDocs, writeBatch, query, where } from "firebase/firestore"; // Import Firestore functions

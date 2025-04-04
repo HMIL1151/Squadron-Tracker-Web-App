@@ -1,4 +1,5 @@
 //TODO: Mass add Events from old tracker/from CSV file
+//TODO: check that added entry is actually saved into firestore by returning the doc name for the entry then checking that the entry is in there
 
 import React, { useState, useEffect, useCallback } from "react";
 import { useSquadron } from "../../../context/SquadronContext";
@@ -194,12 +195,22 @@ const MassEventLog = ({ user }) => {
           specialAward: selectedButton === "Special" ? selectedSpecialAward : "",
         };
   
-        await addDoc(collection(db,"Squadron Databases", squadronNumber.toString(), "Event Log"), newEvent);
+        // Add the new event to Firestore and get the document reference
+        const docRef = await addDoc(
+          collection(db, "Squadron Databases", squadronNumber.toString(), "Event Log"),
+          newEvent
+        );
+  
+        // Perform a sense check to verify the document exists
+        const docSnapshot = await getDoc(docRef);
+        if (docSnapshot.exists()) {
+          setSuccessMessage(`Event successfully added`);
+        } else {
+          console.error(`Failed to verify event with ID: ${docRef.id}`);
+          alert(`Error: Event with ID ${docRef.id} could not be verified.`);
+          return; // Exit the loop if verification fails
+        }
       }
-
-      // Trigger the success message
-      setSuccessMessage(`Event successfully added.`);
-      setTimeout(() => setSuccessMessage(""), 1000); // Automatically hide after 1 second
   
       // Refresh the table data
       await fetchEvents();
