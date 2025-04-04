@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { getFirestore, collection, getDocs, doc, updateDoc, setDoc, deleteDoc } from "firebase/firestore/lite";
 import "./AdminDashboard.css";
 import "../Dashboard Components/dashboardStyles.css";
+import { useSquadron } from "../../../context/SquadronContext";
 
 const AdminDashboard = () => {
   const [requests, setRequests] = useState([]);
@@ -11,6 +12,7 @@ const AdminDashboard = () => {
   const [selectedRole, setSelectedRole] = useState("user"); // Track the selected role when granting access
   const [newStatus, setNewStatus] = useState(""); // Track the new status to be confirmed
   const [activeTab, setActiveTab] = useState("pending"); // Track the active tab (default: "pending")
+  const { squadronNumber } = useSquadron(); // Access the squadron number from context
 
   useEffect(() => {
     const fetchRequests = async () => {
@@ -19,7 +21,7 @@ const AdminDashboard = () => {
 
       try {
         const db = getFirestore();
-        const userRequestsCollection = collection(db, "UserRequests");
+        const userRequestsCollection = collection(db, "Squadron Databases", squadronNumber.toString(), "User Requests");
         const snapshot = await getDocs(userRequestsCollection);
 
         const requestsData = snapshot.docs.map((doc) => ({
@@ -37,7 +39,7 @@ const AdminDashboard = () => {
     };
 
     fetchRequests();
-  }, []);
+  }, [squadronNumber]);
 
   const formatTimestamp = (timestamp) => {
     if (!timestamp) return "N/A";
@@ -70,13 +72,13 @@ const AdminDashboard = () => {
 
     try {
       const db = getFirestore();
-      const requestDocRef = doc(db, "UserRequests", selectedRequest.id);
+      const requestDocRef = doc(db, "Squadron Databases", squadronNumber.toString(), "User Requests", selectedRequest.id);
 
       // Update the progress in the UserRequests collection
       await updateDoc(requestDocRef, { progress: newStatus });
 
       // Handle AuthorizedUsers collection
-      const authorizedUserDocRef = doc(db, "AuthorizedUsers", selectedRequest.id);
+      const authorizedUserDocRef = doc(db, "Squadron Databases", squadronNumber.toString(), "Authorised Users", selectedRequest.id);
 
       if (newStatus === "granted") {
         // If the status is granted, create or update the document in AuthorizedUsers

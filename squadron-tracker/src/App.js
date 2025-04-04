@@ -2,12 +2,12 @@
 
 import "./Styles/App.css";
 import { useState } from "react";
-import Auth from "./components/Auth/Auth";
 import Menu from "./components/Menu/Menu"; // Import the Menu component
+import WelcomePage from "./components/WelcomePage/WelcomePage"; // Import the new WelcomePage component
 import { signOut } from "firebase/auth";
 import { auth } from "./firebase/firebase"; // Adjust the import path to your Firebase configuration
 import dashboardList from "./components/Dashboards/Dashboard Components/dashboardList";
-import { getFirestore, doc, getDoc } from "firebase/firestore/lite"; // Import Firestore functions
+import { useSquadron } from "./context/SquadronContext"; // Import the custom hook
 
 const App = () => {
   const version = "v0.6.1"; // Define the version number
@@ -15,27 +15,13 @@ const App = () => {
   const [isAdmin, setIsAdmin] = useState(false); // Track if the user is an admin
   const [activeMenu, setActiveMenu] = useState(dashboardList[0]?.key || ""); // Default to the first dashboard key
 
-  const handleUserChange = async (currentUser) => {
-    setUser(currentUser);
+  const { setSquadronNumber } = useSquadron(); // Access the context
 
-    if (currentUser) {
-      try {
-        const db = getFirestore();
-        const userDocRef = doc(db, "AuthorizedUsers", currentUser.uid);
-        const userDoc = await getDoc(userDocRef);
-
-        if (userDoc.exists() && userDoc.data().role === "admin") {
-          setIsAdmin(true); // Set admin status
-        } else {
-          setIsAdmin(false);
-        }
-      } catch (error) {
-        console.error("Error checking admin role:", error);
-        setIsAdmin(false);
-      }
-    } else {
-      setIsAdmin(false);
-    }
+  const handleUserChange = (currentUser, isAdminStatus) => {
+    setUser(currentUser); // Update the user state with all user data
+    setIsAdmin(isAdminStatus); // Update the admin status
+    setSquadronNumber(currentUser.squadronNumber); // Set the squadron number in the context
+    console.log("User data updated:", currentUser);
   };
 
   const handleLogout = () => {
@@ -43,6 +29,7 @@ const App = () => {
       .then(() => {
         setUser(null); // Clear the user state
         setActiveMenu(dashboardList[0]?.key || ""); // Reset the menu to the first dashboard
+        setSquadronNumber(null); // Clear the squadron number in the context
         console.log("User successfully logged out.");
       })
       .catch((error) => {
@@ -62,31 +49,31 @@ const App = () => {
     return <h2>No Dashboards Available</h2>;
   };
 
+  if (!user) {
+    return <WelcomePage onUserChange={handleUserChange} />;
+  }
+
+  if (user) {
+    console.log("User Display Name:", user.displayName);
+    console.log("User UID:", user.uid);
+    console.log("Squadron Name:", user.squadronName);
+    console.log("Squadron Number:", user.squadronNumber);
+    console.log("User Role:", user.role);
+  }
+
   return (
     <div className="App">
       <header className="app-header">
-        <div className="title">Squadron Tracker, 1151 (Wallsend) Squadron ATC</div>
-        {user && (
-          <div className="user-info">
-            <span>Logged in as {user.displayName}</span>
-            <button className="logout-button" onClick={handleLogout}>
-              Log Out
-            </button>
-          </div>
-        )}
-      </header>
-      {!user ? (
-        <div className="auth-modal">
-          <h2>Welcome to Squadron Tracker</h2>
-          <p>Please sign in to continue.</p>
-          <Auth onUserChange={handleUserChange} />
+        <div className="title">Squadron Tracker, {user.squadronNumber} ({user.squadronName}) Squadron ATC</div>
+        <div className="user-info">
+          <span>Logged in as {user.displayName}</span>
+          <button className="logout-button" onClick={handleLogout}>
+            Log Out
+          </button>
         </div>
-      ) : (
-        <>
-          <Menu activeMenu={activeMenu} setActiveMenu={setActiveMenu} isAdmin={isAdmin} />
-          <main className="main-content">{renderMainContent()}</main>
-        </>
-      )}
+      </header>
+      <Menu activeMenu={activeMenu} setActiveMenu={setActiveMenu} isAdmin={isAdmin} />
+      <main className="main-content">{renderMainContent()}</main>
       {/* Version number in the bottom-right corner */}
       <div className="version-number">{version}</div>
     </div>
