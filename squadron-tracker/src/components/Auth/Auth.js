@@ -18,17 +18,13 @@ const Auth = ({ onUserChange }) => {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
-      console.log("Auth state changed. Current user:", currentUser);
-
       if (currentUser) {
         const db = getFirestore();
-        const userDocRef = doc(db,"Squadron Databases", sqnNo.toString(),  "Authorised Users", currentUser.uid);
-        console.log("Checking Firestore for authorized user:", currentUser.uid);
+        const userDocRef = doc(db, "Squadron Databases", sqnNo.toString(), "Authorised Users", currentUser.uid);
 
         try {
           const userDoc = await getDoc(userDocRef);
           if (userDoc.exists()) {
-            console.log("User is authorized:", userDoc.data());
             setUser(currentUser);
             onUserChange(currentUser); // Pass user info to parent component
             setErrorMessage(""); // Clear any previous error messages
@@ -46,14 +42,13 @@ const Auth = ({ onUserChange }) => {
           setErrorMessage("An error occurred while checking authorization.");
         }
       } else {
-        console.log("No user is signed in.");
         setUser(null);
         onUserChange(null);
         setIsUnauthorized(false); // Reset unauthorized state
       }
     });
     return () => unsubscribe();
-  }, [onUserChange]);
+  }, [onUserChange, sqnNo]); // Added sqnNo to the dependency array
 
   const handleSquadronNumberChange = (e) => {
     setSquadronNumber(e.target.value);  
@@ -67,7 +62,6 @@ const Auth = ({ onUserChange }) => {
 
     try {
       const exists = await doesCollectionExist(parseInt(squadronNumber, 10)); // Call the function
-      console.log(`Does collection ${squadronNumber} exist?`, exists); // Print the result to the console
     } catch (error) {
       console.error("Error checking squadron collection existence:", error);
     }
@@ -81,7 +75,6 @@ const Auth = ({ onUserChange }) => {
 
     try {
       await signInWithPopup(auth, googleProvider);
-      console.log("Signed in user:", auth.currentUser); // Debugging line
     } catch (error) {
       console.error("Error signing in:", error);
       setErrorMessage("Error signing in. Please try again.");
@@ -109,7 +102,6 @@ const Auth = ({ onUserChange }) => {
     }
 
     try {
-      console.log("Requesting Access");
       const db = getFirestore();
       const requestDocRef = doc(db, "Squadron Databases", sqnNo.toString(), "User Requests", userToRequestAccess.uid);
 

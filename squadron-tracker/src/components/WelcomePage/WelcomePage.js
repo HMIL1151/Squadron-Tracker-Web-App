@@ -29,11 +29,9 @@ const WelcomePage = ({ onUserChange }) => {
 
       // Capture user details
       const { uid, email, displayName } = user;
-      console.log("User Details:", { uid, email, displayName });
 
       // Check the user's role using the UID
       const userRole = await checkUserRole(uid);
-      console.log("User Role Response:", userRole);
 
       // If the user role is a number, check the User Requests subcollection
       if (!isNaN(userRole)) {
@@ -84,7 +82,6 @@ const WelcomePage = ({ onUserChange }) => {
 
     try {
       await signOut(auth); // Sign out the user
-      console.log("User successfully logged out.");
       setUser(null); // Clear the user state
       setRole(null); // Clear the role state
       setSquadronNumber(""); // Clear the Squadron number
@@ -96,11 +93,9 @@ const WelcomePage = ({ onUserChange }) => {
 
   const handleSquadronSubmit = async () => {
     try {
-      console.log("Squadron Number Submitted:", squadronNumber);
 
       // Check if the squadron account exists
       const collectionExists = await doesSquadronAccountExist(squadronNumber);
-      console.log("Does Squadron Collection Exist:", collectionExists);
 
       if (role === "First Login" && collectionExists) {
         // Fetch the squadron name from the Squadron List collection
@@ -120,7 +115,6 @@ const WelcomePage = ({ onUserChange }) => {
           progress: "pending",
           timestamp: new Date().toISOString(), // Current timestamp in ISO format
         });
-        console.log("User request added to 'User Requests' subcollection with status 'pending'.");
 
         // Add a new document to the top-level 'Mass User List' collection
         const massUserListDocRef = doc(collection(db, "Mass User List"));
@@ -128,7 +122,6 @@ const WelcomePage = ({ onUserChange }) => {
           UID: user.uid,
           Squadron: parseInt(squadronNumber, 10),
         });
-        console.log("User added to 'Mass User List' collection.");
 
         // Notify the user
         setError("Your request to join the squadron is pending approval.");
@@ -176,7 +169,6 @@ const WelcomePage = ({ onUserChange }) => {
           Name: squadronName,
           Number: parseInt(squadronNumber, 10),
         });
-        console.log("Squadron added to 'Squadron List' collection.");
 
         // Add a new document to the 'Squadron Databases' collection
         const squadronDatabaseDocRef = doc(db, "Squadron Databases", squadronNumber);
@@ -192,7 +184,6 @@ const WelcomePage = ({ onUserChange }) => {
           email: user.email,
           role: "admin",
         });
-        console.log("Admin user added to 'Authorised Users' subcollection.");
 
         // Reproduce the 'Flight Points' collection in the new Squadron Database
         const topLevelFlightPointsRef = collection(db, "Flight Points");
@@ -207,7 +198,6 @@ const WelcomePage = ({ onUserChange }) => {
         });
 
         await batch.commit(); // Commit the batch write
-        console.log("Flight Points collection successfully reproduced.");
 
         // Add a new document to the 'User Requests' collection
         const userRequestsDocRef = doc(collection(squadronDatabaseDocRef, "User Requests"));
@@ -217,7 +207,6 @@ const WelcomePage = ({ onUserChange }) => {
           progress: "granted",
           timestamp: new Date().toISOString(), // Current timestamp in ISO format
         });
-        console.log("User request added to 'User Requests' collection.");
 
         // Add a new document to the top-level 'Mass User List' collection
         const massUserListDocRef = doc(collection(db, "Mass User List"));
@@ -225,7 +214,6 @@ const WelcomePage = ({ onUserChange }) => {
           UID: user.uid,
           Squadron: parseInt(squadronNumber, 10),
         });
-        console.log("User added to 'Mass User List' collection.");
 
         // Close all popups
         setShowSetupPopup(false);
@@ -272,14 +260,6 @@ const WelcomePage = ({ onUserChange }) => {
     } else {
       userRole = "admin"; // If the role is System Admin, set it to "admin"
     }
-  
-    console.log("Navigating to main content with data:", {
-      displayName,
-      uid,
-      squadronName,
-      squadronNumber,
-      role: userRole,
-    });
   
     // Call the onUserChange prop to pass the user and squadron data to App.js
     onUserChange(

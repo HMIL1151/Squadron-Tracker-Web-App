@@ -87,8 +87,6 @@ const Table = ({ columns, data, onRowClick, onRowHover, disableHover = false, wi
       valB = String(valB).toLowerCase();
     }
   
-    //console.log(`Comparing ${valA} and ${valB} for column ${activeColumn} in ${sortOrder[activeColumn]} order`);
-  
     if (valA < valB) {
       return sortOrder[activeColumn] === "asc" ? -1 : 1;
     }
