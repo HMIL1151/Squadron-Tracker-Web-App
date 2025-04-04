@@ -1,14 +1,31 @@
 import jsPDF from "jspdf";
 import { getCadetRank } from "../../../firebase/firestoreUtils"; // Import getCadetRank
+import { getFirestore, collection, getDocs } from "firebase/firestore/lite"; // Import Firestore utilities
 
-const generateCertificatePDF = async (cadetName, year, events) => {
+const generateCertificatePDF = async (cadetName, year, events, squadronNumber) => {
     const doc = new jsPDF();
+    const db = getFirestore();
 
     // Fetch the cadet's rank
-    const rank = await getCadetRank(cadetName);
+    const rank = await getCadetRank(cadetName, squadronNumber);
+
+    // Fetch the squadron name from Firestore
+    let squadronName = "Unknown";
+    try {
+        const squadronListCollection = collection(db, "Squadron List");
+        const snapshot = await getDocs(squadronListCollection);
+        snapshot.forEach((doc) => {
+            const data = doc.data();
+            if (data.Number === squadronNumber) {
+                squadronName = data.Name;
+            }
+        });
+    } catch (error) {
+        console.error("Error fetching squadron name:", error);
+    }
 
     // Load the watermark image
-    const logoUrl = `${process.env.PUBLIC_URL}/logo.png`; // Public folder path
+    const logoUrl = `${process.env.PUBLIC_URL}/${squadronNumber}.png`; // Public folder path
     const logoImage = await fetch(logoUrl)
         .then((response) => response.blob())
         .then((blob) => {
@@ -57,7 +74,12 @@ const generateCertificatePDF = async (cadetName, year, events) => {
 
     // Add squadron name
     doc.setFontSize(24);
-    doc.text("1151 (Wallsend) Squadron ATC", doc.internal.pageSize.getWidth() / 2, 55, { align: "center" });
+    doc.text(
+        `${squadronNumber} (${squadronName}) Squadron ATC`,
+        doc.internal.pageSize.getWidth() / 2,
+        55,
+        { align: "center" }
+    );
 
     // Add year
     doc.setFontSize(16);

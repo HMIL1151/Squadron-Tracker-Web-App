@@ -1,9 +1,11 @@
 import React, { useState } from "react";
 import { getFirestore, doc, updateDoc, arrayUnion } from "firebase/firestore/lite";
 import "./addEntry.css";
+import { useSquadron } from "../../../context/SquadronContext";
 
 const AddEntry = ({ isOpen, onClose, onConfirm, collection, document, arrayName }) => {
   const [entry, setEntry] = useState("");
+  const { squadronNumber } = useSquadron(); // Access the squadron number from context
 
   const handleConfirm = async () => {
     if (!entry) {
@@ -13,7 +15,7 @@ const AddEntry = ({ isOpen, onClose, onConfirm, collection, document, arrayName 
 
     try {
       const db = getFirestore();
-      const docRef = doc(db, collection, document);
+      const docRef = doc(db, "Squadron Databases", squadronNumber.toString(), collection, document);
 
       await updateDoc(docRef, {
         [arrayName]: arrayUnion(entry),

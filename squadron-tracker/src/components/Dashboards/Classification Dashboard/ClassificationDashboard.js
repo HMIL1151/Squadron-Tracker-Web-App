@@ -14,6 +14,7 @@ import Graph from "./Graph"; // Moved this import to the top
 import Table from "../../Table/Table"; // Import the Table component
 import ExamPopup from "./ExamPopup"; // Import ExamPopup component
 import "./ClassificationDashboard.css"; // Import CSS for styling
+import { useSquadron } from "../../../context/SquadronContext";
 
 // Register Chart.js components
 ChartJS.register(Title, Tooltip, Legend, PointElement, LinearScale);
@@ -48,6 +49,7 @@ const ClassificationDashboard = () => {
   const [hoveredCadet, setHoveredCadet] = useState(null); // Track the hovered cadet
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [selectedCadet, setSelectedCadet] = useState({ name: "", classification: "" });
+  const { squadronNumber } = useSquadron(); // Access the squadron number from context
 
   const openPopup = (cadetName, classification) => {
     setSelectedCadet({ name: cadetName, classification });
@@ -84,10 +86,10 @@ const ClassificationDashboard = () => {
       const db = getFirestore();
 
       // Fetch all cadets from Firestore
-      const cadets = await fetchCollectionData("Cadets");
+      const cadets = await fetchCollectionData("Squadron Databases", squadronNumber.toString(), "Cadets");
 
       // Fetch all event log documents from Firestore
-      const eventLogRef = collection(db, "Event Log");
+      const eventLogRef = collection(db,"Squadron Databases", squadronNumber.toString(),  "Event Log");
       const eventLogSnapshot = await getDocs(eventLogRef);
       const eventLogData = eventLogSnapshot.docs.map((doc) => doc.data());
 
@@ -132,8 +134,8 @@ const ClassificationDashboard = () => {
       setCadetData(formattedCadets);
     };
 
-    fetchCadetsWithClassification();
-  }, []);
+    fetchCadetsWithClassification(squadronNumber);
+  }, [squadronNumber]);
 
   useEffect(() => {
   }, [cadetData]);

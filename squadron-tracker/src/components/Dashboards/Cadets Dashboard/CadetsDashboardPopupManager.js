@@ -5,6 +5,7 @@ import CadetForm from "./CadetForm";
 import { doc, updateDoc, getFirestore } from "firebase/firestore"; // Import Firestore functions
 import { app } from "../../../firebase/firebase"; // Correct import path for app
 import { fetchCollectionData } from "../../../firebase/firestoreUtils"; // Import fetchCollectionData
+import { useSquadron } from "../../../context/SquadronContext";
 
 const PopupManager = ({
   isPopupOpen,
@@ -30,6 +31,7 @@ const PopupManager = ({
   const [editedCadet, setEditedCadet] = useState(selectedCadet || {});
   const [successMessage, setSuccessMessage] = useState(""); // State for success message
   const db = getFirestore(app); // Initialize Firestore using app
+  const { squadronNumber } = useSquadron(); // Access the squadron number from context
 
   // Update the editedCadet state when the selectedCadet changes
   React.useEffect(() => {
@@ -55,7 +57,7 @@ const PopupManager = ({
     if (!editedCadet.id) return;
 
     try {
-      const cadetDocRef = doc(db, "Cadets", editedCadet.id); // Reference to the cadet's Firestore document
+      const cadetDocRef = doc(db, "Squadron Databases", squadronNumber.toString(), "Cadets", editedCadet.id); // Reference to the cadet's Firestore document
       await updateDoc(cadetDocRef, {
         forename: editedCadet.forename,
         surname: editedCadet.surname,
@@ -69,7 +71,7 @@ const PopupManager = ({
       setIsEditPopupOpen(false); // Close the popup
 
       // Refresh the cadets list
-      const cadetsData = await fetchCollectionData("Cadets");
+      const cadetsData = await fetchCollectionData("Squadron Databases", squadronNumber.toString(),"Cadets");
       setCadets(cadetsData); // Update the cadets state
 
       setTimeout(() => setSuccessMessage(""), 3000); // Clear the message after 3 seconds

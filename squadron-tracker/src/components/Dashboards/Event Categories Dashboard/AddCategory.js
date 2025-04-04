@@ -1,10 +1,13 @@
 import React, { useState } from "react";
 import { getFirestore, doc, updateDoc } from "firebase/firestore/lite";
 import "./addCategory.css";
+import { useSquadron } from "../../../context/SquadronContext";
 
 const AddCategory = ({ isOpen, onClose, onConfirm }) => {
   const [category, setCategory] = useState("");
   const [points, setPoints] = useState("");
+    const { squadronNumber } = useSquadron(); // Access the squadron number from context
+  
 
   const handleConfirm = async () => {
     if (!category || !points) {
@@ -14,7 +17,7 @@ const AddCategory = ({ isOpen, onClose, onConfirm }) => {
 
     try {
       const db = getFirestore();
-      const docRef = doc(db, "Flight Points", "Event Category Points");
+      const docRef = doc(db,"Squadron Databases", squadronNumber.toString(),  "Flight Points", "Event Category Points");
 
       // Update Firestore with the new category and points
       await updateDoc(docRef, {

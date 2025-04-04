@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { getAuth, signInWithPopup, GoogleAuthProvider, signOut } from "firebase/auth"; // Import Firebase Auth
-import { getFirestore, collection, doc, setDoc, getDocs, writeBatch, query, where, getDoc } from "firebase/firestore"; // Import Firestore functions
+import { getFirestore, collection, doc, setDoc, getDocs, writeBatch, query, where } from "firebase/firestore"; // Import Firestore functions
 import { checkUserRole, doesSquadronAccountExist } from "../../firebase/firestoreUtils"; // Import Firestore utility functions
 import "./WelcomePage.css"; // Optional: Add styles for the welcome page
 import "../Dashboards/Dashboard Components/dashboardStyles.css"; // Import styles for buttons and popups
