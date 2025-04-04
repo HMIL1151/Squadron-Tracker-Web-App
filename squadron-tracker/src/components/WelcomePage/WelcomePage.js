@@ -33,39 +33,43 @@ const WelcomePage = ({ onUserChange }) => {
       // Check the user's role using the UID
       const userRole = await checkUserRole(uid);
 
-      // If the user role is a number, check the User Requests subcollection
       if (!isNaN(userRole)) {
         const squadronNumber = userRole.toString(); // Convert role to string for document lookup
         const squadronDatabaseDocRef = doc(db, "Squadron Databases", squadronNumber);
-        const userRequestsCollectionRef = collection(squadronDatabaseDocRef, "User Requests");
+        const authorisedUsersCollectionRef = collection(squadronDatabaseDocRef, "Authorised Users");
 
-        // Query the User Requests subcollection for a matching document
+        // Query the Authorised Users subcollection for a matching document
         const userQuery = query(
-          userRequestsCollectionRef,
+          authorisedUsersCollectionRef,
           where("displayName", "==", displayName),
-          where("email", "==", email),
-          where("progress", "==", "granted")
+          where("email", "==", email)
         );
-        const userRequestSnapshot = await getDocs(userQuery);
+        const userSnapshot = await getDocs(userQuery);
 
-        if (!userRequestSnapshot.empty) {
-          // Fetch the squadron name from the Squadron List collection
-          const squadronName = await fetchSquadronName(squadronNumber);
-
-          if (!squadronName) {
-            setError("Failed to fetch squadron name. Please try again.");
-            return;
-          }
-
-          // Navigate to main content and pass user and squadron data
-          navigateToMainContent({
-            displayName,
-            uid,
-            squadronName,
-            squadronNumber: parseInt(squadronNumber, 10),
-          });
+        if (userSnapshot.empty) {
+          // User is not in the Authorised Users list
+          setError(
+            "Your request to join the squadron is pending approval, please contact your Squadron's Admin."
+          );
           return;
         }
+
+        // Fetch the squadron name from the Squadron List collection
+        const squadronName = await fetchSquadronName(squadronNumber);
+
+        if (!squadronName) {
+          setError("Failed to fetch squadron name. Please try again.");
+          return;
+        }
+
+        // Navigate to main content and pass user and squadron data
+        navigateToMainContent({
+          displayName,
+          uid,
+          squadronName,
+          squadronNumber: parseInt(squadronNumber, 10),
+        });
+        return;
       }
 
       // Update the user state and role
@@ -124,7 +128,7 @@ const WelcomePage = ({ onUserChange }) => {
         });
 
         // Notify the user
-        setError("Your request to join the squadron is pending approval.");
+        setError("Your request to join the squadron is pending approval, please contant your Squadron's Admin.");
       } else if (role === "System Admin" && collectionExists) {
         // Fetch the squadron name from the Squadron List collection
         const squadronName = await fetchSquadronName(squadronNumber);
@@ -291,41 +295,47 @@ const WelcomePage = ({ onUserChange }) => {
 
   return (
     <div className="welcome-page">
-      <h1>Welcome to Squadron Tracker</h1>
-      <p>Please sign in to continue.</p>
+      <h1>Welcome to the Squadron Tracker</h1>
+      <p>{!user && "Please sign in to continue."}</p>
       {error && <p className="error-message">{error}</p>}
-      {user ? (
-        <div>
-          <p>Welcome, {user.displayName}!</p>
-          {role === "First Login" || role === "System Admin" ? (
-            <div>
-              <p>Please enter your Squadron number:</p>
-              <input
-                type="number"
-                value={squadronNumber}
-                onChange={(e) => setSquadronNumber(e.target.value)}
-                placeholder="Enter Squadron Number"
-                className="squadron-input"
-              />
-              <button
-                className="submit-squadron-button"
-                onClick={handleSquadronSubmit}
-                disabled={!squadronNumber}
-              >
-                Submit
-              </button>
-            </div>
-          ) : null}
-          <button className="logout-button" onClick={handleLogout}>
-            Log Out
-          </button>
-        </div>
-      ) : (
-        <button className="google-login-button" onClick={handleGoogleLogin}>
-          Sign in with Google
-        </button>
-      )}
 
+{user ? (
+  <div>
+    <p>Welcome, {user.displayName}!</p>
+    {role === "First Login" || role === "System Admin" ? (
+      <div>
+        <p>Please enter your Squadron number:</p>
+        <input
+          type="number"
+          value={squadronNumber}
+          onChange={(e) => setSquadronNumber(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && squadronNumber) {
+              handleSquadronSubmit();
+            }
+          }}
+          placeholder="Enter Squadron Number"
+          className="squadron-input"
+          autoFocus
+        />
+        <button
+          className="submit-squadron-button"
+          onClick={handleSquadronSubmit}
+          disabled={!squadronNumber}
+        >
+          Submit
+        </button>
+      </div>
+    ) : null}
+    <button className="logout-button" onClick={handleLogout}>
+      Log Out
+    </button>
+  </div>
+) : (
+  <button className="google-login-button" onClick={handleGoogleLogin}>
+    Sign in with Google
+  </button>
+)}
       {/* Setup Squadron Popup */}
       {showSetupPopup && (
         <>
@@ -349,19 +359,19 @@ const WelcomePage = ({ onUserChange }) => {
         <>
           <div className="popup-overlay"></div>
           <div className="popup">
-            <p>New Squadron Setup</p>
+            <p className="popup-title">New Squadron Setup</p>
             <div>
-              <label>Squadron Name:</label>
+              <label className="label-spacing">Squadron Name:</label>
               <input
                 type="text"
                 value={squadronName}
                 onChange={(e) => setSquadronName(e.target.value)}
                 placeholder="Enter Squadron Name"
-                className="squadron-input"
+                className="squadron-name-input"
               />
             </div>
             <div>
-              <label>Squadron Number:</label>
+              <label className="label-spacing">Squadron Number:</label>
               <input
                 type="number"
                 value={squadronNumber}
