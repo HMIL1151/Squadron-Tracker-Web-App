@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "./MassEventLog.css";
-import "../Dashboard Components/dashboardStyles.css"
+import "../Dashboard Components/dashboardStyles.css";
 import { examList, badgeLevel } from "../../../utils/examList";
 
 const AddEventPopup = ({
@@ -16,7 +16,7 @@ const AddEventPopup = ({
   handleKeyDown,
   handleNameSelect,
   handleRemoveName,
-  handleAddEvent, // This is the prop passed from the parent
+  handleAddEvent,
   closePopup,
   eventDate,
   handleDateChange,
@@ -24,17 +24,30 @@ const AddEventPopup = ({
 }) => {
   const [selectedButton, setSelectedButton] = useState(null);
   const [freeText, setFreeText] = useState("");
-  const [selectedBadgeType, setSelectedBadgeType] = useState(""); 
-  const [selectedBadgeLevel, setSelectedBadgeLevel] = useState(""); 
-  const [selectedExam, setSelectedExam] = useState(""); 
-  const [selectedEventCategory, setSelectedEventCategory] = useState(""); 
-  const [selectedSpecialAward, setSelectedSpecialAward] = useState(""); 
+  const [selectedBadgeType, setSelectedBadgeType] = useState("");
+  const [selectedBadgeLevel, setSelectedBadgeLevel] = useState("");
+  const [selectedExam, setSelectedExam] = useState("");
+  const [selectedEventCategory, setSelectedEventCategory] = useState("");
+  const [selectedSpecialAward, setSelectedSpecialAward] = useState("");
+
+  // Reset state when the popup is opened
+  useEffect(() => {
+    if (isPopupOpen) {
+      setSelectedButton(null);
+      setFreeText("");
+      setSelectedBadgeType("");
+      setSelectedBadgeLevel("");
+      setSelectedExam("");
+      setSelectedEventCategory("");
+      setSelectedSpecialAward("");
+    }
+  }, [isPopupOpen]);
 
   if (!isPopupOpen) return null;
 
   const handleButtonClick = (buttonText) => {
-    setSelectedButton(buttonText); // Update the local state
-    onButtonSelect(buttonText); // Notify the parent component
+    setSelectedButton(buttonText);
+    onButtonSelect(buttonText);
     // Reset all fields when switching buttons
     setFreeText("");
     setSelectedBadgeType("");
@@ -44,7 +57,7 @@ const AddEventPopup = ({
     setSelectedSpecialAward("");
   };
 
-  const onAddEventClick = () => { // Renamed local function
+  const onAddEventClick = () => {
     const eventData = {
       selectedBadgeType,
       selectedBadgeLevel,
@@ -54,7 +67,7 @@ const AddEventPopup = ({
       selectedSpecialAward,
     };
 
-    handleAddEvent(eventData); // Call the parent function
+    handleAddEvent(eventData);
   };
 
   return (
@@ -115,7 +128,6 @@ const AddEventPopup = ({
             onChange={handleDateChange}
           />
         </div>
-        {/* 2x2 Button Grid */}
         <div className="button-grid">
           {["Badge", "Classification/Exam", "Event/Other", "Special"].map((buttonText) => (
             <button
@@ -128,7 +140,6 @@ const AddEventPopup = ({
             />
           ))}
         </div>
-        {/* Dynamic Entry Fields */}
         <div className="dynamic-fields">
           {selectedButton === "Badge" && (
             <>
@@ -211,7 +222,7 @@ const AddEventPopup = ({
                   onChange={(e) => setFreeText(e.target.value)}
                 />
               </div>
-              <div className="flex-container">  
+              <div className="flex-container">
                 <label className="popup-label" htmlFor="event-category">
                   Event Category:
                 </label>
@@ -256,19 +267,16 @@ const AddEventPopup = ({
             </div>
           )}
         </div>
-
         <div className="popup-bottom-buttons">
-            <button className="popup-button-red" onClick={closePopup}>
+          <button className="popup-button-red" onClick={closePopup}>
             Cancel
-            </button>
-            <button className="popup-button-green" onClick={onAddEventClick}>
+          </button>
+          <button className="popup-button-green" onClick={onAddEventClick}>
             Add Event
-            </button>
-
-            </div>
-
+          </button>
         </div>
       </div>
+    </div>
   );
 };
 
