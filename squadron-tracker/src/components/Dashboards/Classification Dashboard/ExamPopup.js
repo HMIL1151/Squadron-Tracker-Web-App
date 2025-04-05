@@ -1,32 +1,27 @@
-import React, { useEffect, useState } from "react";
-import { getFirestore, collection, getDocs, query, where } from "firebase/firestore/lite";
+import React, { useEffect, useState, useContext } from "react";
 import { examList } from "../../../utils/examList"; // Import the examList
 import "./ExamPopup.css"; // Optional: Add styles for the popup
-import { useSquadron } from "../../../context/SquadronContext";
-
+import { DataContext } from "../../../context/DataContext"; // Import DataContext
 
 const ExamPopup = ({ isOpen, onClose, cadetName, classification }) => {
   const [exams, setExams] = useState([]); // State to store the list of exams
   const [loading, setLoading] = useState(true); // State to track loading status
-  const { squadronNumber } = useSquadron(); // Access the squadron number from context
+  const { data } = useContext(DataContext); // Access data from DataContext
 
   useEffect(() => {
-    const fetchExams = async () => {
+    const fetchExams = () => {
       if (!cadetName) return; // If no cadet is selected, skip fetching
 
       setLoading(true); // Start loading
-      const db = getFirestore();
 
       try {
-        // Query the "Event Log" collection for documents matching the cadetName
-        const eventLogRef = collection(db, "Squadron Databases", squadronNumber.toString(), "Event Log");
-        const q = query(eventLogRef, where("cadetName", "==", cadetName));
-        const querySnapshot = await getDocs(q);
-
-        // Filter out documents with an empty examName
-        const fetchedExams = querySnapshot.docs
-          .map((doc) => doc.data().examName)
-          .filter((examName) => examName && examName.trim() !== ""); // Ensure examName is not blank
+        // Filter the events from DataContext for the selected cadet
+        const fetchedExams = data.events
+          .filter(
+            (event) =>
+              event.cadetName === cadetName && event.examName && event.examName.trim() !== ""
+          )
+          .map((event) => event.examName);
 
         // Sort the exams based on the order in examList
         const sortedExams = fetchedExams.sort(
@@ -35,7 +30,7 @@ const ExamPopup = ({ isOpen, onClose, cadetName, classification }) => {
 
         setExams(sortedExams);
       } catch (error) {
-        console.error("Error fetching exams:", error);
+        console.error("Error processing exams from DataContext:", error);
         setExams([]); // Reset exams on error
       } finally {
         setLoading(false); // Stop loading
@@ -45,7 +40,7 @@ const ExamPopup = ({ isOpen, onClose, cadetName, classification }) => {
     if (isOpen) {
       fetchExams();
     }
-  }, [isOpen, cadetName, squadronNumber]);
+  }, [isOpen, cadetName, data.events]);
 
   // Close the popup when clicking outside of it
   useEffect(() => {
