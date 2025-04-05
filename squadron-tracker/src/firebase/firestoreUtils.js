@@ -1,7 +1,6 @@
 import { getFirestore, collection, getDocs, doc, getDoc, query, where } from "firebase/firestore/lite";
 import { app } from "./firebase";
 import { rankMap } from "../utils/mappings";
-import { DataContext } from "../context/DataContext";
 
 // Function to fetch data from a specific Firestore collection
 export const fetchCollectionData = async (...pathSegments) => {
