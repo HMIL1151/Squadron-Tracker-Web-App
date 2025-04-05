@@ -14,7 +14,6 @@ import Graph from "./Graph"; // Moved this import to the top
 import Table from "../../Table/Table"; // Import the Table component
 import ExamPopup from "./ExamPopup"; // Import ExamPopup component
 import "./ClassificationDashboard.css"; // Import CSS for styling
-import { useSquadron } from "../../../context/SquadronContext";
 import { DataContext } from "../../../context/DataContext"; // Import DataContext
 
 
@@ -52,7 +51,6 @@ const ClassificationDashboard = () => {
   const [hoveredCadet, setHoveredCadet] = useState(null); // Track the hovered cadet
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [selectedCadet, setSelectedCadet] = useState({ name: "", classification: "" });
-  const { squadronNumber } = useSquadron(); // Access the squadron number from context
   const { data } = useContext(DataContext); // Access data from DataContext
 
 
@@ -144,7 +142,7 @@ const ClassificationDashboard = () => {
     };
 
     fetchCadetsWithClassification();
-  }, [data, classificationMap]);
+  }, [data]); // Removed 'classificationMap' from the dependency array
 
   useEffect(() => {
   }, [cadetData]);

@@ -1,13 +1,12 @@
 //TODO: Mass add Cadets from old tracker/from CSV file
 
-import React, { useState, useEffect, useCallback, useContext } from "react";
+import React, { useState, useContext } from "react";
 import { DataContext } from "../../../context/DataContext"; // Import DataContext
 import { rankMap, flightMap, classificationMap } from "../../../utils/mappings";
 import Table from "../../Table/Table";
 import PopupManager from "./CadetsDashboardPopupManager";
 import SuccessMessage from "../Dashboard Components/SuccessMessage";
 import "./CadetsDashboard.css";
-import LoadingPopup from "../Dashboard Components/LoadingPopup"; // Import the new LoadingPopup component
 import { useSquadron } from "../../../context/SquadronContext";
 import { getFirestore, doc, collection, setDoc, deleteDoc, updateDoc } from "firebase/firestore"; // Import Firestore functions
 
@@ -18,7 +17,6 @@ const CadetsDashboard = ({ user }) => {
   const [isEditPopupOpen, setIsEditPopupOpen] = useState(false); // New state for edit popup
   const [successMessage, setSuccessMessage] = useState("");
   const [selectedCadet, setSelectedCadet] = useState("");
-  const [loading, setLoading] = useState(true); // Add loading state
   const { squadronNumber } = useSquadron(); // Get the squadron number from the utils
   const { data, setData } = useContext(DataContext); // Access cadets and events from DataContext
   const [newCadet, setNewCadet] = useState({
@@ -51,69 +49,7 @@ const CadetsDashboard = ({ user }) => {
     CreatedAt: "createdAt",
   };
 
-  useEffect(() => {
-    if (!squadronNumber) {
-      console.error("Squadron number is not set.");
-      return;
-    }
 
-    // Simulate loading state
-    setLoading(true);
-
-    try {
-
-      const formattedCadets = data.cadets.map((cadet) => {
-
-        const serviceLength = (() => {
-          if (!cadet.startDate) return "N/A";
-
-          const [year, month, day] = cadet.startDate.split("-").map(Number);
-          const startDate = new Date(year, month - 1, day);
-          const today = new Date();
-
-          let years = today.getFullYear() - startDate.getFullYear();
-          let months = today.getMonth() - startDate.getMonth();
-          let days = today.getDate() - startDate.getDate();
-
-          if (days < 0) {
-            months -= 1;
-            days += new Date(today.getFullYear(), today.getMonth(), 0).getDate();
-          }
-
-          if (months < 0) {
-            years -= 1;
-            months += 12;
-          }
-
-          return `${years} Yrs, ${months} Mos, ${days} Days`;
-        })();
-
-        // Calculate classification dynamically
-        const matchingEvents = data.events.filter(
-          (event) =>
-            event.cadetName === `${cadet.forename} ${cadet.surname}` &&
-            event.examName !== ""
-        );
-
-        const classificationCount = matchingEvents.length + 1;
-
-        return {
-          ...Object.keys(cadetListColumnMapping).reduce((acc, key) => {
-            acc[key] = cadet[cadetListColumnMapping[key]];
-            return acc;
-          }, {}),
-          Classification: classificationMap[classificationCount] || classificationCount, // Map classification to its label or use the count
-          "Service Length": serviceLength,
-          id: cadet.id,
-        };
-      });
-
-    } catch (error) {
-      console.error("Error processing cadets:", error); // Debugging: Log any errors
-    } finally {
-      setLoading(false); // Ensure loading is set to false
-    }
-  }, [data, squadronNumber]);
 
   const handleDischarge = async () => {
     try {
@@ -316,7 +252,6 @@ const CadetsDashboard = ({ user }) => {
 
   return (
     <div className="table-dashboard-container">
-      {loading && <LoadingPopup />} {/* Show loading popup while loading */}
       <div className="button-container">
         <button className="button-red" onClick={() => setIsPopupOpen(true)}>
           Discharge Cadet
