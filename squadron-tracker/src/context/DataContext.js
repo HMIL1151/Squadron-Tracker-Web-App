@@ -1,4 +1,4 @@
-import React, { createContext, useState, useEffect } from "react";
+import React, { createContext, useState } from "react";
 import { getFirestore, collection, getDocs } from "firebase/firestore/lite";
 
 export const DataContext = createContext();
