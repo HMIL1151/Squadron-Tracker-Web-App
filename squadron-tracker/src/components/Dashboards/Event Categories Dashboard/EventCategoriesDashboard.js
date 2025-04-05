@@ -101,28 +101,26 @@ const EventCategoriesDashboard = () => {
     }
   }, [data]);
 
-  const fetchBadges = useCallback(async () => {
+  const fetchBadges = useCallback(() => {
     try {
-      const db = getFirestore();
-      const docRef = doc(db, "Squadron Databases", squadronNumber.toString(), "Flight Points", "Badges");
-      const docSnap = await getDoc(docRef);
-
-      if (docSnap.exists()) {
-        const data = docSnap.data();
-        const badgeTypes = data["Badge Types"];
-        if (Array.isArray(badgeTypes)) {
-          const formattedBadges = badgeTypes.map((badge) => ({ "Badge Types": badge }));
-          setBadges(formattedBadges);
-        } else {
-          console.error("Badge data is not an array:", badgeTypes);
-        }
-      } else {
-        console.error("No such document!");
-      }
+      console.log("Fetching badges from DataContext...");
+  
+      // Access flightPoints from DataContext
+      const flightPoints = data.flightPoints;
+  
+      // Check if "Badge Types" exists in flightPoints
+      const badgeTypes = flightPoints.Badges?.["Badge Types"] || [];
+      console.log("Badge Types from DataContext:", badgeTypes);
+  
+      // Format the badge types into an array of objects
+      const formattedBadges = badgeTypes.map((badge) => ({ "Badge Types": badge }));
+      console.log("Formatted Badges:", formattedBadges);
+  
+      setBadges(formattedBadges);
     } catch (error) {
-      console.error("Error fetching badges:", error);
+      console.error("Error fetching badges from DataContext:", error);
     }
-  }, [squadronNumber]);
+  }, [data]);
 
   const handleRowClick = (rowData, type) => {
     setEditData(rowData);
