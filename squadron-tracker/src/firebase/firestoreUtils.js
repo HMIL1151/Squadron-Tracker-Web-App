@@ -1,7 +1,7 @@
 import { getFirestore, collection, getDocs, doc, getDoc, query, where } from "firebase/firestore/lite";
 import { app } from "./firebase";
 import { rankMap } from "../utils/mappings";
-
+import { DataContext } from "../context/DataContext";
 
 // Function to fetch data from a specific Firestore collection
 export const fetchCollectionData = async (...pathSegments) => {
@@ -21,23 +21,11 @@ export const fetchCollectionData = async (...pathSegments) => {
   }
 };
 
-export const getTotalPointsForCadet = async (cadetName, year, squadronNumber) => {
+export const getTotalPointsForCadet = async (cadetName, year, data) => {
   try {
-
-    const db = getFirestore(app);
-
-    // Fetch events for the given cadet
-    const eventsData = await fetchCollectionData("Squadron Databases", squadronNumber.toString(),"Event Log");
-
-    // Fetch badge points
-    const badgePointsDocRef = doc(db, "Squadron Databases", squadronNumber.toString(),"Flight Points", "Badge Points");
-    const badgePointsDoc = await getDoc(badgePointsDocRef);
-    const badgePoints = badgePointsDoc.data();
-
-    // Fetch event category points
-    const eventCategoryPointsDocRef = doc(db, "Squadron Databases", squadronNumber.toString(), "Flight Points", "Event Category Points");
-    const eventCategoryPointsDoc = await getDoc(eventCategoryPointsDocRef);
-    const eventCategoryPoints = eventCategoryPointsDoc.data();
+    const eventsData = data.events || [];
+    const badgePoints = data.flightPoints["Badge Points"] || {};
+    const eventCategoryPoints = data.flightPoints["Event Category Points"] || {};
 
     // Filter events for the given cadet and year
     const cadetEvents = eventsData.filter((event) => {
@@ -70,41 +58,33 @@ export const getTotalPointsForCadet = async (cadetName, year, squadronNumber) =>
 };
 
 // Function to calculate total flight points for a given flight
-export const getTotalPointsForFlight = async (flightNumber, squadronNumber) => {
+export const getTotalPointsForFlight = async (flightNumber, data) => {
   try {
-
-    // Fetch all cadets
-    const cadetsData = await fetchCollectionData("Squadron Databases", squadronNumber.toString(),"Cadets");
+    const cadetsData = data.cadets || [];
 
     // Filter cadets belonging to the given flight
     const cadetsInFlight = cadetsData.filter((cadet) => cadet.flight === flightNumber);
 
     // Calculate total points for the flight
-    const totalPoints = await Promise.all(
-      cadetsInFlight.map(async (cadet) => {
-        const cadetName = `${cadet.forename} ${cadet.surname}`;
-        return await getTotalPointsForCadet(cadetName);
-      })
-    );
+    const totalPoints = cadetsInFlight.reduce((sum, cadet) => {
+      const cadetName = `${cadet.forename} ${cadet.surname}`;
+      const cadetPoints = getTotalPointsForCadet(cadetName, new Date().getFullYear(), data);
+      return sum + cadetPoints;
+    }, 0);
 
-    const flightTotalPoints = totalPoints.reduce((sum, points) => sum + points, 0);
-
-    return flightTotalPoints;
+    return totalPoints;
   } catch (error) {
     console.error(`Error fetching total points for flight ${flightNumber}:`, error);
     return 0;
   }
 };
 
-export const getEventsForCadet = async (cadetName, squadronNumber) => {
+export const getEventsForCadet = async (cadetName, data) => {
   try {
-
-    const eventData = await fetchCollectionData("Squadron Databases", squadronNumber.toString(),"Event Log");
+    const eventData = data.events || [];
     const cadetEvents = eventData.filter((event) => event.cadetName === cadetName);
 
-    const formattedEvents = [];
-
-    for (const event of cadetEvents) {
+    const formattedEvents = cadetEvents.map((event) => {
       const { badgeCategory, badgeLevel, eventName, examName, specialAward, date } = event;
 
       let eventDescription = "";
@@ -119,26 +99,25 @@ export const getEventsForCadet = async (cadetName, squadronNumber) => {
         eventDescription = specialAward;
       } else {
         console.warn(`Event for cadet ${cadetName} has missing fields:`, event);
-        continue; // Skip invalid events
+        return null; // Skip invalid events
       }
 
-      formattedEvents.push({
+      return {
         event: eventDescription,
         date: date,
-      });
-    }
+      };
+    });
 
-    return formattedEvents;
+    return formattedEvents.filter((event) => event !== null); // Remove null entries
   } catch (error) {
     console.error(`Error fetching events for cadet ${cadetName}:`, error);
     return [];
   }
 };
 
-export const getBadgesForCadet = async (cadetName, squadronNumber) => {
+export const getBadgesForCadet = async (cadetName, data) => {
   try {
-
-    const eventData = await fetchCollectionData("Squadron Databases", squadronNumber.toString(),"Event Log");
+    const eventData = data.events || [];
     const cadetEvents = eventData.filter((event) => event.cadetName === cadetName);
 
     const badges = cadetEvents
@@ -155,20 +134,16 @@ export const getBadgesForCadet = async (cadetName, squadronNumber) => {
   }
 };
 
-export const getPointsForAllCadets = async (squadronNumber) => {
+export const getPointsForAllCadets = async (data) => {
   try {
-
-    // Fetch all cadets
-    const cadetsData = await fetchCollectionData("Squadron Databases", squadronNumber.toString(),"Cadets");
+    const cadetsData = data.cadets || [];
 
     // Calculate points for each cadet
-    const cadetPoints = await Promise.all(
-      cadetsData.map(async (cadet) => {
-        const cadetName = `${cadet.forename} ${cadet.surname}`;
-        const pointsEarned = await getTotalPointsForCadet(cadetName);
-        return { cadetName, pointsEarned };
-      })
-    );
+    const cadetPoints = cadetsData.map((cadet) => {
+      const cadetName = `${cadet.forename} ${cadet.surname}`;
+      const pointsEarned = getTotalPointsForCadet(cadetName, new Date().getFullYear(), data);
+      return { cadetName, pointsEarned };
+    });
 
     return cadetPoints;
   } catch (error) {
@@ -177,16 +152,15 @@ export const getPointsForAllCadets = async (squadronNumber) => {
   }
 };
 
-export const getCadetFlight = async (cadetName, squadronNumber) => {
+export const getCadetFlight = async (cadetName, data) => {
   try {
-
-    const cadetsData = await fetchCollectionData("Squadron Databases", squadronNumber.toString(),"Cadets");
+    const cadetsData = data.cadets || [];
     const cadet = cadetsData.find((cadet) => `${cadet.forename} ${cadet.surname}` === cadetName);
 
     if (cadet) {
       return cadet.flight;
     } else {
-      console.warn(`Cadet ${cadetName} not found in the database.`);
+      console.warn(`Cadet ${cadetName} not found in DataContext.`);
       return null;
     }
   } catch (error) {
@@ -195,10 +169,9 @@ export const getCadetFlight = async (cadetName, squadronNumber) => {
   }
 };
 
-export const getAllCadetNames = async (squadronNumber) => {
+export const getAllCadetNames = async (data) => {
   try {
-
-    const cadetsData = await fetchCollectionData("Squadron Databases", squadronNumber.toString(),"Cadets");
+    const cadetsData = data.cadets || [];
     const cadetNames = cadetsData.map((cadet) => `${cadet.forename} ${cadet.surname}`);
     return cadetNames;
   } catch (error) {
@@ -207,23 +180,18 @@ export const getAllCadetNames = async (squadronNumber) => {
   }
 };
 
-export const getCadetRank = async (cadetName, squadronNumber) => {
+export const getCadetRank = async (cadetName, data) => {
   try {
-
-    // Fetch all cadets
-    const cadetsData = await fetchCollectionData("Squadron Databases", squadronNumber.toString(),"Cadets");
-
-    // Find the cadet with the matching name
-    const cadet = cadetsData.find(
-      (cadet) => `${cadet.forename} ${cadet.surname}` === cadetName
-    );
+    const cadetsData = data.cadets || [];
+    console.log("Cadets Data:", cadetsData); // Debugging: Log the cadets data
+    const cadet = cadetsData.find((cadet) => `${cadet.forename} ${cadet.surname}` === cadetName);
 
     if (cadet) {
       const rankInt = cadet.rank; // Assuming rank is stored as an integer
       const rankString = rankMap[rankInt] || "Unknown Rank"; // Convert to string using rankMap
       return rankString;
     } else {
-      console.warn(`Cadet ${cadetName} not found in the database.`);
+      console.warn(`Cadet ${cadetName} not found in DataContext.`);
       return "Cadet Not Found";
     }
   } catch (error) {
@@ -232,44 +200,20 @@ export const getCadetRank = async (cadetName, squadronNumber) => {
   }
 };
 
-export const getBadgeTypeList = async (squadronNumber) => {
+export const getBadgeTypeList = async (data) => {
   try {
-
-    const db = getFirestore(app);
-
-    // Reference the 'Badges' document in the 'Flight Points' collection
-    const badgesDocRef = doc(db, "Squadron Databases", squadronNumber.toString(), "Flight Points", "Badges");
-
-    // Fetch the document
-    const badgesDoc = await getDoc(badgesDocRef);
-
-    if (badgesDoc.exists()) {
-      // Extract the 'Badge Types' array field
-      const badgeTypes = badgesDoc.data()["Badge Types"]; // Ensure correct field name
-
-      if (Array.isArray(badgeTypes)) {
-        return badgeTypes;
-      } else {
-        console.warn("'Badge Types' field is not an array or is missing.");
-        return [];
-      }
-    } else {
-      console.warn("Badges document does not exist in the 'Flight Points' collection.");
-      return [];
-    }
+    const badgeTypes = data.flightPoints.Badges?.["Badge Types"] || [];
+    return badgeTypes;
   } catch (error) {
     console.error("Error fetching badge types:", error);
     return [];
   }
 };
 
-export const getAllBadges = async (squadronNumber) => {
+export const getAllBadges = async (data) => {
   try {
-    // Fetch all cadets
-    const cadetsData = await fetchCollectionData("Squadron Databases", squadronNumber.toString(),"Cadets");
-
-    // Fetch all events
-    const eventData = await fetchCollectionData("Squadron Databases", squadronNumber.toString(),"Event Log");
+    const cadetsData = data.cadets || [];
+    const eventData = data.events || [];
 
     // Create an array to store all badges
     const allBadges = [];
@@ -301,6 +245,7 @@ export const getAllBadges = async (squadronNumber) => {
   }
 };
 
+// Leave these functions unchanged as they use Firestore
 export const checkUserRole = async (uid) => {
   try {
     
