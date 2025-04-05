@@ -1,8 +1,7 @@
 //TODO: Mass add Cadets from old tracker/from CSV file
 
-import React, { useState, useEffect, useCallback } from "react";
-import { fetchCollectionData } from "../../../firebase/firestoreUtils";
-import { getFirestore, collection, addDoc, doc, deleteDoc, query, where, getDocs } from "firebase/firestore/lite";
+import React, { useState, useEffect, useCallback, useContext } from "react";
+import { DataContext } from "../../../context/DataContext"; // Import DataContext
 import { rankMap, flightMap, classificationMap } from "../../../utils/mappings";
 import Table from "../../Table/Table";
 import PopupManager from "./CadetsDashboardPopupManager";
@@ -10,10 +9,9 @@ import SuccessMessage from "../Dashboard Components/SuccessMessage";
 import "./CadetsDashboard.css";
 import LoadingPopup from "../Dashboard Components/LoadingPopup"; // Import the new LoadingPopup component
 import { useSquadron } from "../../../context/SquadronContext";
+import { getFirestore, doc, collection, setDoc, deleteDoc, updateDoc } from "firebase/firestore"; // Import Firestore functions
 
 const CadetsDashboard = ({ user }) => {
-  const [cadets, setCadets] = useState([]);
-  const [eventLogData, setEventLogData] = useState([]); // New state for event log data
   const [isAddPopupOpen, setIsAddPopupOpen] = useState(false);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [isConfirmationOpen, setIsConfirmationOpen] = useState(false);
@@ -22,6 +20,7 @@ const CadetsDashboard = ({ user }) => {
   const [selectedCadet, setSelectedCadet] = useState("");
   const [loading, setLoading] = useState(true); // Add loading state
   const { squadronNumber } = useSquadron(); // Get the squadron number from the utils
+  const { data, setData } = useContext(DataContext); // Access cadets and events from DataContext
   const [newCadet, setNewCadet] = useState({
     forename: "",
     surname: "",
@@ -52,28 +51,72 @@ const CadetsDashboard = ({ user }) => {
     CreatedAt: "createdAt",
   };
 
-  const fetchCadetsWithClassification = useCallback(async () => {
-    setLoading(true); // Set loading to true before fetching data
-    try {
-      const cadetsData = await fetchCollectionData("Squadron Databases", squadronNumber.toString(), "Cadets");
-
-      const db = getFirestore();
-      const eventLogRef = collection(db, "Squadron Databases", squadronNumber.toString(), "Event Log");
-      const eventLogSnapshot = await getDocs(eventLogRef);
-      const eventLogData = eventLogSnapshot.docs.map((doc) => doc.data());
-
-      setCadets(cadetsData);
-      setEventLogData(eventLogData);
-    } catch (error) {
-      console.error("Error fetching cadets or event log data:", error);
-    } finally {
-      setLoading(false); // Set loading to false after fetching data
-    }
-  }, [squadronNumber]); // Add squadronNumber as a dependency
-
   useEffect(() => {
-    fetchCadetsWithClassification();
-  }, [fetchCadetsWithClassification]); // Add fetchCadetsWithClassification as a dependency
+    console.log("Squadron Number:", squadronNumber); // Debugging: Log squadronNumber
+    if (!squadronNumber) {
+      console.error("Squadron number is not set.");
+      return;
+    }
+
+    // Simulate loading state
+    setLoading(true);
+
+    try {
+      console.log("Data from DataContext:", data); // Debugging: Log data from DataContext
+
+      const formattedCadets = data.cadets.map((cadet) => {
+
+        const serviceLength = (() => {
+          if (!cadet.startDate) return "N/A";
+
+          const [year, month, day] = cadet.startDate.split("-").map(Number);
+          const startDate = new Date(year, month - 1, day);
+          const today = new Date();
+
+          let years = today.getFullYear() - startDate.getFullYear();
+          let months = today.getMonth() - startDate.getMonth();
+          let days = today.getDate() - startDate.getDate();
+
+          if (days < 0) {
+            months -= 1;
+            days += new Date(today.getFullYear(), today.getMonth(), 0).getDate();
+          }
+
+          if (months < 0) {
+            years -= 1;
+            months += 12;
+          }
+
+          return `${years} Yrs, ${months} Mos, ${days} Days`;
+        })();
+
+        // Calculate classification dynamically
+        const matchingEvents = data.events.filter(
+          (event) =>
+            event.cadetName === `${cadet.forename} ${cadet.surname}` &&
+            event.examName !== ""
+        );
+
+        const classificationCount = matchingEvents.length + 1;
+
+        return {
+          ...Object.keys(cadetListColumnMapping).reduce((acc, key) => {
+            acc[key] = cadet[cadetListColumnMapping[key]];
+            return acc;
+          }, {}),
+          Classification: classificationMap[classificationCount] || classificationCount, // Map classification to its label or use the count
+          "Service Length": serviceLength,
+          id: cadet.id,
+        };
+      });
+
+    } catch (error) {
+      console.error("Error processing cadets:", error); // Debugging: Log any errors
+    } finally {
+      setLoading(false); // Ensure loading is set to false
+      console.log("Loading state set to false."); // Debugging: Confirm loading state is updated
+    }
+  }, [data, squadronNumber]);
 
   const handleDischarge = async () => {
     try {
@@ -82,25 +125,29 @@ const CadetsDashboard = ({ user }) => {
         return;
       }
 
-      const db = getFirestore();
-      await deleteDoc(doc(db,"Squadron Databases", squadronNumber.toString(),  "Cadets", selectedCadet));
+      const db = getFirestore(); // Initialize Firestore
+      const cadetDocRef = doc(db, "Squadron Databases", squadronNumber.toString(), "Cadets", selectedCadet);
 
-      const dischargedCadet = cadets.find((cadet) => cadet.id === selectedCadet);
-      setSuccessMessage(`${dischargedCadet.forename} ${dischargedCadet.surname} successfully discharged`);
+      // Delete the cadet from Firestore
+      await deleteDoc(cadetDocRef);
+      console.log(`Cadet with ID ${selectedCadet} deleted from Firestore.`);
 
-      // Automatically hide the success message after 1 second
-      setTimeout(() => {
-        setSuccessMessage("");
-      }, 1000);
+      // Update the DataContext's cadets
+      setData((prevData) => ({
+        ...prevData,
+        cadets: prevData.cadets.filter((cadet) => cadet.id !== selectedCadet),
+      }));
+      console.log(`Cadet with ID ${selectedCadet} removed from DataContext.`);
+
+      // Trigger the success message
+      const dischargedCadet = data.cadets.find((cadet) => cadet.id === selectedCadet);
+      setSuccessMessage(`${dischargedCadet.forename} ${dischargedCadet.surname} successfully discharged.`);
+      setTimeout(() => setSuccessMessage(""), 1000); // Automatically hide after 1 second
 
       // Close both popups
       setIsPopupOpen(false);
       setIsConfirmationOpen(false);
       setSelectedCadet("");
-
-      // Refresh the cadets list
-      const cadetsData = await fetchCollectionData("Squadron Databases", squadronNumber.toString(), "Cadets");
-      setCadets(cadetsData);
     } catch (error) {
       console.error("Error discharging cadet:", error);
       alert("An error occurred while discharging the cadet.");
@@ -109,11 +156,11 @@ const CadetsDashboard = ({ user }) => {
 
   const handleAddCadet = async () => {
     try {
-      const db = getFirestore();
       if (!user) {
         alert("User information is missing.");
         return;
       }
+
       const { forename, surname, startDate, flight, rank } = newCadet;
 
       if (!forename || !surname || !startDate || flight === "" || rank === "") {
@@ -125,25 +172,29 @@ const CadetsDashboard = ({ user }) => {
       const date = new Date(startDate);
       const formattedStartDate = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 
-      // Query Firestore to check if a cadet with the same forename and surname exists
-      const cadetsRef = collection(db,"Squadron Databases", squadronNumber.toString(),  "Cadets");
-      const q = query(cadetsRef, where("forename", "==", forename), where("surname", "==", surname));
-      const querySnapshot = await getDocs(q);
+      const db = getFirestore(); // Initialize Firestore
+      const cadetDocRef = doc(collection(db, "Squadron Databases", squadronNumber.toString(), "Cadets"));
 
-      if (!querySnapshot.empty) {
-        alert("A cadet with this name already exists.");
-        return;
-      }
-
-      await addDoc(collection(db,"Squadron Databases", squadronNumber.toString(),  "Cadets"), {
+      const newCadetData = {
+        forename,
+        surname,
+        startDate: formattedStartDate,
+        flight: parseInt(flight, 10),
+        rank: parseInt(rank, 10),
         addedBy: user.displayName,
         createdAt: new Date(),
-        flight: parseInt(flight, 10),
-        forename,
-        rank: parseInt(rank, 10),
-        startDate: formattedStartDate,
-        surname,
-      });
+      };
+
+      // Add the new cadet to Firestore
+      await setDoc(cadetDocRef, newCadetData);
+      console.log(`Cadet added to Firestore with ID: ${cadetDocRef.id}`);
+
+      // Update the DataContext's cadets
+      setData((prevData) => ({
+        ...prevData,
+        cadets: [...prevData.cadets, { id: cadetDocRef.id, ...newCadetData }],
+      }));
+      console.log("Cadet added to DataContext:", { id: cadetDocRef.id, ...newCadetData });
 
       // Trigger the success message
       setSuccessMessage(`${forename} ${surname} successfully added.`);
@@ -160,12 +211,52 @@ const CadetsDashboard = ({ user }) => {
         flight: "",
         rank: "",
       });
-
-      // Re-fetch cadets and recalculate classification
-      await fetchCadetsWithClassification(); // Ensure classification is recalculated
     } catch (error) {
       console.error("Error adding cadet:", error);
       alert("An error occurred while adding the cadet.");
+    }
+  };
+
+  const handleEditCadet = async (updatedCadet) => {
+    try {
+      console.log("handleEditCadet called with:", updatedCadet); // Debugging: Log the input
+
+      if (!updatedCadet || !updatedCadet.id) {
+        alert("Invalid cadet data. Cannot edit.");
+        return;
+      }
+
+      const db = getFirestore(); // Initialize Firestore
+      const cadetDocRef = doc(db, "Squadron Databases", squadronNumber.toString(), "Cadets", updatedCadet.id);
+
+      console.log("Firestore Document Reference:", cadetDocRef.path); // Debugging: Log Firestore path
+
+      // Update the cadet in Firestore
+      const { id, ...cadetData } = updatedCadet; // Exclude the `id` field from the update
+      console.log("Updating Firestore with data:", cadetData); // Debugging: Log the data being updated
+
+      await updateDoc(cadetDocRef, cadetData);
+      console.log(`Cadet with ID ${updatedCadet.id} updated in Firestore.`); // Debugging: Log success
+
+      // Update the DataContext's cadets
+      setData((prevData) => ({
+        ...prevData,
+        cadets: prevData.cadets.map((cadet) =>
+          cadet.id === updatedCadet.id ? { ...cadet, ...cadetData } : cadet
+        ),
+      }));
+      console.log(`Cadet with ID ${updatedCadet.id} updated in DataContext.`); // Debugging: Log DataContext update
+
+      // Trigger the success message
+      setSuccessMessage(`${updatedCadet.forename} ${updatedCadet.surname} successfully updated.`);
+      setTimeout(() => setSuccessMessage(""), 1000); // Automatically hide after 1 second
+
+      // Close the edit popup
+      setIsEditPopupOpen(false);
+      setSelectedCadet(""); // Clear the selected cadet
+    } catch (error) {
+      console.error("Error editing cadet:", error); // Debugging: Log any errors
+      alert("An error occurred while editing the cadet.");
     }
   };
 
@@ -175,7 +266,7 @@ const CadetsDashboard = ({ user }) => {
   };
 
   const handleRowClick = (cadetId) => {
-    const cadet = cadets.find((c) => c.id === cadetId); // Find the selected cadet
+    const cadet = data.cadets.find((c) => c.id === cadetId); // Find the selected cadet
 
     if (cadet) {
       setSelectedCadet({
@@ -188,7 +279,8 @@ const CadetsDashboard = ({ user }) => {
     setIsEditPopupOpen(true); // Open the edit popup
   };
 
-  const formattedCadets = cadets.map((cadet) => {
+  const formattedCadets = data.cadets.map((cadet) => {
+
     const serviceLength = (() => {
       if (!cadet.startDate) return "N/A";
 
@@ -214,7 +306,7 @@ const CadetsDashboard = ({ user }) => {
     })();
 
     // Calculate classification dynamically
-    const matchingEvents = eventLogData.filter(
+    const matchingEvents = data.events.filter(
       (event) =>
         event.cadetName === `${cadet.forename} ${cadet.surname}` &&
         event.examName !== ""
@@ -232,6 +324,8 @@ const CadetsDashboard = ({ user }) => {
       id: cadet.id,
     };
   });
+
+  console.log("Formatted Cadets:", formattedCadets); // Debugging: Log the formatted cadets array
 
   return (
     <div className="table-dashboard-container">
@@ -262,8 +356,9 @@ const CadetsDashboard = ({ user }) => {
         setIsEditPopupOpen={setIsEditPopupOpen} // Pass the setter for the new popup
         handleDischarge={handleDischarge}
         handleAddCadet={handleAddCadet}
-        cadets={cadets}
-        setCadets={setCadets} // Pass setCadets to PopupManager
+        handleEditCadet={handleEditCadet} // Pass the new edit handler
+        cadets={data.cadets}
+        setCadets={() => {}} // No need to update cadets directly
         selectedCadet={selectedCadet}
         setSelectedCadet={setSelectedCadet}
         newCadet={newCadet}

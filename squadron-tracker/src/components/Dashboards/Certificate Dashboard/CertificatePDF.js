@@ -1,29 +1,14 @@
 import jsPDF from "jspdf";
 import { getCadetRank } from "../../../firebase/firestoreUtils"; // Import getCadetRank
-import { getFirestore, collection, getDocs } from "firebase/firestore/lite"; // Import Firestore utilities
 
-const generateCertificatePDF = async (cadetName, year, events, squadronNumber) => {
+
+const generateCertificatePDF = async (cadetName, year, events, squadronNumber, data, squadronName) => {
     const doc = new jsPDF();
-    const db = getFirestore();
 
     // Fetch the cadet's rank
-    const rank = await getCadetRank(cadetName, squadronNumber);
+    const rank = await getCadetRank(cadetName, data);
 
     // Fetch the squadron name from Firestore
-    let squadronName = "Unknown";
-    try {
-        const squadronListCollection = collection(db, "Squadron List");
-        const snapshot = await getDocs(squadronListCollection);
-        snapshot.forEach((doc) => {
-            const data = doc.data();
-            if (data.Number === squadronNumber) {
-                squadronName = data.Name;
-            }
-        });
-    } catch (error) {
-        console.error("Error fetching squadron name:", error);
-    }
-
     // Load the watermark image
     const logoUrl = `${process.env.PUBLIC_URL}/${squadronNumber}.png?timestamp=${new Date().getTime()}`; // Add a timestamp to bypass cache
     let logoImage;

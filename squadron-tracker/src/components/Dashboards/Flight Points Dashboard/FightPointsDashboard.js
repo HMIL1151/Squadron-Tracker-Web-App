@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import Table from "../../Table/Table"; // Import the Table component
-import { getTotalPointsForCadet, getCadetFlight, getAllCadetNames } from "../../../firebase/firestoreUtils";
 import { flightMap } from "../../../utils/mappings"; // Import flightMap from mappings.js
 import { useSquadron } from "../../../context/SquadronContext";
+import { DataContext } from "../../../context/DataContext"; // Import DataContext
 
 const FightPointsDashboard = () => {
     const [cadetPoints, setCadetPoints] = useState([]);
@@ -14,42 +14,94 @@ const FightPointsDashboard = () => {
     const currentYear = new Date().getFullYear();
     const years = Array.from({ length: 10 }, (_, i) => currentYear - i);
     const { squadronNumber } = useSquadron(); // Access the squadron number from context
+    const { data } = useContext(DataContext); // Access data from DataContext
 
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const cadetNames = await getAllCadetNames(squadronNumber);
+                // Extract cadets and events from DataContext
+                const cadets = data.cadets || [];
+                const events = data.events || [];
 
                 const flightPoints = {}; // To store total points for each flight
 
-                const pointsData = await Promise.all(
-                    cadetNames.map(async (cadetName) => {
-                        const pointsEarned = await getTotalPointsForCadet(cadetName, year, squadronNumber);
-                        const flight = await getCadetFlight(cadetName, squadronNumber); // Fetch the flight for each cadet
+                // Map cadets to calculate points and flight
+                const pointsData = cadets.map((cadet) => {
+                    const { forename, surname, flight } = cadet;
+                    const cadetName = `${forename} ${surname}`;
 
 
-                        // Calculate total points for the flight
-                        if (!flightPoints[flight]) {
-                            flightPoints[flight] = 0;
+                    // Filter events for the current cadet and year
+                    const cadetEvents = events.filter(
+                        (event) =>
+                            event.cadetName === cadetName &&
+                            new Date(event.date).getFullYear() === year
+                    );
+
+
+                    // Calculate total points for the cadet
+                    const pointsEarned = cadetEvents.reduce((total, event) => {
+                        let eventPoints = 0;
+
+                        // Determine points based on event type
+                        if (event.badgeLevel && event.badgeCategory) {
+                            // Badge Points (e.g., "Blue Badge")
+                            eventPoints =
+                                parseInt(
+                                    data.flightPoints["Badge Points"]?.[`${event.badgeLevel} Badge`] || 0,
+                                    10
+                                );
+
+                        } else if (event.examName) {
+                            // Exam Points
+                            eventPoints = parseInt(
+                                data.flightPoints["Badge Points"]?.["Exam"] || 0,
+                                10
+                            );
+
+                        } else if (event.eventCategory) {
+                            // Event Category Points
+                            eventPoints = parseInt(
+                                data.flightPoints["Event Category Points"]?.[event.eventCategory] || 0,
+                                10
+                            );
+
+                        } else if (event.specialAward) {
+                            // Special Award Points
+                            eventPoints = parseInt(
+                                data.flightPoints["Badge Points"]?.["Special"] || 0,
+                                10
+                            );
+
+                        } else {
+                            console.warn("Unknown event type:", event);
                         }
-                        flightPoints[flight] += pointsEarned;
 
-                        return { cadetName, pointsEarned, flight };
-                    })
-                );
+                        return total + eventPoints;
+                    }, 0);
 
+
+                    // Calculate total points for the flight
+                    if (!flightPoints[flight]) {
+                        flightPoints[flight] = 0;
+                    }
+                    flightPoints[flight] += pointsEarned;
+
+
+                    return { cadetName, pointsEarned, flight };
+                });
 
                 setCadetPoints(pointsData);
                 setFlightPointsMap(flightPoints);
             } catch (error) {
-                console.error("Error fetching data:", error);
+                console.error("Error processing data from DataContext:", error);
             } finally {
-                setLoading(false); // Set loading to false after data is fetched
+                setLoading(false); // Set loading to false after data is processed
             }
         };
 
         fetchData();
-    }, [year, squadronNumber]); // Re-fetch data when the year changes
+    }, [data, year]); // Re-fetch data when the year or DataContext changes
 
     if (loading) {
         return <div>Loading...</div>; // Show loading message while fetching data
@@ -87,7 +139,6 @@ const FightPointsDashboard = () => {
             color,
         };
     });
-
 
     return (
         <div>

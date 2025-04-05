@@ -1,8 +1,6 @@
 //TODO: Fix unscorllable table
 
-import React, { useEffect, useState, useCallback, useRef } from "react";
-import { fetchCollectionData } from "../../../firebase/firestoreUtils"; // Assuming this utility exists
-import { getFirestore, collection, getDocs } from "firebase/firestore/lite"; // Firestore imports
+import React, { useEffect, useState, useCallback, useRef, useContext } from "react";
 import { classificationMap } from "../../../utils/mappings"; // Import classificationMap
 import {
   Chart as ChartJS,
@@ -17,6 +15,8 @@ import Table from "../../Table/Table"; // Import the Table component
 import ExamPopup from "./ExamPopup"; // Import ExamPopup component
 import "./ClassificationDashboard.css"; // Import CSS for styling
 import { useSquadron } from "../../../context/SquadronContext";
+import { DataContext } from "../../../context/DataContext"; // Import DataContext
+
 
 // Register Chart.js components
 ChartJS.register(Title, Tooltip, Legend, PointElement, LinearScale);
@@ -53,6 +53,8 @@ const ClassificationDashboard = () => {
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [selectedCadet, setSelectedCadet] = useState({ name: "", classification: "" });
   const { squadronNumber } = useSquadron(); // Access the squadron number from context
+  const { data } = useContext(DataContext); // Access data from DataContext
+
 
   const openPopup = (cadetName, classification) => {
     setSelectedCadet({ name: cadetName, classification });
@@ -85,16 +87,10 @@ const ClassificationDashboard = () => {
 
   // Refresh data when the page is reloaded
   useEffect(() => {
-    const fetchCadetsWithClassification = async () => {
-      const db = getFirestore();
-
-      // Fetch all cadets from Firestore
-      const cadets = await fetchCollectionData("Squadron Databases", squadronNumber.toString(), "Cadets");
-
-      // Fetch all event log documents from Firestore
-      const eventLogRef = collection(db,"Squadron Databases", squadronNumber.toString(),  "Event Log");
-      const eventLogSnapshot = await getDocs(eventLogRef);
-      const eventLogData = eventLogSnapshot.docs.map((doc) => doc.data());
+    const fetchCadetsWithClassification = () => {
+      // Access cadets and event log from DataContext
+      const cadets = data.cadets || [];
+      const eventLogData = data.events || [];
 
       // Format cadets with classification calculation
       const formattedCadets = cadets.map((cadet) => {
@@ -110,7 +106,7 @@ const ClassificationDashboard = () => {
         // Count the number of event log entries with a non-empty examName for this cadet
         const matchingEvents = eventLogData.filter(
           (event) =>
-            event.cadetName === `${cadet.forename} ${cadet.surname}` &&
+            event.cadetName === `${forename} ${surname}` &&
             event.examName !== ""
         );
 
@@ -147,8 +143,8 @@ const ClassificationDashboard = () => {
       setLongestServiceInMonths(adjustedMaxServiceLength); // Update the state
     };
 
-    fetchCadetsWithClassification(squadronNumber);
-  }, [squadronNumber]);
+    fetchCadetsWithClassification();
+  }, [data, classificationMap]);
 
   useEffect(() => {
   }, [cadetData]);
@@ -197,9 +193,9 @@ const ClassificationDashboard = () => {
   const onTrackPercentage = calculateOnTrackPercentage();
 
   return (
-    <div>
+    <div style={{ height: "80vh", overflow: "hidden" }}>
       {/* Split content into two halves */}
-      <div style={{ display: "flex", alignItems: "center", height: "100vh" }}>
+      <div style={{ display: "flex", alignItems: "center", height: "100%" }}>
         {/* Graph Section */}
         <div style={{ width: `${dividerPosition}%`, height: "100%", overflow: "visible" }}>
           <GraphContainer>
@@ -259,7 +255,8 @@ const ClassificationDashboard = () => {
         <div
           style={{
             width: `${100 - dividerPosition}%`,
-            overflow: "hidden",
+            overflowY: "auto", // Enable vertical scrolling
+            overflowX: "hidden", // Prevent horizontal scrolling
             display: "flex", // Use flexbox
             alignItems: "flex-start", // Align the table to the top
             height: "100%", // Ensure it takes the full height of the container

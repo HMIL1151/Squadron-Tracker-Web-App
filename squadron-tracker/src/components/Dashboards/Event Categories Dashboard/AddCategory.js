@@ -1,13 +1,14 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import { getFirestore, doc, updateDoc } from "firebase/firestore/lite";
 import "./addCategory.css";
 import { useSquadron } from "../../../context/SquadronContext";
+import { DataContext } from "../../../context/DataContext"; // Import DataContext
 
 const AddCategory = ({ isOpen, onClose, onConfirm }) => {
   const [category, setCategory] = useState("");
   const [points, setPoints] = useState("");
-    const { squadronNumber } = useSquadron(); // Access the squadron number from context
-  
+  const { squadronNumber } = useSquadron(); // Access the squadron number from context
+  const { setData } = useContext(DataContext); // Access setData from DataContext
 
   const handleConfirm = async () => {
     if (!category || !points) {
@@ -17,12 +18,37 @@ const AddCategory = ({ isOpen, onClose, onConfirm }) => {
 
     try {
       const db = getFirestore();
-      const docRef = doc(db,"Squadron Databases", squadronNumber.toString(),  "Flight Points", "Event Category Points");
+      const docRef = doc(
+        db,
+        "Squadron Databases",
+        squadronNumber.toString(),
+        "Flight Points",
+        "Event Category Points"
+      );
 
       // Update Firestore with the new category and points
       await updateDoc(docRef, {
         [category]: parseInt(points, 10),
       });
+      console.log(`Category "${category}" with points "${points}" added to Firestore.`);
+
+      // Update the DataContext's flightPoints
+      setData((prevData) => {
+        const updatedFlightPoints = {
+          ...prevData.flightPoints,
+          "Event Category Points": {
+            ...prevData.flightPoints["Event Category Points"],
+            [category]: parseInt(points, 10),
+          },
+        };
+        console.log("Updated flightPoints in DataContext:", updatedFlightPoints);
+        return {
+          ...prevData,
+          flightPoints: updatedFlightPoints,
+        };
+      });
+
+      console.log(`Category "${category}" with points "${points}" added to DataContext.`);
 
       onConfirm(); // Call the onConfirm callback to refresh data
       onClose(); // Close the popup
