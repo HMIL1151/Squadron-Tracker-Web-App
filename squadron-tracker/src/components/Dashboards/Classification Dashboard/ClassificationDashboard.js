@@ -1,8 +1,6 @@
 //TODO: Fix unscorllable table
 
 import React, { useEffect, useState, useCallback, useRef, useContext } from "react";
-import { fetchCollectionData } from "../../../firebase/firestoreUtils"; // Assuming this utility exists
-import { getFirestore, collection, getDocs } from "firebase/firestore/lite"; // Firestore imports
 import { classificationMap } from "../../../utils/mappings"; // Import classificationMap
 import {
   Chart as ChartJS,

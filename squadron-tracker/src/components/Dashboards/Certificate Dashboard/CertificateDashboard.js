@@ -1,12 +1,13 @@
-import React, { useState, useEffect } from "react";
-import { getAllCadetNames, getEventsForCadet } from "../../../firebase/firestoreUtils";
+import React, { useState, useEffect, useContext } from "react";
+import { getEventsForCadet } from "../../../firebase/firestoreUtils"; // Keep this as it uses DataContext
 import generateCertificatePDF from "./CertificatePDF";
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
 import "./CertificateDashboard.css";
 import { useSquadron } from "../../../context/SquadronContext";
+import { DataContext } from "../../../context/DataContext"; // Import DataContext
 
-const CertificateDashboard = () => {
+const CertificateDashboard = ({user}) => {
     const [cadetNames, setCadetNames] = useState([]);
     const [selectedCadet, setSelectedCadet] = useState("");
     const [selectedYear, setSelectedYear] = useState("");
@@ -19,11 +20,15 @@ const CertificateDashboard = () => {
     const [loadingMessage, setLoadingMessage] = useState(""); // State to store the loading message
     const [progress, setProgress] = useState(0); // State to track progress percentage
     const { squadronNumber } = useSquadron(); // Access the squadron number from context
+    const { data } = useContext(DataContext); // Access data from DataContext
+
+    const squadronName = user.squadronName; // Get the squadron name from the user object
 
     useEffect(() => {
-        const fetchCadetNames = async () => {
+        // Fetch cadet names from DataContext
+        const fetchCadetNames = () => {
             try {
-                const names = await getAllCadetNames(squadronNumber);
+                const names = data.cadets.map((cadet) => `${cadet.forename} ${cadet.surname}`);
                 setCadetNames(names);
             } catch (error) {
                 console.error("Error fetching cadet names:", error);
@@ -35,7 +40,7 @@ const CertificateDashboard = () => {
         const currentYear = new Date().getFullYear();
         const yearList = Array.from({ length: 10 }, (_, i) => currentYear - i);
         setYears(yearList);
-    }, [squadronNumber]);
+    }, [data]);
 
     const fetchCadetEvents = async () => {
         if (!selectedCadet || !selectedYear) {
@@ -44,14 +49,14 @@ const CertificateDashboard = () => {
         }
 
         try {
-            const events = await getEventsForCadet(selectedCadet, squadronNumber);
-            const filteredEvents = events.filter(event => {
+            const events = await getEventsForCadet(selectedCadet, data); // Use DataContext
+            const filteredEvents = events.filter((event) => {
                 const eventYear = new Date(event.date).getFullYear();
                 return eventYear === parseInt(selectedYear, 10);
             });
 
             const sortedEvents = filteredEvents.sort((a, b) => new Date(a.date) - new Date(b.date));
-            const formattedEvents = sortedEvents.map(event =>
+            const formattedEvents = sortedEvents.map((event) =>
                 `${event.event} (${formatDate(event.date)})`
             );
             setEventStrings(formattedEvents);
@@ -76,7 +81,7 @@ const CertificateDashboard = () => {
 
         try {
             // Generate the PDF using the updated generateCertificatePDF function
-            const pdfBlob = await generateCertificatePDF(selectedCadet, selectedYear, eventStrings, squadronNumber);
+            const pdfBlob = await generateCertificatePDF(selectedCadet, selectedYear, eventStrings, squadronNumber, data, squadronName);
 
             // Create a Blob URL for preview
             const blobUrl = URL.createObjectURL(pdfBlob);
@@ -124,14 +129,14 @@ const CertificateDashboard = () => {
             setLoadingMessage(`Generating certificate for ${cadet}... (${i + 1}/${cadetNames.length})`);
 
             try {
-                const events = await getEventsForCadet(cadet, squadronNumber);
-                const filteredEvents = events.filter(event => {
+                const events = await getEventsForCadet(cadet, data); // Use DataContext
+                const filteredEvents = events.filter((event) => {
                     const eventYear = new Date(event.date).getFullYear();
                     return eventYear === parseInt(selectedYear, 10);
                 });
 
                 const sortedEvents = filteredEvents.sort((a, b) => new Date(a.date) - new Date(b.date));
-                const formattedEvents = sortedEvents.map(event =>
+                const formattedEvents = sortedEvents.map((event) =>
                     `${event.event} (${formatDate(event.date)})`
                 );
 
@@ -146,7 +151,7 @@ const CertificateDashboard = () => {
         }
 
         setLoadingMessage("Finalizing ZIP file...");
-        zip.generateAsync({ type: "blob" }).then(content => {
+        zip.generateAsync({ type: "blob" }).then((content) => {
             saveAs(content, `End of Year Certificates_${selectedYear}.zip`);
             setIsLoading(false); // Hide loading popup
             setLoadingMessage(""); // Clear loading message
