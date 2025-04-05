@@ -60,7 +60,7 @@ const EventDetailsPopup = ({ isOpen, eventData, onClose, onRemove }) => {
         {eventData.eventCategory && (
           <p><strong>Category:</strong> {eventData.eventCategory}</p>
         )}
-        <p><strong>Date:</strong> {eventData.Date}</p>
+        <p><strong>Date:</strong> {eventData.Daste}</p>
         <p><strong>Points:</strong> {eventData.Points}</p>
         <p><strong>Added By:</strong> {eventData.AddedBy}</p>
         <p><strong>Created At:</strong> {new Date(eventData.CreatedAt.seconds * 1000).toLocaleString()}</p>
