@@ -45,7 +45,7 @@ const GraphContainer = ({ children }) => {
 
 const ClassificationDashboard = () => {
   const [cadetData, setCadetData] = useState([]);
-  const [longestServiceInMonths, setLongestServiceInMonths] = useState(0); // State for the longest service length
+  const [longestServiceInMonths, setLongestServiceInMonths] = useState(50); // Default to 50
   const [dividerPosition, setDividerPosition] = useState(55); // Initial width of the Graph section in percentage
   const [isDragging, setIsDragging] = useState(false);
   const [hoveredCadet, setHoveredCadet] = useState(null); // Track the hovered cadet
@@ -86,29 +86,25 @@ const ClassificationDashboard = () => {
   // Refresh data when the page is reloaded
   useEffect(() => {
     const fetchCadetsWithClassification = () => {
-      // Access cadets and event log from DataContext
       const cadets = data.cadets || [];
       const eventLogData = data.events || [];
 
-      // Format cadets with classification calculation
       const formattedCadets = cadets.map((cadet) => {
         const { forename, surname, startDate } = cadet;
 
-        // Calculate service length in months
         const startDateObj = new Date(startDate);
         const today = new Date();
         const serviceLengthInMonths =
           (today.getFullYear() - startDateObj.getFullYear()) * 12 +
           (today.getMonth() - startDateObj.getMonth());
 
-        // Count the number of event log entries with a non-empty examName for this cadet
         const matchingEvents = eventLogData.filter(
           (event) =>
             event.cadetName === `${forename} ${surname}` &&
             event.examName !== ""
         );
 
-        const classification = matchingEvents.length + 1; // Add 1 to ensure classification is never zero
+        const classification = matchingEvents.length + 1;
         const classificationLabel =
           classificationMap[classification] || "Junior";
 
@@ -124,7 +120,7 @@ const ClassificationDashboard = () => {
           classification,
           classificationLabel,
           targetClassification,
-          targetClassificationLabel, // Add the string label for display
+          targetClassificationLabel,
         };
       });
 
@@ -135,14 +131,14 @@ const ClassificationDashboard = () => {
         ...formattedCadets.map((cadet) => cadet.serviceLengthInMonths)
       );
 
-      // Adjust the max service length based on the condition
       const adjustedMaxServiceLength = maxServiceLength < 50 ? 50 : maxServiceLength + 1;
 
       setLongestServiceInMonths(adjustedMaxServiceLength); // Update the state
     };
 
     fetchCadetsWithClassification();
-  }, [data]); // Removed 'classificationMap' from the dependency array
+  }, [data]);
+
 
   useEffect(() => {
   }, [cadetData]);
