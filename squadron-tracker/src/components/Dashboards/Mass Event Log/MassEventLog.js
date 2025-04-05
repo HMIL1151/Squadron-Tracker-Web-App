@@ -88,25 +88,56 @@ const MassEventLog = ({ user }) => {
         const eventLog = data.events;
         const flightPoints = data.flightPoints; // Access flight points from DataContext
 
+        // Debugging: Log flightPoints and eventLog
+        console.log("Flight Points:", flightPoints);
+        console.log("Event Log:", eventLog);
+
         // Map eventLog to the desired format
         const mappedEvents = eventLog.map((event) => {
           let eventDescription = "";
           let points = 0;
 
+          // Debugging: Log the current event being processed
+          console.log("Processing Event:", event);
+
           if (event.badgeCategory) {
             eventDescription = `${event.badgeLevel} ${event.badgeCategory}`;
-            points = flightPoints.Badges?.[`${event.badgeLevel} Badge`] || 0; // Get badge points
+            points = parseInt(flightPoints["Badge Points"]?.[`${event.badgeLevel} Badge`] || 0, 10); // Get badge points
+
+            // Debugging: Log badge points calculation
+            console.log(
+              `Badge Points for ${event.badgeLevel} ${event.badgeCategory}:`,
+              points
+            );
           } else if (event.examName) {
             eventDescription = event.examName;
-            points = flightPoints.Badges?.["Exam"] || 0; // Get exam points
+            points = parseInt(flightPoints["Badge Points"]?.["Exam"] || 0, 10); // Get exam points
+
+            // Debugging: Log exam points calculation
+            console.log(`Exam Points for ${event.examName}:`, points);
           } else if (event.eventName) {
             eventDescription = event.eventName;
-            points = flightPoints["Event Category Points"]?.[event.eventCategory] || 0; // Get event category points
+            points = parseInt(
+              flightPoints["Event Category Points"]?.[event.eventCategory] || 0,
+              10
+            ); // Get event category points
+
+            // Debugging: Log event category points calculation
+            console.log(
+              `Event Category Points for ${event.eventCategory}:`,
+              points
+            );
           } else if (event.specialAward) {
             eventDescription = event.specialAward;
-            points = flightPoints.Badges?.["Special"] || 0; // Get special award points
+            points = parseInt(flightPoints["Badge Points"]?.["Special"] || 0, 10); // Get special award points
+
+            // Debugging: Log special award points calculation
+            console.log(`Special Award Points for ${event.specialAward}:`, points);
           } else {
-            throw new Error("Invalid event data: Missing required fields for event description.");
+            console.error(
+              "Invalid event data: Missing required fields for event description.",
+              event
+            );
           }
 
           return {
