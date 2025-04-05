@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useContext } from "react";
 import Table from "../../Table/Table"; // Import the Table component
 import { flightMap } from "../../../utils/mappings"; // Import flightMap from mappings.js
-import { useSquadron } from "../../../context/SquadronContext";
 import { DataContext } from "../../../context/DataContext"; // Import DataContext
 
 const FightPointsDashboard = () => {
@@ -13,7 +12,6 @@ const FightPointsDashboard = () => {
     // Generate a list of years for the dropdown (e.g., last 10 years)
     const currentYear = new Date().getFullYear();
     const years = Array.from({ length: 10 }, (_, i) => currentYear - i);
-    const { squadronNumber } = useSquadron(); // Access the squadron number from context
     const { data } = useContext(DataContext); // Access data from DataContext
 
     useEffect(() => {

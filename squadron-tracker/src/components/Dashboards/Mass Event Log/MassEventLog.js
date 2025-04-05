@@ -1,7 +1,7 @@
 //TODO: Mass add Events from old tracker/from CSV file
 //TODO: check that added entry is actually saved into firestore by returning the doc name for the entry then checking that the entry is in there
 
-import React, { useState, useEffect, useCallback, useContext } from "react";
+import React, { useState, useEffect, useContext } from "react"; // Removed useCallback
 import { useSquadron } from "../../../context/SquadronContext";
 import { DataContext } from "../../../context/DataContext"; // Import DataContext
 import Table from "../../Table/Table";
@@ -28,10 +28,7 @@ const MassEventLog = ({ user }) => {
   const [loading, setLoading] = useState(true); // Add loading state
   const { squadronNumber } = useSquadron(); // Access the squadron number from context
   const { data, setData } = useContext(DataContext); // Access data from DataContext
-  const [names, setNames] = useState([]);
-  const [badgeTypes, setBadgeTypes] = useState([]);
-  const [eventCategories, setEventCategories] = useState([]);
-  const [specialAwards, setSpecialAwards] = useState([]);
+  const [names, setNames] = useState([]); // Retain names for filtering
 
   const columns = ["Name", "Record", "Date", "Points"];
 
@@ -47,12 +44,7 @@ const MassEventLog = ({ user }) => {
     try {
       // Extract data from DataContext
       const cadetNames = data.cadets.map((cadet) => `${cadet.forename} ${cadet.surname}`);
-      const badgeTypes = data.flightPoints.Badges?.["Badge Types"] || [];
-      const eventCategories = Object.keys(data.flightPoints["Event Category Points"] || {});
-      const specialAwards = data.flightPoints["Special Awards"]?.["Special Awards"] || [];
       const eventLog = data.events;
-
-      // Log the event data to debug
 
       // Set state with the extracted data
       setSelectedNames([]);
@@ -65,9 +57,6 @@ const MassEventLog = ({ user }) => {
 
       // Set additional data for dropdowns
       setNames(cadetNames);
-      setBadgeTypes(badgeTypes);
-      setEventCategories(eventCategories);
-      setSpecialAwards(specialAwards);
     } catch (error) {
       console.error("Error processing data from DataContext:", error);
     } finally {
@@ -88,39 +77,26 @@ const MassEventLog = ({ user }) => {
         const eventLog = data.events;
         const flightPoints = data.flightPoints; // Access flight points from DataContext
 
-        // Debugging: Log flightPoints and eventLog
-        //console.log("Flight Points:", flightPoints);
-        //console.log("Event Log:", eventLog);
-
         // Map eventLog to the desired format
         const mappedEvents = eventLog.map((event) => {
           let eventDescription = "";
           let points = 0;
 
-          // Debugging: Log the current event being processed
-
           if (event.badgeCategory) {
             eventDescription = `${event.badgeLevel} ${event.badgeCategory}`;
             points = parseInt(flightPoints["Badge Points"]?.[`${event.badgeLevel} Badge`] || 0, 10); // Get badge points
-
-
           } else if (event.examName) {
             eventDescription = event.examName;
             points = parseInt(flightPoints["Badge Points"]?.["Exam"] || 0, 10); // Get exam points
-
-            // Debugging: Log exam points calculation
           } else if (event.eventName) {
             eventDescription = event.eventName;
             points = parseInt(
               flightPoints["Event Category Points"]?.[event.eventCategory] || 0,
               10
             ); // Get event category points
-
-            // Debugging: Log event category points calculation
           } else if (event.specialAward) {
             eventDescription = event.specialAward;
             points = parseInt(flightPoints["Badge Points"]?.["Special"] || 0, 10); // Get special award points
-
           } else {
             console.error(
               "Invalid event data: Missing required fields for event description.",
@@ -139,7 +115,6 @@ const MassEventLog = ({ user }) => {
             eventCategory: event.eventCategory || "",
           };
         });
-
 
         // Set state with the mapped data
         setEvents(mappedEvents);

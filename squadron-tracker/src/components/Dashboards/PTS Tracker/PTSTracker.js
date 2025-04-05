@@ -2,7 +2,6 @@ import React, { useState, useEffect, useContext } from "react";
 import { motion } from "framer-motion";
 import { badgeLevel } from "../../../utils/examList";
 import "./PTSTracker.css";
-import { useSquadron } from "../../../context/SquadronContext";
 import { DataContext } from "../../../context/DataContext"; // Import DataContext
 
 const PTSTracker = () => {
@@ -11,7 +10,6 @@ const PTSTracker = () => {
   const [groupedBadgeColumns, setGroupedBadgeColumns] = useState({});
   const [expandedTabs, setExpandedTabs] = useState({});
   const [selectedButton, setSelectedButton] = useState(["Blue", "Bronze", "Silver", "Gold"]); // Default state: all selected
-  const { squadronNumber } = useSquadron(); // Access the squadron number from context
   const { data } = useContext(DataContext); // Access data from DataContext
 
   useEffect(() => {
@@ -39,9 +37,9 @@ const PTSTracker = () => {
           }));
         setBadgeData(badges);
 
-        // Initialize expanded state for badge types
+        // Initialize expanded state for badge types (set all to true by default)
         const initialExpandedState = badgeTypes.reduce((acc, type) => {
-          acc[type] = false;
+          acc[type] = true; // Set all badge types to expanded
           return acc;
         }, {});
         setExpandedTabs(initialExpandedState);
