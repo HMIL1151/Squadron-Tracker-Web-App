@@ -52,7 +52,7 @@ const PTSTracker = () => {
   }, [data]);
 
   const getBadgeDate = (cadetName, badge) => {
-    const badgeEntry = badgeData.find(
+    const badgeEntry = badgeData.find(  
       (entry) => entry.cadetName === cadetName && entry.badge === badge
     );
     return badgeEntry ? badgeEntry.date : "";

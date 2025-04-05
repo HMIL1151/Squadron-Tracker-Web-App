@@ -197,7 +197,7 @@ const Graph = ({ cadetData, longestServiceInMonths, onPointHover, hoveredCadet, 
           { x: 6, y: 3 },
           { x: 12, y: 6 },
           { x: 36, y: 12 },
-          { x: longestServiceInMonths || 50, y: 12 }, // Use default value if longestServiceInMonths is not yet updated
+          { x: longestServiceInMonths || 50, y: 12 }, // Use default value if longestServiceInMonths is not yet updated   
         ],
         backgroundColor: "rgba(255, 99, 132, 0.6)",
         borderColor: "rgba(255, 99, 132, 1)",
