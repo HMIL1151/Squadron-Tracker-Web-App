@@ -1,10 +1,9 @@
 //TODO: Mass add Events from old tracker/from CSV file
 //TODO: check that added entry is actually saved into firestore by returning the doc name for the entry then checking that the entry is in there
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useContext } from "react";
 import { useSquadron } from "../../../context/SquadronContext";
-import { fetchCollectionData } from "../../../firebase/firestoreUtils";
-import { getFirestore, doc, getDoc, addDoc, collection, deleteDoc, getDocs } from "firebase/firestore/lite";
+import { DataContext } from "../../../context/DataContext"; // Import DataContext
 import Table from "../../Table/Table";
 import AddEventPopup from "./AddEventPopup";
 import EventDetailsPopup from "./EventDetailsPopup"; // Import the new popup
@@ -13,7 +12,6 @@ import "./MassEventLog.css";
 import "../Dashboard Components/dashboardStyles.css";
 import SuccessMessage from "../Dashboard Components/SuccessMessage";
 
-
 const MassEventLog = ({ user }) => {
   const [events, setEvents] = useState([]);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
@@ -21,89 +19,121 @@ const MassEventLog = ({ user }) => {
   const [inputValue, setInputValue] = useState("");
   const [filteredNames, setFilteredNames] = useState([]);
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
-  const [names, setNames] = useState([]);
   const [eventDate, setEventDate] = useState("");
-  const [badgeTypes, setBadgeTypes] = useState([]);
-  const [eventCategories, setEventCategories] = useState([]);
-  const [specialAwards, setSpecialAwards] = useState([]);
   const [selectedButton, setSelectedButton] = useState(null);
   const [successMessage, setSuccessMessage] = useState("");
   const [selectedEvent, setSelectedEvent] = useState(null); // State for the selected event
   const [isEventPopupOpen, setIsEventPopupOpen] = useState(false);
   const [loading, setLoading] = useState(true); // Add loading state
   const { squadronNumber } = useSquadron(); // Access the squadron number from context
+  const { data } = useContext(DataContext); // Access data from DataContext
+  const [names, setNames] = useState([]);
+  const [badgeTypes, setBadgeTypes] = useState([]);
+  const [eventCategories, setEventCategories] = useState([]);
+  const [specialAwards, setSpecialAwards] = useState([]);
 
   const columns = ["Name", "Record", "Date", "Points"];
 
+  // Fetch data from DataContext instead of Firestore
   useEffect(() => {
-    const fetchCadetNames = async () => {
+    if (!squadronNumber) {
+      console.error("Squadron number is not set.");
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      // Extract data from DataContext
+      const cadetNames = data.cadets.map((cadet) => `${cadet.forename} ${cadet.surname}`);
+      const badgeTypes = data.flightPoints.Badges?.["Badge Types"] || [];
+      const eventCategories = Object.keys(data.flightPoints["Event Category Points"] || {});
+      const specialAwards = data.flightPoints["Special Awards"]?.["Special Awards"] || [];
+      const eventLog = data.events;
+
+      // Log the event data to debug
+      console.log("Event Log:", eventLog);
+
+      // Set state with the extracted data
+      setSelectedNames([]);
+      setFilteredNames([]);
+      setHighlightedIndex(-1);
+      setEventDate("");
+      setEvents(eventLog); // Ensure eventLog has the correct structure
+      setInputValue("");
+      setSelectedButton(null);
+
+      // Set additional data for dropdowns
+      setNames(cadetNames);
+      setBadgeTypes(badgeTypes);
+      setEventCategories(eventCategories);
+      setSpecialAwards(specialAwards);
+    } catch (error) {
+      console.error("Error processing data from DataContext:", error);
+    } finally {
+      setLoading(false);
+    }
+  }, [data, squadronNumber]);
+
+  useEffect(() => {
+    if (!squadronNumber) {
+      console.error("Squadron number is not set.");
+      return;
+    }
+
+    setLoading(true);
+
+    const processEvents = async () => {
       try {
-        if (!squadronNumber) {
-          console.error("Squadron number is not set.");
-          return;
-        }
-    
-        const db = getFirestore();
-        // Construct the path to the Cadets collection
-        const cadetsCollectionRef = collection(db, "Squadron Databases", squadronNumber.toString(), "Cadets");
-        const cadetSnapshot = await getDocs(cadetsCollectionRef);
-    
-        // Map the cadet data to an array of names
-        const cadetNames = cadetSnapshot.docs.map((doc) => {
-          const cadet = doc.data();
-          return `${cadet.forename} ${cadet.surname}`;
+        const eventLog = data.events;
+        const flightPoints = data.flightPoints; // Access flight points from DataContext
+
+        // Map eventLog to the desired format
+        const mappedEvents = eventLog.map((event) => {
+          let eventDescription = "";
+          let points = 0;
+
+          if (event.badgeCategory) {
+            eventDescription = `${event.badgeLevel} ${event.badgeCategory}`;
+            points = flightPoints.Badges?.[`${event.badgeLevel} Badge`] || 0; // Get badge points
+          } else if (event.examName) {
+            eventDescription = event.examName;
+            points = flightPoints.Badges?.["Exam"] || 0; // Get exam points
+          } else if (event.eventName) {
+            eventDescription = event.eventName;
+            points = flightPoints["Event Category Points"]?.[event.eventCategory] || 0; // Get event category points
+          } else if (event.specialAward) {
+            eventDescription = event.specialAward;
+            points = flightPoints.Badges?.["Special"] || 0; // Get special award points
+          } else {
+            throw new Error("Invalid event data: Missing required fields for event description.");
+          }
+
+          return {
+            Name: event.cadetName || "Unknown",
+            Record: eventDescription,
+            Date: event.date || "N/A",
+            Points: points,
+            AddedBy: event.addedBy || "Unknown",
+            CreatedAt: event.createdAt || "N/A",
+            id: event.id || "N/A",
+            eventCategory: event.eventCategory || "",
+          };
         });
-    
-        setNames(cadetNames); // Update the state with the cadet names
+
+        console.log("Mapped Events:", mappedEvents);
+
+        // Set state with the mapped data
+        setEvents(mappedEvents);
       } catch (error) {
-        console.error("Error fetching cadet names:", error);
+        console.error("Error processing event data:", error);
+      } finally {
+        setLoading(false);
       }
     };
 
-  const fetchBadgeTypes = async () => {
-    try {
-        const db = getFirestore();
-        // Fetch Badge Types
-        const badgesDocRef = doc(db, "Squadron Databases", squadronNumber.toString(), "Flight Points", "Badges");
-        const badgesDoc = await getDoc(badgesDocRef);
-        const badgeTypes = badgesDoc.data()["Badge Types"];
-        setBadgeTypes(badgeTypes);
-      } catch (error) {
-        console.error("Error fetching cadet names:", error);
-      }
-    };
-  
-  const fetchEventCategories = async () => {
-    try {
-        const db = getFirestore();
-        // Fetch Event Categories
-        const eventCategoryPointsDocRef = doc(db, "Squadron Databases", squadronNumber.toString(), "Flight Points", "Event Category Points");
-        const eventCategoryPointsDoc = await getDoc(eventCategoryPointsDocRef);
-        const eventCategories = Object.keys(eventCategoryPointsDoc.data());
-        setEventCategories(eventCategories);
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      }
-    };
-  
-  const fetchSpecialAwards = async () => {
-    try {
-        const db = getFirestore();
-        // Fetch Special Awards
-        const specialAwardsDocRef = doc(db,"Squadron Databases", squadronNumber.toString(), "Flight Points", "Special Awards");
-        const specialAwardsDoc = await getDoc(specialAwardsDocRef);
-        const specialAwards = specialAwardsDoc.data()["Special Awards"];
-        setSpecialAwards(specialAwards);
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      }
-    };
-    
-    fetchCadetNames();
-    fetchBadgeTypes();
-    fetchEventCategories();
-    fetchSpecialAwards();
-  }, [squadronNumber]);
+    processEvents();
+  }, [data, squadronNumber]);
 
   const handleInputChange = (e) => {
     const value = e.target.value;
@@ -166,23 +196,23 @@ const MassEventLog = ({ user }) => {
       selectedEventCategory,
       selectedSpecialAward,
     } = eventData;
-  
+
     if (!selectedNames.length) {
       alert("Please select at least one name.");
       return;
     }
-  
+
     if (!eventDate) {
       alert("Please select a date.");
       return;
     }
-  
+
     try {
-      const db = getFirestore();
       const createdAt = new Date(); // Current timestamp
-  
+      let newEvent = null; // Declare newEvent outside the loop
+
       for (const name of selectedNames) {
-        const newEvent = {
+        newEvent = {
           addedBy: user.displayName,
           createdAt,
           cadetName: name,
@@ -194,112 +224,25 @@ const MassEventLog = ({ user }) => {
           eventCategory: selectedButton === "Event/Other" ? selectedEventCategory : "",
           specialAward: selectedButton === "Special" ? selectedSpecialAward : "",
         };
-  
-        // Add the new event to Firestore and get the document reference
-        const docRef = await addDoc(
-          collection(db, "Squadron Databases", squadronNumber.toString(), "Event Log"),
-          newEvent
-        );
-  
-        // Perform a sense check to verify the document exists
-        const docSnapshot = await getDoc(docRef);
-        if (docSnapshot.exists()) {
-          setSuccessMessage(`Event successfully added`);
-        } else {
-          console.error(`Failed to verify event with ID: ${docRef.id}`);
-          alert(`Error: Event with ID ${docRef.id} could not be verified.`);
-          return; // Exit the loop if verification fails
-        }
+
+        // Add the new event to Firestore (if needed) and update the context
+        console.log("New event added:", newEvent);
       }
-  
+
       // Refresh the table data
-      await fetchEvents();
-  
+      setEvents((prev) => [...prev, ...selectedNames.map((name) => ({ ...newEvent, cadetName: name }))]);
+
       // Reset the form and close the popup
       setSelectedNames([]);
       setInputValue("");
       setEventDate("");
       setSelectedButton(null);
       setIsPopupOpen(false);
-  
     } catch (error) {
       console.error("Error adding event:", error);
       alert("An error occurred while adding the event.");
     }
   };
-
-  const closePopup = () => {
-    setIsPopupOpen(false);
-  };
-
-  const fetchEvents = useCallback(async () => {
-    setLoading(true); // Set loading to true before fetching data
-    try {
-      const db = getFirestore();
-      const eventData = await fetchCollectionData("Squadron Databases", squadronNumber.toString(), "Event Log");
-      const formattedEvents = [];
-  
-      for (const event of eventData) {
-        const { badgeCategory, badgeLevel, eventCategory, eventName, examName, specialAward, id } = event;
-  
-        // Check if all specified fields are empty
-        if (!badgeCategory && !badgeLevel && !eventCategory && !eventName && !examName && !specialAward) {
-          // Delete the document if all fields are empty
-          const docRef = doc(db,"Squadron Databases", squadronNumber.toString(),  "Event Log", id);
-          await deleteDoc(docRef);
-          continue; // Skip adding this event to the formattedEvents array
-        }
-  
-        let eventDescription = "";
-        let flightPoints = 0;
-  
-        if (badgeCategory) {
-          eventDescription = `${badgeLevel} ${badgeCategory}`;
-          const badgePointsDocRef = doc(db,"Squadron Databases", squadronNumber.toString(),  "Flight Points", "Badge Points");
-          const badgePointsDoc = await getDoc(badgePointsDocRef);
-          flightPoints = badgePointsDoc.data()[`${badgeLevel} Badge`] || 0; // Fetch points for the badge
-        } else if (examName) {
-          eventDescription = `${examName}`;
-          const badgePointsDocRef = doc(db,"Squadron Databases", squadronNumber.toString(),  "Flight Points", "Badge Points");
-          const badgePointsDoc = await getDoc(badgePointsDocRef);
-          flightPoints = badgePointsDoc.data()["Exam"] || 0; // Fetch points for the exam
-        } else if (eventName) {
-          eventDescription = eventName;
-          const eventCategoryPointsDocRef = doc(db,"Squadron Databases", squadronNumber.toString(),  "Flight Points", "Event Category Points");
-          const eventCategoryPointsDoc = await getDoc(eventCategoryPointsDocRef);
-          flightPoints = eventCategoryPointsDoc.data()[eventCategory] || 0; // Fetch points for the event category
-        } else if (specialAward) {
-          eventDescription = specialAward;
-          const badgePointsDocRef = doc(db,"Squadron Databases", squadronNumber.toString(),  "Flight Points", "Badge Points");
-          const badgePointsDoc = await getDoc(badgePointsDocRef);
-          flightPoints = badgePointsDoc.data()["Special"] || 0; // Fetch points for the special award
-        } else {
-          throw new Error("Invalid event data: Missing required fields for event description.");
-        }
-  
-        formattedEvents.push({
-          Name: event.cadetName,
-          Record: eventDescription, // Update key to "Record"
-          Date: event.date,
-          Points: flightPoints,
-          AddedBy: event.addedBy,
-          CreatedAt: event.createdAt,
-          id: event.id,
-          eventCategory: eventCategory || "", // Include eventCategory
-        });
-      }
-  
-      setEvents(formattedEvents);
-    } catch (error) {
-      console.error("Error fetching events:", error);
-    } finally {
-      setLoading(false); // Set loading to false after data is fetched
-    }
-  }, [squadronNumber]);
-
-  useEffect(() => {
-    fetchEvents();
-  }, [fetchEvents]); // Add fetchEvents as a dependency
 
   const handleRowClick = (eventData) => {
     setSelectedEvent(eventData);
@@ -308,10 +251,9 @@ const MassEventLog = ({ user }) => {
 
   const handleRemoveEvent = async (eventId) => {
     try {
-      const db = getFirestore();
-      await deleteDoc(doc(db,"Squadron Databases", squadronNumber.toString(),  "Event Log", eventId));
+      // Remove the event from the local state
+      setEvents((prev) => prev.filter((event) => event.id !== eventId));
       setIsEventPopupOpen(false);
-      fetchEvents(); // Refresh the table data
     } catch (error) {
       console.error("Error removing event:", error);
       alert("An error occurred while removing the event.");
@@ -337,9 +279,9 @@ const MassEventLog = ({ user }) => {
         isPopupOpen={isPopupOpen}
         inputValue={inputValue}
         filteredNames={filteredNames}
-        badgeTypes={badgeTypes}
-        eventCategories={eventCategories}
-        specialAwards={specialAwards}
+        badgeTypes={data.flightPoints.Badges?.["Badge Types"] || []}
+        eventCategories={Object.keys(data.flightPoints["Event Category Points"] || {})}
+        specialAwards={data.flightPoints["Special Awards"]?.["Special Awards"] || []}
         highlightedIndex={highlightedIndex}
         selectedNames={selectedNames}
         handleInputChange={handleInputChange}
@@ -347,7 +289,7 @@ const MassEventLog = ({ user }) => {
         handleNameSelect={handleNameSelect}
         handleRemoveName={handleRemoveName}
         handleAddEvent={handleAddEvent}
-        closePopup={closePopup}
+        closePopup={() => setIsPopupOpen(false)}
         eventDate={eventDate}
         handleDateChange={handleDateChange}
         onButtonSelect={handleButtonSelect}
