@@ -52,7 +52,6 @@ const MassEventLog = ({ user }) => {
       const eventLog = data.events;
 
       // Log the event data to debug
-      console.log("Event Log:", eventLog);
 
       // Set state with the extracted data
       setSelectedNames([]);
@@ -98,23 +97,17 @@ const MassEventLog = ({ user }) => {
           let points = 0;
 
           // Debugging: Log the current event being processed
-          console.log("Processing Event:", event);
 
           if (event.badgeCategory) {
             eventDescription = `${event.badgeLevel} ${event.badgeCategory}`;
             points = parseInt(flightPoints["Badge Points"]?.[`${event.badgeLevel} Badge`] || 0, 10); // Get badge points
 
-            // Debugging: Log badge points calculation
-            console.log(
-              `Badge Points for ${event.badgeLevel} ${event.badgeCategory}:`,
-              points
-            );
+
           } else if (event.examName) {
             eventDescription = event.examName;
             points = parseInt(flightPoints["Badge Points"]?.["Exam"] || 0, 10); // Get exam points
 
             // Debugging: Log exam points calculation
-            console.log(`Exam Points for ${event.examName}:`, points);
           } else if (event.eventName) {
             eventDescription = event.eventName;
             points = parseInt(
@@ -123,16 +116,10 @@ const MassEventLog = ({ user }) => {
             ); // Get event category points
 
             // Debugging: Log event category points calculation
-            console.log(
-              `Event Category Points for ${event.eventCategory}:`,
-              points
-            );
           } else if (event.specialAward) {
             eventDescription = event.specialAward;
             points = parseInt(flightPoints["Badge Points"]?.["Special"] || 0, 10); // Get special award points
 
-            // Debugging: Log special award points calculation
-            console.log(`Special Award Points for ${event.specialAward}:`, points);
           } else {
             console.error(
               "Invalid event data: Missing required fields for event description.",
@@ -152,7 +139,6 @@ const MassEventLog = ({ user }) => {
           };
         });
 
-        console.log("Mapped Events:", mappedEvents);
 
         // Set state with the mapped data
         setEvents(mappedEvents);
@@ -257,7 +243,6 @@ const MassEventLog = ({ user }) => {
         };
 
         // Add the new event to Firestore (if needed) and update the context
-        console.log("New event added:", newEvent);
       }
 
       // Refresh the table data
