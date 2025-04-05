@@ -1,13 +1,14 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import { getFirestore, doc, updateDoc } from "firebase/firestore/lite";
 import "./addBadgePoints.css";
 import { useSquadron } from "../../../context/SquadronContext";
+import { DataContext } from "../../../context/DataContext"; // Import DataContext
 
 const AddBadgePoints = ({ isOpen, onClose, onConfirm }) => {
   const [badgeType, setBadgeType] = useState("");
   const [points, setPoints] = useState("");
   const { squadronNumber } = useSquadron(); // Access the squadron number from context
-  
+  const { setData } = useContext(DataContext); // Access setData from DataContext
 
   const handleConfirm = async () => {
     if (!badgeType || !points) {
@@ -23,6 +24,25 @@ const AddBadgePoints = ({ isOpen, onClose, onConfirm }) => {
       await updateDoc(docRef, {
         [badgeType]: parseInt(points, 10),
       });
+      console.log(`Badge points for "${badgeType}" added to Firestore.`);
+
+      // Update the DataContext's flightPoints
+      setData((prevData) => {
+        const updatedFlightPoints = {
+          ...prevData.flightPoints,
+          "Badge Points": {
+            ...prevData.flightPoints["Badge Points"],
+            [badgeType]: parseInt(points, 10),
+          },
+        };
+        console.log("Updated flightPoints in DataContext:", updatedFlightPoints);
+        return {
+          ...prevData,
+          flightPoints: updatedFlightPoints,
+        };
+      });
+
+      console.log(`Badge points for "${badgeType}" added to DataContext.`);
 
       onConfirm(); // Call the onConfirm callback to refresh data
       onClose(); // Close the popup

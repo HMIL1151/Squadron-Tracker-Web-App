@@ -1,11 +1,13 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import { getFirestore, doc, updateDoc, arrayUnion } from "firebase/firestore/lite";
 import "./addEntry.css";
 import { useSquadron } from "../../../context/SquadronContext";
+import { DataContext } from "../../../context/DataContext"; // Import DataContext
 
 const AddEntry = ({ isOpen, onClose, onConfirm, collection, document, arrayName }) => {
   const [entry, setEntry] = useState("");
   const { squadronNumber } = useSquadron(); // Access the squadron number from context
+  const { setData } = useContext(DataContext); // Access setData from DataContext
 
   const handleConfirm = async () => {
     if (!entry) {
@@ -17,11 +19,31 @@ const AddEntry = ({ isOpen, onClose, onConfirm, collection, document, arrayName 
       const db = getFirestore();
       const docRef = doc(db, "Squadron Databases", squadronNumber.toString(), collection, document);
 
+      // Add the new entry to Firestore
       await updateDoc(docRef, {
         [arrayName]: arrayUnion(entry),
       });
+      console.log(`Entry "${entry}" added to Firestore in ${arrayName}.`);
 
-      onConfirm(); // Call the onConfirm callback
+      // Update the DataContext's flightPoints
+      setData((prevData) => {
+        const updatedFlightPoints = {
+          ...prevData.flightPoints,
+          [document]: {
+            ...prevData.flightPoints[document],
+            [arrayName]: [...(prevData.flightPoints[document]?.[arrayName] || []), entry],
+          },
+        };
+        console.log("Updated flightPoints in DataContext:", updatedFlightPoints);
+        return {
+          ...prevData,
+          flightPoints: updatedFlightPoints,
+        };
+      });
+
+      console.log(`Entry "${entry}" added to DataContext in ${arrayName}.`);
+
+      onConfirm(); // Call the onConfirm callback to refresh data
       onClose(); // Close the popup
     } catch (error) {
       console.error("Error adding entry:", error);
