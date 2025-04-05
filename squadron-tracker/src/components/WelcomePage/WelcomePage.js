@@ -27,30 +27,30 @@ const WelcomePage = ({ onUserChange }) => {
     const provider = new GoogleAuthProvider();
 
     try {
-      console.log("Attempting Google login...");
+      //console.log("Attempting Google login...");
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
 
-      console.log("User logged in:", user);
+      //console.log("User logged in:", user);
 
       const { uid, email, displayName } = user;
       const userRole = await checkUserRole(uid);
 
-      console.log("User role:", userRole);
+      //console.log("User role:", userRole);
 
       if (!isNaN(userRole)) {
         const squadronNumber = userRole.toString();
-        console.log("Squadron number:", squadronNumber);
+        //console.log("Squadron number:", squadronNumber);
 
         const squadronName = await fetchSquadronName(squadronNumber);
-        console.log("Squadron name:", squadronName);
+        //console.log("Squadron name:", squadronName);
 
         if (!squadronName) {
           setError("Failed to fetch squadron name. Please try again.");
           return;
         }
 
-        console.log("Fetching bulk data for squadron:", squadronNumber);
+        //console.log("Fetching bulk data for squadron:", squadronNumber);
         await fetchData(squadronNumber);
 
         navigateToMainContent({
@@ -126,7 +126,7 @@ const WelcomePage = ({ onUserChange }) => {
           return;
         }
 
-        console.log("Fetching bulk data for squadron:", squadronNumber);
+        //console.log("Fetching bulk data for squadron:", squadronNumber);
         await fetchData(squadronNumber); // Trigger bulk data fetch for the squadron
 
         // Navigate to main content and pass user and squadron data

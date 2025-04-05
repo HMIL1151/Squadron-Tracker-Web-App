@@ -24,7 +24,6 @@ const AddBadgePoints = ({ isOpen, onClose, onConfirm }) => {
       await updateDoc(docRef, {
         [badgeType]: parseInt(points, 10),
       });
-      console.log(`Badge points for "${badgeType}" added to Firestore.`);
 
       // Update the DataContext's flightPoints
       setData((prevData) => {
@@ -35,14 +34,12 @@ const AddBadgePoints = ({ isOpen, onClose, onConfirm }) => {
             [badgeType]: parseInt(points, 10),
           },
         };
-        console.log("Updated flightPoints in DataContext:", updatedFlightPoints);
         return {
           ...prevData,
           flightPoints: updatedFlightPoints,
         };
       });
 
-      console.log(`Badge points for "${badgeType}" added to DataContext.`);
 
       onConfirm(); // Call the onConfirm callback to refresh data
       onClose(); // Close the popup

@@ -38,7 +38,7 @@ const EventCategoriesDashboard = () => {
 
       // Access flightPoints from DataContext
       const flightPoints = data.flightPoints;
-      console.log("Flight Points Data:", flightPoints); // Debugging: Log the flightPoints data
+      //console.log("Flight Points Data:", flightPoints); // Debugging: Log the flightPoints data
 
       // Check if "Special Awards" exists in flightPoints
       const specialAwardTypes = flightPoints["Special Awards"]?.["Special Awards"] || [];
@@ -79,21 +79,21 @@ const EventCategoriesDashboard = () => {
 
   const fetchBadgePoints = useCallback(() => {
     try {
-      console.log("Fetching badge points from DataContext...");
+      //console.log("Fetching badge points from DataContext...");
 
       // Access flightPoints from DataContext
       const flightPoints = data.flightPoints;
 
       // Check if "Badge Points" exists in flightPoints
       const badgePointsData = flightPoints["Badge Points"] || {};
-      console.log("Badge Points from DataContext:", badgePointsData);
+      //console.log("Badge Points from DataContext:", badgePointsData);
 
       // Format the badge points into an array of objects
       const formattedBadgePoints = Object.entries(badgePointsData).map(([badgeName, points]) => ({
         "Badge Types": badgeName,
         Points: points,
       }));
-      console.log("Formatted Badge Points:", formattedBadgePoints);
+      //console.log("Formatted Badge Points:", formattedBadgePoints);
 
       setBadgePoints(formattedBadgePoints);
     } catch (error) {
@@ -103,18 +103,18 @@ const EventCategoriesDashboard = () => {
 
   const fetchBadges = useCallback(() => {
     try {
-      console.log("Fetching badges from DataContext...");
+      //console.log("Fetching badges from DataContext...");
   
       // Access flightPoints from DataContext
       const flightPoints = data.flightPoints;
   
       // Check if "Badge Types" exists in flightPoints
       const badgeTypes = flightPoints.Badges?.["Badge Types"] || [];
-      console.log("Badge Types from DataContext:", badgeTypes);
+      //console.log("Badge Types from DataContext:", badgeTypes);
   
       // Format the badge types into an array of objects
       const formattedBadges = badgeTypes.map((badge) => ({ "Badge Types": badge }));
-      console.log("Formatted Badges:", formattedBadges);
+      //console.log("Formatted Badges:", formattedBadges);
   
       setBadges(formattedBadges);
     } catch (error) {
@@ -162,7 +162,7 @@ const EventCategoriesDashboard = () => {
       if (deleteType === "eventcategories" || deleteType === "badgepoints") {
         // Delete key-value pair from Firestore
         await updateDoc(docRef, { [selectedItem]: deleteField() });
-        console.log(`Deleted ${selectedItem} from ${deleteType} in Firestore.`);
+        //console.log(`Deleted ${selectedItem} from ${deleteType} in Firestore.`);
 
         // Update DataContext's flightPoints
         setData((prevData) => {
@@ -176,7 +176,7 @@ const EventCategoriesDashboard = () => {
               ).filter(([key]) => key !== selectedItem)
             ),
           };
-          console.log("Updated flightPoints in DataContext:", updatedFlightPoints);
+          //console.log("Updated flightPoints in DataContext:", updatedFlightPoints);
           return {
             ...prevData,
             flightPoints: updatedFlightPoints,
@@ -193,7 +193,7 @@ const EventCategoriesDashboard = () => {
             (item) => item !== selectedItem
           );
           await updateDoc(docRef, { [arrayName]: updatedArray });
-          console.log(`Deleted ${selectedItem} from ${arrayName} in Firestore.`);
+          //console.log(`Deleted ${selectedItem} from ${arrayName} in Firestore.`);
 
           // Update DataContext's flightPoints
           setData((prevData) => {
@@ -204,7 +204,7 @@ const EventCategoriesDashboard = () => {
                 [arrayName]: updatedArray,
               },
             };
-            console.log("Updated flightPoints in DataContext:", updatedFlightPoints);
+            //console.log("Updated flightPoints in DataContext:", updatedFlightPoints);
             return {
               ...prevData,
               flightPoints: updatedFlightPoints,
@@ -449,7 +449,7 @@ const EventCategoriesDashboard = () => {
                     ][oldKey];
                   }
 
-                  console.log("Updated flightPoints in DataContext:", updatedFlightPoints);
+                  //console.log("Updated flightPoints in DataContext:", updatedFlightPoints);
                   return {
                     ...prevData,
                     flightPoints: updatedFlightPoints,
@@ -486,7 +486,7 @@ const EventCategoriesDashboard = () => {
                         [arrayName]: updatedArray,
                       },
                     };
-                    console.log("Updated flightPoints in DataContext:", updatedFlightPoints);
+                    //console.log("Updated flightPoints in DataContext:", updatedFlightPoints);
                     return {
                       ...prevData,
                       flightPoints: updatedFlightPoints,

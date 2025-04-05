@@ -89,8 +89,8 @@ const MassEventLog = ({ user }) => {
         const flightPoints = data.flightPoints; // Access flight points from DataContext
 
         // Debugging: Log flightPoints and eventLog
-        console.log("Flight Points:", flightPoints);
-        console.log("Event Log:", eventLog);
+        //console.log("Flight Points:", flightPoints);
+        //console.log("Event Log:", eventLog);
 
         // Map eventLog to the desired format
         const mappedEvents = eventLog.map((event) => {
@@ -247,14 +247,14 @@ const MassEventLog = ({ user }) => {
         // Add the new event to Firestore
         const eventDocRef = doc(collection(db, "Squadron Databases", squadronNumber.toString(), "Event Log"));
         await setDoc(eventDocRef, newEvent);
-        console.log(`Event added to Firestore with ID: ${eventDocRef.id}`);
+        //console.log(`Event added to Firestore with ID: ${eventDocRef.id}`);
 
         // Update the DataContext's events
         setData((prevData) => ({
           ...prevData,
           events: [...prevData.events, { id: eventDocRef.id, ...newEvent }],
         }));
-        console.log("Event added to DataContext:", { id: eventDocRef.id, ...newEvent });
+        //console.log("Event added to DataContext:", { id: eventDocRef.id, ...newEvent });
       }
 
       // Refresh the table data
@@ -297,8 +297,8 @@ const MassEventLog = ({ user }) => {
       const db = getFirestore(); // Initialize Firestore
 
       // Debugging: Log eventId and squadronNumber
-      console.log("Attempting to remove event with ID:", eventId);
-      console.log("Squadron Number:", squadronNumber);
+      //console.log("Attempting to remove event with ID:", eventId);
+      //console.log("Squadron Number:", squadronNumber);
 
       if (!eventId) {
         throw new Error("Invalid event ID. Cannot remove event.");
@@ -310,21 +310,21 @@ const MassEventLog = ({ user }) => {
 
       // Delete the event document from Firestore
       const eventDocRef = doc(db, "Squadron Databases", squadronNumber.toString(), "Event Log", eventId);
-      console.log("Firestore Path:", eventDocRef.path);
+      //console.log("Firestore Path:", eventDocRef.path);
 
       await deleteDoc(eventDocRef);
-      console.log(`Event with ID ${eventId} deleted from Firestore.`);
+      //console.log(`Event with ID ${eventId} deleted from Firestore.`);
 
       // Remove the event from the local state
       setEvents((prev) => {
         const updatedEvents = prev.filter((event) => event.id !== eventId);
-        console.log("Updated local events:", updatedEvents);
+        //console.log("Updated local events:", updatedEvents);
         return updatedEvents;
       });
 
       // Remove the event from DataContext's eventLog
       setData((prevData) => {
-        console.log("Current DataContext events:", prevData.events);
+        //console.log("Current DataContext events:", prevData.events);
 
         // Ensure prevData.events is an array
         const updatedEventLog = (prevData.events || []).filter((event) => {
@@ -335,7 +335,7 @@ const MassEventLog = ({ user }) => {
           return event.id !== eventId;
         });
 
-        console.log("Updated DataContext events:", updatedEventLog);
+        //console.log("Updated DataContext events:", updatedEventLog);
 
         return {
           ...prevData,
@@ -343,7 +343,7 @@ const MassEventLog = ({ user }) => {
         };
       });
 
-      console.log(`Event with ID ${eventId} removed from DataContext.`);
+      //console.log(`Event with ID ${eventId} removed from DataContext.`);
 
       setIsEventPopupOpen(false); // Close the popup
     } catch (error) {
