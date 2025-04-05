@@ -11,6 +11,7 @@ import LoadingPopup from "../Dashboard Components/LoadingPopup"; // Import the n
 import "./MassEventLog.css";
 import "../Dashboard Components/dashboardStyles.css";
 import SuccessMessage from "../Dashboard Components/SuccessMessage";
+import { getFirestore, deleteDoc, doc } from "firebase/firestore"; // Import Firestore functions
 
 const MassEventLog = ({ user }) => {
   const [events, setEvents] = useState([]);
@@ -26,7 +27,7 @@ const MassEventLog = ({ user }) => {
   const [isEventPopupOpen, setIsEventPopupOpen] = useState(false);
   const [loading, setLoading] = useState(true); // Add loading state
   const { squadronNumber } = useSquadron(); // Access the squadron number from context
-  const { data } = useContext(DataContext); // Access data from DataContext
+  const { data, setData } = useContext(DataContext); // Access data from DataContext
   const [names, setNames] = useState([]);
   const [badgeTypes, setBadgeTypes] = useState([]);
   const [eventCategories, setEventCategories] = useState([]);
@@ -267,12 +268,61 @@ const MassEventLog = ({ user }) => {
 
   const handleRemoveEvent = async (eventId) => {
     try {
+      const db = getFirestore(); // Initialize Firestore
+
+      // Debugging: Log eventId and squadronNumber
+      console.log("Attempting to remove event with ID:", eventId);
+      console.log("Squadron Number:", squadronNumber);
+
+      if (!eventId) {
+        throw new Error("Invalid event ID. Cannot remove event.");
+      }
+
+      if (!squadronNumber) {
+        throw new Error("Squadron number is not set. Cannot remove event.");
+      }
+
+      // Delete the event document from Firestore
+      const eventDocRef = doc(db, "Squadron Databases", squadronNumber.toString(), "Event Log", eventId);
+      console.log("Firestore Path:", eventDocRef.path);
+
+      await deleteDoc(eventDocRef);
+      console.log(`Event with ID ${eventId} deleted from Firestore.`);
+
       // Remove the event from the local state
-      setEvents((prev) => prev.filter((event) => event.id !== eventId));
-      setIsEventPopupOpen(false);
+      setEvents((prev) => {
+        const updatedEvents = prev.filter((event) => event.id !== eventId);
+        console.log("Updated local events:", updatedEvents);
+        return updatedEvents;
+      });
+
+      // Remove the event from DataContext's eventLog
+      setData((prevData) => {
+        console.log("Current DataContext events:", prevData.events);
+
+        // Ensure prevData.events is an array
+        const updatedEventLog = (prevData.events || []).filter((event) => {
+          if (!event || typeof event !== "object") {
+            console.warn("Skipping invalid event:", event);
+            return false;
+          }
+          return event.id !== eventId;
+        });
+
+        console.log("Updated DataContext events:", updatedEventLog);
+
+        return {
+          ...prevData,
+          events: updatedEventLog,
+        };
+      });
+
+      console.log(`Event with ID ${eventId} removed from DataContext.`);
+
+      setIsEventPopupOpen(false); // Close the popup
     } catch (error) {
       console.error("Error removing event:", error);
-      alert("An error occurred while removing the event.");
+      alert("An error occurred while removing the event. Please try again.");
     }
   };
 
