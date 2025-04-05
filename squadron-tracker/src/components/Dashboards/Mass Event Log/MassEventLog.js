@@ -11,7 +11,7 @@ import LoadingPopup from "../Dashboard Components/LoadingPopup"; // Import the n
 import "./MassEventLog.css";
 import "../Dashboard Components/dashboardStyles.css";
 import SuccessMessage from "../Dashboard Components/SuccessMessage";
-import { getFirestore, deleteDoc, doc } from "firebase/firestore"; // Import Firestore functions
+import { getFirestore, deleteDoc, doc, collection, setDoc } from "firebase/firestore"; // Import Firestore functions
 
 const MassEventLog = ({ user }) => {
   const [events, setEvents] = useState([]);
@@ -226,11 +226,12 @@ const MassEventLog = ({ user }) => {
     }
 
     try {
+      const db = getFirestore(); // Initialize Firestore
       const createdAt = new Date(); // Current timestamp
-      let newEvent = null; // Declare newEvent outside the loop
 
+      // Loop through selected names and add events
       for (const name of selectedNames) {
-        newEvent = {
+        const newEvent = {
           addedBy: user.displayName,
           createdAt,
           cadetName: name,
@@ -243,11 +244,35 @@ const MassEventLog = ({ user }) => {
           specialAward: selectedButton === "Special" ? selectedSpecialAward : "",
         };
 
-        // Add the new event to Firestore (if needed) and update the context
+        // Add the new event to Firestore
+        const eventDocRef = doc(collection(db, "Squadron Databases", squadronNumber.toString(), "Event Log"));
+        await setDoc(eventDocRef, newEvent);
+        console.log(`Event added to Firestore with ID: ${eventDocRef.id}`);
+
+        // Update the DataContext's events
+        setData((prevData) => ({
+          ...prevData,
+          events: [...prevData.events, { id: eventDocRef.id, ...newEvent }],
+        }));
+        console.log("Event added to DataContext:", { id: eventDocRef.id, ...newEvent });
       }
 
       // Refresh the table data
-      setEvents((prev) => [...prev, ...selectedNames.map((name) => ({ ...newEvent, cadetName: name }))]);
+      setEvents((prev) => [
+        ...prev,
+        ...selectedNames.map((name) => ({
+          cadetName: name,
+          date: eventDate,
+          badgeCategory: selectedButton === "Badge" ? selectedBadgeType : "",
+          badgeLevel: selectedButton === "Badge" ? selectedBadgeLevel : "",
+          examName: selectedButton === "Classification/Exam" ? selectedExam : "",
+          eventName: selectedButton === "Event/Other" ? freeText : "",
+          eventCategory: selectedButton === "Event/Other" ? selectedEventCategory : "",
+          specialAward: selectedButton === "Special" ? selectedSpecialAward : "",
+          addedBy: user.displayName,
+          createdAt,
+        })),
+      ]);
 
       // Reset the form and close the popup
       setSelectedNames([]);
@@ -255,9 +280,10 @@ const MassEventLog = ({ user }) => {
       setEventDate("");
       setSelectedButton(null);
       setIsPopupOpen(false);
+      setSuccessMessage("Event added successfully!");
     } catch (error) {
       console.error("Error adding event:", error);
-      alert("An error occurred while adding the event.");
+      alert("An error occurred while adding the event. Please try again.");
     }
   };
 
