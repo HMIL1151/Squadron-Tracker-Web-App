@@ -52,7 +52,6 @@ const CadetsDashboard = ({ user }) => {
   };
 
   useEffect(() => {
-    console.log("Squadron Number:", squadronNumber); // Debugging: Log squadronNumber
     if (!squadronNumber) {
       console.error("Squadron number is not set.");
       return;
@@ -62,7 +61,6 @@ const CadetsDashboard = ({ user }) => {
     setLoading(true);
 
     try {
-      console.log("Data from DataContext:", data); // Debugging: Log data from DataContext
 
       const formattedCadets = data.cadets.map((cadet) => {
 
@@ -114,7 +112,6 @@ const CadetsDashboard = ({ user }) => {
       console.error("Error processing cadets:", error); // Debugging: Log any errors
     } finally {
       setLoading(false); // Ensure loading is set to false
-      console.log("Loading state set to false."); // Debugging: Confirm loading state is updated
     }
   }, [data, squadronNumber]);
 
@@ -130,14 +127,12 @@ const CadetsDashboard = ({ user }) => {
 
       // Delete the cadet from Firestore
       await deleteDoc(cadetDocRef);
-      console.log(`Cadet with ID ${selectedCadet} deleted from Firestore.`);
 
       // Update the DataContext's cadets
       setData((prevData) => ({
         ...prevData,
         cadets: prevData.cadets.filter((cadet) => cadet.id !== selectedCadet),
       }));
-      console.log(`Cadet with ID ${selectedCadet} removed from DataContext.`);
 
       // Trigger the success message
       const dischargedCadet = data.cadets.find((cadet) => cadet.id === selectedCadet);
@@ -187,14 +182,12 @@ const CadetsDashboard = ({ user }) => {
 
       // Add the new cadet to Firestore
       await setDoc(cadetDocRef, newCadetData);
-      console.log(`Cadet added to Firestore with ID: ${cadetDocRef.id}`);
 
       // Update the DataContext's cadets
       setData((prevData) => ({
         ...prevData,
         cadets: [...prevData.cadets, { id: cadetDocRef.id, ...newCadetData }],
       }));
-      console.log("Cadet added to DataContext:", { id: cadetDocRef.id, ...newCadetData });
 
       // Trigger the success message
       setSuccessMessage(`${forename} ${surname} successfully added.`);
@@ -219,7 +212,6 @@ const CadetsDashboard = ({ user }) => {
 
   const handleEditCadet = async (updatedCadet) => {
     try {
-      console.log("handleEditCadet called with:", updatedCadet); // Debugging: Log the input
 
       if (!updatedCadet || !updatedCadet.id) {
         alert("Invalid cadet data. Cannot edit.");
@@ -229,14 +221,11 @@ const CadetsDashboard = ({ user }) => {
       const db = getFirestore(); // Initialize Firestore
       const cadetDocRef = doc(db, "Squadron Databases", squadronNumber.toString(), "Cadets", updatedCadet.id);
 
-      console.log("Firestore Document Reference:", cadetDocRef.path); // Debugging: Log Firestore path
 
       // Update the cadet in Firestore
       const { id, ...cadetData } = updatedCadet; // Exclude the `id` field from the update
-      console.log("Updating Firestore with data:", cadetData); // Debugging: Log the data being updated
 
       await updateDoc(cadetDocRef, cadetData);
-      console.log(`Cadet with ID ${updatedCadet.id} updated in Firestore.`); // Debugging: Log success
 
       // Update the DataContext's cadets
       setData((prevData) => ({
@@ -245,7 +234,6 @@ const CadetsDashboard = ({ user }) => {
           cadet.id === updatedCadet.id ? { ...cadet, ...cadetData } : cadet
         ),
       }));
-      console.log(`Cadet with ID ${updatedCadet.id} updated in DataContext.`); // Debugging: Log DataContext update
 
       // Trigger the success message
       setSuccessMessage(`${updatedCadet.forename} ${updatedCadet.surname} successfully updated.`);
@@ -325,7 +313,6 @@ const CadetsDashboard = ({ user }) => {
     };
   });
 
-  console.log("Formatted Cadets:", formattedCadets); // Debugging: Log the formatted cadets array
 
   return (
     <div className="table-dashboard-container">
@@ -345,6 +332,10 @@ const CadetsDashboard = ({ user }) => {
         disableHover={false} // Pass the row click handler
         width="95%"
       />
+      {/* Add text below the table to display the number of cadets */}
+      <div className="cadet-count">
+        <p>Total Cadets: {formattedCadets.length}</p>
+      </div>
       <PopupManager
         isPopupOpen={isPopupOpen}
         isConfirmationOpen={isConfirmationOpen}

@@ -55,7 +55,6 @@ const PopupManager = ({
 
   const handleEditCadet = async () => {
     try {
-      console.log("handleEditCadet called with:", editedCadet); // Debugging: Log the input
 
       if (!editedCadet || !editedCadet.id) {
         alert("Invalid cadet data. Cannot edit.");
@@ -64,14 +63,11 @@ const PopupManager = ({
 
       const cadetDocRef = doc(db, "Squadron Databases", squadronNumber.toString(), "Cadets", editedCadet.id);
 
-      console.log("Firestore Document Reference:", cadetDocRef.path); // Debugging: Log Firestore path
 
       // Exclude the `createdAt` field from the update
       const { id, createdAt, ...cadetData } = editedCadet; // Exclude `id` and `createdAt`
-      console.log("Updating Firestore with data:", cadetData); // Debugging: Log the data being updated
 
       await updateDoc(cadetDocRef, cadetData);
-      console.log(`Cadet with ID ${editedCadet.id} updated in Firestore.`); // Debugging: Log success
 
       // Update the DataContext's cadets
       setData((prevData) => ({
@@ -80,7 +76,6 @@ const PopupManager = ({
           cadet.id === editedCadet.id ? { ...cadet, ...cadetData } : cadet
         ),
       }));
-      console.log(`Cadet with ID ${editedCadet.id} updated in DataContext.`); // Debugging: Log DataContext update
 
       // Trigger the success message
       setSuccessMessage(`${editedCadet.forename} ${editedCadet.surname} successfully updated.`);

@@ -14,7 +14,6 @@ const generateCertificatePDF = async (cadetName, year, events, squadronNumber, d
     let logoImage;
 
     try {
-        console.log(`Attempting to fetch squadron logo from URL: ${logoUrl}`);
         // Attempt to fetch the squadron-specific logo
         logoImage = await fetch(logoUrl)
             .then((response) => {
@@ -25,7 +24,6 @@ const generateCertificatePDF = async (cadetName, year, events, squadronNumber, d
                 return response.blob();
             })
             .then((blob) => {
-                console.log("Squadron logo fetched successfully, converting to Base64...");
                 return new Promise((resolve) => {
                     const reader = new FileReader();
                     reader.onload = () => {

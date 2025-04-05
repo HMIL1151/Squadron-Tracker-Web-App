@@ -23,7 +23,7 @@ const AddEntry = ({ isOpen, onClose, onConfirm, collection, document, arrayName 
       await updateDoc(docRef, {
         [arrayName]: arrayUnion(entry),
       });
-      console.log(`Entry "${entry}" added to Firestore in ${arrayName}.`);
+      //console.log(`Entry "${entry}" added to Firestore in ${arrayName}.`);
 
       // Update the DataContext's flightPoints
       setData((prevData) => {
@@ -34,14 +34,14 @@ const AddEntry = ({ isOpen, onClose, onConfirm, collection, document, arrayName 
             [arrayName]: [...(prevData.flightPoints[document]?.[arrayName] || []), entry],
           },
         };
-        console.log("Updated flightPoints in DataContext:", updatedFlightPoints);
+        //console.log("Updated flightPoints in DataContext:", updatedFlightPoints);
         return {
           ...prevData,
           flightPoints: updatedFlightPoints,
         };
       });
 
-      console.log(`Entry "${entry}" added to DataContext in ${arrayName}.`);
+      //console.log(`Entry "${entry}" added to DataContext in ${arrayName}.`);
 
       onConfirm(); // Call the onConfirm callback to refresh data
       onClose(); // Close the popup

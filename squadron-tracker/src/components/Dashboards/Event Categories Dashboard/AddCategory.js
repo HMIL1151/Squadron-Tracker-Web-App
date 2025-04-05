@@ -30,7 +30,6 @@ const AddCategory = ({ isOpen, onClose, onConfirm }) => {
       await updateDoc(docRef, {
         [category]: parseInt(points, 10),
       });
-      console.log(`Category "${category}" with points "${points}" added to Firestore.`);
 
       // Update the DataContext's flightPoints
       setData((prevData) => {
@@ -41,14 +40,14 @@ const AddCategory = ({ isOpen, onClose, onConfirm }) => {
             [category]: parseInt(points, 10),
           },
         };
-        console.log("Updated flightPoints in DataContext:", updatedFlightPoints);
+        //console.log("Updated flightPoints in DataContext:", updatedFlightPoints);
         return {
           ...prevData,
           flightPoints: updatedFlightPoints,
         };
       });
 
-      console.log(`Category "${category}" with points "${points}" added to DataContext.`);
+      //console.log(`Category "${category}" with points "${points}" added to DataContext.`);
 
       onConfirm(); // Call the onConfirm callback to refresh data
       onClose(); // Close the popup
