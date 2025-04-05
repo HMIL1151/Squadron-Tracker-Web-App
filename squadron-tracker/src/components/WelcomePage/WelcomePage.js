@@ -1,9 +1,10 @@
 //TODO: Squadrons declare flight bnames
 
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import { getAuth, signInWithPopup, GoogleAuthProvider, signOut } from "firebase/auth"; // Import Firebase Auth
 import { getFirestore, collection, doc, setDoc, getDocs, writeBatch, query, where } from "firebase/firestore"; // Import Firestore functions
 import { checkUserRole, doesSquadronAccountExist } from "../../firebase/firestoreUtils"; // Import Firestore utility functions
+import { DataContext } from "../../context/DataContext"; // Import DataContext
 import "./WelcomePage.css"; // Optional: Add styles for the welcome page
 import "../Dashboards/Dashboard Components/dashboardStyles.css"; // Import styles for buttons and popups
 
@@ -19,52 +20,39 @@ const WelcomePage = ({ onUserChange }) => {
   const [showAdminWarning, setShowAdminWarning] = useState(false); // Track if the admin warning is shown
 
   const db = getFirestore(); // Initialize Firestore
+  const { fetchData } = useContext(DataContext); // Access fetchData from DataContext
 
   const handleGoogleLogin = async () => {
-    const auth = getAuth(); // Initialize Firebase Auth
-    const provider = new GoogleAuthProvider(); // Set up Google Auth provider
+    const auth = getAuth();
+    const provider = new GoogleAuthProvider();
 
     try {
-      // Sign in with Google
+      console.log("Attempting Google login...");
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
 
-      // Capture user details
-      const { uid, email, displayName } = user;
+      console.log("User logged in:", user);
 
-      // Check the user's role using the UID
+      const { uid, email, displayName } = user;
       const userRole = await checkUserRole(uid);
 
+      console.log("User role:", userRole);
+
       if (!isNaN(userRole)) {
-        const squadronNumber = userRole.toString(); // Convert role to string for document lookup
-        const squadronDatabaseDocRef = doc(db, "Squadron Databases", squadronNumber);
-        const authorisedUsersCollectionRef = collection(squadronDatabaseDocRef, "Authorised Users");
+        const squadronNumber = userRole.toString();
+        console.log("Squadron number:", squadronNumber);
 
-        // Query the Authorised Users subcollection for a matching document
-        const userQuery = query(
-          authorisedUsersCollectionRef,
-          where("displayName", "==", displayName),
-          where("email", "==", email)
-        );
-        const userSnapshot = await getDocs(userQuery);
-
-        if (userSnapshot.empty) {
-          // User is not in the Authorised Users list
-          setError(
-            "Your request to join the squadron is pending approval, please contact your Squadron's Admin."
-          );
-          return;
-        }
-
-        // Fetch the squadron name from the Squadron List collection
         const squadronName = await fetchSquadronName(squadronNumber);
+        console.log("Squadron name:", squadronName);
 
         if (!squadronName) {
           setError("Failed to fetch squadron name. Please try again.");
           return;
         }
 
-        // Navigate to main content and pass user and squadron data
+        console.log("Fetching bulk data for squadron:", squadronNumber);
+        await fetchData(squadronNumber);
+
         navigateToMainContent({
           displayName,
           uid,
@@ -74,7 +62,6 @@ const WelcomePage = ({ onUserChange }) => {
         return;
       }
 
-      // Update the user state and role
       setUser({ uid, email, displayName });
       setRole(userRole);
     } catch (err) {
@@ -99,7 +86,6 @@ const WelcomePage = ({ onUserChange }) => {
 
   const handleSquadronSubmit = async () => {
     try {
-
       // Check if the squadron account exists
       const collectionExists = await doesSquadronAccountExist(squadronNumber);
 
@@ -130,7 +116,7 @@ const WelcomePage = ({ onUserChange }) => {
         });
 
         // Notify the user
-        setError("Your request to join the squadron is pending approval, please contant your Squadron's Admin.");
+        setError("Your request to join the squadron is pending approval, please contact your Squadron's Admin.");
       } else if (role === "System Admin" && collectionExists) {
         // Fetch the squadron name from the Squadron List collection
         const squadronName = await fetchSquadronName(squadronNumber);
@@ -139,6 +125,9 @@ const WelcomePage = ({ onUserChange }) => {
           setError("Failed to fetch squadron name. Please try again.");
           return;
         }
+
+        console.log("Fetching bulk data for squadron:", squadronNumber);
+        await fetchData(squadronNumber); // Trigger bulk data fetch for the squadron
 
         // Navigate to main content and pass user and squadron data
         navigateToMainContent({

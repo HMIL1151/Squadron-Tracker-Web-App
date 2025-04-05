@@ -56,7 +56,7 @@ const EventDetailsPopup = ({ isOpen, eventData, onClose, onRemove }) => {
         </button>
         <h2>Event Details</h2>
         <p><strong>Name:</strong> {eventData.Name}</p>
-        <p><strong>Event:</strong> {eventData.Event}</p>
+        <p><strong>Event:</strong> {eventData.Record}</p>
         {eventData.eventCategory && (
           <p><strong>Category:</strong> {eventData.eventCategory}</p>
         )}

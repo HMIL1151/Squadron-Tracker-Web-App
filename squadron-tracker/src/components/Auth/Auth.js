@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { auth, googleProvider } from "../../firebase/firebase";
 import { signInWithPopup, signOut, onAuthStateChanged } from "firebase/auth";
 import { getFirestore, doc, getDoc, setDoc } from "firebase/firestore/lite";
 import { doesCollectionExist } from "../../firebase/firestoreUtils"; // Import the function
 import "./Auth.css";
 import { useSquadron } from "../../../context/SquadronContext";
+import { DataContext } from "../../context/DataContext";
 
 const Auth = ({ onUserChange }) => {
   const [user, setUser] = useState(null);
@@ -49,6 +50,17 @@ const Auth = ({ onUserChange }) => {
     });
     return () => unsubscribe();
   }, [onUserChange, sqnNo]); // Added sqnNo to the dependency array
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+      if (currentUser) {
+        const { fetchData } = useContext(DataContext);
+        await fetchData(sqnNo); // Fetch bulk data for the squadron
+        
+      }
+    });
+    return () => unsubscribe();
+  }, []);
 
   const handleSquadronNumberChange = (e) => {
     setSquadronNumber(e.target.value);  
