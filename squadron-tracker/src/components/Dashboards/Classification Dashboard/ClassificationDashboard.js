@@ -197,9 +197,9 @@ const ClassificationDashboard = () => {
   const onTrackPercentage = calculateOnTrackPercentage();
 
   return (
-    <div>
+    <div style={{ height: "80vh", overflow: "hidden" }}>
       {/* Split content into two halves */}
-      <div style={{ display: "flex", alignItems: "center", height: "100vh" }}>
+      <div style={{ display: "flex", alignItems: "center", height: "100%" }}>
         {/* Graph Section */}
         <div style={{ width: `${dividerPosition}%`, height: "100%", overflow: "visible" }}>
           <GraphContainer>
