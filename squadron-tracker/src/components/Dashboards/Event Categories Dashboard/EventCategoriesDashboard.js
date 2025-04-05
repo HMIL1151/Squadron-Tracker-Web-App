@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useContext } from "react";
 import { getFirestore, doc, getDoc, updateDoc, deleteField } from "firebase/firestore/lite";
 import Table from "../../Table/Table";
 import AddEntry from "./addEntry";
@@ -9,6 +9,7 @@ import DeletePopup from "./DeletePopup"; // Import the DeletePopup component
 import "./EventCategoriesDashboard.css";
 import "../Dashboard Components/dashboardStyles.css";
 import { useSquadron } from "../../../context/SquadronContext";
+import { DataContext } from "../../../context/DataContext";
 
 const EventCategoriesDashboard = () => {
   const [categories, setCategories] = useState([]);
@@ -30,96 +31,96 @@ const EventCategoriesDashboard = () => {
   const [deleteOptions, setDeleteOptions] = useState([]);
   const [deleteType, setDeleteType] = useState("");
   const { squadronNumber } = useSquadron(); // Access the squadron number from context
+  const { data, setData } = useContext(DataContext); // Access data from DataContext
 
-  const fetchSpecialAwards = useCallback(async () => {
+  const fetchSpecialAwards = useCallback(() => {
     try {
-      const db = getFirestore();
-      const docRef = doc(db, "Squadron Databases", squadronNumber.toString(), "Flight Points", "Special Awards");
-      const docSnap = await getDoc(docRef);
 
-      if (docSnap.exists()) {
-        const data = docSnap.data();
-        const specialAwardTypes = data["Special Awards"];
-        if (Array.isArray(specialAwardTypes)) {
-          const formattedSpecialAwards = specialAwardTypes.map((special) => ({
-            "Special Awards": special,
-          }));
-          setSpecialAwards(formattedSpecialAwards);
-        } else {
-          console.error("Special Awards data is not an array:", specialAwardTypes);
-        }
-      } else {
-        console.error("No such document!");
-      }
-    } catch (error) {
-      console.error("Error fetching special awards:", error);
-    }
-  }, [squadronNumber]);
+      // Access flightPoints from DataContext
+      const flightPoints = data.flightPoints;
+      console.log("Flight Points Data:", flightPoints); // Debugging: Log the flightPoints data
 
-  const fetchEventCategories = useCallback(async () => {
-    try {
-      const db = getFirestore();
-      const docRef = doc(db, "Squadron Databases", squadronNumber.toString(), "Flight Points", "Event Category Points");
-      const docSnap = await getDoc(docRef);
+      // Check if "Special Awards" exists in flightPoints
+      const specialAwardTypes = flightPoints["Special Awards"]?.["Special Awards"] || [];
 
-      if (docSnap.exists()) {
-        const data = docSnap.data();
-        const eventCategoriesPoints = Object.entries(data).map(([category, points]) => ({
-          Category: category,
-          Points: points,
+      if (Array.isArray(specialAwardTypes)) {
+        const formattedSpecialAwards = specialAwardTypes.map((special) => ({
+          "Special Awards": special,
         }));
-        setCategories(eventCategoriesPoints);
+        setSpecialAwards(formattedSpecialAwards);
       } else {
-        console.error("No such document!");
+        console.error("Special Awards data is not an array:", specialAwardTypes);
       }
     } catch (error) {
-      console.error("Error fetching event categories:", error);
+      console.error("Error fetching special awards from DataContext:", error);
     }
-  }, [squadronNumber]);
+  }, [data]);
 
-  const fetchBadgePoints = useCallback(async () => {
+  const fetchEventCategories = useCallback(() => {
     try {
-      const db = getFirestore();
-      const docRef = doc(db, "Squadron Databases", squadronNumber.toString(), "Flight Points", "Badge Points");
-      const docSnap = await getDoc(docRef);
 
-      if (docSnap.exists()) {
-        const data = docSnap.data();
-        const badgePoints = Object.entries(data).map(([badgeName, points]) => ({
-          "Badge Types": badgeName,
-          Points: points,
-        }));
-        setBadgePoints(badgePoints);
-      } else {
-        console.error("No such document!");
-      }
+      // Access flightPoints from DataContext
+      const flightPoints = data.flightPoints;
+
+      // Check if "Event Category Points" exists in flightPoints
+      const eventCategoryPoints = flightPoints["Event Category Points"] || {};
+
+      // Format the event categories into an array of objects
+      const formattedEventCategories = Object.entries(eventCategoryPoints).map(([category, points]) => ({
+        Category: category,
+        Points: points,
+      }));
+
+      setCategories(formattedEventCategories);
     } catch (error) {
-      console.error("Error fetching badge points:", error);
+      console.error("Error fetching event categories from DataContext:", error);
     }
-  }, [squadronNumber]);
+  }, [data]);
 
-  const fetchBadges = useCallback(async () => {
+  const fetchBadgePoints = useCallback(() => {
     try {
-      const db = getFirestore();
-      const docRef = doc(db, "Squadron Databases", squadronNumber.toString(), "Flight Points", "Badges");
-      const docSnap = await getDoc(docRef);
+      console.log("Fetching badge points from DataContext...");
 
-      if (docSnap.exists()) {
-        const data = docSnap.data();
-        const badgeTypes = data["Badge Types"];
-        if (Array.isArray(badgeTypes)) {
-          const formattedBadges = badgeTypes.map((badge) => ({ "Badge Types": badge }));
-          setBadges(formattedBadges);
-        } else {
-          console.error("Badge data is not an array:", badgeTypes);
-        }
-      } else {
-        console.error("No such document!");
-      }
+      // Access flightPoints from DataContext
+      const flightPoints = data.flightPoints;
+
+      // Check if "Badge Points" exists in flightPoints
+      const badgePointsData = flightPoints["Badge Points"] || {};
+      console.log("Badge Points from DataContext:", badgePointsData);
+
+      // Format the badge points into an array of objects
+      const formattedBadgePoints = Object.entries(badgePointsData).map(([badgeName, points]) => ({
+        "Badge Types": badgeName,
+        Points: points,
+      }));
+      console.log("Formatted Badge Points:", formattedBadgePoints);
+
+      setBadgePoints(formattedBadgePoints);
     } catch (error) {
-      console.error("Error fetching badges:", error);
+      console.error("Error fetching badge points from DataContext:", error);
     }
-  }, [squadronNumber]);
+  }, [data]);
+
+  const fetchBadges = useCallback(() => {
+    try {
+      console.log("Fetching badges from DataContext...");
+  
+      // Access flightPoints from DataContext
+      const flightPoints = data.flightPoints;
+  
+      // Check if "Badge Types" exists in flightPoints
+      const badgeTypes = flightPoints.Badges?.["Badge Types"] || [];
+      console.log("Badge Types from DataContext:", badgeTypes);
+  
+      // Format the badge types into an array of objects
+      const formattedBadges = badgeTypes.map((badge) => ({ "Badge Types": badge }));
+      console.log("Formatted Badges:", formattedBadges);
+  
+      setBadges(formattedBadges);
+    } catch (error) {
+      console.error("Error fetching badges from DataContext:", error);
+    }
+  }, [data]);
 
   const handleRowClick = (rowData, type) => {
     setEditData(rowData);
@@ -144,7 +145,9 @@ const EventCategoriesDashboard = () => {
   const handleDeleteConfirm = async (selectedItem) => {
     const db = getFirestore();
     const docRef = doc(
-      db, "Squadron Databases", squadronNumber.toString(), 
+      db,
+      "Squadron Databases",
+      squadronNumber.toString(),
       "Flight Points",
       deleteType === "eventcategories"
         ? "Event Category Points"
@@ -157,10 +160,30 @@ const EventCategoriesDashboard = () => {
 
     try {
       if (deleteType === "eventcategories" || deleteType === "badgepoints") {
-        // Delete key-value pair
+        // Delete key-value pair from Firestore
         await updateDoc(docRef, { [selectedItem]: deleteField() });
+        console.log(`Deleted ${selectedItem} from ${deleteType} in Firestore.`);
+
+        // Update DataContext's flightPoints
+        setData((prevData) => {
+          const updatedFlightPoints = {
+            ...prevData.flightPoints,
+            [deleteType === "eventcategories" ? "Event Category Points" : "Badge Points"]: Object.fromEntries(
+              Object.entries(
+                prevData.flightPoints[
+                  deleteType === "eventcategories" ? "Event Category Points" : "Badge Points"
+                ] || {}
+              ).filter(([key]) => key !== selectedItem)
+            ),
+          };
+          console.log("Updated flightPoints in DataContext:", updatedFlightPoints);
+          return {
+            ...prevData,
+            flightPoints: updatedFlightPoints,
+          };
+        });
       } else {
-        // Delete from array
+        // Delete from array in Firestore
         const arrayName =
           deleteType === "badges" ? "Badge Types" : "Special Awards";
         const docSnap = await getDoc(docRef);
@@ -170,6 +193,23 @@ const EventCategoriesDashboard = () => {
             (item) => item !== selectedItem
           );
           await updateDoc(docRef, { [arrayName]: updatedArray });
+          console.log(`Deleted ${selectedItem} from ${arrayName} in Firestore.`);
+
+          // Update DataContext's flightPoints
+          setData((prevData) => {
+            const updatedFlightPoints = {
+              ...prevData.flightPoints,
+              [deleteType === "badges" ? "Badges" : "Special Awards"]: {
+                ...prevData.flightPoints[deleteType === "badges" ? "Badges" : "Special Awards"],
+                [arrayName]: updatedArray,
+              },
+            };
+            console.log("Updated flightPoints in DataContext:", updatedFlightPoints);
+            return {
+              ...prevData,
+              flightPoints: updatedFlightPoints,
+            };
+          });
         }
       }
 
@@ -363,6 +403,8 @@ const EventCategoriesDashboard = () => {
             const db = getFirestore();
             const docRef = doc(
               db,
+              "Squadron Databases",
+              squadronNumber.toString(),
               "Flight Points",
               editType === "eventcategories"
                 ? "Event Category Points"
@@ -377,7 +419,7 @@ const EventCategoriesDashboard = () => {
               // Handle key-value pair updates
               const oldKey = editData.Category || editData["Badge Types"];
               const newKey = updatedData.Category || updatedData["Badge Types"];
-              const newValue = updatedData.Points;
+              const newValue = parseInt(updatedData.Points, 10); // Ensure Points is an integer
 
               try {
                 // Delete the old field if the key has changed
@@ -387,6 +429,32 @@ const EventCategoriesDashboard = () => {
 
                 // Add the new field with the updated key and value
                 await updateDoc(docRef, { [newKey]: newValue });
+
+                // Update DataContext's flightPoints
+                setData((prevData) => {
+                  const updatedFlightPoints = {
+                    ...prevData.flightPoints,
+                    [editType === "eventcategories" ? "Event Category Points" : "Badge Points"]: {
+                      ...prevData.flightPoints[
+                        editType === "eventcategories" ? "Event Category Points" : "Badge Points"
+                      ],
+                      [newKey]: newValue,
+                    },
+                  };
+
+                  // Remove the old key if it was renamed
+                  if (oldKey !== newKey) {
+                    delete updatedFlightPoints[
+                      editType === "eventcategories" ? "Event Category Points" : "Badge Points"
+                    ][oldKey];
+                  }
+
+                  console.log("Updated flightPoints in DataContext:", updatedFlightPoints);
+                  return {
+                    ...prevData,
+                    flightPoints: updatedFlightPoints,
+                  };
+                });
 
                 // Refresh the table
                 if (editType === "eventcategories") {
@@ -408,6 +476,22 @@ const EventCategoriesDashboard = () => {
                     item === editData[arrayName] ? updatedData[arrayName] : item
                   );
                   await updateDoc(docRef, { [arrayName]: updatedArray });
+
+                  // Update DataContext's flightPoints
+                  setData((prevData) => {
+                    const updatedFlightPoints = {
+                      ...prevData.flightPoints,
+                      [editType === "badges" ? "Badges" : "Special Awards"]: {
+                        ...prevData.flightPoints[editType === "badges" ? "Badges" : "Special Awards"],
+                        [arrayName]: updatedArray,
+                      },
+                    };
+                    console.log("Updated flightPoints in DataContext:", updatedFlightPoints);
+                    return {
+                      ...prevData,
+                      flightPoints: updatedFlightPoints,
+                    };
+                  });
 
                   // Refresh the table
                   if (editType === "badges") {

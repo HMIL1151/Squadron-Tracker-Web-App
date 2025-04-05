@@ -1,11 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import Popup from "../Dashboard Components/Popup";
 import SuccessMessage from "../Dashboard Components/SuccessMessage"; // Import SuccessMessage
 import CadetForm from "./CadetForm";
 import { doc, updateDoc, getFirestore } from "firebase/firestore"; // Import Firestore functions
 import { app } from "../../../firebase/firebase"; // Correct import path for app
-import { fetchCollectionData } from "../../../firebase/firestoreUtils"; // Import fetchCollectionData
 import { useSquadron } from "../../../context/SquadronContext";
+import { DataContext } from "../../../context/DataContext"; // Import DataContext
 
 const PopupManager = ({
   isPopupOpen,
@@ -19,7 +19,6 @@ const PopupManager = ({
   handleDischarge,
   handleAddCadet,
   cadets,
-  setCadets, // Add setCadets to update the cadets list
   selectedCadet,
   setSelectedCadet,
   newCadet,
@@ -32,6 +31,7 @@ const PopupManager = ({
   const [successMessage, setSuccessMessage] = useState(""); // State for success message
   const db = getFirestore(app); // Initialize Firestore using app
   const { squadronNumber } = useSquadron(); // Access the squadron number from context
+  const { setData } = useContext(DataContext); // Access setData from DataContext
 
   // Update the editedCadet state when the selectedCadet changes
   React.useEffect(() => {
@@ -54,30 +54,44 @@ const PopupManager = ({
   };
 
   const handleEditCadet = async () => {
-    if (!editedCadet.id) return;
-
     try {
-      const cadetDocRef = doc(db, "Squadron Databases", squadronNumber.toString(), "Cadets", editedCadet.id); // Reference to the cadet's Firestore document
-      await updateDoc(cadetDocRef, {
-        forename: editedCadet.forename,
-        surname: editedCadet.surname,
-        rank: parseInt(editedCadet.rank, 10),
-        flight: parseInt(editedCadet.flight, 10),
-        classification: parseInt(editedCadet.classification, 10),
-        startDate: editedCadet.startDate,
-      });
+      console.log("handleEditCadet called with:", editedCadet); // Debugging: Log the input
 
-      setSuccessMessage("Cadet information updated successfully!"); // Set success message
-      setIsEditPopupOpen(false); // Close the popup
+      if (!editedCadet || !editedCadet.id) {
+        alert("Invalid cadet data. Cannot edit.");
+        return;
+      }
 
-      // Refresh the cadets list
-      const cadetsData = await fetchCollectionData("Squadron Databases", squadronNumber.toString(),"Cadets");
-      setCadets(cadetsData); // Update the cadets state
+      const cadetDocRef = doc(db, "Squadron Databases", squadronNumber.toString(), "Cadets", editedCadet.id);
 
-      setTimeout(() => setSuccessMessage(""), 3000); // Clear the message after 3 seconds
+      console.log("Firestore Document Reference:", cadetDocRef.path); // Debugging: Log Firestore path
+
+      // Exclude the `createdAt` field from the update
+      const { id, createdAt, ...cadetData } = editedCadet; // Exclude `id` and `createdAt`
+      console.log("Updating Firestore with data:", cadetData); // Debugging: Log the data being updated
+
+      await updateDoc(cadetDocRef, cadetData);
+      console.log(`Cadet with ID ${editedCadet.id} updated in Firestore.`); // Debugging: Log success
+
+      // Update the DataContext's cadets
+      setData((prevData) => ({
+        ...prevData,
+        cadets: prevData.cadets.map((cadet) =>
+          cadet.id === editedCadet.id ? { ...cadet, ...cadetData } : cadet
+        ),
+      }));
+      console.log(`Cadet with ID ${editedCadet.id} updated in DataContext.`); // Debugging: Log DataContext update
+
+      // Trigger the success message
+      setSuccessMessage(`${editedCadet.forename} ${editedCadet.surname} successfully updated.`);
+      setTimeout(() => setSuccessMessage(""), 1000); // Automatically hide after 1 second
+
+      // Close the edit popup
+      setIsEditPopupOpen(false);
+      setSelectedCadet(""); // Clear the selected cadet
     } catch (error) {
-      console.error("Error updating cadet:", error);
-      alert("An error occurred while updating the cadet.");
+      console.error("Error editing cadet:", error); // Debugging: Log any errors
+      alert("An error occurred while editing the cadet.");
     }
   };
 

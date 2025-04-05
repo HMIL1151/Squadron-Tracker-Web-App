@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { motion } from "framer-motion";
-import { getAllCadetNames, getBadgeTypeList, getAllBadges } from "../../../firebase/firestoreUtils";
 import { badgeLevel } from "../../../utils/examList";
 import "./PTSTracker.css";
 import { useSquadron } from "../../../context/SquadronContext";
+import { DataContext } from "../../../context/DataContext"; // Import DataContext
 
 const PTSTracker = () => {
   const [cadetNames, setCadetNames] = useState([]);
@@ -12,35 +12,46 @@ const PTSTracker = () => {
   const [expandedTabs, setExpandedTabs] = useState({});
   const [selectedButton, setSelectedButton] = useState(["Blue", "Bronze", "Silver", "Gold"]); // Default state: all selected
   const { squadronNumber } = useSquadron(); // Access the squadron number from context
-
+  const { data } = useContext(DataContext); // Access data from DataContext
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchData = () => {
       try {
-        const names = await getAllCadetNames(squadronNumber);
+        // Extract cadet names from DataContext
+        const names = data.cadets.map((cadet) => `${cadet.forename} ${cadet.surname}`);
         setCadetNames(names);
 
-        const badgeTypes = await getBadgeTypeList(squadronNumber);
+        // Extract badge types from DataContext
+        const badgeTypes = data.flightPoints.Badges?.["Badge Types"] || [];
         const groupedColumns = badgeTypes.reduce((acc, type) => {
           acc[type] = badgeLevel.map((level) => `${level} ${type}`);
           return acc;
         }, {});
         setGroupedBadgeColumns(groupedColumns);
 
-        const badges = await getAllBadges(squadronNumber);
+        // Extract badge data from DataContext
+        const badges = data.events
+          .filter((event) => event.badgeLevel && event.badgeCategory) // Filter only badge events
+          .map((event) => ({
+            cadetName: event.cadetName,
+            badge: `${event.badgeLevel} ${event.badgeCategory}`,
+            date: event.date,
+          }));
         setBadgeData(badges);
 
+        // Initialize expanded state for badge types
         const initialExpandedState = badgeTypes.reduce((acc, type) => {
           acc[type] = false;
           return acc;
         }, {});
         setExpandedTabs(initialExpandedState);
       } catch (error) {
-        console.error("Error fetching data:", error);
+        console.error("Error processing data from DataContext:", error);
       }
     };
+
     fetchData();
-  }, [squadronNumber]);
+  }, [data]);
 
   const getBadgeDate = (cadetName, badge) => {
     const badgeEntry = badgeData.find(
