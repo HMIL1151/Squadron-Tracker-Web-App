@@ -1,17 +1,16 @@
 import { initializeApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider } from "firebase/auth";
-// import { getFirestore } from "firebase/firestore/lite";
 
-// Your web app's Firebase configuration
+// Firebase configuration from environment variables
 const firebaseConfig = {
-    apiKey: "AIzaSyDq7K5hW57NNnpcVRp9JTta0Ln22RXJuS8",
-    authDomain: "squadron-tracker-1151.firebaseapp.com",
-    projectId: "squadron-tracker-1151",
-    storageBucket: "squadron-tracker-1151.firebasestorage.app",
-    messagingSenderId: "179784073335",
-    appId: "1:179784073335:web:c035d4853d7e94d808c672"
-  };
-  
-export const app=initializeApp(firebaseConfig);
+    apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
+    authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
+    projectId: process.env.REACT_APP_FIREBASE_PROJECT_ID,
+    storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET,
+    messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID,
+    appId: process.env.REACT_APP_FIREBASE_APP_ID
+};
+
+export const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const googleProvider = new GoogleAuthProvider();
