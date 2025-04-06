@@ -1,6 +1,8 @@
 import { initializeApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider } from "firebase/auth";
 
+//api info found at https://console.firebase.google.com/u/0/project/squadron-tracker-1151/settings/general/web:ZWExYTE0MjMtMmM2NS00MGRiLWE4ZTgtZjY2OWY2ZjAzOWRk
+
 // Firebase configuration from environment variables
 const firebaseConfig = {
     apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
