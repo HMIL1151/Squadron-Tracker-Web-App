@@ -104,22 +104,15 @@ const ClassificationDashboard = () => {
             event.examName !== ""
         );
 
-        let classification = matchingEvents.length + 1;
-
-        let classificationLabel;
-        if (classification > 12) {
-          classificationLabel = classificationMap[12];  
-          classification = 12; // Cap classification at 12
-        }
-        else{
-          classificationLabel = classificationMap[classification] || classificationMap[1];
-        }
+        const classification = matchingEvents.length + 1;
+        const classificationLabel =
+          classificationMap[classification] || "Junior";
 
         const targetClassification = getTargetClassification(
           serviceLengthInMonths
         );
         const targetClassificationLabel =
-          classificationMap[targetClassification] || classificationMap[1];
+          classificationMap[targetClassification] || "Junior";
 
         return {
           cadetName: `${forename} ${surname}`,
