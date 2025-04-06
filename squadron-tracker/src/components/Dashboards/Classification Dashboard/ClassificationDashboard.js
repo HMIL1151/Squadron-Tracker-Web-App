@@ -103,10 +103,21 @@ const ClassificationDashboard = () => {
             event.cadetName === `${forename} ${surname}` &&
             event.examName !== ""
         );
+        
 
-        const classification = matchingEvents.length + 1;
-        const classificationLabel =
-          classificationMap[classification] || "Junior";
+        let classification = matchingEvents.length + 1;
+        let classificationLabel;
+
+        if (classification > 12) {
+          classification = 12; // Cap classification at 13
+          classificationLabel = classificationMap[12];
+
+        }
+
+        else{
+          classificationLabel = classificationMap[classification] || classificationMap[1];
+        }
+
 
         const targetClassification = getTargetClassification(
           serviceLengthInMonths

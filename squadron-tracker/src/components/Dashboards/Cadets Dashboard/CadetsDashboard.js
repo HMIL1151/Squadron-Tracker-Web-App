@@ -236,8 +236,12 @@ const CadetsDashboard = ({ user }) => {
         event.examName !== ""
     );
 
-    const classificationCount = matchingEvents.length + 1;
+    let classificationCount = matchingEvents.length + 1;
 
+    if (classificationCount > 12) {
+      classificationCount = 12; // Cap at 13
+    }
+    
     return {
       ...Object.keys(cadetListColumnMapping).reduce((acc, key) => {
         acc[key] = cadet[cadetListColumnMapping[key]];
