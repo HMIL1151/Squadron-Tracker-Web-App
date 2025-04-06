@@ -1,6 +1,7 @@
-<div align:"centre">
+<!-- HEADER STYLE: CLASSIC -->
+<div align="center">
 
-# SQUADRON-TRACKER-WEB-APP
+# Squadron Tracker Web App
 
 <em></em>
 
@@ -19,60 +20,78 @@
 <img src="https://img.shields.io/badge/GitHub%20Actions-2088FF.svg?style=default&logo=GitHub-Actions&logoColor=white" alt="GitHub%20Actions">
 <img src="https://img.shields.io/badge/CSS-663399.svg?style=default&logo=CSS&logoColor=white" alt="CSS">
 <img src="https://img.shields.io/badge/Chart.js-FF6384.svg?style=default&logo=chartdotjs&logoColor=white" alt="Chart.js">
-<img src="https://img.shields.io/badge/YAML-CB171E.svg?style=default&logo=YAML&logoColor=white" alt="YAML">
+
 
 </div>
 <br>
 
-# Squadron Tracker
+Squadron Tracker is a web application designed to streamline the management and tracking of the progression of Air Cadets within the RAFAC. It provides a user-friendly interface for squadron staff to log and monitor events, classification and badges while using the data for flight point tracking and certificates of achivement.
 
-Squadron Tracker is a web application designed to streamline the management and tracking of squadron activities. It provides a user-friendly interface for squadron administrators and members, enabling efficient data handling and role-based access control.
+## Overview
 
-## Table of Contents
-
-- [Features](#features)
-- [Getting Started](#getting-started)
-  - [Prerequisites](#prerequisites)
-  - [Installation](#installation)
-  - [Running the Application](#running-the-application)
-- [Folder Structure](#folder-structure)
-- [Environment Variables](#environment-variables)
-- [Available Scripts](#available-scripts)
-- [Deployment](#deployment)
-- [Contributing](#contributing)
-- [License](#license)
-
----
+A react js project hosted using Google Firestore.
 
 ## Features
+- **Mass Event Log:** where users can log events, achievements, badges, classifiation etc all in one place using an intuituve UI.
+- **Cadets List:** Where users can add their cadets - no sensitive information required for tracking.
+- **Record Categories:** To customise event options and flight points associated to events/achievements.
+- **Classification Tracker:** Graph plotting cadet classification against their service length to compare against expected classification progression.
+- **Flight Points:** Calculate the flight points earned by individual cadets and their flights over a time period.
+- **End of Year Certificate:** Generate a certificate with all cadet events in a time period. Previewable PDF to download. Bulk generation and download as .zip.
+- **PTS Tracker:** Log of badges earned in various categories across the Progressive Training Syllabus.
 
-- **User Authentication**: Secure login and logout functionality using Firebase Authentication.
-- **Role-Based Access Control**: Separate views and permissions for administrators and members.
-- **Dynamic Dashboards**: Render dashboards dynamically based on user roles and active menu selection.
-- **Squadron Context Management**: Centralized state management for squadron-specific data.
-- **Responsive Design**: Optimized for both desktop and mobile devices.
-- **Version Tracking**: Display the current application version in the UI.
+##  Getting Started
 
----
+###  Prerequisites
 
-## Getting Started
+Before getting started with Squadron-Tracker-Web-App, ensure your runtime environment meets the following requirements:
 
-### Prerequisites
+- **Programming Language:** JavaScript
+- **Package Manager:** Npm
 
-Ensure you have the following installed:
 
-- [Node.js](https://nodejs.org/) (v14 or higher)
-- [npm](https://www.npmjs.com/) or [yarn](https://yarnpkg.com/)
-- A Firebase project with Authentication and Firestore enabled
+###  Installation
 
-### Installation
+Install Squadron-Tracker-Web-App using one of the following methods:
 
-1. Clone the repository:
+**Build from source:**
 
-   ```bash
-   git clone https://github.com/your-username/squadron-tracker.git
-   cd squadron-tracker
+1. Clone the Squadron-Tracker-Web-App repository:
+```sh
+❯ git clone https://github.com/HMIL1151/Squadron-Tracker-Web-App
+```
 
-2. Install Dependencies
+2. Navigate to the project directory:
+```sh
+❯ cd Squadron-Tracker-Web-App
+```
 
-   
+3. Install the project dependencies:
+
+
+**Using `npm`** &nbsp; [<img align="center" src="https://img.shields.io/badge/npm-CB3837.svg?style={badge_style}&logo=npm&logoColor=white" />](https://www.npmjs.com/)
+
+```sh
+❯ npm install
+```
+
+
+
+
+###  Usage
+Run Squadron-Tracker-Web-App using the following command:
+**Using `npm`** &nbsp; [<img align="center" src="https://img.shields.io/badge/npm-CB3837.svg?style={badge_style}&logo=npm&logoColor=white" />](https://www.npmjs.com/)
+
+```sh
+❯ npm start
+```
+
+
+###  Testing
+Run the test suite using the following command:
+**Using `npm`** &nbsp; [<img align="center" src="https://img.shields.io/badge/npm-CB3837.svg?style={badge_style}&logo=npm&logoColor=white" />](https://www.npmjs.com/)
+
+```sh
+❯ npm test
+```
+
