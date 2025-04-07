@@ -20,6 +20,7 @@ const WelcomePage = ({ onUserChange }) => {
   const [showBlankPopup, setShowBlankPopup] = useState(false); // Track if the blank popup is shown
   const [showAdminWarning, setShowAdminWarning] = useState(false); // Track if the admin warning is shown
   const [flightNames, setFlightNames] = useState(["", "", ""]); // Track the entered flight names
+  const [isRequestSubmitted, setIsRequestSubmitted] = useState(false); // Track if the request has been submitted
 
   const db = getFirestore(); // Initialize Firestore
   const { fetchData } = useContext(DataContext); // Access fetchData from DataContext
@@ -172,81 +173,116 @@ const WelcomePage = ({ onUserChange }) => {
   const handleSetupConfirm = async () => {
     if (!isAdmin) {
       setShowAdminWarning(true); // Show the warning if the checkbox is not ticked
-    } else {
-      setShowAdminWarning(false); // Clear the warning
+      return;
+    }
 
+    // Check if the user is a system admin
+    if (role !== "System Admin") {
       try {
-        // Ensure the first flight name is set to 'Training Flight' if left blank
-        const updatedFlightNames = [...flightNames];
-        if (!updatedFlightNames[0].trim()) {
-          updatedFlightNames[0] = "Training Flight";
-        }
-
-        // Add a new document to the 'Squadron List' collection
-        const squadronListDocRef = doc(collection(db, "Squadron List"));
-        await setDoc(squadronListDocRef, {
-          Name: squadronName,
-          Number: parseInt(squadronNumber, 10),
-          flights: updatedFlightNames, // Save the flight names as a string array
+        // Add a new document to the 'New Account Requests' collection
+        const newAccountRequestDocRef = doc(collection(db, "New Account Requests"));
+        await setDoc(newAccountRequestDocRef, {
+          squadronName: squadronName.trim(),
+          squadronNumber: parseInt(squadronNumber, 10),
+          flight1Name: flightNames[0].trim(),
+          flight2Name: flightNames[1].trim(),
+          flight3Name: flightNames[2].trim(),
+          displayName: user.displayName,
+          uid: user.uid,
+          email: user.email,
+          timestamp: new Date().toISOString(), // Add a timestamp for when the request was made
         });
 
-        // Add a new document to the 'Squadron Databases' collection
-        const squadronDatabaseDocRef = doc(db, "Squadron Databases", squadronNumber);
-        await setDoc(squadronDatabaseDocRef, {}); // Create the document
-
-        // Add a new subcollection 'Authorised Users' with the user's details
-        const authorisedUsersDocRef = doc(
-          collection(squadronDatabaseDocRef, "Authorised Users"),
-          user.uid
+        // Notify the user
+        setError(
+          "Your request to create a new squadron account has been submitted for review by a System Admin - contact harrison.milburn101@rafac.mod.gov.uk."
         );
-        await setDoc(authorisedUsersDocRef, {
-          displayName: user.displayName,
-          email: user.email,
-          role: "admin",
-        });
-
-        // Reproduce the 'Flight Points' collection in the new Squadron Database
-        const topLevelFlightPointsRef = collection(db, "Flight Points");
-        const newFlightPointsRef = collection(squadronDatabaseDocRef, "Flight Points");
-
-        const topLevelFlightPointsSnapshot = await getDocs(topLevelFlightPointsRef);
-        const batch = writeBatch(db); // Use a batch for efficient writes
-
-        topLevelFlightPointsSnapshot.forEach((topLevelDoc) => {
-          const newDocRef = doc(newFlightPointsRef, topLevelDoc.id); // Correct usage of doc
-          batch.set(newDocRef, topLevelDoc.data()); // Copy the document data
-        });
-
-        await batch.commit(); // Commit the batch write
-
-        // Add a new document to the 'User Requests' collection
-        const userRequestsDocRef = doc(collection(squadronDatabaseDocRef, "User Requests"));
-        await setDoc(userRequestsDocRef, {
-          displayName: user.displayName,
-          email: user.email,
-          progress: "granted",
-          timestamp: new Date().toISOString(), // Current timestamp in ISO format
-        });
-
-        // Add a new document to the top-level 'Mass User List' collection
-        const massUserListDocRef = doc(collection(db, "Mass User List"));
-        await setDoc(massUserListDocRef, {
-          UID: user.uid,
-          Squadron: parseInt(squadronNumber, 10),
-        });
 
         // Close all popups
         setShowSetupPopup(false);
         setShowBlankPopup(false);
 
-        // Log the user out and return to the login screen
-        await handleLogout();
+        // Set the request submitted state
+        setIsRequestSubmitted(true);
       } catch (err) {
-        console.error("Error during squadron setup:", err);
-        setError("Failed to set up the squadron. Please try again.");
+        console.error("Error submitting new account request:", err);
+        setError("Failed to submit your request. Please try again.");
       }
+      return;
+    }
+
+    try {
+      // Ensure the first flight name is set to 'Training Flight' if left blank
+      const updatedFlightNames = [...flightNames];
+      if (!updatedFlightNames[0].trim()) {
+        updatedFlightNames[0] = "Training Flight";
+      }
+  
+      // Add a new document to the 'Squadron List' collection
+      const squadronListDocRef = doc(collection(db, "Squadron List"));
+      await setDoc(squadronListDocRef, {
+        Name: squadronName,
+        Number: parseInt(squadronNumber, 10),
+        flights: updatedFlightNames, // Save the flight names as a string array
+      });
+  
+      // Add a new document to the 'Squadron Databases' collection
+      const squadronDatabaseDocRef = doc(db, "Squadron Databases", squadronNumber);
+      await setDoc(squadronDatabaseDocRef, {}); // Create the document
+  
+      // Add a new subcollection 'Authorised Users' with the user's details
+      const authorisedUsersDocRef = doc(
+        collection(squadronDatabaseDocRef, "Authorised Users"),
+        user.uid
+      );
+      await setDoc(authorisedUsersDocRef, {
+        displayName: user.displayName,
+        email: user.email,
+        role: "admin",
+      });
+  
+      // Reproduce the 'Flight Points' collection in the new Squadron Database
+      const topLevelFlightPointsRef = collection(db, "Flight Points");
+      const newFlightPointsRef = collection(squadronDatabaseDocRef, "Flight Points");
+  
+      const topLevelFlightPointsSnapshot = await getDocs(topLevelFlightPointsRef);
+      const batch = writeBatch(db); // Use a batch for efficient writes
+  
+      topLevelFlightPointsSnapshot.forEach((topLevelDoc) => {
+        const newDocRef = doc(newFlightPointsRef, topLevelDoc.id); // Correct usage of doc
+        batch.set(newDocRef, topLevelDoc.data()); // Copy the document data
+      });
+  
+      await batch.commit(); // Commit the batch write
+  
+      // Add a new document to the 'User Requests' collection
+      const userRequestsDocRef = doc(collection(squadronDatabaseDocRef, "User Requests"));
+      await setDoc(userRequestsDocRef, {
+        displayName: user.displayName,
+        email: user.email,
+        progress: "granted",
+        timestamp: new Date().toISOString(), // Current timestamp in ISO format
+      });
+  
+      // Add a new document to the top-level 'Mass User List' collection
+      const massUserListDocRef = doc(collection(db, "Mass User List"));
+      await setDoc(massUserListDocRef, {
+        UID: user.uid,
+        Squadron: parseInt(squadronNumber, 10),
+      });
+  
+      // Close all popups
+      setShowSetupPopup(false);
+      setShowBlankPopup(false);
+  
+      // Log the user out and return to the login screen
+      await handleLogout();
+    } catch (err) {
+      console.error("Error during squadron setup:", err);
+      setError("Failed to set up the squadron. Please try again.");
     }
   };
+  
 
   const navigateToMainContent = async ({ displayName, uid, squadronName, squadronNumber, flightNames }) => {
     let userRole = role; // Default to the role from checkUserRole
@@ -342,46 +378,50 @@ const WelcomePage = ({ onUserChange }) => {
   return (
     <div className="welcome-page">
       <h1>Welcome to the Squadron Tracker</h1>
-      <p>{!user && "Please sign in to continue."}</p>
       {error && <p className="error-message">{error}</p>}
 
-{user ? (
-  <div>
-    <p>Welcome, {user.displayName}!</p>
-    {role === "First Login" || role === "System Admin" ? (
-      <div>
-        <p>Please enter your Squadron number:</p>
-        <input
-          type="number"
-          value={squadronNumber}
-          onChange={(e) => setSquadronNumber(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" && squadronNumber) {
-              handleSquadronSubmit();
-            }
-          }}
-          placeholder="Enter Squadron Number"
-          className="squadron-input"
-          autoFocus
-        />
-        <button
-          className="submit-squadron-button"
-          onClick={handleSquadronSubmit}
-          disabled={!squadronNumber}
-        >
-          Submit
+      {user ? (
+        <div>
+          {!isRequestSubmitted && (
+            <>
+              <p>Welcome, {user.displayName}!</p>
+              {role === "First Login" || role === "System Admin" ? (
+                <div>
+                  <p>Please enter your Squadron number:</p>
+                  <input
+                    type="number"
+                    value={squadronNumber}
+                    onChange={(e) => setSquadronNumber(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && squadronNumber) {
+                        handleSquadronSubmit();
+                      }
+                    }}
+                    placeholder="Enter Squadron Number"
+                    className="squadron-input"
+                    autoFocus
+                  />
+                  <button
+                    className="submit-squadron-button"
+                    onClick={handleSquadronSubmit}
+                    disabled={!squadronNumber}
+                  >
+                    Submit
+                  </button>
+                </div>
+              ) : null}
+            </>
+          )}
+          <button className="logout-button" onClick={handleLogout}>
+            Log Out
+          </button>
+        </div>
+      ) : (
+        <button className="google-login-button" onClick={handleGoogleLogin}>
+          Sign in with Google
         </button>
-      </div>
-    ) : null}
-    <button className="logout-button" onClick={handleLogout}>
-      Log Out
-    </button>
-  </div>
-) : (
-  <button className="google-login-button" onClick={handleGoogleLogin}>
-    Sign in with Google
-  </button>
-)}
+      )}
+
       {/* Setup Squadron Popup */}
       {showSetupPopup && (
         <>

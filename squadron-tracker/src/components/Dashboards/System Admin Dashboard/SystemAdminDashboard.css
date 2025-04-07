@@ -1,0 +1,73 @@
+.system-admin-dashboard {
+  text-align: center;
+  padding: 20px;
+}
+
+.requests-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  align-items: center;
+}
+
+.request-card {
+  background-color: #f9f9f9;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  padding: 20px 20px 20px 20px; /* Ensure consistent padding on all sides */
+  width: 80%;
+  max-width: 600px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  margin: 20px 0; /* Add gap above and below the card */
+}
+
+.request-card p {
+  margin: 10px 0; /* Add consistent spacing between all paragraphs */
+  font-size: 16px;
+}
+
+.request-card p:first-of-type {
+  margin-top: 0; /* Remove extra margin at the top of the first paragraph */
+}
+
+.request-card p:last-of-type {
+  margin-bottom: 0; /* Remove extra margin at the bottom of the last paragraph */
+}
+
+.request-card p:nth-of-type(2) {
+  margin-bottom: 20px; /* Add extra spacing below the squadron number */
+}
+
+.request-actions {
+  margin-top: 20px;
+}
+
+.approve-button {
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 10px 20px;
+  font-size: 16px;
+  cursor: pointer;
+  margin-right: 10px;
+}
+
+.approve-button:hover {
+  background-color: #45a049;
+}
+
+.deny-button {
+  background-color: #f44336;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 10px 20px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.deny-button:hover {
+  background-color: #e53935;
+}
