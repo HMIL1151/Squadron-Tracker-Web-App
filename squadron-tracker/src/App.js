@@ -9,6 +9,7 @@ import { auth } from "./firebase/firebase"; // Adjust the import path to your Fi
 import dashboardList from "./components/Dashboards/Dashboard Components/dashboardList";
 import { useSquadron } from "./context/SquadronContext"; // Import the custom hook
 import { setFlightMap } from "./utils/mappings"; // Import the setter function for flightMap
+import { getFirestore, collection, query, where, getDocs } from "firebase/firestore"; // Import Firestore functions
 
 const App = () => {
   const version = "v0.8.0"; // Define the version number
@@ -16,18 +17,38 @@ const App = () => {
   const [isAdmin, setIsAdmin] = useState(false); // Track if the user is an admin
   const [activeMenu, setActiveMenu] = useState(dashboardList[0]?.key || ""); // Default to the first dashboard key
   const [isMenuCollapsed, setIsMenuCollapsed] = useState(false); // New state for menu visibility
-  const [flightNames, setFlightNames] = useState([]); // State to store flight names
 
   const { setSquadronNumber } = useSquadron(); // Access the context
 
-  const handleUserChange = (currentUser, isAdminStatus) => {
-    setUser(currentUser); // Update the user state with all user data
-    setIsAdmin(isAdminStatus); // Update the admin status
-    setSquadronNumber(currentUser.squadronNumber); // Set the squadron number in the context
+  const handleUserChange = async (currentUser, isAdminStatus) => {
+    const db = getFirestore();
+    const massUserListRef = collection(db, "Mass User List");
+    const userQuery = query(massUserListRef, where("UID", "==", currentUser.uid));
+    const snapshot = await getDocs(userQuery);
+
+    let isSystemAdmin = false;
+    if (!snapshot.empty) {
+      snapshot.forEach((doc) => {
+        if (doc.data().systemAdmin === true) {
+          isSystemAdmin = true;
+        }
+      });
+    }
+
+
+    // Update the user object to include systemAdmin
+    const updatedUser = {
+      ...currentUser,
+      systemAdmin: isSystemAdmin,
+    };
+
+    setUser(updatedUser);
+    setIsAdmin(isAdminStatus || isSystemAdmin);
+
+    setSquadronNumber(currentUser.squadronNumber);
 
     // Extract flightNames from the user data and update the state
     if (currentUser?.flightNames) {
-      setFlightNames(currentUser.flightNames);
 
       // Dynamically update flightMap using the flightNames array
       const newFlightMap = currentUser.flightNames.reduce((map, flightName, index) => {
@@ -35,7 +56,6 @@ const App = () => {
         return map;
       }, {});
       setFlightMap(newFlightMap); // Update the flightMap in mappings.js
-      console.log("Flight map updated in App.js:", newFlightMap);
     }
   };
 
@@ -46,7 +66,6 @@ const App = () => {
         setActiveMenu(dashboardList[0]?.key || ""); // Reset the menu to the first dashboard
         setSquadronNumber(null); // Clear the squadron number in the context
         setIsAdmin(false); // Reset admin status
-        setFlightNames([]); // Clear flight names
       })
       .catch((error) => {
         console.error("Error logging out:", error);
@@ -91,14 +110,13 @@ const App = () => {
         activeMenu={activeMenu}
         setActiveMenu={setActiveMenu}
         isAdmin={isAdmin}
+        user={user} // Pass the user object
         isMenuCollapsed={isMenuCollapsed} // Pass the state to Menu
       />
       <main className="main-content">{renderMainContent()}</main>
       {/* Version number in the bottom-right corner */}
       <div className="version-number">{version}</div>
-      <div>
-        <p>Flight Names: {flightNames.join(", ")}</p> {/* Display flight names */}
-      </div>
+
     </div>
   );
 };

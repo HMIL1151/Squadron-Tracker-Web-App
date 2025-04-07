@@ -40,12 +40,12 @@ const WelcomePage = ({ onUserChange }) => {
 
         // Fetch squadron name and flight names
         const squadronName = await fetchSquadronName(squadronNumber);
-        console.log("Fetched squadron name:", squadronName);
+        //console.log("Fetched squadron name:", squadronName);
         const flightNames = await fetchFlightNames(squadronNumber);
-        console.log("Fetched flight names:", flightNames);
+        //console.log("Fetched flight names:", flightNames);
         const squadronDocRef = doc(db, "Squadron List", squadronNumber);
         const squadronDoc = await getDoc(squadronDocRef);
-        console.log("Squadron document fetched:", squadronDoc.exists());
+        //console.log("Squadron document fetched:", squadronDoc.exists());
 
         if (squadronDoc.exists()) {
           const flightNames = squadronDoc.data().flights || [];
@@ -58,7 +58,7 @@ const WelcomePage = ({ onUserChange }) => {
           setFlightMap(newFlightMap); // Update the flightMap in mappings.js
 
           // Test: Print the flight names to the console
-          console.log("Flight names retrieved and set in flightMap:", newFlightMap);
+          //console.log("Flight names retrieved and set in flightMap:", newFlightMap);
         }
         else{
           console.error(`Squadron with number ${squadronNumber} not found in Squadron List.`);
@@ -292,7 +292,7 @@ const WelcomePage = ({ onUserChange }) => {
   const fetchSquadronName = async (squadronNumber) => {
     try {
       const squadronListCollectionRef = collection(db, "Squadron List");
-      console.log("Squadron number being queried:", squadronNumber);
+      //console.log("Squadron number being queried:", squadronNumber);
       const squadronQuery = query(squadronListCollectionRef, where("Number", "==", parseInt(squadronNumber, 10)));
       const squadronSnapshot = await getDocs(squadronQuery);
 
@@ -313,7 +313,7 @@ const WelcomePage = ({ onUserChange }) => {
   const fetchFlightNames = async (squadronNumber) => {
     try {
       const squadronListCollectionRef = collection(db, "Squadron List");
-      console.log("Fetching flight names for squadron number:", squadronNumber);
+      //console.log("Fetching flight names for squadron number:", squadronNumber);
       const squadronQuery = query(squadronListCollectionRef, where("Number", "==", parseInt(squadronNumber, 10)));
       const squadronSnapshot = await getDocs(squadronQuery);
   
@@ -321,7 +321,7 @@ const WelcomePage = ({ onUserChange }) => {
         // Get the first matching document
         const squadronDoc = squadronSnapshot.docs[0];
         const flightNames = squadronDoc.data().flights || []; // Retrieve the 'flights' array
-        console.log("Flight names fetched:", flightNames);
+        //console.log("Flight names fetched:", flightNames);
         return flightNames; // Return the flight names
       } else {
         console.error(`Squadron with number ${squadronNumber} not found in Squadron List.`);

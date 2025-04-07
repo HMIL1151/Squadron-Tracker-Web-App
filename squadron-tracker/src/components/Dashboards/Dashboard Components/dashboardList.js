@@ -11,6 +11,7 @@ import AdminDashboard from "../Admin Dashboard/AdminDashboard";
 import FightPointsDashboard from "../Flight Points Dashboard/FightPointsDashboard";
 import CertificateDashboard from "../Certificate Dashboard/CertificateDashboard";
 import PTSTracker from "../PTS Tracker/PTSTracker";
+import SystemAdminDashboard from "../System Admin Dashboard/SystemAdminDashboard"; // Import the new dashboard
 
 const dashboardList = [
   {
@@ -55,14 +56,20 @@ const dashboardList = [
     component: PTSTracker,
     adminOnly: false, // Accessible to all users
   },
-
-
   {
     key: "admin",
     title: "Admin Area",
     component: AdminDashboard, // Temporary admin page
     adminOnly: true, // Accessible only to admins
   },
+  {
+    key: "systemadmindashboard",
+    title: "System Admin Area",
+    component: SystemAdminDashboard,
+    adminOnly: true, // Accessible only to system admins
+    systemAdminOnly: true, // Custom flag for system admins
+  },
 ];
+
 
 export default dashboardList;
