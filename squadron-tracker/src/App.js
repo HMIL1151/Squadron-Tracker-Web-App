@@ -12,7 +12,7 @@ import { setFlightMap } from "./utils/mappings"; // Import the setter function f
 import { getFirestore, collection, query, where, getDocs } from "firebase/firestore"; // Import Firestore functions
 
 const App = () => {
-  const version = "v0.8.0"; // Define the version number
+  const version = "v0.9.0"; // Define the version number
   const [user, setUser] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false); // Track if the user is an admin
   const [activeMenu, setActiveMenu] = useState(dashboardList[0]?.key || ""); // Default to the first dashboard key
