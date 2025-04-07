@@ -5,12 +5,15 @@
   border-right: 1px solid #ccc;
   box-sizing: border-box;
   width: 200px;
-  transition: width 0.3s ease;
-  overflow: hidden;
+  height: calc(100vh - 60px); /* Full height minus the header */
+  position: absolute; /* Allow it to move with transform */
+  left: 0; /* Start at the left edge */
+  top: 60px; /* Align with the header */
+  transition: transform 0.3s ease; /* Smooth transition for movement */
 }
 
 .menu.collapsed {
-  width: 50px; /* Reduced width for collapsed state */
+  transform: translateX(-200px); /* Move menu off-screen */
 }
 
 .menu ul {

@@ -8,6 +8,11 @@
     "menu content";
   height: 100vh; /* Full viewport height */
   overflow: hidden; /* Prevent content overflow */
+  transition: grid-template-columns 0.3s ease; /* Smooth transition */
+}
+
+.App.menu-collapsed {
+  grid-template-columns: 0px auto; /* Collapse menu */
 }
 
 .App-logo {
@@ -110,7 +115,8 @@
   padding: 20px;
   overflow-y: auto;
   box-sizing: border-box;
-  position: relative; /* Add this to make it the parent for absolute positioning */
+  position: relative;
+  z-index: 1000;
 }
 
 .version-number {
@@ -120,4 +126,45 @@
   font-size: 14px;
   color: grey;
   opacity: 0.8;
+}
+
+.menu-toggle-button {
+  position: absolute;
+  top: 60px;
+  left: 200px; /* Default position when the menu is expanded */
+  z-index: 1000;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: transform 0.3s ease, left 0.3s ease; /* Smooth transition for movement */
+  z-index: 2000;
+}
+
+.App.menu-collapsed .menu-toggle-button {
+  transform: translateX(-200px); /* Move the button with the menu */
+}
+
+.menu-toggle-button:hover {
+  background-color: #0056b3;
+}
+
+.Menu {
+  grid-area: menu;
+  background-color: #f4f4f4;
+  overflow-y: auto;
+  position: absolute; /* Change to absolute positioning */
+  left: 0; /* Start at the left edge */
+  top: 60px; /* Align with the header */
+  height: calc(100vh - 60px); /* Full height minus the header */
+  width: 200px; /* Default width */
+  transition: transform 0.3s ease; /* Smooth transition for movement */
+}
+
+.App.menu-collapsed .Menu {
+  transform: translateX(-200px); /* Move menu off-screen */
+  width: 200px; /* Keep the width for smooth transition */
 }

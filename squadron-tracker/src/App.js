@@ -14,6 +14,7 @@ const App = () => {
   const [user, setUser] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false); // Track if the user is an admin
   const [activeMenu, setActiveMenu] = useState(dashboardList[0]?.key || ""); // Default to the first dashboard key
+  const [isMenuCollapsed, setIsMenuCollapsed] = useState(false); // New state for menu visibility
 
   const { setSquadronNumber } = useSquadron(); // Access the context
 
@@ -35,6 +36,10 @@ const App = () => {
       });
   };
 
+  const toggleMenu = () => {
+    setIsMenuCollapsed((prev) => !prev); // Toggle menu state
+  };
+
   const renderMainContent = () => {
     // If no active menu is set, default to the first dashboard in the list
     const activeDashboard = dashboardList.find((d) => d.key === activeMenu) || dashboardList[0];
@@ -52,7 +57,7 @@ const App = () => {
   }
 
   return (
-    <div className="App">
+    <div className={`App ${isMenuCollapsed ? "menu-collapsed" : ""}`}>
       <header className="app-header">
         <div className="title">Squadron Tracker, {user.squadronNumber} ({user.squadronName}) Squadron ATC</div>
         <div className="user-info">
@@ -62,7 +67,15 @@ const App = () => {
           </button>
         </div>
       </header>
-      <Menu activeMenu={activeMenu} setActiveMenu={setActiveMenu} isAdmin={isAdmin} />
+      <button className="menu-toggle-button" onClick={toggleMenu}>
+        {isMenuCollapsed ? ">" : "<"}
+      </button>
+      <Menu
+        activeMenu={activeMenu}
+        setActiveMenu={setActiveMenu}
+        isAdmin={isAdmin}
+        isMenuCollapsed={isMenuCollapsed} // Pass the state to Menu
+      />
       <main className="main-content">{renderMainContent()}</main>
       {/* Version number in the bottom-right corner */}
       <div className="version-number">{version}</div>

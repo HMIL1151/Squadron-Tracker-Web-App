@@ -4,9 +4,9 @@ import React from "react";
 import dashboardList from "../Dashboards/Dashboard Components/dashboardList";
 import "./Menu.css";
 
-const Menu = ({ activeMenu, setActiveMenu, isAdmin }) => {
+const Menu = ({ activeMenu, setActiveMenu, isAdmin, isMenuCollapsed }) => {
   return (
-    <nav className="menu">
+    <nav className={`menu ${isMenuCollapsed ? "collapsed" : ""}`}>
       <ul>
         {dashboardList
           .filter((dashboard) => (dashboard.adminOnly ? isAdmin : true)) // Filter admin-only dashboards
