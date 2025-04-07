@@ -5,7 +5,7 @@
 
 .horizontal-menu {
   display: flex;
-  justify-content: flex-start;
+  justify-content: center; /* Center the buttons horizontally */
   background-color: #ffffff;
   padding: 10px;
 }
@@ -20,6 +20,10 @@
   font-size: 14px; /* Adjusted font size for consistency */
   cursor: pointer;
   transition: all 0.3s ease; /* Smooth transition for hover effects */
+}
+
+.horizontal-menu button:last-child {
+  margin-right: 0; /* Remove margin from the last button */
 }
 
 .horizontal-menu button:hover {

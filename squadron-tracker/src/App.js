@@ -68,7 +68,7 @@ const App = () => {
         </div>
       </header>
       <button className="menu-toggle-button" onClick={toggleMenu}>
-        {isMenuCollapsed ? ">" : "<"}
+        {isMenuCollapsed ? "❯" : "❮"}
       </button>
       <Menu
         activeMenu={activeMenu}

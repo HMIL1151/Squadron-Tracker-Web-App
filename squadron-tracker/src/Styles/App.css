@@ -130,26 +130,27 @@
 
 .menu-toggle-button {
   position: absolute;
-  top: 60px;
+  top: 50%; /* Vertically center the button */
   left: 200px; /* Default position when the menu is expanded */
-  z-index: 1000;
-  background-color: #007bff;
-  color: white;
-  border: none;
-  padding: 5px 10px;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 0.9rem;
-  transition: transform 0.3s ease, left 0.3s ease; /* Smooth transition for movement */
+  transform: translateY(-50%); /* Adjust for the button's height */
   z-index: 2000;
+  background-color: #f4f4f4; /* Grey background */
+  color: #333333; /* Darker text for contrast */
+  border: solid 1px #ccc; /* Light grey border */
+  border-left: none;
+  padding: 50px 10px; /* Wider and taller button */
+  border-radius: 0 6px 6px 0; /* Only round the top-right and bottom-right corners */
+  cursor: pointer;
+  font-size: 1rem; /* Slightly larger font size */
+  transition: transform 0.3s ease, left 0.3s ease, background-color 0.3s ease; /* Smooth transition for movement */
 }
 
 .App.menu-collapsed .menu-toggle-button {
-  transform: translateX(-200px); /* Move the button with the menu */
+  transform: translate(-200px, -50%); /* Move the button with the menu and keep it vertically centered */
 }
 
 .menu-toggle-button:hover {
-  background-color: #0056b3;
+  background-color: #e0e0e0; /* Slightly darker grey on hover */
 }
 
 .Menu {
