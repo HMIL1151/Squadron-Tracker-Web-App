@@ -8,7 +8,7 @@ export const rankMap = {
     5: "Cadet Warrant Officer"
   };
 
-export const flightMap = {
+export let flightMap = {
     1: "Staff Team",
     2: "Atlas",
     3: "Tempest"
@@ -29,3 +29,8 @@ export const classificationMap = {
     12: "Master",
     13: " "
     };
+
+// Setter function to dynamically update flightMap
+export const setFlightMap = (newFlightMap) => {
+  flightMap = newFlightMap;
+};

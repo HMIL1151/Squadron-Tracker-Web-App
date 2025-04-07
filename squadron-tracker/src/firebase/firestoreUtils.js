@@ -247,26 +247,40 @@ export const getAllBadges = async (data) => {
 // Leave these functions unchanged as they use Firestore
 export const checkUserRole = async (uid) => {
   try {
-    
     const db = getFirestore(app);
     const collectionRef = collection(db, "Mass User List");
 
-    // Query the collection for a document where the UID field matches the given UID
+    // Query the collection for documents where the UID field matches the given UID
     const userQuery = query(collectionRef, where("UID", "==", uid));
     const snapshot = await getDocs(userQuery);
 
     if (!snapshot.empty) {
-      // Get the first matching document
-      const userDoc = snapshot.docs[0].data();
+      let isSystemAdmin = false;
+      let squadronNumber = null;
 
-      // Check if the user is a system admin
-      if (userDoc.systemAdmin === true) {
+      // Iterate through all matching documents
+      snapshot.forEach((doc) => {
+        const userDoc = doc.data();
+
+        // Check if the user is a system admin
+        if (userDoc.systemAdmin === true) {
+          isSystemAdmin = true;
+        }
+
+        // If not a system admin, check for squadron number
+        if (userDoc.Squadron) {
+          squadronNumber = userDoc.Squadron;
+        }
+      });
+
+      // Return "System Admin" if any document has systemAdmin = true
+      if (isSystemAdmin) {
         return "System Admin";
       }
 
-      // If not a system admin, return the squadron number
-      if (userDoc.Squadron) {
-        return userDoc.Squadron; // Return the squadron number
+      // Return the squadron number if found
+      if (squadronNumber) {
+        return squadronNumber;
       }
 
       // If no systemAdmin or Squadron field exists

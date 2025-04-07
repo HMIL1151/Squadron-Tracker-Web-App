@@ -2,9 +2,10 @@
 
 import React, { useState, useContext } from "react";
 import { getAuth, signInWithPopup, GoogleAuthProvider, signOut } from "firebase/auth"; // Import Firebase Auth
-import { getFirestore, collection, doc, setDoc, getDocs, writeBatch, query, where } from "firebase/firestore"; // Import Firestore functions
+import { getFirestore, collection, doc, setDoc, getDocs, writeBatch, query, where, getDoc } from "firebase/firestore"; // Import Firestore functions
 import { checkUserRole, doesSquadronAccountExist } from "../../firebase/firestoreUtils"; // Import Firestore utility functions
 import { DataContext } from "../../context/DataContext"; // Import DataContext
+import { setFlightMap } from "../../utils/mappings"; // Import the setter function
 import "./WelcomePage.css"; // Optional: Add styles for the welcome page
 import "../Dashboards/Dashboard Components/dashboardStyles.css"; // Import styles for buttons and popups
 
@@ -18,6 +19,7 @@ const WelcomePage = ({ onUserChange }) => {
   const [showSetupPopup, setShowSetupPopup] = useState(false); // Track if the setup popup is shown
   const [showBlankPopup, setShowBlankPopup] = useState(false); // Track if the blank popup is shown
   const [showAdminWarning, setShowAdminWarning] = useState(false); // Track if the admin warning is shown
+  const [flightNames, setFlightNames] = useState(["", "", ""]); // Track the entered flight names
 
   const db = getFirestore(); // Initialize Firestore
   const { fetchData } = useContext(DataContext); // Access fetchData from DataContext
@@ -27,30 +29,42 @@ const WelcomePage = ({ onUserChange }) => {
     const provider = new GoogleAuthProvider();
 
     try {
-      //console.log("Attempting Google login...");
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
-
-      //console.log("User logged in:", user);
 
       const { uid, email, displayName } = user;
       const userRole = await checkUserRole(uid);
 
-      //console.log("User role:", userRole);
-
       if (!isNaN(userRole)) {
         const squadronNumber = userRole.toString();
-        //console.log("Squadron number:", squadronNumber);
 
+        // Fetch squadron name and flight names
         const squadronName = await fetchSquadronName(squadronNumber);
-        //console.log("Squadron name:", squadronName);
+        console.log("Fetched squadron name:", squadronName);
+        const flightNames = await fetchFlightNames(squadronNumber);
+        console.log("Fetched flight names:", flightNames);
+        const squadronDocRef = doc(db, "Squadron List", squadronNumber);
+        const squadronDoc = await getDoc(squadronDocRef);
+        console.log("Squadron document fetched:", squadronDoc.exists());
 
-        if (!squadronName) {
-          setError("Failed to fetch squadron name. Please try again.");
-          return;
+        if (squadronDoc.exists()) {
+          const flightNames = squadronDoc.data().flights || [];
+
+          // Dynamically update flightMap
+          const newFlightMap = flightNames.reduce((map, flightName, index) => {
+            map[index + 1] = flightName; // Map flight names to indices starting from 1
+            return map;
+          }, {});
+          setFlightMap(newFlightMap); // Update the flightMap in mappings.js
+
+          // Test: Print the flight names to the console
+          console.log("Flight names retrieved and set in flightMap:", newFlightMap);
+        }
+        else{
+          console.error(`Squadron with number ${squadronNumber} not found in Squadron List.`);
+
         }
 
-        //console.log("Fetching bulk data for squadron:", squadronNumber);
         await fetchData(squadronNumber);
 
         navigateToMainContent({
@@ -58,6 +72,7 @@ const WelcomePage = ({ onUserChange }) => {
           uid,
           squadronName,
           squadronNumber: parseInt(squadronNumber, 10),
+          flightNames,
         });
         return;
       }
@@ -120,6 +135,8 @@ const WelcomePage = ({ onUserChange }) => {
       } else if (role === "System Admin" && collectionExists) {
         // Fetch the squadron name from the Squadron List collection
         const squadronName = await fetchSquadronName(squadronNumber);
+        const flightNames = await fetchFlightNames(squadronNumber); // Fetch flight names
+        
 
         if (!squadronName) {
           setError("Failed to fetch squadron name. Please try again.");
@@ -135,6 +152,7 @@ const WelcomePage = ({ onUserChange }) => {
           uid: user.uid,
           squadronName,
           squadronNumber: parseInt(squadronNumber, 10),
+          flightNames,
         });
       } else if (!collectionExists) {
         setShowSetupPopup(true); // Show the setup popup if the collection does not exist
@@ -158,11 +176,18 @@ const WelcomePage = ({ onUserChange }) => {
       setShowAdminWarning(false); // Clear the warning
 
       try {
+        // Ensure the first flight name is set to 'Training Flight' if left blank
+        const updatedFlightNames = [...flightNames];
+        if (!updatedFlightNames[0].trim()) {
+          updatedFlightNames[0] = "Training Flight";
+        }
+
         // Add a new document to the 'Squadron List' collection
         const squadronListDocRef = doc(collection(db, "Squadron List"));
         await setDoc(squadronListDocRef, {
           Name: squadronName,
           Number: parseInt(squadronNumber, 10),
+          flights: updatedFlightNames, // Save the flight names as a string array
         });
 
         // Add a new document to the 'Squadron Databases' collection
@@ -223,7 +248,7 @@ const WelcomePage = ({ onUserChange }) => {
     }
   };
 
-  const navigateToMainContent = async ({ displayName, uid, squadronName, squadronNumber }) => {
+  const navigateToMainContent = async ({ displayName, uid, squadronName, squadronNumber, flightNames }) => {
     let userRole = role; // Default to the role from checkUserRole
   
     if (role !== "System Admin") {
@@ -258,7 +283,7 @@ const WelcomePage = ({ onUserChange }) => {
   
     // Call the onUserChange prop to pass the user and squadron data to App.js
     onUserChange(
-      { displayName, uid, squadronName, squadronNumber, role: userRole }, // User data
+      { displayName, uid, squadronName, squadronNumber, flightNames, role: userRole }, // User data
       userRole === "admin" // isAdmin status
     );
   };
@@ -267,6 +292,7 @@ const WelcomePage = ({ onUserChange }) => {
   const fetchSquadronName = async (squadronNumber) => {
     try {
       const squadronListCollectionRef = collection(db, "Squadron List");
+      console.log("Squadron number being queried:", squadronNumber);
       const squadronQuery = query(squadronListCollectionRef, where("Number", "==", parseInt(squadronNumber, 10)));
       const squadronSnapshot = await getDocs(squadronQuery);
 
@@ -282,6 +308,35 @@ const WelcomePage = ({ onUserChange }) => {
       console.error("Error fetching squadron name:", err);
       return null;
     }
+  };
+
+  const fetchFlightNames = async (squadronNumber) => {
+    try {
+      const squadronListCollectionRef = collection(db, "Squadron List");
+      console.log("Fetching flight names for squadron number:", squadronNumber);
+      const squadronQuery = query(squadronListCollectionRef, where("Number", "==", parseInt(squadronNumber, 10)));
+      const squadronSnapshot = await getDocs(squadronQuery);
+  
+      if (!squadronSnapshot.empty) {
+        // Get the first matching document
+        const squadronDoc = squadronSnapshot.docs[0];
+        const flightNames = squadronDoc.data().flights || []; // Retrieve the 'flights' array
+        console.log("Flight names fetched:", flightNames);
+        return flightNames; // Return the flight names
+      } else {
+        console.error(`Squadron with number ${squadronNumber} not found in Squadron List.`);
+        return [];
+      }
+    } catch (err) {
+      console.error("Error fetching flight names:", err);
+      return [];
+    }
+  };
+
+  const handleFlightNameChange = (index, value) => {
+    const updatedFlightNames = [...flightNames];
+    updatedFlightNames[index] = value;
+    setFlightNames(updatedFlightNames);
   };
 
   return (
@@ -361,6 +416,7 @@ const WelcomePage = ({ onUserChange }) => {
                 className="squadron-name-input"
               />
             </div>
+            <br></br>
             <div>
               <label className="label-spacing">Squadron Number:</label>
               <input
@@ -370,6 +426,26 @@ const WelcomePage = ({ onUserChange }) => {
                 className="squadron-input"
               />
             </div>
+            <div>
+              <p>Please enter the names of your flights:</p>
+              {flightNames.map((flightName, index) => (
+                <input
+                  key={index}
+                  type="text"
+                  value={flightName}
+                  onChange={(e) => handleFlightNameChange(index, e.target.value)}
+                  placeholder={
+                    index === 0
+                      ? "Staff Team/Training Flight"
+                      : index === 1
+                      ? "Flight 1 Name"
+                      : "Flight 2 Name"
+                  } // Dynamic placeholder text
+                  className="squadron-name-input"
+                />
+              ))}
+            </div>
+            <br></br>
             <div>
               <label>
                 <input
@@ -387,7 +463,15 @@ const WelcomePage = ({ onUserChange }) => {
               <button className="popup-button-red" onClick={handleSetupCancel}>
                 Cancel
               </button>
-              <button className="popup-button-green" onClick={handleSetupConfirm}>
+              <button
+                className="popup-button-green"
+                onClick={handleSetupConfirm}
+                disabled={
+                  !squadronName.trim() || // Squadron name must not be empty
+                  flightNames.slice(1).some((name) => name.trim() === "") || // Check only the second and third flight names
+                  !isAdmin // Admin checkbox must be checked
+                }
+              >
                 Confirm
               </button>
             </div>
