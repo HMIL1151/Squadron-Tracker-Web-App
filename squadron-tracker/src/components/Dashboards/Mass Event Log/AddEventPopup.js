@@ -78,13 +78,22 @@ const AddEventPopup = ({
     // Capitalize the first letter of each word in the "Event Description" if "Event/Other" is selected
     let formattedFreeText = freeText;
     if (selectedButton === "Event/Other" && freeText) {
+      const exceptions = ["DofE", "AEF", "RAF", "GIF", "RAFAC", "JL", "QAIC", "NCO", "JNCO", "SNCO"];
+      
       formattedFreeText = freeText
+        .toLowerCase()
         .split(" ")
-        .map((word) =>
-          word.length > 2
+        .map((word) => {
+          if (word.toLowerCase() === "dofe") {
+            return "DofE"; // Special case for "DofE"
+          }
+          if (exceptions.includes(word.toUpperCase())) {
+            return word.toUpperCase(); // Convert other exceptions to uppercase
+          }
+          return word.length > 2
             ? word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
-            : word.toLowerCase()
-        )
+            : word.toLowerCase();
+        })
         .join(" ");
     }
 
