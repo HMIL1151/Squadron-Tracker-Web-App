@@ -58,6 +58,23 @@ const AddEventPopup = ({
   };
 
   const onAddEventClick = () => {
+    // Validate the event date
+    const currentDate = new Date();
+    const selectedDate = new Date(eventDate);
+
+    const eightYearsAgo = new Date();
+    eightYearsAgo.setFullYear(currentDate.getFullYear() - 8);
+
+    const sevenDaysFromNow = new Date();
+    sevenDaysFromNow.setDate(currentDate.getDate() + 7);
+
+    if (selectedDate < eightYearsAgo || selectedDate > sevenDaysFromNow) {
+      alert(
+        "Invalid date: The selected date must be within the last 8 years and no more than 7 days in the future."
+      );
+      return; // Prevent the event from being added
+    }
+
     const eventData = {
       selectedBadgeType,
       selectedBadgeLevel,
