@@ -75,11 +75,24 @@ const AddEventPopup = ({
       return; // Prevent the event from being added
     }
 
+    // Capitalize the first letter of each word in the "Event Description" if "Event/Other" is selected
+    let formattedFreeText = freeText;
+    if (selectedButton === "Event/Other" && freeText) {
+      formattedFreeText = freeText
+        .split(" ")
+        .map((word) =>
+          word.length > 2
+            ? word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+            : word.toLowerCase()
+        )
+        .join(" ");
+    }
+
     const eventData = {
       selectedBadgeType,
       selectedBadgeLevel,
       selectedExam,
-      freeText,
+      freeText: formattedFreeText, // Use the formatted text
       selectedEventCategory,
       selectedSpecialAward,
     };
