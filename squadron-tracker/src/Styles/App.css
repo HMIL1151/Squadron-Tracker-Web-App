@@ -122,7 +122,7 @@
 .version-number {
   position: fixed;
   bottom: 10px;
-  right: 10px;
+  right: 20px;
   font-size: 14px;
   color: grey;
   opacity: 0.8;
