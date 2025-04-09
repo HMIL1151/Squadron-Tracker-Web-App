@@ -1,0 +1,17 @@
+[  
+  {
+    "version": "v0.9.1",
+    "date": "09/04/2025",
+    "content": "Made event name input more robust by capliatlising event names while compensating for acronyms.\nPlaced limits on the date of events to between 8 years in the past and 7 days in the future. This prevents incorrect user date input when tryping the date of an event."
+  },
+  {
+    "version": "v0.9.2",
+    "date": "09/04/2025",
+    "content": "Added some input strngthening when adding a new cadet so that inputs are automatically trimmed and capitalised.\nEnabled compatibility for multi-name forenames and hyphenated names.\nEnabled ability to edit cadet details. If a cadet's name is changes, all events under that name have the name field changed so names changes are pushed to all dashboards."
+  },
+  {
+    "version": "v0.9.3",
+    "date": "09/04/2025",
+    "content": "Added a Change Log to decribe and log releases to the user. Versions in the change log used to inform the version number in the bottom right of the app."
+  }
+]

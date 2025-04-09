@@ -133,3 +133,38 @@
   margin-bottom: 20px; /* Add spacing below the title */
   text-align: center; /* Center-align the title */
 }
+
+.changelog-container {
+  width: 50%; /* Set the width of the changelog box */
+  margin: 20px auto; /* Center the box horizontally */
+  text-align: left;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  background-color: #f9f9f9;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.changelog-box {
+  max-height: 300px; /* Set the height of the scrollable area */
+  overflow-y: auto; /* Enable vertical scrolling */
+  padding: 10px;
+  border: 1px solid #ddd;
+  background-color: #fff;
+}
+
+.changelog-entry {
+  margin-bottom: 15px;
+}
+
+.changelog-entry h3 {
+  margin: 0;
+  font-size: 1.1em;
+  color: #333;
+}
+
+.changelog-entry p {
+  margin: 5px 0 0;
+  font-size: 0.9em;
+  color: #666;
+}

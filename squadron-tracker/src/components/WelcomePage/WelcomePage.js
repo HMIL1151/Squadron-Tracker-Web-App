@@ -1,6 +1,6 @@
 //TODO: Squadrons declare flight bnames
 
-import React, { useState, useContext } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { getAuth, signInWithPopup, GoogleAuthProvider, signOut } from "firebase/auth"; // Import Firebase Auth
 import { getFirestore, collection, doc, setDoc, getDocs, writeBatch, query, where, getDoc } from "firebase/firestore"; // Import Firestore functions
 import { checkUserRole, doesSquadronAccountExist } from "../../firebase/firestoreUtils"; // Import Firestore utility functions
@@ -16,14 +16,36 @@ const WelcomePage = ({ onUserChange }) => {
   const [squadronNumber, setSquadronNumber] = useState(""); // Track the entered Squadron number
   const [squadronName, setSquadronName] = useState(""); // Track the entered Squadron name
   const [isAdmin, setIsAdmin] = useState(false); // Track if the user will be the admin
-  const [showSetupPopup, setShowSetupPopup] = useState(false); // Track if the setup popup is shown
+  const [showSetupPopup, setShowSetupPopup] = useState(false); // Track if the setup popup is shown 
   const [showBlankPopup, setShowBlankPopup] = useState(false); // Track if the blank popup is shown
   const [showAdminWarning, setShowAdminWarning] = useState(false); // Track if the admin warning is shown
   const [flightNames, setFlightNames] = useState(["", "", ""]); // Track the entered flight names
   const [isRequestSubmitted, setIsRequestSubmitted] = useState(false); // Track if the request has been submitted
+  const [changelog, setChangelog] = useState([]); // State to store changelog entries
 
   const db = getFirestore(); // Initialize Firestore
   const { fetchData } = useContext(DataContext); // Access fetchData from DataContext
+
+  useEffect(() => {
+    const fetchChangelog = async () => {
+      try {
+        const response = await fetch("/changelog.json"); // Fetch the changelog.json file from the public directory
+        if (!response.ok) {
+          console.error("Failed to fetch changelog.json");
+        }
+
+        const changelogEntries = await response.json(); // Parse the JSON data
+
+        // Sort changelog entries by version (descending order)
+        changelogEntries.sort((a, b) => b.version.localeCompare(a.version));
+        setChangelog(changelogEntries);
+      } catch (err) {
+        console.error("Error fetching changelog:", err);
+      }
+    };
+
+    fetchChangelog();
+  }, []);
 
   const handleGoogleLogin = async () => {
     const auth = getAuth();
@@ -421,6 +443,27 @@ const WelcomePage = ({ onUserChange }) => {
           Sign in with Google
         </button>
       )}
+
+      {/* Changelog Section */}
+      <div className="changelog-container">
+        <h2>Change Log</h2>
+        <div className="changelog-box">
+          {changelog.length > 0 ? (
+            changelog.map((entry) => (
+              <div key={entry.version} className="changelog-entry">
+                <h3>{`${entry.version} - ${entry.date}`}</h3> {/* Combine version and date */}
+                <p
+                  dangerouslySetInnerHTML={{
+                    __html: entry.content.replace(/\n/g, "<br><br>"), // Replace \n with <br>
+                  }}
+                ></p>
+              </div>
+            ))
+          ) : (
+            <p>Loading Change Log...</p>
+          )}
+        </div>
+      </div>
 
       {/* Setup Squadron Popup */}
       {showSetupPopup && (

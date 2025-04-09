@@ -28,7 +28,6 @@ export const DataProvider = ({ children }) => {
             flightPoints[doc.id] = doc.data();
         });
 
-        console.log("Flight Points:", flightPoints); // Log the fetched flight points
 
         setData({ cadets, events, flightPoints });
     } catch (error) {

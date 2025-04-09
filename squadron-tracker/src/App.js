@@ -1,7 +1,7 @@
 //TODO: Add a change log txt (not sure how to do this in firestore )
 
 import "./Styles/App.css";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Menu from "./components/Menu/Menu"; // Import the Menu component
 import WelcomePage from "./components/WelcomePage/WelcomePage"; // Import the new WelcomePage component
 import { signOut } from "firebase/auth";
@@ -12,13 +12,38 @@ import { setFlightMap } from "./utils/mappings"; // Import the setter function f
 import { getFirestore, collection, query, where, getDocs } from "firebase/firestore"; // Import Firestore functions
 
 const App = () => {
-  const version = "v0.9.2"; // Define the version number
   const [user, setUser] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false); // Track if the user is an admin
   const [activeMenu, setActiveMenu] = useState(dashboardList[0]?.key || ""); // Default to the first dashboard key
   const [isMenuCollapsed, setIsMenuCollapsed] = useState(false); // New state for menu visibility
+  const [version, setVersion] = useState("Loading..."); // Initialize version as "Loading..."
 
   const { setSquadronNumber } = useSquadron(); // Access the context
+
+  useEffect(() => {
+    const fetchVersion = async () => {
+      try {
+        const response = await fetch("/changelog.json"); // Fetch the changelog.json file
+        if (!response.ok) {
+          throw new Error("Failed to fetch changelog.json");
+        }
+
+        const changelog = await response.json(); // Parse the JSON data
+
+        // Find the highest version number
+        const highestVersion = changelog
+          .map((entry) => entry.version)
+          .sort((a, b) => b.localeCompare(a, undefined, { numeric: true }))[0];
+
+        setVersion(highestVersion); // Set the highest version
+      } catch (err) {
+        console.error("Error fetching version:", err);
+        setVersion("Error fetching version");
+      }
+    };
+
+    fetchVersion();
+  }, []);
 
   const handleUserChange = async (currentUser, isAdminStatus) => {
     const db = getFirestore();
@@ -35,7 +60,6 @@ const App = () => {
       });
     }
 
-
     // Update the user object to include systemAdmin
     const updatedUser = {
       ...currentUser,
@@ -49,7 +73,6 @@ const App = () => {
 
     // Extract flightNames from the user data and update the state
     if (currentUser?.flightNames) {
-
       // Dynamically update flightMap using the flightNames array
       const newFlightMap = currentUser.flightNames.reduce((map, flightName, index) => {
         map[index + 1] = flightName; // Map flight names to indices starting from 1
@@ -116,7 +139,6 @@ const App = () => {
       <main className="main-content">{renderMainContent()}</main>
       {/* Version number in the bottom-right corner */}
       <div className="version-number">{version}</div>
-
     </div>
   );
 };
