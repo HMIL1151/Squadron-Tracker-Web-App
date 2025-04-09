@@ -79,6 +79,10 @@ const PopupManager = ({
             // Update only the identified events
             const updatedEvents = prevData.events.map((event) => {
                 if (event.cadetName === oldCadetName) {
+                  const eventDocRef = doc(db, "Squadron Databases", squadronNumber.toString(), "Event Log", event.id);
+
+                  updateDoc(eventDocRef, { cadetName: newCadetName }); // Update the cadetName in Firestore
+
                     return { ...event, cadetName: newCadetName }; // Update cadetName
                 }
                 return event; // Leave other events unchanged
@@ -90,6 +94,7 @@ const PopupManager = ({
             };
         });
 
+        
         const cadetDocRef = doc(db, "Squadron Databases", squadronNumber.toString(), "Cadets", editedCadet.id);
 
         // Exclude the `createdAt` field from the update
