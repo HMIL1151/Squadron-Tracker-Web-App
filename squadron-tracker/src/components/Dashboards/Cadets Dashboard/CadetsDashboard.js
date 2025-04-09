@@ -92,12 +92,31 @@ const CadetsDashboard = ({ user }) => {
         return;
       }
 
-      const { forename, surname, startDate, flight, rank } = newCadet;
+      let { forename, surname, startDate, flight, rank } = newCadet;
 
       if (!forename || !surname || !startDate || flight === "" || rank === "") {
         alert("Please fill in all fields.");
         return;
       }
+
+
+
+      // Helper function to capitalize each word in a string
+      const capitalizeWords = (str) => {
+        return str
+            .split(" ") // Split by spaces first
+            .map((word) =>
+                word
+                    .split("-") // Split by hyphens within each word
+                    .map((part) => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
+                    .join("-") // Rejoin hyphenated parts
+            )
+            .join(" "); // Rejoin the words with spaces
+      };
+
+      // Format the forename and surname
+      forename = capitalizeWords(forename.trim());
+      surname = capitalizeWords(surname.trim());
 
       // Format the startDate to "YYYY-MM-DD"
       const date = new Date(startDate);

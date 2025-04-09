@@ -133,7 +133,7 @@
   top: 50%; /* Vertically center the button */
   left: 200px; /* Default position when the menu is expanded */
   transform: translateY(-50%); /* Adjust for the button's height */
-  z-index: 2000;
+  z-index: 1001;
   background-color: #f4f4f4; /* Grey background */
   color: #333333; /* Darker text for contrast */
   border: solid 1px #ccc; /* Light grey border */
