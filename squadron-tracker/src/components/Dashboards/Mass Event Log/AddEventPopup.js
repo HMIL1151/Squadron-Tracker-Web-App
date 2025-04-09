@@ -274,11 +274,14 @@ const AddEventPopup = ({
                   <option value="" disabled>
                     Select Event Category
                   </option>
-                  {eventCategories.map((category) => (
-                    <option key={category} value={category}>
-                      {category}
-                    </option>
-                  ))}
+                  {eventCategories
+                    .slice() // Create a shallow copy to avoid mutating the original array
+                    .sort((a, b) => a.localeCompare(b)) // Sort alphabetically
+                    .map((category) => (
+                      <option key={category} value={category}>
+                        {category}
+                      </option>
+                    ))}
                 </select>
               </div>
             </>
