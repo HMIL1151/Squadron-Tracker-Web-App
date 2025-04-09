@@ -55,38 +55,66 @@ const PopupManager = ({
 
   const handleEditCadet = async () => {
     try {
+        if (!editedCadet || !editedCadet.id) {
+            alert("Invalid cadet data. Cannot edit.");
+            return;
+        }
 
-      if (!editedCadet || !editedCadet.id) {
-        alert("Invalid cadet data. Cannot edit.");
-        return;
-      }
+        // Construct the old cadet name from the selectedCadet (before editing)
+        const oldCadetName = `${selectedCadet.forename} ${selectedCadet.surname}`;
 
-      const cadetDocRef = doc(db, "Squadron Databases", squadronNumber.toString(), "Cadets", editedCadet.id);
+        // Construct the new cadet name from the editedCadet (after editing)
+        const newCadetName = `${editedCadet.forename} ${editedCadet.surname}`;
 
+        // Update events in the DataContext where cadetName matches the old cadet name
+        setData((prevData) => {
+            // Identify the specific events to update
+            const eventsToUpdate = prevData.events.filter(
+                (event) => event.cadetName === oldCadetName
+            );
 
-      // Exclude the `createdAt` field from the update
-      const { id, createdAt, ...cadetData } = editedCadet; // Exclude `id` and `createdAt`
+            // Log the specific events that will be updated
+            console.log("Events to Update:", eventsToUpdate);
 
-      await updateDoc(cadetDocRef, cadetData);
+            // Update only the identified events
+            const updatedEvents = prevData.events.map((event) => {
+                if (event.cadetName === oldCadetName) {
+                    return { ...event, cadetName: newCadetName }; // Update cadetName
+                }
+                return event; // Leave other events unchanged
+            });
 
-      // Update the DataContext's cadets
-      setData((prevData) => ({
-        ...prevData,
-        cadets: prevData.cadets.map((cadet) =>
-          cadet.id === editedCadet.id ? { ...cadet, ...cadetData } : cadet
-        ),
-      }));
+            return {
+                ...prevData,
+                events: updatedEvents, // Update the events array in the DataContext
+            };
+        });
 
-      // Trigger the success message
-      setSuccessMessage(`${editedCadet.forename} ${editedCadet.surname} successfully updated.`);
-      setTimeout(() => setSuccessMessage(""), 1000); // Automatically hide after 1 second
+        const cadetDocRef = doc(db, "Squadron Databases", squadronNumber.toString(), "Cadets", editedCadet.id);
 
-      // Close the edit popup
-      setIsEditPopupOpen(false);
-      setSelectedCadet(""); // Clear the selected cadet
+        // Exclude the `createdAt` field from the update
+        const { id, createdAt, ...cadetData } = editedCadet; // Exclude `id` and `createdAt`
+
+        await updateDoc(cadetDocRef, cadetData);
+
+        // Update the DataContext's cadets
+        setData((prevData) => ({
+            ...prevData,
+            cadets: prevData.cadets.map((cadet) =>
+                cadet.id === editedCadet.id ? { ...cadet, ...cadetData } : cadet
+            ),
+        }));
+
+        // Trigger the success message
+        setSuccessMessage(`${editedCadet.forename} ${editedCadet.surname} successfully updated.`);
+        setTimeout(() => setSuccessMessage(""), 1000); // Automatically hide after 1 second
+
+        // Close the edit popup
+        setIsEditPopupOpen(false);
+        setSelectedCadet(""); // Clear the selected cadet
     } catch (error) {
-      console.error("Error editing cadet:", error); // Debugging: Log any errors
-      alert("An error occurred while editing the cadet.");
+        console.error("Error editing cadet:", error); // Debugging: Log any errors
+        alert("An error occurred while editing the cadet.");
     }
   };
 
