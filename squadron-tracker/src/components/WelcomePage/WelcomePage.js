@@ -37,7 +37,28 @@ const WelcomePage = ({ onUserChange }) => {
         const changelogEntries = await response.json(); // Parse the JSON data
 
         // Sort changelog entries by version (descending order)
-        changelogEntries.sort((a, b) => b.version.localeCompare(a.version));
+        changelogEntries.sort((a, b) => {
+          const parseVersion = (version) =>
+            version
+              .replace(/^v/, "") // Remove the "v" prefix
+              .split(".") // Split into parts
+              .map(Number); // Convert each part to a number
+
+          const aParts = parseVersion(a.version);
+          const bParts = parseVersion(b.version);
+
+          for (let i = 0; i < Math.max(aParts.length, bParts.length); i++) {
+            const aPart = aParts[i] || 0; // Default to 0 if part is missing
+            const bPart = bParts[i] || 0;
+
+            if (aPart !== bPart) {
+              return bPart - aPart; // Descending order
+            }
+          }
+
+          return 0; // Versions are equal
+        });
+
         setChangelog(changelogEntries);
       } catch (err) {
         console.error("Error fetching changelog:", err);

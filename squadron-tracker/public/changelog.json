@@ -13,5 +13,15 @@
     "version": "v0.9.3",
     "date": "09/04/2025",
     "content": "Added a Change Log to decribe and log releases to the user. Versions in the change log used to inform the version number in the bottom right of the app."
+  },
+  {
+    "version": "v0.10.0",
+    "date": "10/04/2025",
+    "content": "Users can now add badges by clicking on empty cells in the PTS Tracker. Currently a bug exists where a badge added on the PTS Tracker, they must refresh the tracker before remvoing the event from the Mass Event Log. The Badge displays correctly in the Mass Event Log, the End of Year Certificate and counts towards Flight Points."
+  },
+  {
+    "version": "v0.10.1",
+    "date": "10/04/2025",
+    "content": "Made changelog show versions in correct order (where v0.10.x shows after v0.9.x)."
   }
 ]
