@@ -3,16 +3,22 @@ import { motion } from "framer-motion";
 import { badgeLevel } from "../../../utils/examList";
 import "./PTSTracker.css";
 import { DataContext } from "../../../context/DataContext"; // Import DataContext
+import { saveEvent } from "../../../databaseTools/databaseTools"; // Import saveEvent function
+import { useSquadron } from "../../../context/SquadronContext"; // Import SquadronContext
 
-const PTSTracker = () => {
+const PTSTracker = ({ user }) => {
   const [cadetNames, setCadetNames] = useState([]);
   const [badgeData, setBadgeData] = useState([]);
   const [groupedBadgeColumns, setGroupedBadgeColumns] = useState({});
   const [expandedTabs, setExpandedTabs] = useState({});
   const [selectedButton, setSelectedButton] = useState(["Blue", "Bronze", "Silver", "Gold"]); // Default state: all selected
-  const { data } = useContext(DataContext); // Access data from DataContext
+  const { data, setData } = useContext(DataContext); // Access data and setData from DataContext
+  const { sqnNo } = useSquadron(); // Access squadron number from SquadronContext
+
+  const [popupData, setPopupData] = useState(null); // State to track popup data
 
   useEffect(() => {
+    console.log(user.squadronNumber);
     const fetchData = () => {
       try {
         // Extract cadet names from DataContext
@@ -49,10 +55,10 @@ const PTSTracker = () => {
     };
 
     fetchData();
-  }, [data]);
+  }, [data, user.squadronNumber]); // Fetch data when data or user.squadronNumber changes
 
   const getBadgeDate = (cadetName, badge) => {
-    const badgeEntry = badgeData.find(  
+    const badgeEntry = badgeData.find(
       (entry) => entry.cadetName === cadetName && entry.badge === badge
     );
     return badgeEntry ? badgeEntry.date : "";
@@ -86,6 +92,14 @@ const PTSTracker = () => {
       default:
         return "#000000"; // Fallback color
     }
+  };
+
+  const handleCellClick = (cadetName, badge) => {
+    setPopupData({ cadetName, badge }); // Set popup data
+  };
+
+  const closePopup = () => {
+    setPopupData(null); // Close the popup
   };
 
   return (
@@ -221,6 +235,7 @@ const PTSTracker = () => {
                         const levelName = level.split(" ")[0];
                         const badgeDate = getBadgeDate(name, level);
                         const badgeLevelClass = badgeDate ? `badge-level-${levelName.toLowerCase()}` : "";
+
                         // Only render the badge level cell if it is selected
                         return selectedButton.includes(levelName) ? (
                           <motion.td
@@ -228,8 +243,26 @@ const PTSTracker = () => {
                             initial={{ opacity: 0, x: -10 }}
                             animate={{ opacity: 1, x: 0 }}
                             transition={{ duration: 0.5, delay: 0.1 }}
-                            style={{ minWidth: "90px", padding: "1px" }}
+                            style={{
+                              minWidth: "90px",
+                              padding: "1px",
+                              cursor: badgeDate ? "default" : "pointer", // Pointer only for empty cells
+                              border: "1px solid #ccc", // Default border
+                            }}
                             className={badgeLevelClass}
+                            onMouseEnter={(e) => {
+                              if (!badgeDate) {
+                                e.target.style.border = "2px solid #007bff"; // Highlight border on hover
+                              }
+                            }}
+                            onMouseLeave={(e) => {
+                              e.target.style.border = "1px solid #ccc"; // Reset border on hover out
+                            }}
+                            onClick={() => {
+                              if (!badgeDate) {
+                                handleCellClick(name, level); // Open popup only for empty cells
+                              }
+                            }}
                           >
                             {badgeDate}
                           </motion.td>
@@ -242,6 +275,96 @@ const PTSTracker = () => {
           </tbody>
         </motion.table>
       </motion.div>
+
+      {/* Popup */}
+      {popupData && (
+        <div className="popup-overlay" onClick={closePopup}>
+          <div
+            className="popup-contents"
+            onClick={(e) => e.stopPropagation()}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                document.getElementById("confirm-button").click(); // Trigger the confirm button on Enter
+              }
+            }}
+            tabIndex={0} // Make the div focusable to capture key events
+          >
+            <h3>Add New Badge</h3>
+            <p><strong>Cadet Name:</strong> {popupData.cadetName}</p>
+            <p><strong>Badge:</strong> {popupData.badge}</p>
+            
+            {/* Date Input Field */}
+            <label htmlFor="event-date"><strong>Date:</strong></label>
+            <input  
+              type="date"
+              id="event-date"
+              autoFocus // Autofocus the date input
+              style={{ display: "block", margin: "10px 0", padding: "5px", width: "100%" }}
+              value={popupData.date || ""} // Bind the date value
+              onChange={(e) =>
+                setPopupData((prevData) => ({ ...prevData, date: e.target.value })) // Update date in popupData
+              }
+            />
+
+            {/* Confirm and Close Buttons */}
+            <div className="popup-bottom-buttons">
+              <button
+                className="popup-button-red" // Use the red button style
+                onClick={closePopup}
+              >
+                Close
+              </button>
+
+              <button
+                id="confirm-button" // Add an ID to the confirm button
+                className="popup-button-green" // Use the green button style
+                onClick={async () => {
+                  const currentDate = new Date();
+                  const selectedDate = new Date(popupData.date);
+
+                  // Calculate the date range
+                  const eightYearsAgo = new Date();
+                  eightYearsAgo.setFullYear(currentDate.getFullYear() - 8);
+
+                  const sevenDaysFromNow = new Date();
+                  sevenDaysFromNow.setDate(currentDate.getDate() + 7);
+
+                  // Validate the selected date
+                  if (selectedDate < eightYearsAgo || selectedDate > sevenDaysFromNow) {
+                    alert("The date must be no more than 8 years in the past or 7 days in the future.");
+                    return; // Prevent closing the popup
+                  }
+
+                  const eventDetails = {
+                    createdAt: new Date(), // Current timestamp
+                    addedBy: user.displayName, // Replace with the actual user object
+                    cadetName: popupData.cadetName,
+                    badgeLevel: popupData.badge.split(" ")[0], // Extract badge level
+                    badgeCategory: popupData.badge.split(" ")[1], // Extract badge category
+                    date: popupData.date, // Date entered by the user
+                    eventCategory: "Badge Award", // Example category
+                    eventName: `${popupData.badge} Award`, // Example event name
+                    examName: "", // Leave empty if not applicable
+                    specialAward: "", // Leave empty if not applicable
+                  };
+
+                  try {
+                    console.log(sqnNo); // Log the type of sqnNo
+                    await saveEvent(eventDetails, user.squadronNumber, setData); // Pass sqnNo and setData as arguments
+                    console.log("Event saved successfully:", eventDetails);
+                  } catch (error) {
+                    console.error("Error saving event:", error);
+                  }
+
+                  closePopup(); // Close the popup
+                }}
+              >
+                Confirm
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

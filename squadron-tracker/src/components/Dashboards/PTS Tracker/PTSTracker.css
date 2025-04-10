@@ -322,3 +322,15 @@
   border-color: #999;
   transform: scale(1); /* No scaling on hover */
 }
+
+.popup-contents {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  width: 300px; /* Set a fixed width */
+  max-width: 90%; /* Ensure it doesn't exceed the viewport width */
+  margin: 0 auto; /* Center the popup horizontally */
+  overflow-x: hidden; /* Prevent horizontal scrolling */
+}
