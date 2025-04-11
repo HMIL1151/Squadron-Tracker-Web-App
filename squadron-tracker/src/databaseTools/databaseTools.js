@@ -11,7 +11,7 @@ export const saveEvent = async (eventDetails, sqnNo, setData) => {
     addedBy,
     badgeCategory,
     badgeLevel,
-    cadetName,
+    cadetName, // Now an array of names
     createdAt,
     date,
     eventCategory,
@@ -20,18 +20,20 @@ export const saveEvent = async (eventDetails, sqnNo, setData) => {
     specialAward,
   } = eventDetails;
 
-  if (!addedBy || !date || !cadetName || !createdAt) {
+  if (!addedBy || !date || !cadetName || !createdAt || !Array.isArray(cadetName) || cadetName.length === 0) {
     throw new Error("Invalid event details provided.");
   }
 
   const db = getFirestore();
 
   try {
+    const newEvents = []; // To store the new events for DataContext
 
-    const newEvent = {
+    for (const name of cadetName) {
+      const newEvent = {
         addedBy: addedBy,
         createdAt: createdAt,
-        cadetName: cadetName,
+        cadetName: name, // Use the current name from the array
         date: date,
         badgeCategory: badgeCategory,
         badgeLevel: badgeLevel,
@@ -41,30 +43,21 @@ export const saveEvent = async (eventDetails, sqnNo, setData) => {
         specialAward: specialAward,
       };
 
-    const eventDocRef = doc(collection(db, "Squadron Databases", sqnNo.toString(), "Event Log"));
-    await setDoc(eventDocRef, newEvent);
+      const eventDocRef = doc(collection(db, "Squadron Databases", sqnNo.toString(), "Event Log"));
+      await setDoc(eventDocRef, newEvent);
+
+      // Add the new event to the array for DataContext
+      newEvents.push({
+        ...newEvent,
+        id: eventDocRef.id, // Include the document ID
+      });
+    }
 
     // Update the events array in DataContext
     setData((prevData) => ({
       ...prevData,
-      events: [
-        ...(prevData.events || []),
-        {
-          addedBy,
-          id: eventDocRef.id,
-          badgeCategory,
-          badgeLevel,
-          cadetName,
-          createdAt,
-          date,
-          eventCategory,
-          eventName,
-          examName,
-          specialAward,
-        },
-      ],
+      events: [...(prevData.events || []), ...newEvents], // Append the new events
     }));
-
   } catch (error) {
     console.error("Error saving event details:", error);
     throw error;

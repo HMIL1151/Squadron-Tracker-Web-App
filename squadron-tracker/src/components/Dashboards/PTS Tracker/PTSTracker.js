@@ -335,7 +335,7 @@ const PTSTracker = ({ user }) => {
                   const eventDetails = {
                     createdAt: new Date(), // Current timestamp
                     addedBy: user.displayName, // Replace with the actual user object
-                    cadetName: popupData.cadetName,
+                    cadetName: [popupData.cadetName],
                     badgeLevel: popupData.badge.split(" ")[0], // Extract badge level
                     badgeCategory: popupData.badge.split(" ")[1], // Extract badge category
                     date: popupData.date, // Date entered by the user
