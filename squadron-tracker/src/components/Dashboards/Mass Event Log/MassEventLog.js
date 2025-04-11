@@ -11,7 +11,8 @@ import LoadingPopup from "../Dashboard Components/LoadingPopup"; // Import the n
 import "./MassEventLog.css";
 import "../Dashboard Components/dashboardStyles.css";
 import SuccessMessage from "../Dashboard Components/SuccessMessage";
-import { getFirestore, deleteDoc, doc, collection, setDoc } from "firebase/firestore"; // Import Firestore functions
+import { getFirestore, deleteDoc, doc } from "firebase/firestore"; // Import Firestore functions
+import { saveEvent } from "../../../databaseTools/databaseTools"; // Import saveEvent function
 
 const MassEventLog = ({ user }) => {
   const [events, setEvents] = useState([]);
@@ -201,51 +202,22 @@ const MassEventLog = ({ user }) => {
     }
 
     try {
-      const db = getFirestore(); // Initialize Firestore
       const createdAt = new Date(); // Current timestamp
 
-      // Loop through selected names and add events
-      for (const name of selectedNames) {
-        const newEvent = {
-          addedBy: user.displayName,
-          createdAt,
-          cadetName: name,
-          date: eventDate,
-          badgeCategory: selectedButton === "Badge" ? selectedBadgeType : "",
-          badgeLevel: selectedButton === "Badge" ? selectedBadgeLevel : "",
-          examName: selectedButton === "Classification/Exam" ? selectedExam : "",
-          eventName: selectedButton === "Event/Other" ? freeText : "",
-          eventCategory: selectedButton === "Event/Other" ? selectedEventCategory : "",
-          specialAward: selectedButton === "Special" ? selectedSpecialAward : "",
-        };
+      const newEvent = {
+        addedBy: user.displayName,
+        createdAt,
+        cadetName: selectedNames,
+        date: eventDate,
+        badgeCategory: selectedButton === "Badge" ? selectedBadgeType : "",
+        badgeLevel: selectedButton === "Badge" ? selectedBadgeLevel : "",
+        examName: selectedButton === "Classification/Exam" ? selectedExam : "",
+        eventName: selectedButton === "Event/Other" ? freeText : "",
+        eventCategory: selectedButton === "Event/Other" ? selectedEventCategory : "",
+        specialAward: selectedButton === "Special" ? selectedSpecialAward : "",
+      };
 
-        // Add the new event to Firestore
-        const eventDocRef = doc(collection(db, "Squadron Databases", squadronNumber.toString(), "Event Log"));
-        await setDoc(eventDocRef, newEvent);
-
-        // Update the DataContext's events
-        setData((prevData) => ({
-          ...prevData,
-          events: [...prevData.events, { id: eventDocRef.id, ...newEvent }],
-        }));
-      }
-
-      // Refresh the table data
-      setEvents((prev) => [
-        ...prev,
-        ...selectedNames.map((name) => ({
-          cadetName: name,
-          date: eventDate,
-          badgeCategory: selectedButton === "Badge" ? selectedBadgeType : "",
-          badgeLevel: selectedButton === "Badge" ? selectedBadgeLevel : "",
-          examName: selectedButton === "Classification/Exam" ? selectedExam : "",
-          eventName: selectedButton === "Event/Other" ? freeText : "",
-          eventCategory: selectedButton === "Event/Other" ? selectedEventCategory : "",
-          specialAward: selectedButton === "Special" ? selectedSpecialAward : "",
-          addedBy: user.displayName,
-          createdAt,
-        })),
-      ]);
+      saveEvent(newEvent, squadronNumber, setData); // Save the event to Firestore
 
       // Reset the form and close the popup
       setSelectedNames([]);
