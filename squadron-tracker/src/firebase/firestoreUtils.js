@@ -182,7 +182,6 @@ export const getAllCadetNames = async (data) => {
 export const getCadetRank = async (cadetName, data) => {
   try {
     const cadetsData = data.cadets || [];
-    //console.log("Cadets Data:", cadetsData); // Debugging: Log the cadets data
     const cadet = cadetsData.find((cadet) => `${cadet.forename} ${cadet.surname}` === cadetName);
 
     if (cadet) {

@@ -3,7 +3,6 @@ import "./EventDetailsPopup.css";
 
 const EventDetailsPopup = ({ isOpen, eventData, onClose, onRemove }) => {
   // Close the popup when the ESC key is pressed
-  //console.log(eventData);
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.key === "Escape" && isOpen) {

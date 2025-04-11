@@ -3,8 +3,7 @@ import { motion } from "framer-motion";
 import { badgeLevel } from "../../../utils/examList";
 import "./PTSTracker.css";
 import { DataContext } from "../../../context/DataContext"; // Import DataContext
-import { saveEvent } from "../../../databaseTools/databaseTools"; // Import saveEvent function
-import { useSquadron } from "../../../context/SquadronContext"; // Import SquadronContext
+import { saveEvent } from "../../../databaseTools/databaseTools"; // Import saveEvent 
 
 const PTSTracker = ({ user }) => {
   const [cadetNames, setCadetNames] = useState([]);
@@ -13,12 +12,10 @@ const PTSTracker = ({ user }) => {
   const [expandedTabs, setExpandedTabs] = useState({});
   const [selectedButton, setSelectedButton] = useState(["Blue", "Bronze", "Silver", "Gold"]); // Default state: all selected
   const { data, setData } = useContext(DataContext); // Access data and setData from DataContext
-  const { sqnNo } = useSquadron(); // Access squadron number from SquadronContext
 
   const [popupData, setPopupData] = useState(null); // State to track popup data
 
   useEffect(() => {
-    console.log(user.squadronNumber);
     const fetchData = () => {
       try {
         // Extract cadet names from DataContext
@@ -349,9 +346,7 @@ const PTSTracker = ({ user }) => {
                   };
 
                   try {
-                    console.log(sqnNo); // Log the type of sqnNo
                     await saveEvent(eventDetails, user.squadronNumber, setData); // Pass sqnNo and setData as arguments
-                    console.log("Event saved successfully:", eventDetails);
                   } catch (error) {
                     console.error("Error saving event:", error);
                   }

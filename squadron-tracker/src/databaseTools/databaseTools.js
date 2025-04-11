@@ -25,7 +25,6 @@ export const saveEvent = async (eventDetails, sqnNo, setData) => {
   }
 
   const db = getFirestore();
-  console.log(sqnNo); // Log the type of sqnNo
 
   try {
 
@@ -45,9 +44,6 @@ export const saveEvent = async (eventDetails, sqnNo, setData) => {
     const eventDocRef = doc(collection(db, "Squadron Databases", sqnNo.toString(), "Event Log"));
     await setDoc(eventDocRef, newEvent);
 
-    // Log the document ID of the newly added event
-    console.log(`Event added successfully under doc ID: ${eventDocRef.id}`);
-
     // Update the events array in DataContext
     setData((prevData) => ({
       ...prevData,
@@ -55,6 +51,7 @@ export const saveEvent = async (eventDetails, sqnNo, setData) => {
         ...(prevData.events || []),
         {
           addedBy,
+          id: eventDocRef.id,
           badgeCategory,
           badgeLevel,
           cadetName,
@@ -68,7 +65,6 @@ export const saveEvent = async (eventDetails, sqnNo, setData) => {
       ],
     }));
 
-    console.log(`Event ${eventName} for ${cadetName} on ${date} saved successfully.`);
   } catch (error) {
     console.error("Error saving event details:", error);
     throw error;

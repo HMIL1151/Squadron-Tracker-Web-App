@@ -222,14 +222,12 @@ const MassEventLog = ({ user }) => {
         // Add the new event to Firestore
         const eventDocRef = doc(collection(db, "Squadron Databases", squadronNumber.toString(), "Event Log"));
         await setDoc(eventDocRef, newEvent);
-        //console.log(`Event added to Firestore with ID: ${eventDocRef.id}`);
 
         // Update the DataContext's events
         setData((prevData) => ({
           ...prevData,
           events: [...prevData.events, { id: eventDocRef.id, ...newEvent }],
         }));
-        //console.log("Event added to DataContext:", { id: eventDocRef.id, ...newEvent });
       }
 
       // Refresh the table data
@@ -271,35 +269,27 @@ const MassEventLog = ({ user }) => {
     try {
       const db = getFirestore(); // Initialize Firestore
 
-      // Debugging: Log eventId and squadronNumber
-      //console.log("Attempting to remove event with ID:", eventId);
-      //console.log("Squadron Number:", squadronNumber);
-
       if (!eventId) {
-        throw new Error("Invalid event ID. Cannot remove event.");
+        console.error("Invalid event ID. Cannot remove event.");
       }
 
       if (!squadronNumber) {
-        throw new Error("Squadron number is not set. Cannot remove event.");
+        console.error("Squadron number is not set. Cannot remove event.");
       }
 
       // Delete the event document from Firestore
       const eventDocRef = doc(db, "Squadron Databases", squadronNumber.toString(), "Event Log", eventId);
-      //console.log("Firestore Path:", eventDocRef.path);
 
       await deleteDoc(eventDocRef);
-      //console.log(`Event with ID ${eventId} deleted from Firestore.`);
 
       // Remove the event from the local state
       setEvents((prev) => {
         const updatedEvents = prev.filter((event) => event.id !== eventId);
-        //console.log("Updated local events:", updatedEvents);
         return updatedEvents;
       });
 
       // Remove the event from DataContext's eventLog
       setData((prevData) => {
-        //console.log("Current DataContext events:", prevData.events);
 
         // Ensure prevData.events is an array
         const updatedEventLog = (prevData.events || []).filter((event) => {
@@ -310,15 +300,12 @@ const MassEventLog = ({ user }) => {
           return event.id !== eventId;
         });
 
-        //console.log("Updated DataContext events:", updatedEventLog);
 
         return {
           ...prevData,
           events: updatedEventLog,
         };
       });
-
-      //console.log(`Event with ID ${eventId} removed from DataContext.`);
 
       setIsEventPopupOpen(false); // Close the popup
     } catch (error) {

@@ -68,13 +68,6 @@ const PopupManager = ({
 
         // Update events in the DataContext where cadetName matches the old cadet name
         setData((prevData) => {
-            // Identify the specific events to update
-            const eventsToUpdate = prevData.events.filter(
-                (event) => event.cadetName === oldCadetName
-            );
-
-            // Log the specific events that will be updated
-            console.log("Events to Update:", eventsToUpdate);
 
             // Update only the identified events
             const updatedEvents = prevData.events.map((event) => {

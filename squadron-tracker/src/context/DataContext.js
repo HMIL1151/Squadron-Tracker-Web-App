@@ -18,7 +18,6 @@ export const DataProvider = ({ children }) => {
         const cadets = cadetsSnapshot.docs
             .map((doc) => ({ id: doc.id, ...doc.data() }))
             .sort((a, b) => a.forename.localeCompare(b.forename)); // Sort cadets by forename alphabetically
-        console.log("Cadets:", cadets); // Log the fetched cadets
         const eventsSnapshot = await getDocs(collection(db, "Squadron Databases", squadronNumber, "Event Log"));
         const events = eventsSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
 
