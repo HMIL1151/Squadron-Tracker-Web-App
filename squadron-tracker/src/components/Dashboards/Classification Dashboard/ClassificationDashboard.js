@@ -1,4 +1,4 @@
-//TODO: Fix unscorllable table
+//TODO: Account for duplicate exams
 
 import React, { useEffect, useState, useCallback, useRef, useContext } from "react";
 import { classificationMap } from "../../../utils/mappings"; // Import classificationMap

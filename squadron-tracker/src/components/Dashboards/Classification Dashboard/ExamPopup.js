@@ -6,7 +6,8 @@ import { DataContext } from "../../../context/DataContext"; // Import DataContex
 const ExamPopup = ({ isOpen, onClose, cadetName, classification }) => {
   const [exams, setExams] = useState([]); // State to store the list of exams
   const [loading, setLoading] = useState(true); // State to track loading status
-  const { data } = useContext(DataContext); // Access data from DataContext
+  const { data } = useContext(DataContext); // Access data and addExam function from DataContext
+  const [examSelections, setExamSelections] = useState([{ selectedExam: "", examDate: "" }]); // Array of exam selections
 
   useEffect(() => {
     const fetchExams = () => {
@@ -15,7 +16,6 @@ const ExamPopup = ({ isOpen, onClose, cadetName, classification }) => {
       setLoading(true); // Start loading
 
       try {
-        // Filter the events from DataContext for the selected cadet
         const fetchedExams = data.events
           .filter(
             (event) =>
@@ -23,7 +23,6 @@ const ExamPopup = ({ isOpen, onClose, cadetName, classification }) => {
           )
           .map((event) => event.examName);
 
-        // Sort the exams based on the order in examList
         const sortedExams = fetchedExams.sort(
           (a, b) => examList.indexOf(a) - examList.indexOf(b)
         );
@@ -42,30 +41,60 @@ const ExamPopup = ({ isOpen, onClose, cadetName, classification }) => {
     }
   }, [isOpen, cadetName, data.events]);
 
-  // Close the popup when clicking outside of it
   useEffect(() => {
-    const handleOutsideClick = (event) => {
-      if (isOpen && event.target.classList.contains("popup-overlay")) {
-        onClose();
-      }
-    };
+    if (!isOpen) {
+      // Reset the form fields when the popup is closed
+      setExamSelections([{ selectedExam: "", examDate: "" }]);
+    }
+  }, [isOpen]);
 
-    const handleEscKey = (event) => {
-      if (isOpen && event.key === "Escape") {
-        onClose();
-      }
-    };
+  const handleAddExam = () => {
+    // Filter out empty selections (where both selectedExam and examDate are empty)
+    const filteredSelections = examSelections.filter(
+      (selection) => selection.selectedExam || selection.examDate
+    );
 
-    if (isOpen) {
-      document.addEventListener("click", handleOutsideClick);
-      document.addEventListener("keydown", handleEscKey);
+    // Check if any selection has only one of the fields filled
+    if (filteredSelections.some((selection) => 
+      (selection.selectedExam && !selection.examDate) || 
+      (!selection.selectedExam && selection.examDate)
+    )) {
+      alert("Please ensure each selection has both an exam and a date, or leave both fields empty.");
+      return;
     }
 
-    return () => {
-      document.removeEventListener("click", handleOutsideClick);
-      document.removeEventListener("keydown", handleEscKey);
-    };
-  }, [isOpen, onClose]);
+    // Call the addExam function for each valid selection
+    filteredSelections.forEach(({ selectedExam, examDate }) => {
+      console.log("Adding exam:", selectedExam, "on date:", examDate);
+    });
+
+    // Reset the form fields
+    setExamSelections([{ selectedExam: "", examDate: "" }]);
+
+    // Optionally, refetch exams to update the list
+    setExams((prevExams) => [
+      ...prevExams,
+      ...filteredSelections.map((selection) => selection.selectedExam),
+    ]);
+
+    // Close the popup
+    onClose();
+  };
+
+  const handleSelectionChange = (index, field, value) => {
+    const updatedSelections = [...examSelections];
+    updatedSelections[index][field] = value;
+    setExamSelections(updatedSelections);
+
+    // Add a new selection section if the last one is filled
+    if (
+      index === examSelections.length - 1 &&
+      updatedSelections[index].selectedExam &&
+      updatedSelections[index].examDate
+    ) {
+      setExamSelections([...updatedSelections, { selectedExam: "", examDate: "" }]);
+    }
+  };
 
   if (!isOpen) return null;
 
@@ -84,12 +113,60 @@ const ExamPopup = ({ isOpen, onClose, cadetName, classification }) => {
         ) : exams.length > 0 ? (
           <div>
             {exams.map((exam, index) => (
-              <span key={index} className="exam-item">{exam}</span> // Add a class for styling
+              <span key={index} className="exam-item">{exam}</span>
             ))}
           </div>
         ) : (
           <p>No classification records found for this cadet.</p>
         )}
+
+        {/* Add Exam Section */}
+        <div className="add-exam-section">
+          <h3>Add Exam</h3>
+          {examSelections.map((selection, index) => {
+            // Calculate available exams for this dropdown
+            const availableExams = examList.filter(
+              (exam) => !exams.includes(exam) && !examSelections.some((sel, selIndex) => selIndex !== index && sel.selectedExam === exam)
+            );
+
+            return (
+              <div key={index} className="form-group-inline">
+                <select
+                  className="exam-select"
+                  value={selection.selectedExam}
+                  onChange={(e) =>
+                    handleSelectionChange(index, "selectedExam", e.target.value)
+                  }
+                >
+                  <option value="">-- Select an Exam --</option>
+                  {availableExams.map((exam, idx) => (
+                    <option key={idx} value={exam}>
+                      {exam}
+                    </option>
+                  ))}
+                </select>
+                <input
+                  type="date"
+                  className="exam-date"
+                  value={selection.examDate}
+                  onChange={(e) =>
+                    handleSelectionChange(index, "examDate", e.target.value)
+                  }
+                />
+              </div>
+            );
+          })}
+          <div className="popup-bottom-buttons">
+          <button className="popup-button-red" onClick={onClose}>
+              Cancel
+            </button>
+            <button className="popup-button-green" onClick={handleAddExam}>
+              {examSelections.filter(selection => selection.selectedExam && selection.examDate).length > 1
+                ? "Add Exams"
+                : "Add Exam"}
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );
