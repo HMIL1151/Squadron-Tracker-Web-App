@@ -12,19 +12,32 @@ export const useSaveEvent = () => {
 
     const {
       addedBy,
-      badgeCategory,
-      badgeLevel,
+      badgeCategory = "",
+      badgeLevel = "",
       cadetName, // Now an array of names
       createdAt,
       date,
-      eventCategory,
-      eventName,
-      examName,
-      specialAward,
+      eventCategory = "",
+      eventName = "",
+      examName = "",
+      specialAward = "",
     } = eventDetails;
 
     if (!addedBy || !date || !cadetName || !createdAt || !Array.isArray(cadetName) || cadetName.length === 0) {
       console.error("Invalid event details provided.");
+      return;
+    }
+
+    // Validate the date
+    const eventDate = new Date(date);
+    const currentDate = new Date();
+    const eightYearsAgo = new Date();
+    eightYearsAgo.setFullYear(currentDate.getFullYear() - 8);
+    const sevenDaysFromNow = new Date();
+    sevenDaysFromNow.setDate(currentDate.getDate() + 7);
+
+    if (eventDate < eightYearsAgo || eventDate > sevenDaysFromNow) {
+      alert("The event date must be no more than 8 years in the past and no more than 7 days in the future.");
       return;
     }
 
@@ -105,6 +118,7 @@ export const useSaveEvent = () => {
         ...prevData,
         events: [...(prevData.events || []), ...newEvents], // Append the new events
       }));
+
     } catch (error) {
       console.error("Error saving event details:", error);
       throw error;

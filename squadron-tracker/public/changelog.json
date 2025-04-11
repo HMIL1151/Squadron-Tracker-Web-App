@@ -33,5 +33,10 @@
     "version": "v0.10.3",
     "date": "11/04/2025",
     "content": "Made mass event log use same function as PTS Tracker to add event.\nRefactored save event function to a react hook to make it easier to use in multiple components.\nAdded duplicate event/badge/exam protection by showing a warning in the console when the user attempts to add a duplicate record. Warning does not show as popup or alert for a smoother user experience."
+  },
+  {
+    "version": "v0.10.4",
+    "date": "11/04/2025",
+    "content": "Users can now add classification records/exams to a cadet's record directly using the Classification Tracker by clicking on a cadet (graph scatter point or table row) and adding 1 or more exams/records. These additions are saved to the database and are reflected in the Mass Event Log, End of Year Certificate and Flight Points dashboard."
   }
 ]

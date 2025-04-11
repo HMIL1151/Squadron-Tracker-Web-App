@@ -43,7 +43,7 @@ const GraphContainer = ({ children }) => {
 
 
 
-const ClassificationDashboard = () => {
+const ClassificationDashboard = ({user}) => {
   const [cadetData, setCadetData] = useState([]);
   const [longestServiceInMonths, setLongestServiceInMonths] = useState(50); // Default to 50
   const [dividerPosition, setDividerPosition] = useState(55); // Initial width of the Graph section in percentage
@@ -315,6 +315,7 @@ const ClassificationDashboard = () => {
         }}
         cadetName={selectedCadet.name}
         classification={selectedCadet.classification}
+        user={user}
       />
     </div>
   );

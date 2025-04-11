@@ -2,12 +2,14 @@ import React, { useEffect, useState, useContext } from "react";
 import { examList } from "../../../utils/examList"; // Import the examList
 import "./ExamPopup.css"; // Optional: Add styles for the popup
 import { DataContext } from "../../../context/DataContext"; // Import DataContext
+import { useSaveEvent } from "../../../databaseTools/databaseTools";
 
-const ExamPopup = ({ isOpen, onClose, cadetName, classification }) => {
+const ExamPopup = ({ isOpen, onClose, cadetName, classification, user }) => {
   const [exams, setExams] = useState([]); // State to store the list of exams
   const [loading, setLoading] = useState(true); // State to track loading status
   const { data } = useContext(DataContext); // Access data and addExam function from DataContext
   const [examSelections, setExamSelections] = useState([{ selectedExam: "", examDate: "" }]); // Array of exam selections
+  const saveEvent = useSaveEvent(); // Access the saveEvent function from databaseTools
 
   useEffect(() => {
     const fetchExams = () => {
@@ -63,9 +65,18 @@ const ExamPopup = ({ isOpen, onClose, cadetName, classification }) => {
       return;
     }
 
+    const createdAt = new Date();
+
     // Call the addExam function for each valid selection
     filteredSelections.forEach(({ selectedExam, examDate }) => {
-      console.log("Adding exam:", selectedExam, "on date:", examDate);
+      saveEvent({
+        addedBy: user.displayName,
+        createdAt: createdAt,
+        cadetName: [cadetName],
+        date: examDate,
+        examName: selectedExam
+      });
+
     });
 
     // Reset the form fields
