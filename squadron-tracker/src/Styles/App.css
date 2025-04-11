@@ -116,7 +116,7 @@
   overflow-y: auto;
   box-sizing: border-box;
   position: relative;
-  z-index: 1000;
+  z-index: 990;
 }
 
 .version-number {
@@ -133,7 +133,7 @@
   top: 50%; /* Vertically center the button */
   left: 200px; /* Default position when the menu is expanded */
   transform: translateY(-50%); /* Adjust for the button's height */
-  z-index: 1001;
+  z-index: 998;
   background-color: #f4f4f4; /* Grey background */
   color: #333333; /* Darker text for contrast */
   border: solid 1px #ccc; /* Light grey border */

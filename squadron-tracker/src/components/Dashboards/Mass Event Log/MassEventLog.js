@@ -12,7 +12,7 @@ import "./MassEventLog.css";
 import "../Dashboard Components/dashboardStyles.css";
 import SuccessMessage from "../Dashboard Components/SuccessMessage";
 import { getFirestore, deleteDoc, doc } from "firebase/firestore"; // Import Firestore functions
-import { saveEvent } from "../../../databaseTools/databaseTools"; // Import saveEvent function
+import { useSaveEvent } from "../../../databaseTools/databaseTools"; // Import saveEvent function
 
 const MassEventLog = ({ user }) => {
   const [events, setEvents] = useState([]);
@@ -30,6 +30,7 @@ const MassEventLog = ({ user }) => {
   const { squadronNumber } = useSquadron(); // Access the squadron number from context
   const { data, setData } = useContext(DataContext); // Access data from DataContext
   const [names, setNames] = useState([]); // Retain names for filtering
+  const saveEvent = useSaveEvent(); // Use the saveEvent function from databaseTools
 
   const columns = ["Name", "Record", "Date", "Points"];
 
@@ -217,7 +218,7 @@ const MassEventLog = ({ user }) => {
         specialAward: selectedButton === "Special" ? selectedSpecialAward : "",
       };
 
-      saveEvent(newEvent, squadronNumber, setData); // Save the event to Firestore
+      saveEvent(newEvent); // Save the event to Firestore
 
       // Reset the form and close the popup
       setSelectedNames([]);

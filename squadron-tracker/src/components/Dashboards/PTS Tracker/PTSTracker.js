@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { badgeLevel } from "../../../utils/examList";
 import "./PTSTracker.css";
 import { DataContext } from "../../../context/DataContext"; // Import DataContext
-import { saveEvent } from "../../../databaseTools/databaseTools"; // Import saveEvent 
+import { useSaveEvent } from "../../../databaseTools/databaseTools"; // Import saveEvent 
 
 const PTSTracker = ({ user }) => {
   const [cadetNames, setCadetNames] = useState([]);
@@ -11,9 +11,10 @@ const PTSTracker = ({ user }) => {
   const [groupedBadgeColumns, setGroupedBadgeColumns] = useState({});
   const [expandedTabs, setExpandedTabs] = useState({});
   const [selectedButton, setSelectedButton] = useState(["Blue", "Bronze", "Silver", "Gold"]); // Default state: all selected
-  const { data, setData } = useContext(DataContext); // Access data and setData from DataContext
+  const { data } = useContext(DataContext); // Access data and setData from DataContext
 
   const [popupData, setPopupData] = useState(null); // State to track popup data
+  const saveEvent = useSaveEvent(); // Call the custom hook at the top level
 
   useEffect(() => {
     const fetchData = () => {
@@ -97,6 +98,45 @@ const PTSTracker = ({ user }) => {
 
   const closePopup = () => {
     setPopupData(null); // Close the popup
+  };
+
+  const handleConfirm = async () => {
+    const currentDate = new Date();
+    const selectedDate = new Date(popupData.date);
+
+    // Calculate the date range
+    const eightYearsAgo = new Date();
+    eightYearsAgo.setFullYear(currentDate.getFullYear() - 8);
+
+    const sevenDaysFromNow = new Date();
+    sevenDaysFromNow.setDate(currentDate.getDate() + 7);
+
+    // Validate the selected date
+    if (selectedDate < eightYearsAgo || selectedDate > sevenDaysFromNow) {
+      alert("The date must be no more than 8 years in the past or 7 days in the future.");
+      return; // Prevent closing the popup
+    }
+
+    const eventDetails = {
+      createdAt: new Date(), // Current timestamp
+      addedBy: user.displayName, // Replace with the actual user object
+      cadetName: [popupData.cadetName],
+      badgeLevel: popupData.badge.split(" ")[0], // Extract badge level
+      badgeCategory: popupData.badge.split(" ")[1], // Extract badge category
+      date: popupData.date, // Date entered by the user
+      eventCategory: "Badge Award", // Example category
+      eventName: `${popupData.badge} Award`, // Example event name
+      examName: "", // Leave empty if not applicable
+      specialAward: "", // Leave empty if not applicable
+    };
+
+    try {
+      await saveEvent(eventDetails); // Use the saveEvent function
+    } catch (error) {
+      console.error("Error saving event:", error);
+    }
+
+    closePopup(); // Close the popup
   };
 
   return (
@@ -315,44 +355,7 @@ const PTSTracker = ({ user }) => {
               <button
                 id="confirm-button" // Add an ID to the confirm button
                 className="popup-button-green" // Use the green button style
-                onClick={async () => {
-                  const currentDate = new Date();
-                  const selectedDate = new Date(popupData.date);
-
-                  // Calculate the date range
-                  const eightYearsAgo = new Date();
-                  eightYearsAgo.setFullYear(currentDate.getFullYear() - 8);
-
-                  const sevenDaysFromNow = new Date();
-                  sevenDaysFromNow.setDate(currentDate.getDate() + 7);
-
-                  // Validate the selected date
-                  if (selectedDate < eightYearsAgo || selectedDate > sevenDaysFromNow) {
-                    alert("The date must be no more than 8 years in the past or 7 days in the future.");
-                    return; // Prevent closing the popup
-                  }
-
-                  const eventDetails = {
-                    createdAt: new Date(), // Current timestamp
-                    addedBy: user.displayName, // Replace with the actual user object
-                    cadetName: [popupData.cadetName],
-                    badgeLevel: popupData.badge.split(" ")[0], // Extract badge level
-                    badgeCategory: popupData.badge.split(" ")[1], // Extract badge category
-                    date: popupData.date, // Date entered by the user
-                    eventCategory: "Badge Award", // Example category
-                    eventName: `${popupData.badge} Award`, // Example event name
-                    examName: "", // Leave empty if not applicable
-                    specialAward: "", // Leave empty if not applicable
-                  };
-
-                  try {
-                    await saveEvent(eventDetails, user.squadronNumber, setData); // Pass sqnNo and setData as arguments
-                  } catch (error) {
-                    console.error("Error saving event:", error);
-                  }
-
-                  closePopup(); // Close the popup
-                }}
+                onClick={handleConfirm} // Use the handleConfirm function
               >
                 Confirm
               </button>
