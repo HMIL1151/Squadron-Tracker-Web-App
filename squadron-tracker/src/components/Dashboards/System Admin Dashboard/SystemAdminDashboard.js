@@ -10,7 +10,7 @@ const SystemAdminDashboard = () => {
   // Fetch new account requests from Firestore
   useEffect(() => {
     const fetchRequests = async () => {
-      const requestsCollection = collection(db, "New Account Requests");
+      const requestsCollection = collection(db, "NewAccountRequests");
       const snapshot = await getDocs(requestsCollection);
       const fetchedRequests = snapshot.docs.map((doc) => ({
         id: doc.id,
@@ -79,7 +79,7 @@ const SystemAdminDashboard = () => {
       });
 
       // Delete the request from the 'New Account Requests' collection
-      const requestDocRef = doc(db, "New Account Requests", request.id);
+      const requestDocRef = doc(db, "NewAccountRequests", request.id);
       await deleteDoc(requestDocRef);
 
       // Update the UI
@@ -94,7 +94,7 @@ const SystemAdminDashboard = () => {
   const handleDeny = async (requestId) => {
     try {
       // Delete the request from the 'New Account Requests' collection
-      const requestDocRef = doc(db, "New Account Requests", requestId);
+      const requestDocRef = doc(db, "NewAccountRequests", requestId);
       await deleteDoc(requestDocRef);
 
       // Update the UI

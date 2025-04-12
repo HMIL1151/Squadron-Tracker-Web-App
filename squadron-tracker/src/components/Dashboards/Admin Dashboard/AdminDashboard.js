@@ -87,6 +87,14 @@ const AdminDashboard = () => {
           email: selectedRequest.email,
           role: selectedRole, // Use the selected role
         });
+
+        // Corrected code for adding a document to the MassUserList collection
+        const massUserListDocRef = doc(collection(db, "MassUserList")); // Generate a new document reference
+        await setDoc(massUserListDocRef, {
+          UID: selectedRequest.uid,
+          Squadron: squadronNumber,
+        });
+
       } else {
         // If the status is not granted, delete the document from AuthorizedUsers
         await deleteDoc(authorizedUserDocRef);

@@ -78,6 +78,7 @@ const WelcomePage = ({ onUserChange }) => {
 
       const { uid, email, displayName } = user;
       const userRole = await checkUserRole(uid);
+      console.log("User role:", userRole); // Log the user role for debugging
 
       if (!isNaN(userRole)) {
         const squadronNumber = userRole.toString();
@@ -158,16 +159,17 @@ const WelcomePage = ({ onUserChange }) => {
         await setDoc(userRequestsDocRef, {
           displayName: user.displayName,
           email: user.email,
+          uid: user.uid,
           progress: "pending",
           timestamp: new Date().toISOString(), // Current timestamp in ISO format
         });
 
-        // Add a new document to the top-level 'Mass User List' collection
-        const massUserListDocRef = doc(collection(db, "MassUserList"));
-        await setDoc(massUserListDocRef, {
-          UID: user.uid,
-          Squadron: parseInt(squadronNumber, 10),
-        });
+        // // Add a new document to the top-level 'Mass User List' collection
+        // const massUserListDocRef = doc(collection(db, "MassUserList"));
+        // await setDoc(massUserListDocRef, {
+        //   UID: user.uid,
+        //   Squadron: parseInt(squadronNumber, 10),
+        // });
 
         // Notify the user
         setError("Your request to join the squadron is pending approval, please contact your Squadron's Admin.");
@@ -217,7 +219,7 @@ const WelcomePage = ({ onUserChange }) => {
     if (role !== "System Admin") {
       try {
         // Add a new document to the 'New Account Requests' collection
-        const newAccountRequestDocRef = doc(collection(db, "New Account Requests"));
+        const newAccountRequestDocRef = doc(collection(db, "NewAccountRequests"));
         await setDoc(newAccountRequestDocRef, {
           squadronName: squadronName.trim(),
           squadronNumber: parseInt(squadronNumber, 10),

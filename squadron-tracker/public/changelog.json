@@ -38,5 +38,10 @@
     "version": "v0.10.4",
     "date": "11/04/2025",
     "content": "Users can now add classification records/exams to a cadet's record directly using the Classification Tracker by clicking on a cadet (graph scatter point or table row) and adding 1 or more exams/records. These additions are saved to the database and are reflected in the Mass Event Log, End of Year Certificate and Flight Points dashboard."
+  },
+  {
+    "version": "0.11.0",
+    "date": "12/04/2025",
+    "content": "Edited database formatting to enable Firestore rules. This included changes to database structure and the specific collections written to when new and existing users access the tracker."
   }
 ]
