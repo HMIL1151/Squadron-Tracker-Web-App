@@ -21,7 +21,7 @@ const AdminDashboard = () => {
 
       try {
         const db = getFirestore();
-        const userRequestsCollection = collection(db, "Squadron Databases", squadronNumber.toString(), "User Requests");
+        const userRequestsCollection = collection(db, "SquadronDatabases", squadronNumber.toString(), "UserRequests");
         const snapshot = await getDocs(userRequestsCollection);
 
         const requestsData = snapshot.docs.map((doc) => ({
@@ -72,13 +72,13 @@ const AdminDashboard = () => {
 
     try {
       const db = getFirestore();
-      const requestDocRef = doc(db, "Squadron Databases", squadronNumber.toString(), "User Requests", selectedRequest.id);
+      const requestDocRef = doc(db, "SquadronDatabases", squadronNumber.toString(), "UserRequests", selectedRequest.id);
 
       // Update the progress in the UserRequests collection
       await updateDoc(requestDocRef, { progress: newStatus });
 
       // Handle AuthorizedUsers collection
-      const authorizedUserDocRef = doc(db, "Squadron Databases", squadronNumber.toString(), "Authorised Users", selectedRequest.id);
+      const authorizedUserDocRef = doc(db, "SquadronDatabases", squadronNumber.toString(), "AuthorisedUsers", selectedRequest.id);
 
       if (newStatus === "granted") {
         // If the status is granted, create or update the document in AuthorizedUsers

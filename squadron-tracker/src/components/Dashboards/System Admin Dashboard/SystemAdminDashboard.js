@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { getFirestore, collection, getDocs, doc, deleteDoc, setDoc, writeBatch } from "firebase/firestore";
 import "./SystemAdminDashboard.css"; // Import styles for the dashboard
+//import renameCollections from "../../../databaseTools/renameCollections";
 
 const SystemAdminDashboard = () => {
   const [requests, setRequests] = useState([]);
@@ -25,7 +26,7 @@ const SystemAdminDashboard = () => {
   const handleApprove = async (request) => {
     try {
       // Create a new squadron in the 'Squadron List' collection
-      const squadronListDocRef = doc(collection(db, "Squadron List"));
+      const squadronListDocRef = doc(collection(db, "SquadronList"));
       await setDoc(squadronListDocRef, {
         Name: request.squadronName,
         Number: request.squadronNumber,
@@ -33,12 +34,12 @@ const SystemAdminDashboard = () => {
       });
 
       // Create a new squadron database in the 'Squadron Databases' collection
-      const squadronDatabaseDocRef = doc(db, "Squadron Databases", String(request.squadronNumber)); // Ensure squadronNumber is a string
+      const squadronDatabaseDocRef = doc(db, "SquadronDatabases", String(request.squadronNumber)); // Ensure squadronNumber is a string
       await setDoc(squadronDatabaseDocRef, {});
 
       // Add the user as an admin in the 'Authorised Users' subcollection
       const authorisedUsersDocRef = doc(
-        collection(squadronDatabaseDocRef, "Authorised Users"),
+        collection(squadronDatabaseDocRef, "AuthorisedUsers"),
         request.uid
       );
       await setDoc(authorisedUsersDocRef, {
@@ -48,8 +49,8 @@ const SystemAdminDashboard = () => {
       });
 
       // Copy the 'Flight Points' collection to the new squadron's database
-      const topLevelFlightPointsRef = collection(db, "Flight Points");
-      const newFlightPointsRef = collection(squadronDatabaseDocRef, "Flight Points");
+      const topLevelFlightPointsRef = collection(db, "FlightPoints");
+      const newFlightPointsRef = collection(squadronDatabaseDocRef, "FlightPoints");
 
       const topLevelFlightPointsSnapshot = await getDocs(topLevelFlightPointsRef);
       const batch = writeBatch(db); // Use a batch for efficient writes
@@ -62,7 +63,7 @@ const SystemAdminDashboard = () => {
       await batch.commit(); // Commit the batch write
 
       // Create the 'User Requests' subcollection in the new squadron's database
-      const userRequestsDocRef = doc(collection(squadronDatabaseDocRef, "User Requests"));
+      const userRequestsDocRef = doc(collection(squadronDatabaseDocRef, "UserRequests"));
       await setDoc(userRequestsDocRef, {
         displayName: request.displayName,
         email: request.email,
@@ -71,7 +72,7 @@ const SystemAdminDashboard = () => {
       });
 
       // Add a new document to the 'Mass User List' collection
-      const massUserListDocRef = doc(collection(db, "Mass User List"));
+      const massUserListDocRef = doc(collection(db, "MassUserList"));
       await setDoc(massUserListDocRef, {
         UID: request.uid,
         Squadron: request.squadronNumber,
@@ -104,10 +105,29 @@ const SystemAdminDashboard = () => {
     }
   };
 
+  // Rename collections
+  // const handleRenameCollections = async () => {
+  //   try {
+  //     console.log("Starting the renaming process...");
+  //     await renameCollections(); // Call the renameCollections function
+  //     alert("Collections renamed successfully!");
+  //   } catch (error) {
+  //     console.error("Error renaming collections:", error);
+  //     alert("Failed to rename collections. Please check the console for details.");
+  //   }
+  // };
+
   return (
     <div className="system-admin-dashboard">
       <h1>System Admin Dashboard</h1>
       <p>Welcome, System Admin! Here you can review and manage new account requests.</p>
+
+      {/* Add the 'Rename Collections' button
+      <div className="rename-collections-container">
+        <button className="rename-collections-button" onClick={handleRenameCollections}>
+          Rename Collections
+        </button>
+      </div> */}
 
       {requests.length === 0 ? (
         <p>No new account requests to review.</p>

@@ -40,7 +40,7 @@ const dashboardList = [
   },
   {
     key: "flightpointsdashboard",
-    title: "Flight Points",
+    title: "FlightPoints",
     component: FightPointsDashboard,
     adminOnly: false, // Accessible to all users
   },

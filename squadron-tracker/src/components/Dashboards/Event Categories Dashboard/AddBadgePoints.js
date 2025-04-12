@@ -18,7 +18,7 @@ const AddBadgePoints = ({ isOpen, onClose, onConfirm }) => {
 
     try {
       const db = getFirestore();
-      const docRef = doc(db, "Squadron Databases", squadronNumber.toString(), "Flight Points", "Badge Points");
+      const docRef = doc(db, "SquadronDatabases", squadronNumber.toString(), "FlightPoints", "Badge Points");
 
       // Update Firestore with the new badge type and points
       await updateDoc(docRef, {

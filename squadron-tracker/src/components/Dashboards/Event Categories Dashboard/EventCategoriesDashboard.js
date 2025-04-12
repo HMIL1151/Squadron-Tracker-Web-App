@@ -139,9 +139,9 @@ const EventCategoriesDashboard = () => {
     const db = getFirestore();
     const docRef = doc(
       db,
-      "Squadron Databases",
+      "SquadronDatabases",
       squadronNumber.toString(),
-      "Flight Points",
+      "FlightPoints",
       deleteType === "eventcategories"
         ? "Event Category Points"
         : deleteType === "badgepoints"
@@ -316,7 +316,7 @@ const EventCategoriesDashboard = () => {
               onConfirm={() => {
                 fetchBadges(); // Refresh the table data after adding an entry
               }}
-              collection="Flight Points" // Specify the Firestore collection
+              collection="FlightPoints" // Specify the Firestore collection
               document="Badges" // Specify the Firestore document
               arrayName="Badge Types" // Specify the array name within the document
             />
@@ -377,7 +377,7 @@ const EventCategoriesDashboard = () => {
               onConfirm={() => {
                 fetchSpecialAwards(); // Refresh the table data after adding an entry
               }}
-              collection="Flight Points" // Specify the Firestore collection
+              collection="FlightPoints" // Specify the Firestore collection
               document="Special Awards" // Specify the Firestore document
               arrayName="Special Awards" // Specify the array name within the document
             />
@@ -392,9 +392,9 @@ const EventCategoriesDashboard = () => {
             const db = getFirestore();
             const docRef = doc(
               db,
-              "Squadron Databases",
+              "SquadronDatabases",
               squadronNumber.toString(),
-              "Flight Points",
+              "FlightPoints",
               editType === "eventcategories"
                 ? "Event Category Points"
                 : editType === "badgepoints"

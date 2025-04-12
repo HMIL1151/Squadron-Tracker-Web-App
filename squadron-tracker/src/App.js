@@ -47,7 +47,7 @@ const App = () => {
 
   const handleUserChange = async (currentUser, isAdminStatus) => {
     const db = getFirestore();
-    const massUserListRef = collection(db, "Mass User List");
+    const massUserListRef = collection(db, "MassUserList");
     const userQuery = query(massUserListRef, where("UID", "==", currentUser.uid));
     const snapshot = await getDocs(userQuery);
 

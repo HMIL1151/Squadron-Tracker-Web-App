@@ -21,7 +21,7 @@ Entry:
 
 FireStore Event Layout
 
-Collection: "Event Log"
+Collection: "EventLog"
 	Document: [one for each entry]
 		addedBy (string)
 		createdAt (firestore timestamp)

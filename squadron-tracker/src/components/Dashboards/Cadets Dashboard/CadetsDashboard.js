@@ -59,7 +59,7 @@ const CadetsDashboard = ({ user }) => {
       }
 
       const db = getFirestore(); // Initialize Firestore
-      const cadetDocRef = doc(db, "Squadron Databases", squadronNumber.toString(), "Cadets", selectedCadet);
+      const cadetDocRef = doc(db, "SquadronDatabases", squadronNumber.toString(), "Cadets", selectedCadet);
 
       // Delete the cadet from Firestore
       await deleteDoc(cadetDocRef);
@@ -123,7 +123,7 @@ const CadetsDashboard = ({ user }) => {
       const formattedStartDate = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 
       const db = getFirestore(); // Initialize Firestore
-      const cadetDocRef = doc(collection(db, "Squadron Databases", squadronNumber.toString(), "Cadets"));
+      const cadetDocRef = doc(collection(db, "SquadronDatabases", squadronNumber.toString(), "Cadets"));
 
       const newCadetData = {
         forename,
@@ -174,7 +174,7 @@ const CadetsDashboard = ({ user }) => {
       }
 
       const db = getFirestore(); // Initialize Firestore
-      const cadetDocRef = doc(db, "Squadron Databases", squadronNumber.toString(), "Cadets", updatedCadet.id);
+      const cadetDocRef = doc(db, "SquadronDatabases", squadronNumber.toString(), "Cadets", updatedCadet.id);
 
 
       // Update the cadet in Firestore

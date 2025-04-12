@@ -14,14 +14,14 @@ export const DataProvider = ({ children }) => {
   const fetchData = async (squadronNumber) => {
     const db = getFirestore();
     try {
-        const cadetsSnapshot = await getDocs(collection(db, "Squadron Databases", squadronNumber, "Cadets"));
+        const cadetsSnapshot = await getDocs(collection(db, "SquadronDatabases", squadronNumber, "Cadets"));
         const cadets = cadetsSnapshot.docs
             .map((doc) => ({ id: doc.id, ...doc.data() }))
             .sort((a, b) => a.forename.localeCompare(b.forename)); // Sort cadets by forename alphabetically
-        const eventsSnapshot = await getDocs(collection(db, "Squadron Databases", squadronNumber, "Event Log"));
+        const eventsSnapshot = await getDocs(collection(db, "SquadronDatabases", squadronNumber, "EventLog"));
         const events = eventsSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
 
-        const flightPointsSnapshot = await getDocs(collection(db, "Squadron Databases", squadronNumber, "Flight Points"));
+        const flightPointsSnapshot = await getDocs(collection(db, "SquadronDatabases", squadronNumber, "FlightPoints"));
         const flightPoints = {};
         flightPointsSnapshot.docs.forEach((doc) => {
             flightPoints[doc.id] = doc.data();

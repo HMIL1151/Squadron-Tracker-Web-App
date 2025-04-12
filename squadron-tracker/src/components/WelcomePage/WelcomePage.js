@@ -85,7 +85,7 @@ const WelcomePage = ({ onUserChange }) => {
         // Fetch squadron name and flight names
         const squadronName = await fetchSquadronName(squadronNumber);
         const flightNames = await fetchFlightNames(squadronNumber);
-        const squadronDocRef = doc(db, "Squadron List", squadronNumber);
+        const squadronDocRef = doc(db, "SquadronList", squadronNumber);
         const squadronDoc = await getDoc(squadronDocRef);
 
         if (squadronDoc.exists()) {
@@ -153,8 +153,8 @@ const WelcomePage = ({ onUserChange }) => {
         }
 
         // Add a new document to the 'User Requests' subcollection
-        const squadronDatabaseDocRef = doc(db, "Squadron Databases", squadronNumber);
-        const userRequestsDocRef = doc(collection(squadronDatabaseDocRef, "User Requests"));
+        const squadronDatabaseDocRef = doc(db, "SquadronDatabases", squadronNumber);
+        const userRequestsDocRef = doc(collection(squadronDatabaseDocRef, "UserRequests"));
         await setDoc(userRequestsDocRef, {
           displayName: user.displayName,
           email: user.email,
@@ -163,7 +163,7 @@ const WelcomePage = ({ onUserChange }) => {
         });
 
         // Add a new document to the top-level 'Mass User List' collection
-        const massUserListDocRef = doc(collection(db, "Mass User List"));
+        const massUserListDocRef = doc(collection(db, "MassUserList"));
         await setDoc(massUserListDocRef, {
           UID: user.uid,
           Squadron: parseInt(squadronNumber, 10),
@@ -256,7 +256,7 @@ const WelcomePage = ({ onUserChange }) => {
       }
   
       // Add a new document to the 'Squadron List' collection
-      const squadronListDocRef = doc(collection(db, "Squadron List"));
+      const squadronListDocRef = doc(collection(db, "SquadronList"));
       await setDoc(squadronListDocRef, {
         Name: squadronName,
         Number: parseInt(squadronNumber, 10),
@@ -264,12 +264,12 @@ const WelcomePage = ({ onUserChange }) => {
       });
   
       // Add a new document to the 'Squadron Databases' collection
-      const squadronDatabaseDocRef = doc(db, "Squadron Databases", squadronNumber);
+      const squadronDatabaseDocRef = doc(db, "SquadronDatabases", squadronNumber);
       await setDoc(squadronDatabaseDocRef, {}); // Create the document
   
       // Add a new subcollection 'Authorised Users' with the user's details
       const authorisedUsersDocRef = doc(
-        collection(squadronDatabaseDocRef, "Authorised Users"),
+        collection(squadronDatabaseDocRef, "AuthorisedUsers"),
         user.uid
       );
       await setDoc(authorisedUsersDocRef, {
@@ -279,8 +279,8 @@ const WelcomePage = ({ onUserChange }) => {
       });
   
       // Reproduce the 'Flight Points' collection in the new Squadron Database
-      const topLevelFlightPointsRef = collection(db, "Flight Points");
-      const newFlightPointsRef = collection(squadronDatabaseDocRef, "Flight Points");
+      const topLevelFlightPointsRef = collection(db, "FlightPoints");
+      const newFlightPointsRef = collection(squadronDatabaseDocRef, "FlightPoints");
   
       const topLevelFlightPointsSnapshot = await getDocs(topLevelFlightPointsRef);
       const batch = writeBatch(db); // Use a batch for efficient writes
@@ -293,7 +293,7 @@ const WelcomePage = ({ onUserChange }) => {
       await batch.commit(); // Commit the batch write
   
       // Add a new document to the 'User Requests' collection
-      const userRequestsDocRef = doc(collection(squadronDatabaseDocRef, "User Requests"));
+      const userRequestsDocRef = doc(collection(squadronDatabaseDocRef, "UserRequests"));
       await setDoc(userRequestsDocRef, {
         displayName: user.displayName,
         email: user.email,
@@ -302,7 +302,7 @@ const WelcomePage = ({ onUserChange }) => {
       });
   
       // Add a new document to the top-level 'Mass User List' collection
-      const massUserListDocRef = doc(collection(db, "Mass User List"));
+      const massUserListDocRef = doc(collection(db, "MassUserList"));
       await setDoc(massUserListDocRef, {
         UID: user.uid,
         Squadron: parseInt(squadronNumber, 10),
@@ -329,9 +329,9 @@ const WelcomePage = ({ onUserChange }) => {
         // Navigate to Authorized Users subcollection
         const authorizedUsersCollectionRef = collection(
           db,
-          "Squadron Databases",
+          "SquadronDatabases",
           squadronNumber.toString(),
-          "Authorised Users"
+          "AuthorisedUsers"
         );
   
         // Query for the document where displayName matches the user's displayName
@@ -364,7 +364,7 @@ const WelcomePage = ({ onUserChange }) => {
 
   const fetchSquadronName = async (squadronNumber) => {
     try {
-      const squadronListCollectionRef = collection(db, "Squadron List");
+      const squadronListCollectionRef = collection(db, "SquadronList");
       const squadronQuery = query(squadronListCollectionRef, where("Number", "==", parseInt(squadronNumber, 10)));
       const squadronSnapshot = await getDocs(squadronQuery);
 
@@ -384,7 +384,7 @@ const WelcomePage = ({ onUserChange }) => {
 
   const fetchFlightNames = async (squadronNumber) => {
     try {
-      const squadronListCollectionRef = collection(db, "Squadron List");
+      const squadronListCollectionRef = collection(db, "SquadronList");
       const squadronQuery = query(squadronListCollectionRef, where("Number", "==", parseInt(squadronNumber, 10)));
       const squadronSnapshot = await getDocs(squadronQuery);
   

@@ -17,7 +17,7 @@ const AddEntry = ({ isOpen, onClose, onConfirm, collection, document, arrayName 
 
     try {
       const db = getFirestore();
-      const docRef = doc(db, "Squadron Databases", squadronNumber.toString(), collection, document);
+      const docRef = doc(db, "SquadronDatabases", squadronNumber.toString(), collection, document);
 
       // Add the new entry to Firestore
       await updateDoc(docRef, {

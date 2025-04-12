@@ -20,9 +20,9 @@ const AddCategory = ({ isOpen, onClose, onConfirm }) => {
       const db = getFirestore();
       const docRef = doc(
         db,
-        "Squadron Databases",
+        "SquadronDatabases",
         squadronNumber.toString(),
-        "Flight Points",
+        "FlightPoints",
         "Event Category Points"
       );
 

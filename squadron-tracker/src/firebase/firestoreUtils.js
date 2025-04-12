@@ -247,7 +247,7 @@ export const getAllBadges = async (data) => {
 export const checkUserRole = async (uid) => {
   try {
     const db = getFirestore(app);
-    const collectionRef = collection(db, "Mass User List");
+    const collectionRef = collection(db, "MassUserList");
 
     // Query the collection for documents where the UID field matches the given UID
     const userQuery = query(collectionRef, where("UID", "==", uid));
@@ -297,7 +297,7 @@ export const checkUserRole = async (uid) => {
 export const doesSquadronAccountExist = async (number) => {
   try {
     const db = getFirestore(app);
-    const squadronDocRef = doc(db, "Squadron Databases", number.toString()); // Reference the document by the squadron number
+    const squadronDocRef = doc(db, "SquadronDatabases", number.toString()); // Reference the document by the squadron number
 
     // Check if the document exists
     const squadronDoc = await getDoc(squadronDocRef);

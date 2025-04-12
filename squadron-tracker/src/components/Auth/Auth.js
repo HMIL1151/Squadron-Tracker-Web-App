@@ -21,7 +21,7 @@ const Auth = ({ onUserChange }) => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       if (currentUser) {
         const db = getFirestore();
-        const userDocRef = doc(db, "Squadron Databases", sqnNo.toString(), "Authorised Users", currentUser.uid);
+        const userDocRef = doc(db, "SquadronDatabases", sqnNo.toString(), "AuthorisedUsers", currentUser.uid);
 
         try {
           const userDoc = await getDoc(userDocRef);
@@ -115,7 +115,7 @@ const Auth = ({ onUserChange }) => {
 
     try {
       const db = getFirestore();
-      const requestDocRef = doc(db, "Squadron Databases", sqnNo.toString(), "User Requests", userToRequestAccess.uid);
+      const requestDocRef = doc(db, "SquadronDatabases", sqnNo.toString(), "UserRequests", userToRequestAccess.uid);
 
       // Check if a request already exists
       const existingRequest = await getDoc(requestDocRef);

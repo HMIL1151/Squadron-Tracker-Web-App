@@ -103,7 +103,7 @@ export const useSaveEvent = () => {
           specialAward: specialAward,
         };
 
-        const eventDocRef = doc(collection(db, "Squadron Databases", squadronNumber.toString(), "Event Log"));
+        const eventDocRef = doc(collection(db, "SquadronDatabases", squadronNumber.toString(), "EventLog"));
         await setDoc(eventDocRef, newEvent);
 
         // Add the new event to the array for DataContext

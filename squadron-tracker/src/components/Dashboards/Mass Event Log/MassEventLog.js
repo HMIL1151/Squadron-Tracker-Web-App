@@ -251,7 +251,7 @@ const MassEventLog = ({ user }) => {
       }
 
       // Delete the event document from Firestore
-      const eventDocRef = doc(db, "Squadron Databases", squadronNumber.toString(), "Event Log", eventId);
+      const eventDocRef = doc(db, "SquadronDatabases", squadronNumber.toString(), "EventLog", eventId);
 
       await deleteDoc(eventDocRef);
 
