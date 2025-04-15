@@ -43,5 +43,10 @@
     "version": "0.11.0",
     "date": "12/04/2025",
     "content": "Edited database formatting to enable Firestore rules. This included changes to database structure and the specific collections written to when new and existing users access the tracker."
+  },
+  {
+    "version": "0.11.1",
+    "date": "14/04/2025",
+    "content": "Fixed bug where adding events to PTS Tracker when the badge category had two words (i.e. First Aid) would only save as the first part of the badge category (i.e. Blue First)."
   }
 ]

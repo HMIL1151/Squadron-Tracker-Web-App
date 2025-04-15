@@ -117,15 +117,20 @@ const PTSTracker = ({ user }) => {
       return; // Prevent closing the popup
     }
 
+    // Split the badge into level and category
+    const badgeParts = popupData.badge.split(" ");
+    const badgeLevel = badgeParts[0]; // First word is the level
+    const badgeCategory = badgeParts.slice(1).join(" "); // Remaining words form the category
+
     const eventDetails = {
       createdAt: new Date(), // Current timestamp
       addedBy: user.displayName, // Replace with the actual user object
       cadetName: [popupData.cadetName],
-      badgeLevel: popupData.badge.split(" ")[0], // Extract badge level
-      badgeCategory: popupData.badge.split(" ")[1], // Extract badge category
+      badgeLevel, // Extracted badge level
+      badgeCategory, // Extracted badge category
       date: popupData.date, // Date entered by the user
-      eventCategory: "Badge Award", // Example category
-      eventName: `${popupData.badge} Award`, // Example event name
+      eventCategory: "", // Example category
+      eventName: "", // Example event name
       examName: "", // Leave empty if not applicable
       specialAward: "", // Leave empty if not applicable
     };
