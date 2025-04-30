@@ -78,7 +78,7 @@ const AddEventPopup = ({
     // Capitalize the first letter of each word in the "Event Description" if "Event/Other" is selected
     let formattedFreeText = freeText;
     if (selectedButton === "Event/Other" && freeText) {
-      const exceptions = ["DofE", "AEF", "RAF", "GIF", "RAFAC", "JL", "QAIC", "NCO", "JNCO", "SNCO"];
+      const exceptions = ["DofE", "AEF", "RAF", "GIF", "RAFAC", "JL", "QAIC", "NCO", "JNCO", "SNCO", "MOI", "CWO", "WARMA"];
       
       formattedFreeText = freeText
         .toLowerCase()
