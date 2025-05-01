@@ -28,7 +28,6 @@ const FightPointsDashboard = () => {
                     const { forename, surname, flight } = cadet;
                     const cadetName = `${forename} ${surname}`;
 
-
                     // Filter events for the current cadet and year
                     const cadetEvents = events.filter(
                         (event) =>
@@ -36,58 +35,101 @@ const FightPointsDashboard = () => {
                             new Date(event.date).getFullYear() === year
                     );
 
-
                     // Calculate total points for the cadet
                     const pointsEarned = cadetEvents.reduce((total, event) => {
                         let eventPoints = 0;
 
                         // Determine points based on event type
                         if (event.badgeLevel && event.badgeCategory) {
-                            // Badge Points (e.g., "Blue Badge")
                             eventPoints =
                                 parseInt(
                                     data.flightPoints["Badge Points"]?.[`${event.badgeLevel} Badge`] || 0,
                                     10
                                 );
-
                         } else if (event.examName) {
-                            // Exam Points
                             eventPoints = parseInt(
                                 data.flightPoints["Badge Points"]?.["Exam"] || 0,
                                 10
                             );
-
                         } else if (event.eventCategory) {
-                            // Event Category Points
                             eventPoints = parseInt(
                                 data.flightPoints["Event Category Points"]?.[event.eventCategory] || 0,
                                 10
                             );
-
                         } else if (event.specialAward) {
-                            // Special Award Points
                             eventPoints = parseInt(
                                 data.flightPoints["Badge Points"]?.["Special"] || 0,
                                 10
                             );
-
                         } else {
                             console.warn("Unknown event type:", event);
                         }
 
+                        // Check cadetFlight parameter
+                        if (event.cadetFlight) {
+                            if (event.cadetFlight === flight) {
+                                return total + eventPoints; // Add points if cadetFlight matches
+                            } else {
+                                return total; // Skip points if cadetFlight does not match
+                            }
+                        }
+
+                        // Add points if cadetFlight parameter is not present
                         return total + eventPoints;
                     }, 0);
 
-
-                    // Calculate total points for the flight
-                    if (!flightPoints[flight]) {
-                        flightPoints[flight] = 0;
-                    }
-                    flightPoints[flight] += pointsEarned;
-
-
                     return { cadetName, pointsEarned, flight };
                 });
+
+                // Recalculate total points for each flight
+                events
+                    .filter((event) => new Date(event.date).getFullYear() === year) // Filter events by the specified year
+                    .forEach((event) => {
+                        let eventPoints = 0;
+
+                        // Determine points based on event type
+                        if (event.badgeLevel && event.badgeCategory) {
+                            eventPoints =
+                                parseInt(
+                                    data.flightPoints["Badge Points"]?.[`${event.badgeLevel} Badge`] || 0,
+                                    10
+                                );
+                        } else if (event.examName) {
+                            eventPoints = parseInt(
+                                data.flightPoints["Badge Points"]?.["Exam"] || 0,
+                                10
+                            );
+                        } else if (event.eventCategory) {
+                            eventPoints = parseInt(
+                                data.flightPoints["Event Category Points"]?.[event.eventCategory] || 0,
+                                10
+                            );
+                        } else if (event.specialAward) {
+                            eventPoints = parseInt(
+                                data.flightPoints["Badge Points"]?.["Special"] || 0,
+                                10
+                            );
+                        } else {
+                            console.warn("Unknown event type:", event);
+                        }
+
+                        // Attribute points to the correct flight
+                        
+                        if (event.cadetFlight) {
+                            console.log(event);
+                        }
+
+                        const targetFlight = parseInt(event.cadetFlight || cadets.find(cadet => `${cadet.forename} ${cadet.surname}` === event.cadetName)?.flight, 10);
+                        if (targetFlight) {
+                            if (!flightPoints[targetFlight]) {
+                                flightPoints[targetFlight] = 0;
+                            }
+                            flightPoints[targetFlight] += eventPoints;
+                        }
+
+                        console.log("Flight Points:", flightPoints); // Debugging log
+
+                    });
 
                 setCadetPoints(pointsData);
                 setFlightPointsMap(flightPoints);

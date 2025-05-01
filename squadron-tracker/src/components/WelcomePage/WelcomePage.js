@@ -78,7 +78,6 @@ const WelcomePage = ({ onUserChange }) => {
 
       const { uid, email, displayName } = user;
       const userRole = await checkUserRole(uid);
-      console.log("User role:", userRole); // Log the user role for debugging
 
       if (!isNaN(userRole)) {
         const squadronNumber = userRole.toString();
