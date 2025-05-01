@@ -89,11 +89,17 @@ export const useSaveEvent = () => {
           continue; // Skip saving this event
         }
 
+        const [forename, surname] = name.split(" "); // Split the name into forename and surname
+        const cadetFlight = data.cadets.find(
+          (cadet) => cadet.forename === forename && cadet.surname === surname
+        )?.flight || 99; // Default to 99 if not found    
+
         // Create the new event
         const newEvent = {
           addedBy: addedBy,
           createdAt: createdAt,
           cadetName: name, // Use the current name from the array
+          cadetFlight: cadetFlight,
           date: date,
           badgeCategory: badgeCategory,
           badgeLevel: badgeLevel,
