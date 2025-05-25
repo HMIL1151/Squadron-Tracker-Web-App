@@ -11,6 +11,11 @@ const PTSTracker = ({ user }) => {
   const [groupedBadgeColumns, setGroupedBadgeColumns] = useState({});
   const [expandedTabs, setExpandedTabs] = useState({});
   const [selectedButton, setSelectedButton] = useState(["Blue", "Bronze", "Silver", "Gold"]); // Default state: all selected
+  const [startMonth, setStartMonth] = useState("01");
+  const [startYear, setStartYear] = useState("");
+  const [endMonth, setEndMonth] = useState("12");
+  const [endYear, setEndYear] = useState("");
+  const [dateMode, setDateMode] = useState("all"); // "all" or "range"
   const { data } = useContext(DataContext); // Access data and setData from DataContext
 
   const [popupData, setPopupData] = useState(null); // State to track popup data
@@ -55,8 +60,47 @@ const PTSTracker = ({ user }) => {
     fetchData();
   }, [data, user.squadronNumber]); // Fetch data when data or user.squadronNumber changes
 
+  // Get all years present in badgeData for dropdown
+  const badgeYears = Array.from(
+    new Set(badgeData.map((entry) => entry.date && entry.date.slice(0, 4)).filter(Boolean))
+  ).sort((a, b) => b - a); // Descending order
+
+  // Set default years if not set
+  useEffect(() => {
+    if (badgeYears.length > 0) {
+      if (!startYear) setStartYear(badgeYears[badgeYears.length - 1]);
+      if (!endYear) setEndYear(badgeYears[0]);
+    }
+  }, [badgeYears, startYear, endYear]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const months = [
+    { value: "01", label: "Jan" },
+    { value: "02", label: "Feb" },
+    { value: "03", label: "Mar" },
+    { value: "04", label: "Apr" },
+    { value: "05", label: "May" },
+    { value: "06", label: "Jun" },
+    { value: "07", label: "Jul" },
+    { value: "08", label: "Aug" },
+    { value: "09", label: "Sep" },
+    { value: "10", label: "Oct" },
+    { value: "11", label: "Nov" },
+    { value: "12", label: "Dec" },
+  ];
+
+  // Filtered badgeData for selected date range or all time
+  const filteredBadgeData = badgeData.filter((entry) => {
+    if (!entry.date) return false;
+    if (dateMode === "all") return true;
+    if (!startYear || !endYear) return true;
+    const entryDate = entry.date.replace(/-/g, ""); // YYYYMMDD
+    const start = `${startYear}${startMonth}01`;
+    const end = `${endYear}${endMonth}31`;
+    return entryDate >= start && entryDate <= end;
+  });
+
   const getBadgeDate = (cadetName, badge) => {
-    const badgeEntry = badgeData.find(
+    const badgeEntry = filteredBadgeData.find(
       (entry) => entry.cadetName === cadetName && entry.badge === badge
     );
     return badgeEntry ? badgeEntry.date : "";
@@ -100,7 +144,8 @@ const PTSTracker = ({ user }) => {
     setPopupData(null); // Close the popup
   };
 
-  const handleConfirm = async () => {
+  const handleConfirm = async (e) => {
+    if (e) e.preventDefault();
     const currentDate = new Date();
     const selectedDate = new Date(popupData.date);
 
@@ -141,11 +186,40 @@ const PTSTracker = ({ user }) => {
       console.error("Error saving event:", error);
     }
 
+    // Do NOT reset filters here, just close the popup
     closePopup(); // Close the popup
   };
 
   return (
     <div className="PTSTracker">
+      {/* All Time / Date Range Toggle */}
+      <div style={{ marginBottom: "1rem", display: "flex", alignItems: "center", gap: 12 }}>
+        <button
+          className="PTSTracker-button show-all"
+          style={{ minWidth: 140 }}
+          onClick={() => setDateMode(dateMode === "all" ? "range" : "all")}
+        >
+          {dateMode === "all" ? "Switch to Date Range" : "Show All Time"}
+        </button>
+        {dateMode === "range" && (
+          <div className="PTSTracker-year-filter" style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <label style={{ fontWeight: "bold", marginRight: 8 }}>Date Range:</label>
+            <select value={startMonth} onChange={e => setStartMonth(e.target.value)} style={{ padding: "6px 8px", borderRadius: 4, fontSize: 16 }}>
+              {months.map(m => <option key={m.value} value={m.value}>{m.label}</option>)}
+            </select>
+            <select value={startYear} onChange={e => setStartYear(e.target.value)} style={{ padding: "6px 8px", borderRadius: 4, fontSize: 16 }}>
+              {badgeYears.slice().reverse().map(year => <option key={year} value={year}>{year}</option>)}
+            </select>
+            <span style={{ margin: "0 8px" }}>to</span>
+            <select value={endMonth} onChange={e => setEndMonth(e.target.value)} style={{ padding: "6px 8px", borderRadius: 4, fontSize: 16 }}>
+              {months.map(m => <option key={m.value} value={m.value}>{m.label}</option>)}
+            </select>
+            <select value={endYear} onChange={e => setEndYear(e.target.value)} style={{ padding: "6px 8px", borderRadius: 4, fontSize: 16 }}>
+              {badgeYears.map(year => <option key={year} value={year}>{year}</option>)}
+            </select>
+          </div>
+        )}
+      </div>
       {/* Badge Colors Buttons */}
       <div className="PTSTracker-buttons">
         <button
@@ -314,60 +388,84 @@ const PTSTracker = ({ user }) => {
                 )}
               </tr>
             ))}
+            {/* Totals Row */}
+            <tr>
+              <td style={{ fontWeight: "bold", background: "#f0f0f0" }}>Total</td>
+              {Object.entries(groupedBadgeColumns).flatMap(([type, levels]) =>
+                expandedTabs[type]
+                  ? levels.map((level) => {
+                      const levelName = level.split(" ")[0];
+                      // Only count if badge level is selected
+                      if (!selectedButton.includes(levelName)) return null;
+                      // Count how many cadets have a badge for this column
+                      const count = cadetNames.reduce((acc, cadetName) => {
+                        return getBadgeDate(cadetName, level) ? acc + 1 : acc;
+                      }, 0);
+                      return (
+                        <td
+                          key={`total-${type}-${level}`}
+                          style={{ fontWeight: "bold", background: "#f0f0f0" }}
+                        >
+                          {count}
+                        </td>
+                      );
+                    })
+                  : []
+              )}
+            </tr>
           </tbody>
         </motion.table>
-      </motion.div>
+        {/* Popup */}
+        {popupData && (
+          <div className="popup-overlay" onClick={closePopup}>
+            <div
+              className="popup-contents"
+              onClick={(e) => e.stopPropagation()}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  document.getElementById("confirm-button").click(); // Trigger the confirm button on Enter
+                }
+              }}
+              tabIndex={0} // Make the div focusable to capture key events
+            >
+              <h3>Add New Badge</h3>
+              <p><strong>Cadet Name:</strong> {popupData.cadetName}</p>
+              <p><strong>Badge:</strong> {popupData.badge}</p>
+              
+              {/* Date Input Field */}
+              <label htmlFor="event-date"><strong>Date:</strong></label>
+              <input  
+                type="date"
+                id="event-date"
+                autoFocus // Autofocus the date input
+                style={{ display: "block", margin: "10px 0", padding: "5px", width: "100%" }}
+                value={popupData.date || ""} // Bind the date value
+                onChange={(e) =>
+                  setPopupData((prevData) => ({ ...prevData, date: e.target.value })) // Update date in popupData
+                }
+              />
 
-      {/* Popup */}
-      {popupData && (
-        <div className="popup-overlay" onClick={closePopup}>
-          <div
-            className="popup-contents"
-            onClick={(e) => e.stopPropagation()}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                document.getElementById("confirm-button").click(); // Trigger the confirm button on Enter
-              }
-            }}
-            tabIndex={0} // Make the div focusable to capture key events
-          >
-            <h3>Add New Badge</h3>
-            <p><strong>Cadet Name:</strong> {popupData.cadetName}</p>
-            <p><strong>Badge:</strong> {popupData.badge}</p>
-            
-            {/* Date Input Field */}
-            <label htmlFor="event-date"><strong>Date:</strong></label>
-            <input  
-              type="date"
-              id="event-date"
-              autoFocus // Autofocus the date input
-              style={{ display: "block", margin: "10px 0", padding: "5px", width: "100%" }}
-              value={popupData.date || ""} // Bind the date value
-              onChange={(e) =>
-                setPopupData((prevData) => ({ ...prevData, date: e.target.value })) // Update date in popupData
-              }
-            />
+              {/* Confirm and Close Buttons */}
+              <div className="popup-bottom-buttons">
+                <button
+                  className="popup-button-red" // Use the red button style
+                  onClick={closePopup}
+                >
+                  Close
+                </button>
 
-            {/* Confirm and Close Buttons */}
-            <div className="popup-bottom-buttons">
-              <button
-                className="popup-button-red" // Use the red button style
-                onClick={closePopup}
-              >
-                Close
-              </button>
-
-              <button
-                id="confirm-button" // Add an ID to the confirm button
-                className="popup-button-green" // Use the green button style
-                onClick={handleConfirm} // Use the handleConfirm function
-              >
-                Confirm
-              </button>
+                <button
+                  id="confirm-button" // Add an ID to the confirm button
+                  className="popup-button-green" // Use the green button style
+                  onClick={handleConfirm} // Use the handleConfirm function
+                >
+                  Confirm
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </motion.div>
     </div>
   );
 };

@@ -129,6 +129,12 @@ const SystemAdminDashboard = () => {
         </button>
       </div> */}
 
+      <div className = "rename-collections-container" >
+        <button className="rename-collections-button" onClick={addFlights}>
+          Add Flights to Events
+        </button>
+      </div>
+
       {requests.length === 0 ? (
         <p>No new account requests to review.</p>
       ) : (
