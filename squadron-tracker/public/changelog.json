@@ -40,23 +40,28 @@
     "content": "Users can now add classification records/exams to a cadet's record directly using the Classification Tracker by clicking on a cadet (graph scatter point or table row) and adding 1 or more exams/records. These additions are saved to the database and are reflected in the Mass Event Log, End of Year Certificate and Flight Points dashboard."
   },
   {
-    "version": "0.11.0",
+    "version": "v0.11.0",
     "date": "12/04/2025",
     "content": "Edited database formatting to enable Firestore rules. This included changes to database structure and the specific collections written to when new and existing users access the tracker."
   },
   {
-    "version": "0.11.1",
+    "version": "v0.11.1",
     "date": "14/04/2025",
     "content": "Fixed bug where adding events to PTS Tracker when the badge category had two words (i.e. First Aid) would only save as the first part of the badge category (i.e. Blue First)."
   },
   {
-    "version": "0.11.2",
+    "version": "v0.11.2",
     "date": "30/04/2025",
     "content": "Updated list of acronyms for record auto-formatting to include 'MOI'."
   },
   {
-    "version": "0.11.3",
-    "date": "30/04/2025",
+    "version": "v0.11.3",
+    "date": "25/05/2025",
     "content": "Added a new feature to the PTS Tracker that allows users to filter by time range or show all. Also added totals row to each column. This will make it easier to get PTS insights and for reporting during administrative inspections."
+  },
+  {
+    "version": "v0.11.4",
+    "date": "25/05/2025",
+    "content": "Fixed highlighting best cadets in Flight Points Dashboard. Also Fixed sorting flights as numbers rather than strings. Also fixed the displayed version on the app."
   }
 ]

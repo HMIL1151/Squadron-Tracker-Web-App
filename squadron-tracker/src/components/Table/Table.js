@@ -79,7 +79,7 @@ const Table = ({ columns, data, onRowClick, onRowHover, disableHover = false, wi
     } else if (activeColumn === "Classification") {
       valA = parseInt(Object.keys(classificationMap).find((key) => classificationMap[key] === valA)) || 0;
       valB = parseInt(Object.keys(classificationMap).find((key) => classificationMap[key] === valB)) || 0;
-    } else if (activeColumn === "Points") {
+    } else if (activeColumn === "Points" || activeColumn === "Points Earned") {
       valA = parseInt(valA);
       valB = parseInt(valB);
     } else {

@@ -122,15 +122,21 @@ const FightPointsDashboard = () => {
         return acc;
     }, {});
 
+    // Debug: Print top cadet for each flight with flight number
+    Object.entries(topCadets).forEach(([flight, { cadetName, pointsEarned }]) => {
+        console.log(`Flight: ${flight}, Top Cadet: ${cadetName}, Points: ${pointsEarned}`);
+    });
+
     // Create rowColors array for the Table component
     const rowColors = cadetPoints.map(({ cadetName, flight }) => {
         let color = "white"; // Default color for all rows
-        if (topCadets[flight]?.cadetName === cadetName && topCadets[flight]?.pointsEarned > 0) {
-            if (flight === 2) {
-                color = colors[0]; // Use the first color in the bar chart for flight 2
-            } else if (flight === 3) {
-                color = colors[1]; // Use the second color in the bar chart for flight 3
-            }
+        // Ensure flight is a number for comparison
+        const flightNum = Number(flight);
+        // Only highlight top cadet in flights 2 and 3
+        if ((flightNum === 2 || flightNum === 3) && topCadets[flight]?.cadetName === cadetName && topCadets[flight]?.pointsEarned > 0) {
+            // Match the bar chart: flight 2 = colors[0], flight 3 = colors[1]
+            color = colors[flightNum - 2]; // flight 2: 0, flight 3: 1
+            console.log(`Highlighting cadet '${cadetName}' in flight ${flightNum} with color ${color}`);
         }
         return {
             row: cadetName,
