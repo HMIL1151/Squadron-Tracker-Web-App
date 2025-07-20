@@ -1,20 +1,66 @@
 import React, { useState, useEffect, useContext } from "react";
-import Table from "../../Table/Table"; // Import the Table component
-import { flightMap } from "../../../utils/mappings"; // Import flightMap from mappings.js
-import { DataContext } from "../../../context/DataContext"; // Import DataContext
+import { addPointsToFlight, fetchTeamPoints } from "../../../firebase/firestoreUtils";
+import Table from "../../Table/Table";
+import { flightMap } from "../../../utils/mappings";
+import { DataContext } from "../../../context/DataContext";
+import { useSquadron } from "../../../context/SquadronContext";
 
 const FightPointsDashboard = () => {
+    const { data } = useContext(DataContext);
+    // Popup state
+    const [showPopup, setShowPopup] = useState(false);
+    const [selectedFlight, setSelectedFlight] = useState("");
+    const [pointsToAdd, setPointsToAdd] = useState("");
+    const [popupError, setPopupError] = useState("");
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    // Get squadron number from DataContext (assumes data.squadronNumber exists)
+    const { squadronNumber } = useSquadron();
+    // Get unique flights for dropdown (as sorted strings, no empty/invalid)
+    const uniqueFlights = Array.from(
+        new Set(
+            (data.cadets || [])
+                .map(c => c.flight)
+                .filter(f => f !== undefined && f !== null && f !== "")
+                .map(f => String(f))
+        )
+    ).sort();
+    // Ref to trigger data refresh after points allocation
+    const [refreshKey, setRefreshKey] = useState(0);
+
+    // Handle popup confirm
+    const handleConfirm = async () => {
+        setPopupError("");
+        if (!selectedFlight || !pointsToAdd || isNaN(pointsToAdd)) {
+            setPopupError("Please select a flight and enter a valid number of points.");
+            return;
+        }
+        setIsSubmitting(true);
+        try {
+            console.log("Calling addPointsToFlight with:", squadronNumber, selectedFlight, pointsToAdd);
+            await addPointsToFlight(squadronNumber, String(selectedFlight), Number(pointsToAdd));
+            setShowPopup(false);
+            setSelectedFlight("");
+            setPointsToAdd("");
+            setRefreshKey(prev => prev + 1); // Trigger data refresh
+        } catch (err) {
+            setPopupError("Failed to allocate points. Please try again.");
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
     const [cadetPoints, setCadetPoints] = useState([]);
     const [flightPointsMap, setFlightPointsMap] = useState({});
     const [loading, setLoading] = useState(true); // Loading state
     const [year, setYear] = useState(new Date().getFullYear()); // State for the year input
+    // Removed unused teamPoints state
 
     // Generate a list of years for the dropdown (e.g., last 10 years)
     const currentYear = new Date().getFullYear();
     const years = Array.from({ length: 10 }, (_, i) => currentYear - i);
-    const { data } = useContext(DataContext); // Access data from DataContext
+    // ...existing code...
 
     useEffect(() => {
+        setLoading(true);
         const fetchData = async () => {
             try {
                 // Extract cadets and events from DataContext
@@ -28,14 +74,12 @@ const FightPointsDashboard = () => {
                     const { forename, surname, flight } = cadet;
                     const cadetName = `${forename} ${surname}`;
 
-
                     // Filter events for the current cadet and year
                     const cadetEvents = events.filter(
                         (event) =>
                             event.cadetName === cadetName &&
                             new Date(event.date).getFullYear() === year
                     );
-
 
                     // Calculate total points for the cadet
                     const pointsEarned = cadetEvents.reduce((total, event) => {
@@ -78,28 +122,40 @@ const FightPointsDashboard = () => {
                         return total + eventPoints;
                     }, 0);
 
-
                     // Calculate total points for the flight
                     if (!flightPoints[flight]) {
                         flightPoints[flight] = 0;
                     }
                     flightPoints[flight] += pointsEarned;
 
-
                     return { cadetName, pointsEarned, flight };
                 });
 
                 setCadetPoints(pointsData);
-                setFlightPointsMap(flightPoints);
+
+                // Fetch TeamPoints from Firestore and merge with calculated points
+                let mergedFlightPoints = { ...flightPoints };
+                if (squadronNumber) {
+                    const teamPointsData = await fetchTeamPoints(squadronNumber);
+                    // Add TeamPoints to each flight's total
+                    Object.keys(teamPointsData).forEach(flight => {
+                        const teamPts = Number(teamPointsData[flight] || 0);
+                        if (mergedFlightPoints[flight]) {
+                            mergedFlightPoints[flight] += teamPts;
+                        } else {
+                            mergedFlightPoints[flight] = teamPts;
+                        }
+                    });
+                }
+                setFlightPointsMap(mergedFlightPoints);
             } catch (error) {
-                console.error("Error processing data from DataContext:", error);
+                console.error("Error processing data from DataContext or Firestore TeamPoints:", error);
             } finally {
                 setLoading(false); // Set loading to false after data is processed
             }
         };
-
         fetchData();
-    }, [data, year]); // Re-fetch data when the year or DataContext changes
+    }, [data, year, squadronNumber, refreshKey]); // Re-fetch data when the year, DataContext, squadronNumber, or refreshKey changes
 
     if (loading) {
         return <div>Loading...</div>; // Show loading message while fetching data
@@ -146,6 +202,95 @@ const FightPointsDashboard = () => {
 
     return (
         <div>
+            {/* Allocate Points Button */}
+            <div style={{ marginBottom: "20px" }}>
+                <button
+                    style={{
+                        padding: "10px 20px",
+                        borderRadius: "8px",
+                        background: "#6C91C2",
+                        color: "white",
+                        fontWeight: "bold",
+                        border: "none",
+                        cursor: "pointer",
+                        fontSize: "16px",
+                        boxShadow: "0 2px 5px rgba(0,0,0,0.1)",
+                        marginRight: "10px"
+                    }}
+                    onClick={() => setShowPopup(true)}
+                >
+                    Allocate Points to Flight
+                </button>
+            </div>
+
+            {/* Popup Modal */}
+            {showPopup && (
+                <div style={{
+                    position: "fixed",
+                    top: 0,
+                    left: 0,
+                    width: "100vw",
+                    height: "100vh",
+                    background: "rgba(0,0,0,0.3)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    zIndex: 1000
+                }}>
+                    <div style={{
+                        background: "white",
+                        padding: "32px 24px",
+                        borderRadius: "12px",
+                        minWidth: "320px",
+                        boxShadow: "0 4px 16px rgba(0,0,0,0.2)",
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: "18px"
+                    }}>
+                        <h2 style={{ margin: 0 }}>Allocate Points to Flight</h2>
+                        <label style={{ fontWeight: "bold" }}>
+                            Flight:
+                            <select
+                                value={selectedFlight}
+                                onChange={e => setSelectedFlight(e.target.value)}
+                                style={{ marginLeft: "10px", padding: "6px 12px", borderRadius: "6px" }}
+                            >
+                                <option value="">Select Flight</option>
+                                {uniqueFlights.map((f) => (
+                                    <option key={`flight-option-${f}`} value={f}>{flightMap[f] || `Flight ${f}`}</option>
+                                ))}
+                            </select>
+                        </label>
+                        <label style={{ fontWeight: "bold" }}>
+                            Points to Add:
+                            <input
+                                type="number"
+                                value={pointsToAdd}
+                                onChange={e => setPointsToAdd(e.target.value)}
+                                style={{ marginLeft: "10px", padding: "6px 12px", borderRadius: "6px", width: "100px" }}
+                                min="1"
+                            />
+                        </label>
+                        {popupError && <div style={{ color: "#E76F51", fontWeight: "bold" }}>{popupError}</div>}
+                        <div style={{ display: "flex", justifyContent: "flex-end", gap: "12px" }}>
+                            <button
+                                onClick={() => setShowPopup(false)}
+                                style={{ padding: "8px 18px", borderRadius: "6px", border: "1px solid #ccc", background: "#f4f4f4", color: "#333", fontWeight: "bold", cursor: "pointer" }}
+                                disabled={isSubmitting}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={handleConfirm}
+                                style={{ padding: "8px 18px", borderRadius: "6px", background: "#6C91C2", color: "white", fontWeight: "bold", border: "none", cursor: "pointer" }}
+                                disabled={isSubmitting}
+                            >
+                                {isSubmitting ? "Allocating..." : "Confirm"}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
             {/* Year Dropdown Section */}
             <div style={{ marginBottom: "20px" }}>
                 <label htmlFor="yearDropdown" style={{ marginRight: "10px", fontWeight: "bold" }}>

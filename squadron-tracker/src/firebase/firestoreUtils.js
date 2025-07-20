@@ -1,6 +1,72 @@
-import { getFirestore, collection, getDocs, doc, getDoc, query, where } from "firebase/firestore/lite";
+import { getFirestore, collection, getDocs, doc, getDoc, query, where, updateDoc } from "firebase/firestore/lite";
 import { app } from "./firebase";
 import { rankMap } from "../utils/mappings";
+
+// Fetch TeamPoints document for a squadron
+export const fetchTeamPoints = async (squadronNumber) => {
+  try {
+    const db = getFirestore(app);
+    const teamPointsRef = doc(db, "SquadronDatabases", String(squadronNumber), "FlightPoints", "TeamPoints");
+    const teamPointsDoc = await getDoc(teamPointsRef);
+    if (!teamPointsDoc.exists()) {
+      return {};
+    }
+    const data = teamPointsDoc.data();
+    const { LastLoginDate, ...pointsFields } = data;
+    let yearValid = false;
+    if (LastLoginDate) {
+      let loginYear;
+      // Firestore Timestamp object: has toDate() method
+      if (typeof LastLoginDate === 'object' && typeof LastLoginDate.toDate === 'function') {
+        loginYear = LastLoginDate.toDate().getFullYear();
+      } else if (typeof LastLoginDate === 'string') {
+        // Try to parse year from string (e.g., '20 July 2025 at 22:27:33 UTC+1')
+        const match = LastLoginDate.match(/\b(\d{4})\b/);
+        if (match) {
+          loginYear = parseInt(match[1], 10);
+        }
+      }
+      const currentYear = new Date().getFullYear();
+      yearValid = loginYear === currentYear;
+    }
+    // If year is not valid, zero out all flight points fields (except LastLoginDate)
+    if (!yearValid) {
+      const zeroed = {};
+      Object.keys(pointsFields).forEach(key => {
+        zeroed[key] = 0;
+      });
+      return zeroed;
+    }
+    // If year is valid, return all points fields (excluding LastLoginDate)
+    return pointsFields;
+  } catch (error) {
+    console.error(`Error fetching TeamPoints for squadron ${squadronNumber}:`, error);
+    return {};
+  }
+};
+// Increment points for a flight in TeamPoints document
+export const addPointsToFlight = async (squadronNumber, flightNumber, pointsToAdd) => {
+  try {
+
+    const db = getFirestore(app);
+    const teamPointsRef = doc(db, "SquadronDatabases", String(squadronNumber), "FlightPoints", "TeamPoints");
+    // Get current data
+    const teamPointsDoc = await getDoc(teamPointsRef);
+    if (!teamPointsDoc.exists()) {
+      throw new Error("TeamPoints document does not exist for this squadron.");
+    }
+    const data = teamPointsDoc.data();
+    const currentPoints = Number(data[flightNumber] || 0);
+    const updatedPoints = currentPoints + Number(pointsToAdd);
+    // Update the field for the flight
+    await updateDoc(teamPointsRef, { [flightNumber]: updatedPoints });
+    return updatedPoints;
+  } catch (error) {
+    console.error(`Error adding points to flight ${flightNumber} for squadron ${squadronNumber}:`, error);
+    throw error;
+  }
+};
+
 
 // Function to fetch data from a specific Firestore collection
 export const fetchCollectionData = async (...pathSegments) => {
