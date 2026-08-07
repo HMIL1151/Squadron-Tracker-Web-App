@@ -122,3 +122,148 @@ describe("Testwood", () => {
     expect(Object.fromEntries(rows)).toMatchSnapshot();
   });
 });
+
+// ---------------------------------------------------------------------------
+// Write paths
+// ---------------------------------------------------------------------------
+
+const FLIGHT_POINTS = "SquadronDatabases/9999/FlightPoints";
+
+describe("adding a category", () => {
+  it("writes the category with integer points and shows it", async () => {
+    const result = renderDashboard();
+    await result.user.click(screen.getByRole("button", { name: "Add New Category" }));
+    await result.user.type(screen.getByLabelText("Category Name:"), "Camp");
+    await result.user.type(screen.getByLabelText("Points:"), "6");
+    await result.user.click(screen.getByRole("button", { name: "Confirm" }));
+
+    expect(result.writes()).toContainEqual({
+      op: "update",
+      path: `${FLIGHT_POINTS}/Event Category Points`,
+      data: { Camp: 6 },
+    });
+    expect(tableToRows(result.container.querySelector("table")).rows).toContainEqual(["Camp", "6"]);
+  });
+
+  it("writes nothing when a field is blank", async () => {
+    const result = renderDashboard();
+    await result.user.click(screen.getByRole("button", { name: "Add New Category" }));
+    await result.user.type(screen.getByLabelText("Category Name:"), "Camp");
+    await result.user.click(screen.getByRole("button", { name: "Confirm" }));
+
+    expect(result.writes()).toEqual([]);
+  });
+});
+
+describe("adding a badge type", () => {
+  it("appends to the Badge Types array via arrayUnion", async () => {
+    const result = renderDashboard();
+    await openTab(result, "Badges");
+    await result.user.click(screen.getByRole("button", { name: "Add New Badge" }));
+    await result.user.type(screen.getByLabelText("New Entry:"), "Cyber");
+    await result.user.click(screen.getByRole("button", { name: "Confirm" }));
+
+    expect(result.store()[`${FLIGHT_POINTS}/Badges`]["Badge Types"]).toEqual([
+      "Radio", "First Aid", "Shooting", "Adventure Training", "Sports", "Music", "Cyber",
+    ]);
+  });
+});
+
+describe("adding a badge price", () => {
+  it("writes the price onto the Badge Points document", async () => {
+    // CHARACTERIZATION: the button on the Badge Points tab is labelled
+    // "Add Badge Type", the same wording as the unrelated action on the Badges
+    // tab. Mislabelled, but recorded as-is.
+    const result = renderDashboard();
+    await openTab(result, "Badge Points");
+    await result.user.click(screen.getByRole("button", { name: "Add Badge Type" }));
+    await result.user.type(screen.getByLabelText("Badge Type:"), "Platinum Badge");
+    await result.user.type(screen.getByLabelText("Points:"), "30");
+    await result.user.click(screen.getByRole("button", { name: "Confirm" }));
+
+    expect(result.store()[`${FLIGHT_POINTS}/Badge Points`]).toMatchObject({
+      "Platinum Badge": 30,
+      "Gold Badge": 20, // existing prices untouched
+    });
+  });
+});
+
+describe("deleting", () => {
+  const popup = () => within(document.querySelector(".add-entry-popup"));
+
+  it("removes a category's field with deleteField", async () => {
+    // The call site that exposed the fake's missing deleteField.
+    const result = renderDashboard();
+    await result.user.click(screen.getByRole("button", { name: "Delete Category" }));
+    await result.user.selectOptions(popup().getByRole("combobox"), "Wing Event");
+    await result.user.click(popup().getByRole("button", { name: "Confirm" }));
+
+    const stored = result.store()[`${FLIGHT_POINTS}/Event Category Points`];
+    expect(stored["Wing Event"]).toBeUndefined();
+    expect(stored["Parade Night"]).toBe(1);
+    // And the table drops the row.
+    const { rows } = { rows: tableToRows(result.container.querySelector("table")).rows };
+    expect(rows.map(([name]) => name)).not.toContain("Wing Event");
+  });
+
+  it("removes a badge type from the array", async () => {
+    const result = renderDashboard();
+    await openTab(result, "Badges");
+    await result.user.click(screen.getByRole("button", { name: "Delete Badge" }));
+    await result.user.selectOptions(popup().getByRole("combobox"), "Music");
+    await result.user.click(popup().getByRole("button", { name: "Confirm" }));
+
+    expect(result.store()[`${FLIGHT_POINTS}/Badges`]["Badge Types"]).toEqual([
+      "Radio", "First Aid", "Shooting", "Adventure Training", "Sports",
+    ]);
+  });
+
+  it("removes a special award from its array", async () => {
+    const result = renderDashboard();
+    await openTab(result, "Special Awards");
+    await result.user.click(screen.getByRole("button", { name: "Delete Special Award" }));
+    await result.user.selectOptions(popup().getByRole("combobox"), "Most Improved Cadet");
+    await result.user.click(popup().getByRole("button", { name: "Confirm" }));
+
+    expect(result.store()[`${FLIGHT_POINTS}/Special Awards`]["Special Awards"]).toEqual([
+      "Cadet of the Year", "Commandant's Commendation",
+    ]);
+  });
+
+  it("deleting a category does not retroactively re-score its events", async () => {
+    // CHARACTERIZATION: events store only the category NAME. Deleting the
+    // category leaves those events pointing at a name with no price, so they
+    // score 0 from then on -- history changes silently. Worth knowing.
+    const result = renderDashboard();
+    await result.user.click(screen.getByRole("button", { name: "Delete Category" }));
+    await result.user.selectOptions(popup().getByRole("combobox"), "Wing Event");
+    await result.user.click(popup().getByRole("button", { name: "Confirm" }));
+
+    expect(result.store()["SquadronDatabases/9999/EventLog/event-9999-06"]).toMatchObject({
+      eventCategory: "Wing Event", // the event still names it
+    });
+  });
+});
+
+describe("editing", () => {
+  const editPopup = () => within(document.querySelector(".popup-content"));
+
+  it("renames a category, moving its points to the new key", async () => {
+    const result = renderDashboard();
+    // Click the "Wing Event" row to open the edit popup.
+    const row = [...result.container.querySelectorAll("tbody tr")].find((tr) =>
+      tr.textContent.includes("Wing Event")
+    );
+    await result.user.click(row);
+    await screen.findByText("Edit Event Category");
+
+    const nameInput = editPopup().getByLabelText("Name:");
+    await result.user.clear(nameInput);
+    await result.user.type(nameInput, "Wing Activity");
+    await result.user.click(editPopup().getByRole("button", { name: "Confirm" }));
+
+    const stored = result.store()[`${FLIGHT_POINTS}/Event Category Points`];
+    expect(stored["Wing Event"]).toBeUndefined();
+    expect(stored["Wing Activity"]).toBe(5);
+  });
+});

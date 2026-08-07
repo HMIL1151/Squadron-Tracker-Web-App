@@ -16,6 +16,7 @@ import {
   arrayUnion,
   collection,
   deleteDoc,
+  deleteField,
   doc,
   getDoc,
   getDocs,
@@ -244,6 +245,30 @@ describe("arrayUnion", () => {
     __seed({ "A/one": {} });
     await updateDoc(doc(db, "A", "one"), { list: arrayUnion("a") });
     expect(__store()["A/one"].list).toEqual(["a"]);
+  });
+});
+
+describe("deleteField", () => {
+  // Added after the loud-throw guard caught it: deleteField was missing from
+  // the original grep of the app's API surface, and EventCategoriesDashboard
+  // uses it to delete a category or badge price.
+
+  it("removes the field from the document", async () => {
+    __seed({ "A/one": { keep: 1, drop: 2 } });
+    await updateDoc(doc(db, "A", "one"), { drop: deleteField() });
+    expect(__store()["A/one"]).toEqual({ keep: 1 });
+  });
+
+  it("removes the key entirely rather than leaving undefined", async () => {
+    __seed({ "A/one": { drop: 2 } });
+    await updateDoc(doc(db, "A", "one"), { drop: deleteField() });
+    expect(Object.keys(__store()["A/one"])).toEqual([]);
+  });
+
+  it("is a no-op for a field that does not exist", async () => {
+    __seed({ "A/one": { keep: 1 } });
+    await updateDoc(doc(db, "A", "one"), { missing: deleteField() });
+    expect(__store()["A/one"]).toEqual({ keep: 1 });
   });
 });
 

@@ -40,10 +40,10 @@
     ],
     "coverageThreshold": {
       "global": {
-        "statements": 37,
-        "branches": 30,
-        "functions": 35,
-        "lines": 37
+        "statements": 62,
+        "branches": 55,
+        "functions": 63,
+        "lines": 62
       },
       "src/utils/**/*.js": {
         "statements": 100,

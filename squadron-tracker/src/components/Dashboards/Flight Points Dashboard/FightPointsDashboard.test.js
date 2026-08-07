@@ -10,7 +10,7 @@
  */
 
 import React from "react";
-import { screen, within } from "@testing-library/react";
+import { screen, waitFor, within } from "@testing-library/react";
 
 import FightPointsDashboard from "./FightPointsDashboard";
 import { renderWithProviders } from "../../../test/renderWithProviders";
@@ -127,6 +127,65 @@ describe("controls", () => {
   it("offers allocating points to a flight", async () => {
     await renderDashboard();
     expect(screen.getByRole("button", { name: "Allocate Points to Flight" })).toBeInTheDocument();
+  });
+});
+
+describe("allocating points to a flight", () => {
+  const openAllocate = async (result) => {
+    await result.user.click(screen.getByRole("button", { name: "Allocate Points to Flight" }));
+    await screen.findByRole("heading", { name: "Allocate Points to Flight" });
+  };
+
+  it("increments the flight's TeamPoints field", async () => {
+    const result = await renderDashboard();
+    await openAllocate(result);
+    await result.user.selectOptions(screen.getByLabelText(/flight:/i), "2");
+    await result.user.type(screen.getByLabelText(/points to add/i), "15");
+    await result.user.click(screen.getByRole("button", { name: "Confirm" }));
+
+    // Alpha (flight 2) had 40 allocated; 40 + 15 = 55.
+    await waitFor(() => {
+      expect(result.store()["SquadronDatabases/9999/FlightPoints/TeamPoints"]["2"]).toBe(55);
+    });
+  });
+
+  it("refreshes the chart total after allocating", async () => {
+    const result = await renderDashboard();
+    await openAllocate(result);
+    await result.user.selectOptions(screen.getByLabelText(/flight:/i), "2");
+    await result.user.type(screen.getByLabelText(/points to add/i), "15");
+    await result.user.click(screen.getByRole("button", { name: "Confirm" }));
+
+    // Alpha earned 47 + (40 + 15) allocated = 102.
+    await waitFor(() => {
+      const labels = [...result.container.querySelectorAll("div")]
+        .map((d) => d.textContent.trim())
+        .filter((t) => /^\d+$/.test(t));
+      expect(labels).toContain("102");
+    });
+  });
+
+  it("rejects a missing flight or points with an inline error", async () => {
+    const result = await renderDashboard();
+    await openAllocate(result);
+    await result.user.click(screen.getByRole("button", { name: "Confirm" }));
+
+    expect(
+      await screen.findByText("Please select a flight and enter a valid number of points.")
+    ).toBeInTheDocument();
+    expect(result.writes()).toEqual([]);
+  });
+
+  it("offers every flight cadets are assigned to, including archived ones", async () => {
+    // CHARACTERIZATION: the dropdown is built from cadet assignments, not the
+    // flights array -- so archived Charlie appears because Grace is in it, and
+    // an empty flight would not appear at all. Phase 9 revisits this.
+    const result = await renderDashboard();
+    await openAllocate(result);
+    const options = [...screen.getByLabelText(/flight:/i).querySelectorAll("option")]
+      .map((o) => o.textContent)
+      .filter((t) => t !== "Select Flight");
+    expect(options).toEqual(["Staff Team", "Alpha", "Bravo", "Charlie"]);
   });
 });
 

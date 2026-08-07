@@ -5,15 +5,18 @@
  * tests, so nothing in the suite ever opens a network connection or can touch
  * production data.
  *
- * Scope is deliberately exactly what this app uses, verified by grep:
+ * Scope is deliberately exactly what this app uses:
  *
  *   getFirestore  collection  doc  getDoc  getDocs  setDoc  updateDoc
- *   deleteDoc  query  where  writeBatch  arrayUnion
+ *   deleteDoc  query  where  writeBatch  arrayUnion  deleteField
  *
  * No orderBy, limit, runTransaction, increment, addDoc, collectionGroup or
  * onSnapshot -- the app uses none of them. Anything unimplemented throws loudly
  * rather than silently returning nothing, so if the app grows a new call the
- * tests say so instead of quietly passing.
+ * tests say so instead of quietly passing. (That guard has already earned its
+ * keep once: deleteField was missing from the original grep of the app's API
+ * surface, and the first delete-category test hit the loud throw instead of
+ * silently passing against a no-op.)
  *
  * Hand-rolled rather than using a library because the published Firestore mocks
  * are written against the v8 API and this app is on v11. Owning ~250 lines means
@@ -122,6 +125,7 @@ const record = (op, path, data) => writeLog.push({ op, path, data: clone(data) }
 // -- sentinels --------------------------------------------------------------
 
 const ARRAY_UNION = Symbol("arrayUnion");
+const DELETE_FIELD = Symbol("deleteField");
 
 /** Resolve field sentinels against the document's existing value. */
 const applyFieldValue = (incoming, existing) => {
@@ -140,6 +144,11 @@ const mergeFields = (target, updates) => {
       // Real Firestore treats dots as nested field paths. The app never uses
       // them, so rather than half-implement it, refuse.
       throw new Error(`fakeFirestore: dotted field paths are not supported ("${key}")`);
+    }
+    if (value && value.__sentinel === DELETE_FIELD) {
+      // Matches real Firestore: the field is removed, not set to undefined.
+      delete next[key];
+      return;
     }
     next[key] = applyFieldValue(value, target[key]);
   });
@@ -283,6 +292,9 @@ export const where = (field, op, value) => ({ __constraint: "where", field, op, 
 
 export const arrayUnion = (...values) => ({ __sentinel: ARRAY_UNION, values });
 
+/** Removes a field on update. Used when deleting a category or badge price. */
+export const deleteField = () => ({ __sentinel: DELETE_FIELD });
+
 export const writeBatch = () => {
   const queued = [];
   const batch = {
@@ -334,5 +346,4 @@ export const runTransaction = unsupported("runTransaction");
 export const collectionGroup = unsupported("collectionGroup");
 export const serverTimestamp = unsupported("serverTimestamp");
 export const arrayRemove = unsupported("arrayRemove");
-export const deleteField = unsupported("deleteField");
 export const connectFirestoreEmulator = unsupported("connectFirestoreEmulator");
