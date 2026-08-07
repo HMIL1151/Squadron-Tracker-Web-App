@@ -218,7 +218,11 @@ describe("edge cases later phases rely on", () => {
 
   it("has both Timestamp and plain Date createdAt values", () => {
     // EventDetailsPopup branches on `.seconds` being present.
-    const kinds = faketon.events.map((e) => (e.createdAt instanceof Date ? "date" : "timestamp"));
+    // Not `instanceof Date`: setupTests.js swaps global.Date for a subclass to
+    // freeze the clock, so two Date constructors coexist and instanceof is
+    // unreliable across them.
+    const isDate = (v) => Object.prototype.toString.call(v) === "[object Date]";
+    const kinds = faketon.events.map((e) => (isDate(e.createdAt) ? "date" : "timestamp"));
     expect(kinds).toContain("date");
     expect(kinds).toContain("timestamp");
   });

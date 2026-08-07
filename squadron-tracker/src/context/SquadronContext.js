@@ -3,9 +3,10 @@ import React, { createContext, useContext, useState } from "react";
 // Create the context
 const SquadronContext = createContext();
 
-// Create a provider component
-export const SquadronProvider = ({ children }) => {
-  const [squadronNumber, setSquadronNumber] = useState(null);
+// `initialSquadronNumber` exists so tests can mount a dashboard already scoped
+// to a squadron. Production never passes it, so the starting state is unchanged.
+export const SquadronProvider = ({ children, initialSquadronNumber = null }) => {
+  const [squadronNumber, setSquadronNumber] = useState(initialSquadronNumber);
 
   return (
     <SquadronContext.Provider value={{ squadronNumber, setSquadronNumber }}>

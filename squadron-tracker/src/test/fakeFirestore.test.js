@@ -316,7 +316,32 @@ describe("Timestamp", () => {
     // EventDetailsPopup handles both Timestamp and plain Date createdAt values.
     await setDoc(doc(db, "A", "one"), { at: new Date("2025-01-30T18:30:00Z") });
     const snap = await getDoc(doc(db, "A", "one"));
-    expect(snap.data().at).toBeInstanceOf(Date);
+    expect(Object.prototype.toString.call(snap.data().at)).toBe("[object Date]");
+    expect(snap.data().at.toISOString()).toBe("2025-01-30T18:30:00.000Z");
+  });
+
+  it("preserves a Date built by a different Date constructor", async () => {
+    // setupTests.js freezes the clock by replacing global.Date with a subclass.
+    // That leaves two Date constructors alive, and a value from the original is
+    // not `instanceof` the replacement. An instanceof-based clone would treat it
+    // as a plain object and flatten it to {} -- silent corruption. Reproduced
+    // here by swapping the global mid-test.
+    const Real = Date;
+    class Frozen extends Real {}
+    const built = new Real("2024-03-01T00:00:00Z");
+
+    global.Date = Frozen;
+    try {
+      expect(built instanceof Date).toBe(false); // the trap this guards against
+
+      await setDoc(doc(db, "A", "one"), { at: built });
+      const snap = await getDoc(doc(db, "A", "one"));
+
+      expect(Object.prototype.toString.call(snap.data().at)).toBe("[object Date]");
+      expect(snap.data().at.toISOString()).toBe("2024-03-01T00:00:00.000Z");
+    } finally {
+      global.Date = Real;
+    }
   });
 });
 

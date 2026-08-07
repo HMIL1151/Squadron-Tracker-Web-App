@@ -3,13 +3,18 @@ import { getFirestore, collection, getDocs } from "firebase/firestore/lite";
 
 export const DataContext = createContext();
 
-export const DataProvider = ({ children }) => {
-  const [data, setData] = useState({
-    cadets: [],
-    events: [],
-    flightPoints: {},
-    // Add other collections as needed
-  });
+const EMPTY_DATA = {
+  cadets: [],
+  events: [],
+  flightPoints: {},
+  // Add other collections as needed
+};
+
+// `initialData` exists so tests can render a dashboard against a known dataset
+// without going near Firestore. Production never passes it, so the starting
+// state is unchanged.
+export const DataProvider = ({ children, initialData }) => {
+  const [data, setData] = useState(initialData || EMPTY_DATA);
 
   const fetchData = async (squadronNumber) => {
     const db = getFirestore();

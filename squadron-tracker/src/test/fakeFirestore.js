@@ -62,11 +62,22 @@ export const __get = (path) => (store.has(path) ? clone(store.get(path)) : undef
 // Internals
 // ---------------------------------------------------------------------------
 
-// Timestamps and Dates must survive cloning intact; structuredClone handles
-// Date, and our Timestamp stand-ins carry a method so are passed by reference.
+/**
+ * Date detection that does not use `instanceof`.
+ *
+ * setupTests.js freezes the clock by replacing `global.Date` with a subclass, so
+ * there are two Date constructors alive at once and `instanceof Date` is false
+ * for any value built by the other one. A Date that slipped through here would
+ * be treated as a plain object and cloned into `{}` -- silent data corruption in
+ * the one place every test depends on.
+ */
+const isDate = (v) => Object.prototype.toString.call(v) === "[object Date]";
+
+// Timestamps and Dates must survive cloning intact. Timestamp stand-ins carry a
+// method, so they are passed by reference rather than flattened.
 const clone = (value) => {
   if (value === null || typeof value !== "object") return value;
-  if (value instanceof Date) return new Date(value.getTime());
+  if (isDate(value)) return new value.constructor(value.getTime());
   if (typeof value.toDate === "function") return value; // Timestamp-like: keep identity
   if (Array.isArray(value)) return value.map(clone);
   return Object.fromEntries(Object.entries(value).map(([k, v]) => [k, clone(v)]));
