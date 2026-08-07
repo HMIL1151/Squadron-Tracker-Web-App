@@ -1,0 +1,147 @@
+rules_version = '2';
+
+// Squadron Tracker security rules.
+//
+// Replaces the launch-era ruleset, which was `allow read, write: if true` --
+// the entire database publicly readable and writable with no authentication.
+//
+// Model:
+//   - Everything requires a signed-in user. There is no anonymous access.
+//   - Squadron data is isolated: you can touch SquadronDatabases/{sqn}/** only
+//     if a document exists at .../AuthorisedUsers/{your uid}. Admin-only
+//     actions additionally require that document's role == "admin".
+//   - System admins are recognised by a document at SystemAdmins/{uid}. That
+//     collection exists ONLY for these rules -- app code never reads it, and it
+//     is written only via the Firebase console. It exists because rules can
+//     get() by path but cannot run queries, and MassUserList (which the app
+//     uses for role lookup) is keyed by auto-ID, so "is this uid a system
+//     admin" is unanswerable from rules against that collection.
+//
+// Tested by src/test/firestoreRules.test.js against the emulator; run with
+// `npm run test:rules`. Deploy with `firebase deploy --only firestore:rules`.
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isSystemAdmin() {
+      return signedIn()
+        && exists(/databases/$(database)/documents/SystemAdmins/$(request.auth.uid));
+    }
+
+    // Membership and admin checks against a squadron's AuthorisedUsers.
+    // Requires those documents to be keyed by uid -- which the app's own
+    // creation paths do, and which AdminDashboard is being fixed to do.
+    function isMember(sqn) {
+      return signedIn()
+        && exists(/databases/$(database)/documents/SquadronDatabases/$(sqn)/AuthorisedUsers/$(request.auth.uid));
+    }
+
+    function isAdminOf(sqn) {
+      return signedIn()
+        && get(/databases/$(database)/documents/SquadronDatabases/$(sqn)/AuthorisedUsers/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    // -- Rules-only lookup table ------------------------------------------
+    match /SystemAdmins/{uid} {
+      allow get: if signedIn() && request.auth.uid == uid;
+      allow list: if false;
+      allow write: if false; // console only
+    }
+
+    // -- Top-level collections --------------------------------------------
+
+    // Squadron directory: number, name, flights. Read by the login flow
+    // before membership is known (a first-time user resolving a squadron
+    // name), so any signed-in user may read. Writes are system-admin only;
+    // Phase 9 will widen update to squadron admins for the flights field.
+    match /SquadronList/{doc} {
+      allow read: if signedIn();
+      allow write: if isSystemAdmin();
+    }
+
+    // Login role lookup. The app queries where('UID', '==', uid); the read
+    // rule admits exactly the queries that provably return only the caller's
+    // own rows, so listing everyone's squadron mapping is refused.
+    //
+    // checkUserRole treats `systemAdmin: true` on any row here as system-admin
+    // status, so a squadron admin must never be able to write that field --
+    // otherwise granting access doubles as self-service privilege escalation.
+    match /MassUserList/{doc} {
+      function isPlainMapping() {
+        return request.resource.data.Squadron is int
+          && !('systemAdmin' in request.resource.data)
+          && isAdminOf(string(request.resource.data.Squadron));
+      }
+
+      allow read: if signedIn() && resource.data.UID == request.auth.uid;
+      allow create: if isSystemAdmin() || isPlainMapping();
+      // Re-granting an already-granted user re-sets the same document; allow
+      // it only when nothing material changes, so an admin of squadron B can
+      // never repoint squadron A's mapping at themselves.
+      allow update: if isSystemAdmin()
+        || (isPlainMapping()
+            && request.resource.data.UID == resource.data.UID
+            && request.resource.data.Squadron == resource.data.Squadron);
+      allow delete: if isSystemAdmin()
+        || (resource.data.Squadron is int
+            && isAdminOf(string(resource.data.Squadron)));
+    }
+
+    // New squadron applications. Anyone signed in may file their own; only
+    // system admins review them.
+    match /NewAccountRequests/{doc} {
+      allow create: if signedIn() && request.resource.data.uid == request.auth.uid;
+      allow read, delete: if isSystemAdmin();
+      allow update: if false;
+    }
+
+    // Template FlightPoints, copied into each new squadron at creation.
+    match /FlightPoints/{doc} {
+      allow read: if signedIn();
+      allow write: if isSystemAdmin();
+    }
+
+    // -- Per-squadron data ------------------------------------------------
+
+    match /SquadronDatabases/{sqn} {
+      // The parent document is empty; its existence is checked during the
+      // join flow by users who are not yet members, so `get` is open to any
+      // signed-in user. That exposes nothing -- subcollections have their own
+      // rules -- and without it "join a squadron" breaks.
+      allow get: if signedIn();
+      allow list: if false;
+      allow write: if isSystemAdmin();
+
+      match /AuthorisedUsers/{uid} {
+        allow read: if isMember(sqn) || isSystemAdmin();
+        allow write: if isAdminOf(sqn) || isSystemAdmin();
+      }
+
+      match /UserRequests/{doc} {
+        // A stranger files their own pending request before being a member;
+        // everything else is admin-side.
+        allow create: if (signedIn()
+                          && request.resource.data.progress == 'pending'
+                          && request.resource.data.uid == request.auth.uid)
+          || isAdminOf(sqn) || isSystemAdmin();
+        allow read, update, delete: if isAdminOf(sqn) || isSystemAdmin();
+      }
+
+      match /Cadets/{doc} {
+        allow read, write: if isMember(sqn) || isSystemAdmin();
+      }
+
+      match /EventLog/{doc} {
+        allow read, write: if isMember(sqn) || isSystemAdmin();
+      }
+
+      match /FlightPoints/{doc} {
+        allow read, write: if isMember(sqn) || isSystemAdmin();
+      }
+    }
+  }
+}

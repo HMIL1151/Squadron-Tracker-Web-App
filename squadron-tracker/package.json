@@ -28,6 +28,7 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
+    "test:rules": "node scripts/test-rules.js",
     "eject": "react-scripts eject"
   },
   "jest": {
@@ -70,5 +71,9 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "@firebase/rules-unit-testing": "^4.0.1",
+    "undici": "^6.28.0"
   }
 }

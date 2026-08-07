@@ -17,8 +17,13 @@ import AdminDashboard from "./AdminDashboard";
 import { renderWithProviders } from "../../../test/renderWithProviders";
 import { SQUADRONS } from "../../../test/dummyData";
 
-const renderDashboard = async (squadron = SQUADRONS.FAKETON) => {
-  const result = renderWithProviders(<AdminDashboard />, { squadron });
+// Accepts a squadron number or a renderWithProviders options object.
+const renderDashboard = async (arg = {}) => {
+  const options = typeof arg === "number" ? { squadron: arg } : arg;
+  const result = renderWithProviders(<AdminDashboard />, {
+    squadron: SQUADRONS.FAKETON,
+    ...options,
+  });
   // Requests are fetched asynchronously; "Loading requests..." shows until then.
   await screen.findByText("Access Requests");
   return result;
@@ -108,42 +113,61 @@ describe("granting a request", () => {
 
     expect(writes().map((w) => `${w.op} ${w.path}`)).toEqual([
       "update SquadronDatabases/9999/UserRequests/req-9999-pending",
-      "set SquadronDatabases/9999/AuthorisedUsers/req-9999-pending",
-      "set MassUserList/auto-1",
+      "set SquadronDatabases/9999/AuthorisedUsers/uid-pending",
+      "set MassUserList/uid-pending",
     ]);
   });
 
-  it("keys AuthorisedUsers by the request id, not the user's uid", async () => {
-    // CHARACTERIZATION OF A BUG, fixed in Phase 4. The rules and the rest of the
-    // app expect AuthorisedUsers to be keyed by uid; keying it by request id
-    // means those lookups miss. Recorded so the fix reads as deliberate.
+  it("keys AuthorisedUsers by the user's uid", async () => {
+    // Was a tagged bug (keyed by request id) until Phase 4: the security rules
+    // check membership at AuthorisedUsers/{uid}, so a request-id key would
+    // leave the granted user locked out.
     const { user, container, store } = await openCard("Pending Person");
     await user.click(modal(container).getByRole("button", { name: "Granted" }));
     await user.click(modal(container).getByRole("button", { name: "Confirm" }));
 
-    expect(store()["SquadronDatabases/9999/AuthorisedUsers/req-9999-pending"]).toMatchObject({
+    expect(store()["SquadronDatabases/9999/AuthorisedUsers/uid-pending"]).toMatchObject({
       displayName: "Pending Person",
       role: "user",
     });
-    expect(store()["SquadronDatabases/9999/AuthorisedUsers/uid-pending"]).toBeUndefined();
+    expect(store()["SquadronDatabases/9999/AuthorisedUsers/req-9999-pending"]).toBeUndefined();
   });
 
-  it("appends a new MassUserList document rather than reusing one", async () => {
-    // CHARACTERIZATION OF A BUG, fixed in Phase 4. doc(collection(...)) mints a
-    // fresh id every time, so granting the same person twice leaves two rows.
+  it("re-granting overwrites the MassUserList row instead of duplicating it", async () => {
+    // Was a tagged bug (auto-id per grant) until Phase 4.
     const { user, container, store } = await openCard("Pending Person");
     await user.click(modal(container).getByRole("button", { name: "Granted" }));
     await user.click(modal(container).getByRole("button", { name: "Confirm" }));
 
-    expect(store()["MassUserList/auto-1"]).toEqual({ UID: "uid-pending", Squadron: 9999 });
+    expect(store()["MassUserList/uid-pending"]).toEqual({ UID: "uid-pending", Squadron: 9999 });
+    // No auto-id row was minted alongside it.
+    expect(Object.keys(store()).filter((p) => p.startsWith("MassUserList/auto"))).toEqual([]);
+  });
+
+  it("refuses to act on a request that carries no uid", async () => {
+    // A legacy request document might predate the uid field; acting on it
+    // would write membership documents keyed "undefined".
+    const { __seed, __store } = require("../../../test/fakeFirestore");
+    const { dummyData } = require("../../../test/dummyData");
+    __seed(dummyData);
+    const docs = __store();
+    delete docs["SquadronDatabases/9999/UserRequests/req-9999-pending"].uid;
+    __seed(docs);
+
+    const { user, container, writes } = await renderDashboard({ seedFirestore: false });
+    await user.click(screen.getByRole("heading", { name: "Pending Person" }));
+    await user.click(modal(container).getByRole("button", { name: "Granted" }));
+    await user.click(modal(container).getByRole("button", { name: "Confirm" }));
+
+    expect(writes()).toEqual([]);
   });
 });
 
 describe("revoking a granted request", () => {
-  it("removes the authorised user but leaves MassUserList untouched", async () => {
-    // CHARACTERIZATION OF A BUG, fixed in Phase 4. The revoked user keeps their
-    // squadron mapping, so checkUserRole still resolves them to this squadron on
-    // their next login.
+  it("removes both the authorised user and the MassUserList mapping", async () => {
+    // Was a tagged bug until Phase 4: the mapping survived, so a revoked user
+    // still resolved to this squadron at their next login. Both documents are
+    // uid-keyed now, so revoke removes membership and login mapping together.
     const result = await renderDashboard();
     const { user, container, writes } = result;
 
@@ -153,7 +177,24 @@ describe("revoking a granted request", () => {
     await user.click(modal(container).getByRole("button", { name: "Confirm" }));
 
     const paths = writes().map((w) => `${w.op} ${w.path}`);
-    expect(paths).toContain("delete SquadronDatabases/9999/AuthorisedUsers/req-9999-granted");
-    expect(paths.filter((p) => p.includes("MassUserList"))).toEqual([]);
+    expect(paths).toContain("delete SquadronDatabases/9999/AuthorisedUsers/uid-faketon-user");
+    expect(paths).toContain("delete MassUserList/uid-faketon-user");
+  });
+
+  it("cannot reach legacy auto-id MassUserList rows", async () => {
+    // KNOWN GAP, deliberate: rows created before the uid-keying fix have
+    // auto-ids, and the uid-keyed delete does not touch them. Existing rows
+    // need the one-time migration (see the Phase 4 commit); admins can also
+    // delete them from the console. This test documents the boundary.
+    const result = await renderDashboard();
+    const { user, container, store } = result;
+
+    await user.click(tab(container, "Granted"));
+    await user.click(screen.getByRole("heading", { name: "Plain User" }));
+    await user.click(modal(container).getByRole("button", { name: "Denied" }));
+    await user.click(modal(container).getByRole("button", { name: "Confirm" }));
+
+    // The dummy data's legacy-keyed row for this user survives.
+    expect(store()["MassUserList/mul-02"]).toMatchObject({ UID: "uid-faketon-user" });
   });
 });

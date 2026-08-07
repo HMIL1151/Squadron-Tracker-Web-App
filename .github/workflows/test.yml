@@ -31,3 +31,35 @@ jobs:
 
       - name: Build
         run: npm run build
+
+  rules:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: squadron-tracker
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: squadron-tracker/package-lock.json
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - run: npm ci
+
+      # Downloads the emulator jar; needs no login.
+      - name: Fetch Firestore emulator
+        run: npx firebase setup:emulators:firestore
+
+      # Runs src/test/firestoreRules.test.js against the emulator. This is the
+      # enforced proof that per-squadron isolation holds -- these rules replaced
+      # an `allow read, write: if true` ruleset.
+      - name: Rules tests
+        run: npm run test:rules

@@ -22,3 +22,10 @@
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# Portable JDK for the Firestore emulator (see scripts/test-rules.js)
+/tools
+
+# Firebase CLI debug artifacts
+firebase-debug.log
+firestore-debug.log

@@ -70,6 +70,11 @@ const AdminDashboard = () => {
   const confirmStatusChange = async () => {
     if (!selectedRequest || !newStatus) return;
 
+    if (!selectedRequest.uid) {
+      console.error("Request has no uid; cannot change access:", selectedRequest.id);
+      return;
+    }
+
     try {
       const db = getFirestore();
       const requestDocRef = doc(db, "SquadronDatabases", squadronNumber.toString(), "UserRequests", selectedRequest.id);
@@ -77,27 +82,28 @@ const AdminDashboard = () => {
       // Update the progress in the UserRequests collection
       await updateDoc(requestDocRef, { progress: newStatus });
 
-      // Handle AuthorizedUsers collection
-      const authorizedUserDocRef = doc(db, "SquadronDatabases", squadronNumber.toString(), "AuthorisedUsers", selectedRequest.id);
+      // Both documents are keyed by the user's uid: the security rules check
+      // membership at AuthorisedUsers/{uid}, and keying MassUserList the same
+      // way makes a re-grant overwrite the row instead of minting a duplicate.
+      const authorisedUserDocRef = doc(db, "SquadronDatabases", squadronNumber.toString(), "AuthorisedUsers", selectedRequest.uid);
+      const massUserListDocRef = doc(db, "MassUserList", selectedRequest.uid);
 
       if (newStatus === "granted") {
-        // If the status is granted, create or update the document in AuthorizedUsers
-        await setDoc(authorizedUserDocRef, {
+        await setDoc(authorisedUserDocRef, {
           displayName: selectedRequest.displayName,
           email: selectedRequest.email,
           role: selectedRole, // Use the selected role
         });
-
-        // Corrected code for adding a document to the MassUserList collection
-        const massUserListDocRef = doc(collection(db, "MassUserList")); // Generate a new document reference
         await setDoc(massUserListDocRef, {
           UID: selectedRequest.uid,
           Squadron: squadronNumber,
         });
-
       } else {
-        // If the status is not granted, delete the document from AuthorizedUsers
-        await deleteDoc(authorizedUserDocRef);
+        // Revoking removes the membership AND the login mapping. Previously
+        // the mapping survived, so a revoked user still resolved to this
+        // squadron at their next login.
+        await deleteDoc(authorisedUserDocRef);
+        await deleteDoc(massUserListDocRef);
       }
 
       // Update the local state
