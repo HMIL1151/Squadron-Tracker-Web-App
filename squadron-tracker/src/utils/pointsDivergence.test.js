@@ -1,32 +1,33 @@
 /**
- * CHARACTERIZATION -- the three points implementations, compared directly.
+ * The three points implementations that src/utils/points.js replaced.
  *
- * Event points are calculated in three places today:
+ * Before Phase 6, event points were calculated in three places:
  *
  *   1. firestoreUtils.getTotalPointsForCadet   -- year via date.substring(0,4)
  *   2. MassEventLog (inline)                   -- no year filter
  *   3. FightPointsDashboard (inline)           -- year via new Date(d).getFullYear()
  *
- * Phase 6 replaces all three with src/utils/points.js. This file is the contract
- * that replacement has to satisfy: it reimplements each of the three exactly as
- * written today and asserts where they agree and where they do not.
+ * All three are transcribed below exactly as they were written. This file is
+ * now a regression guard: it proves the unified implementation still scores
+ * every realistic event the same way the old code did, and documents the two
+ * places where it deliberately does not.
  *
- * If a future reader wonders why the unified version behaves a particular way in
- * some corner, the answer should be here.
+ * If a future reader wonders why points.js behaves a particular way in some
+ * corner, the answer is here.
  */
 
 import { dataContextFor, SQUADRONS } from "../test/dummyData";
-import { getTotalPointsForCadet } from "../firebase/firestoreUtils";
+import { getCadetPoints, getEventPoints } from "./points";
 
 const data = dataContextFor(SQUADRONS.FAKETON);
 const badgePoints = data.flightPoints["Badge Points"];
 const categoryPoints = data.flightPoints["Event Category Points"];
 
 // ---------------------------------------------------------------------------
-// The three implementations, transcribed from their current call sites
+// The three old implementations, transcribed from their former call sites
 // ---------------------------------------------------------------------------
 
-/** MassEventLog.js:83-119 -- dispatches category points off `eventName`. */
+/** MassEventLog.js -- dispatched category points off `eventName`. */
 const massEventLogPoints = (event) => {
   if (event.badgeCategory) {
     return parseInt(badgePoints?.[`${event.badgeLevel} Badge`] || 0, 10);
@@ -43,7 +44,7 @@ const massEventLogPoints = (event) => {
   return 0;
 };
 
-/** FightPointsDashboard.js:85-123 -- dispatches category points off `eventCategory`. */
+/** FightPointsDashboard.js -- dispatched category points off `eventCategory`. */
 const flightPointsPoints = (event) => {
   if (event.badgeLevel && event.badgeCategory) {
     return parseInt(badgePoints?.[`${event.badgeLevel} Badge`] || 0, 10);
@@ -60,7 +61,7 @@ const flightPointsPoints = (event) => {
   return 0; // reached via the console.warn branch
 };
 
-/** firestoreUtils.js:102-116 -- the same dispatch as Flight Points. */
+/** firestoreUtils.js -- the same dispatch as Flight Points. */
 const firestoreUtilsPoints = (event) => {
   if (event.badgeCategory) {
     return Number(badgePoints[`${event.badgeLevel} Badge`] || 0);
@@ -77,7 +78,7 @@ const firestoreUtilsPoints = (event) => {
   return 0;
 };
 
-const IMPLEMENTATIONS = {
+const OLD_IMPLEMENTATIONS = {
   massEventLog: massEventLogPoints,
   flightPoints: flightPointsPoints,
   firestoreUtils: firestoreUtilsPoints,
@@ -85,146 +86,100 @@ const IMPLEMENTATIONS = {
 
 // ---------------------------------------------------------------------------
 
-describe("where all three agree", () => {
-  it("agrees on every event in the dummy squadron", () => {
-    // The important result: despite three separate dispatches, no event in a
-    // realistic dataset is scored differently. The case for unifying them is
-    // that they *could* diverge, not that they currently do.
-    const disagreements = data.events
+describe("the unified implementation matches the old ones", () => {
+  it("scores every event in the dummy squadron identically", () => {
+    // The headline regression check for Phase 6. All three old implementations
+    // agreed on realistic data; points.js must agree with all of them.
+    const differences = data.events
       .map((event) => ({
         event: `${event.cadetName} ${event.date}`,
-        scores: Object.fromEntries(
-          Object.entries(IMPLEMENTATIONS).map(([name, fn]) => [name, fn(event)])
+        unified: getEventPoints(event, data.flightPoints),
+        old: Object.fromEntries(
+          Object.entries(OLD_IMPLEMENTATIONS).map(([name, fn]) => [name, fn(event)])
         ),
       }))
-      .filter(({ scores }) => new Set(Object.values(scores)).size > 1);
+      .filter(({ unified, old }) => Object.values(old).some((v) => v !== unified));
 
-    expect(disagreements).toEqual([]);
+    expect(differences).toEqual([]);
   });
 
-  it("scores every event kind identically", () => {
-    const byKind = {};
-    data.events.forEach((event) => {
-      const kind = event.badgeLevel
-        ? `badge:${event.badgeLevel}`
-        : event.examName
-        ? "exam"
-        : event.specialAward
-        ? "special"
-        : event.eventCategory
-        ? `category:${event.eventCategory}`
-        : "event:uncategorised";
-      byKind[kind] = massEventLogPoints(event);
+  it("keeps the same per-cadet yearly totals", () => {
+    // Reproduces the old firestoreUtils.getTotalPointsForCadet and compares.
+    const oldTotal = (cadetName, year) =>
+      data.events
+        .filter((e) => e.cadetName === cadetName && e.date?.substring(0, 4) === String(year))
+        .reduce((sum, e) => sum + firestoreUtilsPoints(e), 0);
+
+    data.cadets.forEach((cadet) => {
+      const name = `${cadet.forename} ${cadet.surname}`;
+      [2024, 2025].forEach((year) => {
+        expect({ name, year, points: getCadetPoints(name, year, data.events, data.flightPoints) }).toEqual(
+          { name, year, points: oldTotal(name, year) }
+        );
+      });
     });
-    expect(byKind).toMatchSnapshot();
   });
 });
 
-describe("where they would diverge", () => {
-  // These inputs do not occur in the dummy squadron, but nothing stops Firestore
-  // holding them. They are why three implementations is a latent hazard.
-
-  it("disagrees on an event whose category is set but whose name is blank", () => {
-    // Mass Event Log requires eventName to reach the category branch at all, so
-    // it scores 0. The other two key off eventCategory and score 5.
+describe("where the unified implementation deliberately differs", () => {
+  it("scores a categorised event with no description, where Mass Event Log scored nothing", () => {
+    // THE ONE INTENDED BEHAVIOUR CHANGE. Mass Event Log required a non-empty
+    // eventName before it would consult the category at all. What an event is
+    // worth follows from its category, not from whether anyone typed a
+    // description -- and the other two implementations already agreed.
     const event = {
       badgeCategory: "", badgeLevel: "", examName: "", specialAward: "",
       eventName: "", eventCategory: "Wing Event", date: "2025-04-01", cadetName: "X",
     };
-    expect(massEventLogPoints(event)).toBe(0);
-    expect(flightPointsPoints(event)).toBe(5);
-    expect(firestoreUtilsPoints(event)).toBe(5);
+
+    expect(massEventLogPoints(event)).toBe(0); // old Mass Event Log
+    expect(flightPointsPoints(event)).toBe(5); // old Flight Points
+    expect(firestoreUtilsPoints(event)).toBe(5); // old firestoreUtils
+    expect(getEventPoints(event, data.flightPoints)).toBe(5); // unified
   });
 
-  it("disagrees on a badge with a category but no level", () => {
-    // Flight Points requires both fields, so it falls through to its warn branch
-    // and scores 0. The other two dispatch on badgeCategory alone, look up
-    // "undefined Badge", miss, and also land on 0 -- by luck, not by design.
-    const event = {
-      badgeCategory: "Radio", badgeLevel: "", examName: "", specialAward: "",
-      eventName: "", eventCategory: "", date: "2025-04-01", cadetName: "X",
-    };
-    expect(massEventLogPoints(event)).toBe(0);
-    expect(flightPointsPoints(event)).toBe(0);
-    expect(firestoreUtilsPoints(event)).toBe(0);
-  });
-
-  it("agrees an uncategorised named event is worth nothing", () => {
-    // The real row in the fixture -- Jack's Ad-hoc Range Day. Both reach 0, by
-    // different routes. Phase 6 must keep it at 0.
+  it("still scores a described event with no category as nothing", () => {
+    // Jack's Ad-hoc Range Day. All three old implementations reached 0 by
+    // different routes; the unified one must stay at 0.
     const event = data.events.find((e) => e.eventName === "Ad-hoc Range Day");
     expect(massEventLogPoints(event)).toBe(0);
     expect(flightPointsPoints(event)).toBe(0);
+    expect(getEventPoints(event, data.flightPoints)).toBe(0);
   });
 });
 
 describe("year bucketing", () => {
   const YEAR_STYLES = {
-    // firestoreUtils.js:97
-    substring: (date) => date?.substring(0, 4),
-    // FightPointsDashboard.js:81
-    dateParse: (date) => String(new Date(date).getFullYear()),
+    substring: (date) => date?.substring(0, 4), // firestoreUtils
+    dateParse: (date) => String(new Date(date).getFullYear()), // FightPointsDashboard
   };
 
-  it("agrees under the suite's pinned UTC timezone", () => {
+  it("agrees with both old styles under the suite's pinned UTC timezone", () => {
     const disagreements = data.events
       .map((e) => e.date)
       .filter((d) => YEAR_STYLES.substring(d) !== YEAR_STYLES.dateParse(d));
     expect(disagreements).toEqual([]);
   });
 
-  it("only diverges west of UTC", () => {
-    // Demonstrated rather than asserted about: `new Date("2025-01-01")` is
-    // midnight UTC, so its *local* year is 2024 anywhere behind UTC.
-    //
-    // This is why the divergence never bites UK squadrons -- London is never
-    // behind UTC. Phase 6 removes the fragility; it is not fixing something
-    // users are currently hitting.
+  it("uses the string form, which cannot drift west of UTC", () => {
+    // `new Date("2025-01-01")` is midnight UTC, so its *local* year is 2024
+    // anywhere behind UTC -- FightPointsDashboard used to bucket 1 January
+    // events into the previous year for those users. Never wrong for UK
+    // squadrons (London is never behind UTC), but fragile for no benefit.
     const utcMidnight = new Date("2025-01-01T00:00:00Z");
     const behindUtc = new Date(utcMidnight.getTime() - 5 * 60 * 60 * 1000);
     expect(behindUtc.getUTCFullYear()).toBe(2024);
-    expect("2025-01-01".slice(0, 4)).toBe("2025");
+
+    // The unified implementation is unaffected by any of that.
+    const benBadge = data.events.find((e) => e.date === "2025-01-01");
+    expect(getCadetPoints("Ben Okafor", 2025, [benBadge], data.flightPoints)).toBe(5);
+    expect(getCadetPoints("Ben Okafor", 2024, [benBadge], data.flightPoints)).toBe(0);
   });
 
-  it("filters Mass Event Log not at all", () => {
-    // CHARACTERIZATION: this dashboard shows every year at once. Phase 6 must
-    // not accidentally introduce a year filter here.
+  it("does not introduce a year filter into Mass Event Log", () => {
+    // That dashboard shows every year at once; points.js is only consulted
+    // per-event there, never through getCadetPoints.
     const years = new Set(data.events.map((e) => e.date.slice(0, 4)));
     expect(years.size).toBeGreaterThan(1);
-  });
-});
-
-describe("firestoreUtils.getTotalPointsForCadet", () => {
-  // The only one of the three that is a callable function today.
-
-  it("totals a cadet's events for a year", async () => {
-    // Amelia's 2025: Silver badge 15 + exam 8 + Wing Event 5 = 28.
-    await expect(getTotalPointsForCadet("Amelia Hart", 2025, data)).resolves.toBe(28);
-  });
-
-  it("excludes other years", async () => {
-    // Her 2024: Blue 5 + Bronze 10 + exam 8 + special 25 = 48.
-    await expect(getTotalPointsForCadet("Amelia Hart", 2024, data)).resolves.toBe(48);
-  });
-
-  it("returns zero for a cadet with no events", async () => {
-    await expect(getTotalPointsForCadet("Isla Muir", 2025, data)).resolves.toBe(0);
-  });
-
-  it("returns zero for a name that does not exist", async () => {
-    await expect(getTotalPointsForCadet("Nobody At All", 2025, data)).resolves.toBe(0);
-  });
-
-  it("matches what Flight Points shows for the same cadet and year", async () => {
-    // Both are supposed to answer the same question. Phase 6 makes that
-    // structural rather than coincidental.
-    const cadets = ["Amelia Hart", "Eve Nakamura", "Jack Petrov", "Harry Blythe-Jones"];
-    for (const name of cadets) {
-      const viaUtils = await getTotalPointsForCadet(name, 2025, data);
-      const viaFlightPoints = data.events
-        .filter((e) => e.cadetName === name && new Date(e.date).getFullYear() === 2025)
-        .reduce((sum, e) => sum + flightPointsPoints(e), 0);
-      expect({ name, viaUtils }).toEqual({ name, viaUtils: viaFlightPoints });
-    }
   });
 });

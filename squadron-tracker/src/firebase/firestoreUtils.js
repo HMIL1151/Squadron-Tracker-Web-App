@@ -1,6 +1,7 @@
 import { getFirestore, collection, getDocs, doc, getDoc, query, where, updateDoc } from "firebase/firestore/lite";
 import { app } from "./firebase";
 import { rankMap } from "../utils/mappings";
+import { getEventDescription } from "../utils/points";
 
 // Fetch TeamPoints document for a squadron
 export const fetchTeamPoints = async (squadronNumber) => {
@@ -67,75 +68,16 @@ export const addPointsToFlight = async (squadronNumber, flightNumber, pointsToAd
   }
 };
 
-// One of the three points implementations characterized by
-// src/utils/pointsDivergence.test.js. No app code calls it any more; it is
-// kept only until Phase 6 replaces all three with src/utils/points.js.
-export const getTotalPointsForCadet = async (cadetName, year, data) => {
-  try {
-    const eventsData = data.events || [];
-    const badgePoints = data.flightPoints["Badge Points"] || {};
-    const eventCategoryPoints = data.flightPoints["Event Category Points"] || {};
-
-    // Filter events for the given cadet and year
-    const cadetEvents = eventsData.filter((event) => {
-      const eventYear = event.date?.substring(0, 4); // Extract the first 4 characters of the date string
-      return event.cadetName === cadetName && eventYear === String(year);
-    });
-
-    // Calculate total points
-    const totalPoints = cadetEvents.reduce((sum, event) => {
-      const { badgeCategory, badgeLevel, eventCategory, examName, specialAward } = event;
-
-      if (badgeCategory) {
-        return sum + Number(badgePoints[`${badgeLevel} Badge`] || 0);
-      } else if (examName) {
-        return sum + Number(badgePoints["Exam"] || 0);
-      } else if (eventCategory) {
-        return sum + Number(eventCategoryPoints[eventCategory] || 0);
-      } else if (specialAward) {
-        return sum + Number(badgePoints["Special"] || 0);
-      }
-
-      return sum;
-    }, 0);
-
-    return totalPoints;
-  } catch (error) {
-    console.error(`Error fetching total points for cadet ${cadetName} in ${year}:`, error);
-    return 0;
-  }
-};
-
 export const getEventsForCadet = async (cadetName, data) => {
   try {
     const eventData = data.events || [];
-    const cadetEvents = eventData.filter((event) => event.cadetName === cadetName);
 
-    const formattedEvents = cadetEvents.map((event) => {
-      const { badgeCategory, badgeLevel, eventName, examName, specialAward, date } = event;
-
-      let eventDescription = "";
-
-      if (badgeCategory) {
-        eventDescription = `${badgeLevel} ${badgeCategory}`;
-      } else if (examName) {
-        eventDescription = `${examName}`;
-      } else if (eventName) {
-        eventDescription = eventName;
-      } else if (specialAward) {
-        eventDescription = specialAward;
-      } else {
-        console.warn(`Event for cadet ${cadetName} has missing fields:`, event);
-        return null; // Skip invalid events
-      }
-
-      return {
-        event: eventDescription,
-        date: date,
-      };
-    });
-
-    return formattedEvents.filter((event) => event !== null); // Remove null entries
+    return eventData
+      .filter((event) => event.cadetName === cadetName)
+      .map((event) => ({ event: getEventDescription(event), date: event.date }))
+      // An event with none of the describing fields set cannot be put on a
+      // certificate; drop it rather than printing a blank line.
+      .filter(({ event }) => event !== "");
   } catch (error) {
     console.error(`Error fetching events for cadet ${cadetName}:`, error);
     return [];

@@ -4,6 +4,7 @@ import Table from "../../Table/Table";
 import { flightMap } from "../../../utils/mappings";
 import { DataContext } from "../../../context/DataContext";
 import { useSquadron } from "../../../context/SquadronContext";
+import { getCadetPoints, getFlightPointTotals } from "../../../utils/points";
 
 const FightPointsDashboard = () => {
     const { data } = useContext(DataContext);
@@ -66,69 +67,18 @@ const FightPointsDashboard = () => {
                 const cadets = data.cadets || [];
                 const events = data.events || [];
 
-                const flightPoints = {}; // To store total points for each flight
+                const pointsData = cadets.map((cadet) => ({
+                    cadetName: `${cadet.forename} ${cadet.surname}`,
+                    pointsEarned: getCadetPoints(
+                        `${cadet.forename} ${cadet.surname}`,
+                        year,
+                        events,
+                        data.flightPoints
+                    ),
+                    flight: cadet.flight,
+                }));
 
-                // Map cadets to calculate points and flight
-                const pointsData = cadets.map((cadet) => {
-                    const { forename, surname, flight } = cadet;
-                    const cadetName = `${forename} ${surname}`;
-
-                    // Filter events for the current cadet and year
-                    const cadetEvents = events.filter(
-                        (event) =>
-                            event.cadetName === cadetName &&
-                            new Date(event.date).getFullYear() === year
-                    );
-
-                    // Calculate total points for the cadet
-                    const pointsEarned = cadetEvents.reduce((total, event) => {
-                        let eventPoints = 0;
-
-                        // Determine points based on event type
-                        if (event.badgeLevel && event.badgeCategory) {
-                            // Badge Points (e.g., "Blue Badge")
-                            eventPoints =
-                                parseInt(
-                                    data.flightPoints["Badge Points"]?.[`${event.badgeLevel} Badge`] || 0,
-                                    10
-                                );
-
-                        } else if (event.examName) {
-                            // Exam Points
-                            eventPoints = parseInt(
-                                data.flightPoints["Badge Points"]?.["Exam"] || 0,
-                                10
-                            );
-
-                        } else if (event.eventCategory) {
-                            // Event Category Points
-                            eventPoints = parseInt(
-                                data.flightPoints["Event Category Points"]?.[event.eventCategory] || 0,
-                                10
-                            );
-
-                        } else if (event.specialAward) {
-                            // Special Award Points
-                            eventPoints = parseInt(
-                                data.flightPoints["Badge Points"]?.["Special"] || 0,
-                                10
-                            );
-
-                        } else {
-                            console.warn("Unknown event type:", event);
-                        }
-
-                        return total + eventPoints;
-                    }, 0);
-
-                    // Calculate total points for the flight
-                    if (!flightPoints[flight]) {
-                        flightPoints[flight] = 0;
-                    }
-                    flightPoints[flight] += pointsEarned;
-
-                    return { cadetName, pointsEarned, flight };
-                });
+                const flightPoints = getFlightPointTotals(year, cadets, events, data.flightPoints);
 
                 setCadetPoints(pointsData);
 

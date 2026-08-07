@@ -14,6 +14,7 @@ import SuccessMessage from "../Dashboard Components/SuccessMessage";
 import ErrorMessage from "../Dashboard Components/ErrorMessage";
 import { getFirestore, deleteDoc, doc } from "firebase/firestore"; // Import Firestore functions
 import { useSaveEvent } from "../../../databaseTools/databaseTools"; // Import saveEvent function
+import { getEventDescription, getEventPoints } from "../../../utils/points";
 
 const MassEventLog = ({ user }) => {
   const [events, setEvents] = useState([]);
@@ -82,43 +83,16 @@ const MassEventLog = ({ user }) => {
         const flightPoints = data.flightPoints; // Access flight points from DataContext
 
         // Map eventLog to the desired format
-        const mappedEvents = eventLog.map((event) => {
-          let eventDescription = "";
-          let points = 0;
-
-          if (event.badgeCategory) {
-            eventDescription = `${event.badgeLevel} ${event.badgeCategory}`;
-            points = parseInt(flightPoints["Badge Points"]?.[`${event.badgeLevel} Badge`] || 0, 10); // Get badge points
-          } else if (event.examName) {
-            eventDescription = event.examName;
-            points = parseInt(flightPoints["Badge Points"]?.["Exam"] || 0, 10); // Get exam points
-          } else if (event.eventName) {
-            eventDescription = event.eventName;
-            points = parseInt(
-              flightPoints["Event Category Points"]?.[event.eventCategory] || 0,
-              10
-            ); // Get event category points
-          } else if (event.specialAward) {
-            eventDescription = event.specialAward;
-            points = parseInt(flightPoints["Badge Points"]?.["Special"] || 0, 10); // Get special award points
-          } else {
-            console.error(
-              "Invalid event data: Missing required fields for event description.",
-              event
-            );
-          }
-
-          return {
-            Name: event.cadetName || "Unknown",
-            Record: eventDescription,
-            Date: event.date || "N/A",
-            Points: points,
-            AddedBy: event.addedBy || "Unknown",
-            CreatedAt: event.createdAt || "N/A",
-            id: event.id || "N/A",
-            eventCategory: event.eventCategory || "",
-          };
-        });
+        const mappedEvents = eventLog.map((event) => ({
+          Name: event.cadetName || "Unknown",
+          Record: getEventDescription(event),
+          Date: event.date || "N/A",
+          Points: getEventPoints(event, flightPoints),
+          AddedBy: event.addedBy || "Unknown",
+          CreatedAt: event.createdAt || "N/A",
+          id: event.id || "N/A",
+          eventCategory: event.eventCategory || "",
+        }));
 
         // Set state with the mapped data
         setEvents(mappedEvents);
