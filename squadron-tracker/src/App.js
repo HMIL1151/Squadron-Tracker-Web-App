@@ -8,7 +8,6 @@ import { signOut } from "firebase/auth";
 import { auth } from "./firebase/firebase"; // Adjust the import path to your Firebase configuration
 import dashboardList from "./components/Dashboards/Dashboard Components/dashboardList";
 import { useSquadron } from "./context/SquadronContext"; // Import the custom hook
-import { setFlightMap } from "./utils/mappings"; // Import the setter function for flightMap
 import { getFirestore, collection, query, where, getDocs } from "firebase/firestore"; // Import Firestore functions
 
 const App = () => {
@@ -18,7 +17,7 @@ const App = () => {
   const [isMenuCollapsed, setIsMenuCollapsed] = useState(false); // New state for menu visibility
   const [version, setVersion] = useState("Loading..."); // Initialize version as "Loading..."
 
-  const { setSquadronNumber } = useSquadron(); // Access the context
+  const { setSquadron } = useSquadron(); // Access the context
 
   useEffect(() => {
     const fetchVersion = async () => {
@@ -69,17 +68,13 @@ const App = () => {
     setUser(updatedUser);
     setIsAdmin(isAdminStatus || isSystemAdmin);
 
-    setSquadronNumber(currentUser.squadronNumber);
-
-    // Extract flightNames from the user data and update the state
-    if (currentUser?.flightNames) {
-      // Dynamically update flightMap using the flightNames array
-      const newFlightMap = currentUser.flightNames.reduce((map, flightName, index) => {
-        map[index + 1] = flightName; // Map flight names to indices starting from 1
-        return map;
-      }, {});
-      setFlightMap(newFlightMap); // Update the flightMap in mappings.js
-    }
+    // Squadron identity and its flights land together. flightMap is derived
+    // from flights inside the context, so nothing needs building here.
+    setSquadron({
+      squadronNumber: currentUser.squadronNumber,
+      squadronDocId: currentUser.squadronDocId || null,
+      flights: currentUser.flightNames || [],
+    });
   };
 
   const handleLogout = () => {
@@ -87,7 +82,10 @@ const App = () => {
       .then(() => {
         setUser(null); // Clear the user state
         setActiveMenu(dashboardList[0]?.key || ""); // Reset the menu to the first dashboard
-        setSquadronNumber(null); // Clear the squadron number in the context
+        // Clears the number, doc id AND flights. The old code cleared only the
+        // number, so the previous squadron's flight names survived logout and
+        // leaked into whoever signed in next.
+        setSquadron({ squadronNumber: null, squadronDocId: null, flights: [] });
         setIsAdmin(false); // Reset admin status
       })
       .catch((error) => {

@@ -25,7 +25,6 @@ const PopupManager = ({
   newCadet,
   handleInputChange,
   classificationMap,
-  flightMap,
   rankMap,
 }) => {
   const [editedCadet, setEditedCadet] = useState(selectedCadet || {});
@@ -161,7 +160,6 @@ const PopupManager = ({
         <CadetForm
           newCadet={newCadet}
           handleInputChange={handleInputChange}
-          flightMap={flightMap}
           rankMap={rankMap}
         />
       </Popup>
@@ -180,7 +178,6 @@ const PopupManager = ({
                 newCadet={editedCadet} // Pass the edited cadet object
                 handleInputChange={handleEditInputChange} // Handle input changes
                 classificationMap={classificationMap}
-                flightMap={flightMap}
                 rankMap={rankMap}
               />
               {/* Display addedBy and createdAt at the bottom */}

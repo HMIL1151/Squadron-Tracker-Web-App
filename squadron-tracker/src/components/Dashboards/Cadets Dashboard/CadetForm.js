@@ -2,14 +2,17 @@
 
 import React from "react";
 import Form from "../Dashboard Components/Form";
+import { useSquadron } from "../../../context/SquadronContext";
 import "../Dashboard Components/dashboardStyles.css";
 
 const CadetForm = ({
   newCadet,
   handleInputChange,
-  flightMap,
   rankMap,
 }) => {
+  // Flight names are squadron state, not a constant, so they come from
+  // context rather than being threaded down as a prop.
+  const { flightMap } = useSquadron();
   const fields = [
     {
       id: "forename",

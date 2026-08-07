@@ -12,27 +12,8 @@ import userEvent from "@testing-library/user-event";
 
 import { DataProvider } from "../context/DataContext";
 import { SquadronProvider } from "../context/SquadronContext";
-import { setFlightMap } from "../utils/mappings";
 import { SQUADRONS, dataContextFor, dummyData, userFor } from "./dummyData";
 import { __seed, __writes, __store } from "./fakeFirestore";
-
-const flightNameOf = (f) => (typeof f === "string" ? f : f.name);
-
-/**
- * Mirrors what App.js does on login (handleUserChange), which is the only place
- * flightMap is populated. Without it, dashboards would render the hardcoded
- * defaults from mappings.js instead of the squadron's real flight names.
- *
- * Phase 7 moves flightMap into SquadronContext and this goes away.
- */
-const applyFlightMap = (flights) => {
-  setFlightMap(
-    flights.reduce((map, flight, index) => {
-      map[index + 1] = flightNameOf(flight);
-      return map;
-    }, {})
-  );
-};
 
 /**
  * @param ui           element to render
@@ -62,11 +43,16 @@ export const renderWithProviders = (ui, options = {}) => {
   const contextData = data || dataContextFor(squadron);
   const userProp = user || userFor(squadron);
 
-  applyFlightMap(userProp.flightNames || []);
-
+  // Flights are seeded into context exactly as App.handleUserChange does on
+  // login, so dashboards see the squadron's real flight names.
   const Wrapper = ({ children }) => (
     <DataProvider initialData={contextData}>
-      <SquadronProvider initialSquadronNumber={squadron}>{children}</SquadronProvider>
+      <SquadronProvider
+        initialSquadronNumber={squadron}
+        initialFlights={userProp.flightNames || []}
+      >
+        {children}
+      </SquadronProvider>
     </DataProvider>
   );
 

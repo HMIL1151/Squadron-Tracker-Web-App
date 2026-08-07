@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useContext } from "react";
 import { addPointsToFlight, fetchTeamPoints } from "../../../firebase/firestoreUtils";
 import Table from "../../Table/Table";
-import { flightMap } from "../../../utils/mappings";
 import { DataContext } from "../../../context/DataContext";
 import { useSquadron } from "../../../context/SquadronContext";
 import { getCadetPoints, getFlightPointTotals } from "../../../utils/points";
@@ -14,8 +13,7 @@ const FightPointsDashboard = () => {
     const [pointsToAdd, setPointsToAdd] = useState("");
     const [popupError, setPopupError] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
-    // Get squadron number from DataContext (assumes data.squadronNumber exists)
-    const { squadronNumber } = useSquadron();
+    const { squadronNumber, flightMap } = useSquadron();
     // Get unique flights for dropdown (as sorted strings, no empty/invalid)
     const uniqueFlights = Array.from(
         new Set(

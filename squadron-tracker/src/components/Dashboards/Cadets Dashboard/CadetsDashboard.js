@@ -2,7 +2,7 @@
 
 import React, { useState, useContext } from "react";
 import { DataContext } from "../../../context/DataContext"; // Import DataContext
-import { rankMap, flightMap, classificationMap } from "../../../utils/mappings";
+import { rankMap, classificationMap } from "../../../utils/mappings";
 import Table from "../../Table/Table";
 import PopupManager from "./CadetsDashboardPopupManager";
 import SuccessMessage from "../Dashboard Components/SuccessMessage";
@@ -281,7 +281,6 @@ const CadetsDashboard = ({ user }) => {
         newCadet={newCadet}
         handleInputChange={handleInputChange}
         classificationMap={classificationMap}
-        flightMap={flightMap}
         rankMap={rankMap}
       />
       <SuccessMessage message={successMessage} />

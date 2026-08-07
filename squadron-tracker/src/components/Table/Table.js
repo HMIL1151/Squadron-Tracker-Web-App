@@ -1,10 +1,14 @@
 import React, { useState } from "react";
-import { rankMap, flightMap, classificationMap } from "../../utils/mappings"; // Import the mappings
+import { rankMap, classificationMap } from "../../utils/mappings"; // Import the mappings
+import { useSquadron } from "../../context/SquadronContext";
 import "./Table.css";
 
 const Table = ({ columns, data, onRowClick, onRowHover, disableHover = false, width = "90%", hoveredCadet, rowColors = [] }) => {
   const [filters, setFilters] = useState({});
   const [sortOrder, setSortOrder] = useState({});
+  // Flight names come from context so a rename re-renders the table. They used
+  // to come from a module-level object, which did not.
+  const { flightMap } = useSquadron();
 
   const handleFilterChange = (col, value) => {
     setFilters((prev) => ({
