@@ -17,6 +17,10 @@
  * leaving it real means the app's own module graph is what gets tested.
  */
 
+// The timezone is pinned to UTC in src/test/globalSetup.js, which has to run
+// before workers spawn -- an assignment here would be too late, because imports
+// hoist above it.
+
 import "@testing-library/jest-dom";
 
 // ---------------------------------------------------------------------------

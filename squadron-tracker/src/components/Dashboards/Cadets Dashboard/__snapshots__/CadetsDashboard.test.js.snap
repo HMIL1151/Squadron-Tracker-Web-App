@@ -1,0 +1,347 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Faketon (new flight shape) lists every cadet with mapped rank, flight and classification 1`] = `
+Array [
+  Object {
+    "Classification": "First Class",
+    "Flight": "Alpha",
+    "Forename": "Amelia",
+    "Rank": "Sergeant",
+    "Service Length": "3 Yrs, 9 Mos, 9 Days",
+    "Start Date": "2021-09-06",
+    "Surname": "Hart",
+  },
+  Object {
+    "Classification": "Junior",
+    "Flight": "Alpha",
+    "Forename": "Ben",
+    "Rank": "Cadet",
+    "Service Length": "1 Yrs, 5 Mos, 0 Days",
+    "Start Date": "2024-01-15",
+    "Surname": "Okafor",
+  },
+  Object {
+    "Classification": "Second Class",
+    "Flight": "Alpha",
+    "Forename": "Chloe",
+    "Rank": "Corporal",
+    "Service Length": "2 Yrs, 2 Mos, 26 Days",
+    "Start Date": "2023-03-20",
+    "Surname": "Ramsey",
+  },
+  Object {
+    "Classification": "Junior",
+    "Flight": "Bravo",
+    "Forename": "Daniel",
+    "Rank": "Cadet",
+    "Service Length": "0 Yrs, 9 Mos, 13 Days",
+    "Start Date": "2024-09-02",
+    "Surname": "Foster",
+  },
+  Object {
+    "Classification": "Second Class",
+    "Flight": "Bravo",
+    "Forename": "Eve",
+    "Rank": "Flight Sergeant",
+    "Service Length": "5 Yrs, 1 Mos, 4 Days",
+    "Start Date": "2020-05-11",
+    "Surname": "Nakamura",
+  },
+  Object {
+    "Classification": "Junior",
+    "Flight": "Bravo",
+    "Forename": "Femi",
+    "Rank": "Cadet",
+    "Service Length": "0 Yrs, 4 Mos, 5 Days",
+    "Start Date": "2025-02-10",
+    "Surname": "Adeyemi",
+  },
+  Object {
+    "Classification": "Junior",
+    "Flight": "Charlie",
+    "Forename": "Grace",
+    "Rank": "Cadet",
+    "Service Length": "1 Yrs, 7 Mos, 14 Days",
+    "Start Date": "2023-11-01",
+    "Surname": "O'Neill",
+  },
+  Object {
+    "Classification": "Junior",
+    "Flight": "Staff Team",
+    "Forename": "Harry",
+    "Rank": "Cadet Warrant Officer",
+    "Service Length": "6 Yrs, 2 Mos, 7 Days",
+    "Start Date": "2019-04-08",
+    "Surname": "Blythe-Jones",
+  },
+  Object {
+    "Classification": "Junior",
+    "Flight": "Alpha",
+    "Forename": "Isla",
+    "Rank": "Cadet",
+    "Service Length": "0 Yrs, 1 Mos, 14 Days",
+    "Start Date": "2025-05-01",
+    "Surname": "Muir",
+  },
+  Object {
+    "Classification": "Second Class",
+    "Flight": "Bravo",
+    "Forename": "Jack",
+    "Rank": "Corporal",
+    "Service Length": "2 Yrs, 10 Mos, 27 Days",
+    "Start Date": "2022-07-19",
+    "Surname": "Petrov",
+  },
+]
+`;
+
+exports[`Faketon (new flight shape) renders the cadet table 1`] = `
+"<div class=\\"table-dashboard-container\\">
+  <div class=\\"button-container\\">
+    <button class=\\"button-red\\">
+      \\"Discharge Cadet\\"
+    <button class=\\"button-green\\">
+      \\"Add Cadet\\"
+  <div class=\\"table-container\\">
+    <table class=\\"custom-table\\">
+      <thead>
+        <tr>
+          <th>
+            \\"Forename\\"
+            <br>
+            <input type=\\"text\\" placeholder=\\"Filter\\">
+            <button>
+              \\"Sort\\"
+          <th>
+            \\"Surname\\"
+            <br>
+            <input type=\\"text\\" placeholder=\\"Filter\\">
+            <button>
+              \\"Sort\\"
+          <th>
+            \\"Rank\\"
+            <br>
+            <input type=\\"text\\" placeholder=\\"Filter\\">
+            <button>
+              \\"Sort\\"
+          <th>
+            \\"Flight\\"
+            <br>
+            <input type=\\"text\\" placeholder=\\"Filter\\">
+            <button>
+              \\"Sort\\"
+          <th>
+            \\"Classification\\"
+            <br>
+            <input type=\\"text\\" placeholder=\\"Filter\\">
+            <button>
+              \\"Sort\\"
+          <th>
+            \\"Start Date\\"
+            <br>
+            <input type=\\"text\\" placeholder=\\"Filter\\">
+            <button>
+              \\"Sort\\"
+          <th>
+            \\"Service Length\\"
+            <br>
+            <input type=\\"text\\" placeholder=\\"Filter\\">
+            <button>
+              \\"Sort\\"
+      <tbody>
+        <tr class=\\"clickable-row\\">
+          <td>
+            \\"Amelia\\"
+          <td>
+            \\"Hart\\"
+          <td>
+            \\"Sergeant\\"
+          <td>
+            \\"Alpha\\"
+          <td>
+            \\"First Class\\"
+          <td>
+            \\"2021-09-06\\"
+          <td>
+            \\"3 Yrs, 9 Mos, 9 Days\\"
+        <tr class=\\"clickable-row\\">
+          <td>
+            \\"Ben\\"
+          <td>
+            \\"Okafor\\"
+          <td>
+            \\"Cadet\\"
+          <td>
+            \\"Alpha\\"
+          <td>
+            \\"Junior\\"
+          <td>
+            \\"2024-01-15\\"
+          <td>
+            \\"1 Yrs, 5 Mos, 0 Days\\"
+        <tr class=\\"clickable-row\\">
+          <td>
+            \\"Chloe\\"
+          <td>
+            \\"Ramsey\\"
+          <td>
+            \\"Corporal\\"
+          <td>
+            \\"Alpha\\"
+          <td>
+            \\"Second Class\\"
+          <td>
+            \\"2023-03-20\\"
+          <td>
+            \\"2 Yrs, 2 Mos, 26 Days\\"
+        <tr class=\\"clickable-row\\">
+          <td>
+            \\"Daniel\\"
+          <td>
+            \\"Foster\\"
+          <td>
+            \\"Cadet\\"
+          <td>
+            \\"Bravo\\"
+          <td>
+            \\"Junior\\"
+          <td>
+            \\"2024-09-02\\"
+          <td>
+            \\"0 Yrs, 9 Mos, 13 Days\\"
+        <tr class=\\"clickable-row\\">
+          <td>
+            \\"Eve\\"
+          <td>
+            \\"Nakamura\\"
+          <td>
+            \\"Flight Sergeant\\"
+          <td>
+            \\"Bravo\\"
+          <td>
+            \\"Second Class\\"
+          <td>
+            \\"2020-05-11\\"
+          <td>
+            \\"5 Yrs, 1 Mos, 4 Days\\"
+        <tr class=\\"clickable-row\\">
+          <td>
+            \\"Femi\\"
+          <td>
+            \\"Adeyemi\\"
+          <td>
+            \\"Cadet\\"
+          <td>
+            \\"Bravo\\"
+          <td>
+            \\"Junior\\"
+          <td>
+            \\"2025-02-10\\"
+          <td>
+            \\"0 Yrs, 4 Mos, 5 Days\\"
+        <tr class=\\"clickable-row\\">
+          <td>
+            \\"Grace\\"
+          <td>
+            \\"O'Neill\\"
+          <td>
+            \\"Cadet\\"
+          <td>
+            \\"Charlie\\"
+          <td>
+            \\"Junior\\"
+          <td>
+            \\"2023-11-01\\"
+          <td>
+            \\"1 Yrs, 7 Mos, 14 Days\\"
+        <tr class=\\"clickable-row\\">
+          <td>
+            \\"Harry\\"
+          <td>
+            \\"Blythe-Jones\\"
+          <td>
+            \\"Cadet Warrant Officer\\"
+          <td>
+            \\"Staff Team\\"
+          <td>
+            \\"Junior\\"
+          <td>
+            \\"2019-04-08\\"
+          <td>
+            \\"6 Yrs, 2 Mos, 7 Days\\"
+        <tr class=\\"clickable-row\\">
+          <td>
+            \\"Isla\\"
+          <td>
+            \\"Muir\\"
+          <td>
+            \\"Cadet\\"
+          <td>
+            \\"Alpha\\"
+          <td>
+            \\"Junior\\"
+          <td>
+            \\"2025-05-01\\"
+          <td>
+            \\"0 Yrs, 1 Mos, 14 Days\\"
+        <tr class=\\"clickable-row\\">
+          <td>
+            \\"Jack\\"
+          <td>
+            \\"Petrov\\"
+          <td>
+            \\"Corporal\\"
+          <td>
+            \\"Bravo\\"
+          <td>
+            \\"Second Class\\"
+          <td>
+            \\"2022-07-19\\"
+          <td>
+            \\"2 Yrs, 10 Mos, 27 Days\\"
+  <div class=\\"cadet-count\\">
+    <p>
+      \\"Total Cadets:\\"
+      \\"10\\""
+`;
+
+exports[`Testwood (legacy string[] flight shape) renders the cadet table 1`] = `
+Array [
+  Object {
+    "Classification": "Second Class",
+    "Flight": "Atlas",
+    "Forename": "Katie",
+    "Rank": "Corporal",
+    "Service Length": "2 Yrs, 9 Mos, 10 Days",
+    "Start Date": "2022-09-05",
+    "Surname": "Lawson",
+  },
+  Object {
+    "Classification": "Junior",
+    "Flight": "Atlas",
+    "Forename": "Liam",
+    "Rank": "Cadet",
+    "Service Length": "1 Yrs, 4 Mos, 3 Days",
+    "Start Date": "2024-02-12",
+    "Surname": "Doyle",
+  },
+  Object {
+    "Classification": "Junior",
+    "Flight": "Tempest",
+    "Forename": "Maya",
+    "Rank": "Sergeant",
+    "Service Length": "4 Yrs, 5 Mos, 4 Days",
+    "Start Date": "2021-01-11",
+    "Surname": "Sharma",
+  },
+  Object {
+    "Classification": "Junior",
+    "Flight": "Staff Team",
+    "Forename": "Noah",
+    "Rank": "Cadet Warrant Officer",
+    "Service Length": "7 Yrs, 0 Mos, 11 Days",
+    "Start Date": "2018-06-04",
+    "Surname": "Bright",
+  },
+]
+`;

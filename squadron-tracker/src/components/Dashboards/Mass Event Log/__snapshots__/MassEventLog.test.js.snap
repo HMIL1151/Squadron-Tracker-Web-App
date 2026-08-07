@@ -1,0 +1,46 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Testwood (legacy flight shape) renders its own events 1`] = `
+Array [
+  "Katie Lawson | Blue Radio | 5",
+  "Katie Lawson | First Class Cadet | 8",
+  "Liam Doyle | Weekly Parade | 1",
+  "Maya Sharma | Bronze First Aid | 10",
+  "Maya Sharma | Cadet of the Year | 25",
+  "Noah Bright | Silver Sports | 15",
+]
+`;
+
+exports[`event log contents renders every event with its description and points 1`] = `
+Array [
+  "Amelia Hart | Blue Radio | 5",
+  "Amelia Hart | Bronze Radio | 10",
+  "Amelia Hart | Cadet of the Year | 25",
+  "Amelia Hart | First Class Cadet | 8",
+  "Amelia Hart | Leading: Airmanship Knowledge Exam | 8",
+  "Amelia Hart | Silver Radio | 15",
+  "Amelia Hart | Wing Athletics | 5",
+  "Ben Okafor | Blue First Aid | 5",
+  "Ben Okafor | Weekly Parade | 1",
+  "Chloe Ramsey | Blue Shooting | 5",
+  "Chloe Ramsey | Bronze Shooting | 10",
+  "Chloe Ramsey | Second Class Cadet | 8",
+  "Chloe Ramsey | Sqn Fieldcraft Day | 3",
+  "Daniel Foster | Blue Sports | 5",
+  "Daniel Foster | Weekly Parade | 1",
+  "Eve Nakamura | Gold Adventure Training | 20",
+  "Eve Nakamura | Most Improved Cadet | 25",
+  "Eve Nakamura | National Aerospace Camp | 12",
+  "Eve Nakamura | Senior/Master: Air Power Exam | 8",
+  "Eve Nakamura | Silver Adventure Training | 15",
+  "Femi Adeyemi | Blue Music | 5",
+  "Grace O'Neill | Blue Radio | 5",
+  "Grace O'Neill | Regional Band Camp | 8",
+  "Harry Blythe-Jones | Commandant's Commendation | 25",
+  "Harry Blythe-Jones | Gold Shooting | 20",
+  "Jack Petrov | Ad-hoc Range Day | 0",
+  "Jack Petrov | Bronze First Aid | 10",
+  "Jack Petrov | Leading: Principles of Flight Exam | 8",
+  "Jack Petrov | Silver First Aid | 15",
+]
+`;

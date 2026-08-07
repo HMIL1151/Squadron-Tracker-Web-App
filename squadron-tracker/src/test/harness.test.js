@@ -18,6 +18,24 @@ import CadetsDashboard from "../components/Dashboards/Cadets Dashboard/CadetsDas
 import { renderWithProviders } from "./renderWithProviders";
 import { SQUADRONS, dataContextFor } from "./dummyData";
 
+describe("pinned timezone", () => {
+  it("runs in UTC regardless of the developer's machine", () => {
+    // Snapshots would otherwise differ between a UK and a US developer:
+    // FightPointsDashboard buckets events by the *local* year of a UTC-midnight
+    // instant, which shifts in negative-offset zones.
+    expect(Intl.DateTimeFormat().resolvedOptions().timeZone).toBe("UTC");
+    expect(new Date("2025-06-15T12:00:00Z").getTimezoneOffset()).toBe(0);
+  });
+
+  it("makes the two year-bucketing styles agree here", () => {
+    // They only diverge west of UTC. Pinning to UTC means the suite measures
+    // the dispatch differences between the points implementations, not an
+    // ambient property of whoever ran it.
+    expect(new Date("2025-01-01").getFullYear()).toBe(2025);
+    expect("2025-01-01".slice(0, 4)).toBe("2025");
+  });
+});
+
 describe("frozen clock", () => {
   it("pins new Date() to the frozen instant", () => {
     expect(new Date().toISOString()).toBe("2025-06-15T12:00:00.000Z");
