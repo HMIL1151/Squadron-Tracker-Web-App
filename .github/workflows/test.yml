@@ -1,0 +1,33 @@
+name: Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: squadron-tracker
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: squadron-tracker/package-lock.json
+
+      - run: npm ci
+
+      # The suite never contacts Firebase -- Firestore and Auth are replaced by
+      # in-memory fakes -- so no credentials are needed here. .env.test supplies
+      # the fake values firebase/firebase.js needs to initialise.
+      - name: Test
+        run: npm test -- --watchAll=false --coverage
+
+      - name: Build
+        run: npm run build

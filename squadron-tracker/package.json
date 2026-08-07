@@ -31,7 +31,27 @@
     "eject": "react-scripts eject"
   },
   "jest": {
-    "globalSetup": "<rootDir>/src/test/globalSetup.js"
+    "globalSetup": "<rootDir>/src/test/globalSetup.js",
+    "collectCoverageFrom": [
+      "src/**/*.js",
+      "!src/test/**",
+      "!src/misc/**",
+      "!src/index.js"
+    ],
+    "coverageThreshold": {
+      "global": {
+        "statements": 37,
+        "branches": 30,
+        "functions": 35,
+        "lines": 37
+      },
+      "src/utils/**/*.js": {
+        "statements": 100,
+        "branches": 100,
+        "functions": 100,
+        "lines": 100
+      }
+    }
   },
   "eslintConfig": {
     "extends": [
