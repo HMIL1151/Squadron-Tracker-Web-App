@@ -29,6 +29,7 @@ const AddEventPopup = ({
   const [selectedExam, setSelectedExam] = useState("");
   const [selectedEventCategory, setSelectedEventCategory] = useState("");
   const [selectedSpecialAward, setSelectedSpecialAward] = useState("");
+  const [validationError, setValidationError] = useState("");
 
   // Reset state when the popup is opened
   useEffect(() => {
@@ -40,6 +41,7 @@ const AddEventPopup = ({
       setSelectedExam("");
       setSelectedEventCategory("");
       setSelectedSpecialAward("");
+      setValidationError("");
     }
   }, [isPopupOpen]);
 
@@ -58,6 +60,8 @@ const AddEventPopup = ({
   };
 
   const onAddEventClick = () => {
+    setValidationError("");
+
     // Validate the event date
     const currentDate = new Date();
     const selectedDate = new Date(eventDate);
@@ -69,7 +73,7 @@ const AddEventPopup = ({
     sevenDaysFromNow.setDate(currentDate.getDate() + 7);
 
     if (selectedDate < eightYearsAgo || selectedDate > sevenDaysFromNow) {
-      alert(
+      setValidationError(
         "Invalid date: The selected date must be within the last 8 years and no more than 7 days in the future."
       );
       return; // Prevent the event from being added
@@ -309,6 +313,7 @@ const AddEventPopup = ({
             </div>
           )}
         </div>
+        {validationError && <p className="popup-error">{validationError}</p>}
         <div className="popup-bottom-buttons">
           <button className="popup-button-red" onClick={closePopup}>
             Cancel

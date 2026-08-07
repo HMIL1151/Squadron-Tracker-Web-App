@@ -1,31 +1,10 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState } from "react";
 import { rankMap, flightMap, classificationMap } from "../../utils/mappings"; // Import the mappings
 import "./Table.css";
 
 const Table = ({ columns, data, onRowClick, onRowHover, disableHover = false, width = "90%", hoveredCadet, rowColors = [] }) => {
   const [filters, setFilters] = useState({});
   const [sortOrder, setSortOrder] = useState({});
-  const [hoverbox, setHoverbox] = useState({ visible: false, content: "", position: { x: 0, y: 0 } });
-
-  const handleMouseMove = useCallback((e) => {
-    if (disableHover) return;
-    setHoverbox((prev) => ({
-      ...prev,
-      position: { x: e.clientX, y: e.clientY },
-    }));
-  }, [disableHover]);
-
-  useEffect(() => {
-    if (!disableHover) {
-      document.addEventListener("mousemove", handleMouseMove);
-    }
-
-    return () => {
-      if (!disableHover) {
-        document.removeEventListener("mousemove", handleMouseMove);
-      }
-    };
-  }, [disableHover, handleMouseMove]);
 
   const handleFilterChange = (col, value) => {
     setFilters((prev) => ({
@@ -125,7 +104,6 @@ const Table = ({ columns, data, onRowClick, onRowHover, disableHover = false, wi
             <tr
               key={rowIndex}
               onMouseEnter={() => onRowHover && onRowHover(row.Name)} // Trigger hover
-              onMouseMove={handleMouseMove}
               onMouseLeave={() => onRowHover && onRowHover(null)} // Clear hover
               onClick={() => onRowClick && onRowClick(row)} // Trigger onRowClick if provided
               className={`${
@@ -147,26 +125,6 @@ const Table = ({ columns, data, onRowClick, onRowHover, disableHover = false, wi
           ))}
         </tbody>
       </table>
-
-      {/* Hoverbox rendering */}
-      {hoverbox.visible && (
-        <div
-          className="hoverbox"
-          style={{
-            position: 'absolute',
-            top: hoverbox.position.y - 50, // 10px offset
-            left: hoverbox.position.x - 180, // 10px offset
-            backgroundColor: "white",
-            padding: "5px",
-            border: "1px solid gray",
-            borderRadius: "10px",
-            boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
-            zIndex: 1000,
-          }}
-        >
-          {hoverbox.content}
-        </div>
-      )}
     </div>
   );
 };

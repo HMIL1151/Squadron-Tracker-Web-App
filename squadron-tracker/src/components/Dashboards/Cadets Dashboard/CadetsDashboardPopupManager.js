@@ -1,6 +1,7 @@
 import React, { useState, useContext } from "react";
 import Popup from "../Dashboard Components/Popup";
 import SuccessMessage from "../Dashboard Components/SuccessMessage"; // Import SuccessMessage
+import ErrorMessage from "../Dashboard Components/ErrorMessage";
 import CadetForm from "./CadetForm";
 import { doc, updateDoc, getFirestore } from "firebase/firestore"; // Import Firestore functions
 import { app } from "../../../firebase/firebase"; // Correct import path for app
@@ -29,6 +30,7 @@ const PopupManager = ({
 }) => {
   const [editedCadet, setEditedCadet] = useState(selectedCadet || {});
   const [successMessage, setSuccessMessage] = useState(""); // State for success message
+  const [errorMessage, setErrorMessage] = useState("");
   const db = getFirestore(app); // Initialize Firestore using app
   const { squadronNumber } = useSquadron(); // Access the squadron number from context
   const { setData } = useContext(DataContext); // Access setData from DataContext
@@ -56,7 +58,7 @@ const PopupManager = ({
   const handleEditCadet = async () => {
     try {
         if (!editedCadet || !editedCadet.id) {
-            alert("Invalid cadet data. Cannot edit.");
+            setErrorMessage("Invalid cadet data. Cannot edit.");
             return;
         }
 
@@ -112,7 +114,7 @@ const PopupManager = ({
         setSelectedCadet(""); // Clear the selected cadet
     } catch (error) {
         console.error("Error editing cadet:", error); // Debugging: Log any errors
-        alert("An error occurred while editing the cadet.");
+        setErrorMessage("An error occurred while editing the cadet.");
     }
   };
 
@@ -200,6 +202,7 @@ const PopupManager = ({
 
       {/* Success Message */}
       <SuccessMessage message={successMessage} />
+      <ErrorMessage message={errorMessage} />
     </>
   );
 };

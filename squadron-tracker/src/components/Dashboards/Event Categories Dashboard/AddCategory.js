@@ -7,14 +7,16 @@ import { DataContext } from "../../../context/DataContext"; // Import DataContex
 const AddCategory = ({ isOpen, onClose, onConfirm }) => {
   const [category, setCategory] = useState("");
   const [points, setPoints] = useState("");
+  const [error, setError] = useState("");
   const { squadronNumber } = useSquadron(); // Access the squadron number from context
   const { setData } = useContext(DataContext); // Access setData from DataContext
 
   const handleConfirm = async () => {
     if (!category || !points) {
-      alert("Please fill in both fields.");
+      setError("Please fill in both fields.");
       return;
     }
+    setError("");
 
     try {
       const db = getFirestore();
@@ -51,9 +53,9 @@ const AddCategory = ({ isOpen, onClose, onConfirm }) => {
 
       onConfirm(); // Call the onConfirm callback to refresh data
       onClose(); // Close the popup
-    } catch (error) {
-      console.error("Error adding category:", error);
-      alert("An error occurred while adding the category.");
+    } catch (err) {
+      console.error("Error adding category:", err);
+      setError("An error occurred while adding the category.");
     }
   };
 
@@ -83,6 +85,7 @@ const AddCategory = ({ isOpen, onClose, onConfirm }) => {
             placeholder="Enter points"
           />
         </div>
+        {error && <p className="popup-error">{error}</p>}
         <div className="popup-bottom-buttons">
           <button className="popup-button-red" onClick={onClose}>
             Cancel

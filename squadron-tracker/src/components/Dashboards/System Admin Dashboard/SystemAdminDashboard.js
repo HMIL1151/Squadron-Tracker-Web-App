@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { getFirestore, collection, getDocs, doc, deleteDoc, setDoc, writeBatch } from "firebase/firestore";
 import "./SystemAdminDashboard.css"; // Import styles for the dashboard
-//import renameCollections from "../../../databaseTools/renameCollections";
+import ErrorMessage from "../Dashboard Components/ErrorMessage";
 
 const SystemAdminDashboard = () => {
   const [requests, setRequests] = useState([]);
+  const [errorMessage, setErrorMessage] = useState("");
   const db = getFirestore();
 
   // Fetch new account requests from Firestore
@@ -86,7 +87,7 @@ const SystemAdminDashboard = () => {
       setRequests((prevRequests) => prevRequests.filter((r) => r.id !== request.id));
     } catch (error) {
       console.error("Error approving request:", error);
-      alert("Failed to approve the request. Please try again.");
+      setErrorMessage("Failed to approve the request. Please try again.");
     }
   };
 
@@ -101,33 +102,14 @@ const SystemAdminDashboard = () => {
       setRequests((prevRequests) => prevRequests.filter((r) => r.id !== requestId));
     } catch (error) {
       console.error("Error denying request:", error);
-      alert("Failed to deny the request. Please try again.");
+      setErrorMessage("Failed to deny the request. Please try again.");
     }
   };
-
-  // Rename collections
-  // const handleRenameCollections = async () => {
-  //   try {
-  //     console.log("Starting the renaming process...");
-  //     await renameCollections(); // Call the renameCollections function
-  //     alert("Collections renamed successfully!");
-  //   } catch (error) {
-  //     console.error("Error renaming collections:", error);
-  //     alert("Failed to rename collections. Please check the console for details.");
-  //   }
-  // };
 
   return (
     <div className="system-admin-dashboard">
       <h1>System Admin Dashboard</h1>
       <p>Welcome, System Admin! Here you can review and manage new account requests.</p>
-
-      {/* Add the 'Rename Collections' button
-      <div className="rename-collections-container">
-        <button className="rename-collections-button" onClick={handleRenameCollections}>
-          Rename Collections
-        </button>
-      </div> */}
 
       {requests.length === 0 ? (
         <p>No new account requests to review.</p>
@@ -149,6 +131,7 @@ const SystemAdminDashboard = () => {
           ))}
         </div>
       )}
+      <ErrorMessage message={errorMessage} />
     </div>
   );
 };

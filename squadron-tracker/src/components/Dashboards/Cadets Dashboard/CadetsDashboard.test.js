@@ -191,14 +191,15 @@ describe("adding a cadet", () => {
     expect(screen.getByText("Total Cadets: 11")).toBeInTheDocument();
   });
 
-  it("writes nothing when a field is missing", async () => {
-    // Validation is alert()-based today; the observable contract is no write.
+  it("writes nothing and shows a message when a field is missing", async () => {
+    // Phase 5: this validation used to go through window.alert().
     const result = renderDashboard();
     await result.user.click(screen.getByRole("button", { name: "Add Cadet" }));
     await result.user.type(screen.getByLabelText("Forename:"), "Kai");
     await result.user.click(screen.getByRole("button", { name: "Confirm" }));
 
     expect(cadetWrites(result.writes)).toEqual([]);
+    expect(await screen.findByText("Please fill in all fields.")).toBeInTheDocument();
   });
 
   it("offers the squadron's flights in the flight dropdown", async () => {
@@ -258,7 +259,7 @@ describe("discharging a cadet", () => {
     expect(result.store()["SquadronDatabases/9999/EventLog/event-9999-01"]).toBeDefined();
   });
 
-  it("writes nothing when no cadet is selected", async () => {
+  it("writes nothing and says so when no cadet is selected", async () => {
     const result = renderDashboard();
     await result.user.click(screen.getByRole("button", { name: "Discharge Cadet" }));
     await result.user.click(screen.getByRole("button", { name: "Confirm" }));
@@ -266,6 +267,7 @@ describe("discharging a cadet", () => {
     await result.user.click(within(confirmation).getByRole("button", { name: "Confirm" }));
 
     expect(cadetWrites(result.writes)).toEqual([]);
+    expect(await screen.findByText("Please select a cadet to discharge.")).toBeInTheDocument();
   });
 });
 

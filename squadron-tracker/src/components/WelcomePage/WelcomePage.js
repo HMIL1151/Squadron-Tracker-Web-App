@@ -2,10 +2,9 @@
 
 import React, { useState, useEffect, useContext } from "react";
 import { getAuth, signInWithPopup, GoogleAuthProvider, signOut } from "firebase/auth"; // Import Firebase Auth
-import { getFirestore, collection, doc, setDoc, getDocs, writeBatch, query, where, getDoc } from "firebase/firestore"; // Import Firestore functions
+import { getFirestore, collection, doc, setDoc, getDocs, writeBatch, query, where } from "firebase/firestore"; // Import Firestore functions
 import { checkUserRole, doesSquadronAccountExist } from "../../firebase/firestoreUtils"; // Import Firestore utility functions
 import { DataContext } from "../../context/DataContext"; // Import DataContext
-import { setFlightMap } from "../../utils/mappings"; // Import the setter function
 import "./WelcomePage.css"; // Optional: Add styles for the welcome page
 import "../Dashboards/Dashboard Components/dashboardStyles.css"; // Import styles for buttons and popups
 
@@ -78,32 +77,17 @@ const WelcomePage = ({ onUserChange }) => {
 
       const { uid, email, displayName } = user;
       const userRole = await checkUserRole(uid);
-      console.log("User role:", userRole); // Log the user role for debugging
 
       if (!isNaN(userRole)) {
         const squadronNumber = userRole.toString();
 
-        // Fetch squadron name and flight names
+        // Fetch squadron name and flight names. flightMap is rebuilt from
+        // flightNames by App.handleUserChange as soon as onUserChange fires
+        // below. (A branch here used to look up SquadronList by squadron
+        // number as the document ID -- but those documents have auto-generated
+        // IDs, so it never matched and only logged an error on every login.)
         const squadronName = await fetchSquadronName(squadronNumber);
         const flightNames = await fetchFlightNames(squadronNumber);
-        const squadronDocRef = doc(db, "SquadronList", squadronNumber);
-        const squadronDoc = await getDoc(squadronDocRef);
-
-        if (squadronDoc.exists()) {
-          const flightNames = squadronDoc.data().flights || [];
-
-          // Dynamically update flightMap
-          const newFlightMap = flightNames.reduce((map, flightName, index) => {
-            map[index + 1] = flightName; // Map flight names to indices starting from 1
-            return map;
-          }, {});
-          setFlightMap(newFlightMap); // Update the flightMap in mappings.js
-
-        }
-        else{
-          console.error(`Squadron with number ${squadronNumber} not found in Squadron List.`);
-
-        }
 
         await fetchData(squadronNumber);
 

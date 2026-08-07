@@ -11,6 +11,7 @@ import LoadingPopup from "../Dashboard Components/LoadingPopup"; // Import the n
 import "./MassEventLog.css";
 import "../Dashboard Components/dashboardStyles.css";
 import SuccessMessage from "../Dashboard Components/SuccessMessage";
+import ErrorMessage from "../Dashboard Components/ErrorMessage";
 import { getFirestore, deleteDoc, doc } from "firebase/firestore"; // Import Firestore functions
 import { useSaveEvent } from "../../../databaseTools/databaseTools"; // Import saveEvent function
 
@@ -24,6 +25,7 @@ const MassEventLog = ({ user }) => {
   const [eventDate, setEventDate] = useState("");
   const [selectedButton, setSelectedButton] = useState(null);
   const [successMessage, setSuccessMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
   const [selectedEvent, setSelectedEvent] = useState(null); // State for the selected event
   const [isEventPopupOpen, setIsEventPopupOpen] = useState(false);
   const [loading, setLoading] = useState(true); // Add loading state
@@ -193,12 +195,12 @@ const MassEventLog = ({ user }) => {
     } = eventData;
 
     if (!selectedNames.length) {
-      alert("Please select at least one name.");
+      setErrorMessage("Please select at least one name.");
       return;
     }
 
     if (!eventDate) {
-      alert("Please select a date.");
+      setErrorMessage("Please select a date.");
       return;
     }
 
@@ -218,7 +220,12 @@ const MassEventLog = ({ user }) => {
         specialAward: selectedButton === "Special" ? selectedSpecialAward : "",
       };
 
-      saveEvent(newEvent); // Save the event to Firestore
+      const { saved, skippedDuplicates, error } = await saveEvent(newEvent);
+
+      if (error) {
+        setErrorMessage(error);
+        return;
+      }
 
       // Reset the form and close the popup
       setSelectedNames([]);
@@ -226,10 +233,22 @@ const MassEventLog = ({ user }) => {
       setEventDate("");
       setSelectedButton(null);
       setIsPopupOpen(false);
-      setSuccessMessage("Event added successfully!");
+      setErrorMessage("");
+
+      // Duplicates were previously only a console warning, so a save that
+      // silently did nothing still reported success.
+      if (skippedDuplicates.length && !saved.length) {
+        setErrorMessage(`Already recorded for ${skippedDuplicates.join(", ")}.`);
+      } else if (skippedDuplicates.length) {
+        setSuccessMessage(
+          `Event added. Already recorded for ${skippedDuplicates.join(", ")}.`
+        );
+      } else {
+        setSuccessMessage("Event added successfully!");
+      }
     } catch (error) {
       console.error("Error adding event:", error);
-      alert("An error occurred while adding the event. Please try again.");
+      setErrorMessage("An error occurred while adding the event. Please try again.");
     }
   };
 
@@ -283,7 +302,7 @@ const MassEventLog = ({ user }) => {
       setIsEventPopupOpen(false); // Close the popup
     } catch (error) {
       console.error("Error removing event:", error);
-      alert("An error occurred while removing the event. Please try again.");
+      setErrorMessage("An error occurred while removing the event. Please try again.");
     }
   };
 
@@ -328,6 +347,7 @@ const MassEventLog = ({ user }) => {
         onRemove={handleRemoveEvent}
       />
       <SuccessMessage message={successMessage} />
+      <ErrorMessage message={errorMessage} />
     </div>
   );
 };

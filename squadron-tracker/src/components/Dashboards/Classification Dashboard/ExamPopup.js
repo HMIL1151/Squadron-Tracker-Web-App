@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useContext } from "react";
 import { examList } from "../../../utils/examList"; // Import the examList
-import "./ExamPopup.css"; // Optional: Add styles for the popup
+import "./ExamPopup.css";
+import "../Dashboard Components/dashboardStyles.css"; // Optional: Add styles for the popup
 import { DataContext } from "../../../context/DataContext"; // Import DataContext
 import { useSaveEvent } from "../../../databaseTools/databaseTools";
 
@@ -9,6 +10,7 @@ const ExamPopup = ({ isOpen, onClose, cadetName, classification, user }) => {
   const [loading, setLoading] = useState(true); // State to track loading status
   const { data } = useContext(DataContext); // Access data and addExam function from DataContext
   const [examSelections, setExamSelections] = useState([{ selectedExam: "", examDate: "" }]); // Array of exam selections
+  const [validationError, setValidationError] = useState("");
   const saveEvent = useSaveEvent(); // Access the saveEvent function from databaseTools
 
   useEffect(() => {
@@ -51,6 +53,8 @@ const ExamPopup = ({ isOpen, onClose, cadetName, classification, user }) => {
   }, [isOpen]);
 
   const handleAddExam = () => {
+    setValidationError("");
+
     // Filter out empty selections (where both selectedExam and examDate are empty)
     const filteredSelections = examSelections.filter(
       (selection) => selection.selectedExam || selection.examDate
@@ -61,7 +65,7 @@ const ExamPopup = ({ isOpen, onClose, cadetName, classification, user }) => {
       (selection.selectedExam && !selection.examDate) || 
       (!selection.selectedExam && selection.examDate)
     )) {
-      alert("Please ensure each selection has both an exam and a date, or leave both fields empty.");
+      setValidationError("Please ensure each selection has both an exam and a date, or leave both fields empty.");
       return;
     }
 
@@ -167,6 +171,7 @@ const ExamPopup = ({ isOpen, onClose, cadetName, classification, user }) => {
               </div>
             );
           })}
+          {validationError && <p className="popup-error">{validationError}</p>}
           <div className="popup-bottom-buttons">
           <button className="popup-button-red" onClick={onClose}>
               Cancel

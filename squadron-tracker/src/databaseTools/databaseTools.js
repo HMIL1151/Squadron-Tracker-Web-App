@@ -7,6 +7,14 @@ export const useSaveEvent = () => {
   const { data, setData } = useContext(DataContext); // Access the DataContext
   const { squadronNumber } = useSquadron(); // Access the squadron number from context
 
+  /**
+   * Saves one event per cadet named, skipping duplicates.
+   *
+   * Never alerts and never throws for input problems -- callers own the UI.
+   * Returns { saved, skippedDuplicates, error }: `error` is a user-showable
+   * message when nothing was attempted; `skippedDuplicates` lists cadets whose
+   * event already existed.
+   */
   const saveEvent = async (eventDetails) => {
     const existingEvents = data.events; // Get the current events array
 
@@ -25,7 +33,7 @@ export const useSaveEvent = () => {
 
     if (!addedBy || !date || !cadetName || !createdAt || !Array.isArray(cadetName) || cadetName.length === 0) {
       console.error("Invalid event details provided.");
-      return;
+      return { saved: [], skippedDuplicates: [], error: "Missing event details." };
     }
 
     // Validate the date
@@ -37,14 +45,18 @@ export const useSaveEvent = () => {
     sevenDaysFromNow.setDate(currentDate.getDate() + 7);
 
     if (eventDate < eightYearsAgo || eventDate > sevenDaysFromNow) {
-      alert("The event date must be no more than 8 years in the past and no more than 7 days in the future.");
-      return;
+      return {
+        saved: [],
+        skippedDuplicates: [],
+        error: "The event date must be no more than 8 years in the past and no more than 7 days in the future.",
+      };
     }
 
     const db = getFirestore();
 
     try {
       const newEvents = []; // To store the new events for DataContext
+      const skippedDuplicates = [];
 
       for (const name of cadetName) {
         // Check for duplicates in the existing events array
@@ -85,7 +97,7 @@ export const useSaveEvent = () => {
         });
 
         if (isDuplicate) {
-          console.warn(`Duplicate event found: for cadet: ${name}`);
+          skippedDuplicates.push(name);
           continue; // Skip saving this event
         }
 
@@ -119,6 +131,7 @@ export const useSaveEvent = () => {
         events: [...(prevData.events || []), ...newEvents], // Append the new events
       }));
 
+      return { saved: newEvents.map((e) => e.cadetName), skippedDuplicates };
     } catch (error) {
       console.error("Error saving event details:", error);
       throw error;

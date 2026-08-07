@@ -44,10 +44,10 @@ export const fetchTeamPoints = async (squadronNumber) => {
     return {};
   }
 };
+
 // Increment points for a flight in TeamPoints document
 export const addPointsToFlight = async (squadronNumber, flightNumber, pointsToAdd) => {
   try {
-
     const db = getFirestore(app);
     const teamPointsRef = doc(db, "SquadronDatabases", String(squadronNumber), "FlightPoints", "TeamPoints");
     // Get current data
@@ -67,25 +67,9 @@ export const addPointsToFlight = async (squadronNumber, flightNumber, pointsToAd
   }
 };
 
-
-// Function to fetch data from a specific Firestore collection
-export const fetchCollectionData = async (...pathSegments) => {
-  try {
-    
-    const db = getFirestore();
-    const collectionRef = collection(db, ...pathSegments); // Dynamically construct the path
-    const snapshot = await getDocs(collectionRef);
-
-    return snapshot.docs.map((doc) => ({
-      id: doc.id, // Include the document ID
-      ...doc.data(), // Include the document data
-    }));
-  } catch (error) {
-    console.error("Error fetching collection data:", error);
-    throw error;
-  }
-};
-
+// One of the three points implementations characterized by
+// src/utils/pointsDivergence.test.js. No app code calls it any more; it is
+// kept only until Phase 6 replaces all three with src/utils/points.js.
 export const getTotalPointsForCadet = async (cadetName, year, data) => {
   try {
     const eventsData = data.events || [];
@@ -118,28 +102,6 @@ export const getTotalPointsForCadet = async (cadetName, year, data) => {
     return totalPoints;
   } catch (error) {
     console.error(`Error fetching total points for cadet ${cadetName} in ${year}:`, error);
-    return 0;
-  }
-};
-
-// Function to calculate total flight points for a given flight
-export const getTotalPointsForFlight = async (flightNumber, data) => {
-  try {
-    const cadetsData = data.cadets || [];
-
-    // Filter cadets belonging to the given flight
-    const cadetsInFlight = cadetsData.filter((cadet) => cadet.flight === flightNumber);
-
-    // Calculate total points for the flight
-    const totalPoints = cadetsInFlight.reduce((sum, cadet) => {
-      const cadetName = `${cadet.forename} ${cadet.surname}`;
-      const cadetPoints = getTotalPointsForCadet(cadetName, new Date().getFullYear(), data);
-      return sum + cadetPoints;
-    }, 0);
-
-    return totalPoints;
-  } catch (error) {
-    console.error(`Error fetching total points for flight ${flightNumber}:`, error);
     return 0;
   }
 };
@@ -180,71 +142,6 @@ export const getEventsForCadet = async (cadetName, data) => {
   }
 };
 
-export const getBadgesForCadet = async (cadetName, data) => {
-  try {
-    const eventData = data.events || [];
-    const cadetEvents = eventData.filter((event) => event.cadetName === cadetName);
-
-    const badges = cadetEvents
-      .filter((event) => event.badgeLevel && event.badgeCategory) // Filter only badge events
-      .map((event) => ({
-        badge: `${event.badgeLevel} ${event.badgeCategory}`, // Combine badgeLevel and badgeCategory
-        date: event.date, // Include the date
-      }));
-
-    return badges;
-  } catch (error) {
-    console.error(`Error fetching badges for cadet ${cadetName}:`, error);
-    return [];
-  }
-};
-
-export const getPointsForAllCadets = async (data) => {
-  try {
-    const cadetsData = data.cadets || [];
-
-    // Calculate points for each cadet
-    const cadetPoints = cadetsData.map((cadet) => {
-      const cadetName = `${cadet.forename} ${cadet.surname}`;
-      const pointsEarned = getTotalPointsForCadet(cadetName, new Date().getFullYear(), data);
-      return { cadetName, pointsEarned };
-    });
-
-    return cadetPoints;
-  } catch (error) {
-    console.error("Error fetching points for all cadets:", error);
-    return [];
-  }
-};
-
-export const getCadetFlight = async (cadetName, data) => {
-  try {
-    const cadetsData = data.cadets || [];
-    const cadet = cadetsData.find((cadet) => `${cadet.forename} ${cadet.surname}` === cadetName);
-
-    if (cadet) {
-      return cadet.flight;
-    } else {
-      console.warn(`Cadet ${cadetName} not found in DataContext.`);
-      return null;
-    }
-  } catch (error) {
-    console.error(`Error fetching flight for cadet ${cadetName}:`, error);
-    return null;
-  }
-};
-
-export const getAllCadetNames = async (data) => {
-  try {
-    const cadetsData = data.cadets || [];
-    const cadetNames = cadetsData.map((cadet) => `${cadet.forename} ${cadet.surname}`);
-    return cadetNames;
-  } catch (error) {
-    console.error("Error fetching all cadet names:", error);
-    return [];
-  }
-};
-
 export const getCadetRank = async (cadetName, data) => {
   try {
     const cadetsData = data.cadets || [];
@@ -264,52 +161,6 @@ export const getCadetRank = async (cadetName, data) => {
   }
 };
 
-export const getBadgeTypeList = async (data) => {
-  try {
-    const badgeTypes = data.flightPoints.Badges?.["Badge Types"] || [];
-    return badgeTypes;
-  } catch (error) {
-    console.error("Error fetching badge types:", error);
-    return [];
-  }
-};
-
-export const getAllBadges = async (data) => {
-  try {
-    const cadetsData = data.cadets || [];
-    const eventData = data.events || [];
-
-    // Create an array to store all badges
-    const allBadges = [];
-
-    // Iterate over each cadet
-    cadetsData.forEach((cadet) => {
-      const cadetName = `${cadet.forename} ${cadet.surname}`;
-
-      // Filter events for the current cadet
-      const cadetEvents = eventData.filter((event) => event.cadetName === cadetName);
-
-      // Extract badge events and format them
-      const badges = cadetEvents
-        .filter((event) => event.badgeLevel && event.badgeCategory) // Filter only badge events
-        .map((event) => ({
-          cadetName,
-          badge: `${event.badgeLevel} ${event.badgeCategory}`, // Combine badgeLevel and badgeCategory
-          date: event.date, // Include the date
-        }));
-
-      // Add the cadet's badges to the allBadges array
-      allBadges.push(...badges);
-    });
-
-    return allBadges;
-  } catch (error) {
-    console.error("Error fetching all badges:", error);
-    return [];
-  }
-};
-
-// Leave these functions unchanged as they use Firestore
 export const checkUserRole = async (uid) => {
   try {
     const db = getFirestore(app);
@@ -375,4 +226,3 @@ export const doesSquadronAccountExist = async (number) => {
     return false; // Return false if an error occurs
   }
 };
-

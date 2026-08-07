@@ -2,6 +2,7 @@ import React, { useState, useEffect, useContext } from "react";
 import { motion } from "framer-motion";
 import { badgeLevel } from "../../../utils/examList";
 import "./PTSTracker.css";
+import "../Dashboard Components/dashboardStyles.css";
 import { DataContext } from "../../../context/DataContext"; // Import DataContext
 import { useSaveEvent } from "../../../databaseTools/databaseTools"; // Import saveEvent 
 
@@ -19,6 +20,7 @@ const PTSTracker = ({ user }) => {
   const { data } = useContext(DataContext); // Access data and setData from DataContext
 
   const [popupData, setPopupData] = useState(null); // State to track popup data
+  const [validationError, setValidationError] = useState("");
   const saveEvent = useSaveEvent(); // Call the custom hook at the top level
 
   useEffect(() => {
@@ -158,7 +160,7 @@ const PTSTracker = ({ user }) => {
 
     // Validate the selected date
     if (selectedDate < eightYearsAgo || selectedDate > sevenDaysFromNow) {
-      alert("The date must be no more than 8 years in the past or 7 days in the future.");
+      setValidationError("The date must be no more than 8 years in the past or 7 days in the future.");
       return; // Prevent closing the popup
     }
 
@@ -444,6 +446,8 @@ const PTSTracker = ({ user }) => {
                   setPopupData((prevData) => ({ ...prevData, date: e.target.value })) // Update date in popupData
                 }
               />
+
+              {validationError && <p className="popup-error">{validationError}</p>}
 
               {/* Confirm and Close Buttons */}
               <div className="popup-bottom-buttons">

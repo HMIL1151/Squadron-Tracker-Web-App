@@ -9,7 +9,7 @@
  */
 
 import React from "react";
-import { screen, within } from "@testing-library/react";
+import { screen, waitFor, within } from "@testing-library/react";
 
 import EventCategoriesDashboard from "./EventCategoriesDashboard";
 import { renderWithProviders } from "../../../test/renderWithProviders";
@@ -142,7 +142,14 @@ describe("adding a category", () => {
       path: `${FLIGHT_POINTS}/Event Category Points`,
       data: { Camp: 6 },
     });
-    expect(tableToRows(result.container.querySelector("table")).rows).toContainEqual(["Camp", "6"]);
+
+    // waitFor, not a bare assertion: the write lands synchronously against the
+    // fake, but the table only updates once the DataContext state change has
+    // flushed. Asserting immediately passed on an idle machine and failed
+    // under parallel-suite load -- a flake worth not reintroducing.
+    await waitFor(() => {
+      expect(tableToRows(result.container.querySelector("table")).rows).toContainEqual(["Camp", "6"]);
+    });
   });
 
   it("writes nothing when a field is blank", async () => {

@@ -7,14 +7,16 @@ import { DataContext } from "../../../context/DataContext"; // Import DataContex
 const AddBadgePoints = ({ isOpen, onClose, onConfirm }) => {
   const [badgeType, setBadgeType] = useState("");
   const [points, setPoints] = useState("");
+  const [error, setError] = useState("");
   const { squadronNumber } = useSquadron(); // Access the squadron number from context
   const { setData } = useContext(DataContext); // Access setData from DataContext
 
   const handleConfirm = async () => {
     if (!badgeType || !points) {
-      alert("Please fill in both fields.");
+      setError("Please fill in both fields.");
       return;
     }
+    setError("");
 
     try {
       const db = getFirestore();
@@ -43,9 +45,9 @@ const AddBadgePoints = ({ isOpen, onClose, onConfirm }) => {
 
       onConfirm(); // Call the onConfirm callback to refresh data
       onClose(); // Close the popup
-    } catch (error) {
-      console.error("Error adding badge points:", error);
-      alert("An error occurred while adding the badge points.");
+    } catch (err) {
+      console.error("Error adding badge points:", err);
+      setError("An error occurred while adding the badge points.");
     }
   };
 
@@ -75,6 +77,7 @@ const AddBadgePoints = ({ isOpen, onClose, onConfirm }) => {
             placeholder="Enter points"
           />
         </div>
+        {error && <p className="popup-error">{error}</p>}
         <div className="popup-bottom-buttons">
           <button className="popup-button-red" onClick={onClose}>
             Cancel

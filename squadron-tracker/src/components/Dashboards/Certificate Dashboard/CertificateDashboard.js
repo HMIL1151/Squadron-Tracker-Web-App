@@ -4,6 +4,7 @@ import generateCertificatePDF from "./CertificatePDF";
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
 import "./CertificateDashboard.css";
+import "../Dashboard Components/dashboardStyles.css";
 import { useSquadron } from "../../../context/SquadronContext";
 import { DataContext } from "../../../context/DataContext"; // Import DataContext
 
@@ -19,6 +20,7 @@ const CertificateDashboard = ({user}) => {
     const [isLoading, setIsLoading] = useState(false); // State to track loading
     const [loadingMessage, setLoadingMessage] = useState(""); // State to store the loading message
     const [progress, setProgress] = useState(0); // State to track progress percentage
+    const [errorMessage, setErrorMessage] = useState("");
     const { squadronNumber } = useSquadron(); // Access the squadron number from context
     const { data } = useContext(DataContext); // Access data from DataContext
 
@@ -44,9 +46,10 @@ const CertificateDashboard = ({user}) => {
 
     const fetchCadetEvents = async () => {
         if (!selectedCadet || !selectedYear) {
-            alert("Please select both a cadet and a year.");
+            setErrorMessage("Please select both a cadet and a year.");
             return;
         }
+        setErrorMessage("");
 
         try {
             const events = await getEventsForCadet(selectedCadet, data); // Use DataContext
@@ -73,9 +76,10 @@ const CertificateDashboard = ({user}) => {
 
     const handleGeneratePDF = async () => {
         if (!selectedCadet || !selectedYear) {
-            alert("Please select both a cadet and a year.");
+            setErrorMessage("Please select both a cadet and a year.");
             return;
         }
+        setErrorMessage("");
 
         setIsLoading(true); // Show loading popup
 
@@ -98,9 +102,10 @@ const CertificateDashboard = ({user}) => {
 
     const handleDownloadPDF = () => {
         if (!generatedPdfBlob) {
-            alert("No PDF available to download. Please generate the PDF first.");
+            setErrorMessage("No PDF available to download. Please generate the PDF first.");
             return;
         }
+        setErrorMessage("");
 
         // Trigger download of the generated PDF
         const link = document.createElement("a");
@@ -116,9 +121,10 @@ const CertificateDashboard = ({user}) => {
 
     const handleDownloadAllCertificates = async () => {
         if (!selectedYear) {
-            alert("Please select a year.");
+            setErrorMessage("Please select a year.");
             return;
         }
+        setErrorMessage("");
 
         const zip = new JSZip();
         setIsLoading(true); // Show loading popup
@@ -219,6 +225,7 @@ const CertificateDashboard = ({user}) => {
         <div className="certificate-dashboard-container">
             <div className="left-panel">
                 <div className="certificate-dashboard">
+                    {errorMessage && <p className="popup-error">{errorMessage}</p>}
                     <label htmlFor="cadet-select">Select Cadet:</label>
                     <select
                         id="cadet-select"

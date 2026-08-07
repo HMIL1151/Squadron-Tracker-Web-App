@@ -211,8 +211,11 @@ describe("adding an event", () => {
     });
   });
 
-  it("silently skips a duplicate badge", async () => {
+  it("skips a duplicate badge and says so", async () => {
     // Amelia already holds Blue Radio -- useSaveEvent's duplicate detection.
+    // Phase 5 change: this used to be a console warning behind a blanket
+    // "Event added successfully!", so a save that recorded nothing still
+    // reported success. Now the user is told.
     const result = renderDashboard();
     await openAddPopup(result, ["Amelia Hart"]);
     await result.user.type(screen.getByLabelText("Date:"), "2025-06-10");
@@ -221,6 +224,47 @@ describe("adding an event", () => {
     await result.user.selectOptions(screen.getByLabelText("Badge Level:"), "Blue");
     await result.user.click(screen.getByRole("button", { name: "Add Event" }));
 
+    expect(eventWrites(result.writes)).toEqual([]);
+    expect(await screen.findByText("Already recorded for Amelia Hart.")).toBeInTheDocument();
+    expect(screen.queryByText("Event added successfully!")).toBeNull();
+  });
+
+  it("reports a partial save when only some cadets were duplicates", async () => {
+    const result = renderDashboard();
+    await openAddPopup(result, ["Amelia Hart", "Isla Muir"]);
+    await result.user.type(screen.getByLabelText("Date:"), "2025-06-10");
+    await result.user.click(screen.getByRole("button", { name: "Badge" }));
+    await result.user.selectOptions(screen.getByLabelText("Badge Type:"), "Radio");
+    await result.user.selectOptions(screen.getByLabelText("Badge Level:"), "Blue");
+    await result.user.click(screen.getByRole("button", { name: "Add Event" }));
+
+    expect(eventWrites(result.writes).map((w) => w.data.cadetName)).toEqual(["Isla Muir"]);
+    expect(
+      await screen.findByText("Event added. Already recorded for Amelia Hart.")
+    ).toBeInTheDocument();
+  });
+
+  it("shows a message instead of an alert when no cadet is selected", async () => {
+    // Phase 5: validation used to go through window.alert(), which jsdom
+    // cannot render and a user cannot copy.
+    const result = renderDashboard();
+    await result.user.click(screen.getByRole("button", { name: "Add New Record" }));
+    await result.user.type(popup().getByLabelText("Date:"), "2025-06-10");
+    await result.user.click(popup().getByRole("button", { name: "Add Event" }));
+
+    expect(await screen.findByText("Please select at least one name.")).toBeInTheDocument();
+    expect(eventWrites(result.writes)).toEqual([]);
+  });
+
+  it("shows the date-window message inline in the popup", async () => {
+    const result = renderDashboard();
+    await openAddPopup(result, ["Isla Muir"]);
+    await result.user.type(screen.getByLabelText("Date:"), "2010-01-01");
+    await result.user.click(screen.getByRole("button", { name: "Event/Other" }));
+    await result.user.type(screen.getByLabelText("Event Description:"), "old event");
+    await result.user.click(screen.getByRole("button", { name: "Add Event" }));
+
+    expect(popup().getByText(/must be within the last 8 years/)).toBeInTheDocument();
     expect(eventWrites(result.writes)).toEqual([]);
   });
 

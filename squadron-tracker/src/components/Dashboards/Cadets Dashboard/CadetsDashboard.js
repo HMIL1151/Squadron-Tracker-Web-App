@@ -6,9 +6,10 @@ import { rankMap, flightMap, classificationMap } from "../../../utils/mappings";
 import Table from "../../Table/Table";
 import PopupManager from "./CadetsDashboardPopupManager";
 import SuccessMessage from "../Dashboard Components/SuccessMessage";
+import ErrorMessage from "../Dashboard Components/ErrorMessage";
 import "./CadetsDashboard.css";
 import { useSquadron } from "../../../context/SquadronContext";
-import { getFirestore, doc, collection, setDoc, deleteDoc, updateDoc } from "firebase/firestore"; // Import Firestore functions
+import { getFirestore, doc, collection, setDoc, deleteDoc } from "firebase/firestore"; // Import Firestore functions
 
 const CadetsDashboard = ({ user }) => {
   const [isAddPopupOpen, setIsAddPopupOpen] = useState(false);
@@ -16,6 +17,7 @@ const CadetsDashboard = ({ user }) => {
   const [isConfirmationOpen, setIsConfirmationOpen] = useState(false);
   const [isEditPopupOpen, setIsEditPopupOpen] = useState(false); // New state for edit popup
   const [successMessage, setSuccessMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
   const [selectedCadet, setSelectedCadet] = useState("");
   const { squadronNumber } = useSquadron(); // Get the squadron number from the utils
   const { data, setData } = useContext(DataContext); // Access cadets and events from DataContext
@@ -54,7 +56,7 @@ const CadetsDashboard = ({ user }) => {
   const handleDischarge = async () => {
     try {
       if (!selectedCadet) {
-        alert("Please select a cadet to discharge.");
+        setErrorMessage("Please select a cadet to discharge.");
         return;
       }
 
@@ -81,21 +83,21 @@ const CadetsDashboard = ({ user }) => {
       setSelectedCadet("");
     } catch (error) {
       console.error("Error discharging cadet:", error);
-      alert("An error occurred while discharging the cadet.");
+      setErrorMessage("An error occurred while discharging the cadet.");
     }
   };
 
   const handleAddCadet = async () => {
     try {
       if (!user) {
-        alert("User information is missing.");
+        setErrorMessage("User information is missing.");
         return;
       }
 
       let { forename, surname, startDate, flight, rank } = newCadet;
 
       if (!forename || !surname || !startDate || flight === "" || rank === "") {
-        alert("Please fill in all fields.");
+        setErrorMessage("Please fill in all fields.");
         return;
       }
 
@@ -161,47 +163,14 @@ const CadetsDashboard = ({ user }) => {
       });
     } catch (error) {
       console.error("Error adding cadet:", error);
-      alert("An error occurred while adding the cadet.");
+      setErrorMessage("An error occurred while adding the cadet.");
     }
   };
 
-  const handleEditCadet = async (updatedCadet) => {
-    try {
-
-      if (!updatedCadet || !updatedCadet.id) {
-        alert("Invalid cadet data. Cannot edit.");
-        return;
-      }
-
-      const db = getFirestore(); // Initialize Firestore
-      const cadetDocRef = doc(db, "SquadronDatabases", squadronNumber.toString(), "Cadets", updatedCadet.id);
-
-
-      // Update the cadet in Firestore
-      const { id, ...cadetData } = updatedCadet; // Exclude the `id` field from the update
-
-      await updateDoc(cadetDocRef, cadetData);
-
-      // Update the DataContext's cadets
-      setData((prevData) => ({
-        ...prevData,
-        cadets: prevData.cadets.map((cadet) =>
-          cadet.id === updatedCadet.id ? { ...cadet, ...cadetData } : cadet
-        ),
-      }));
-
-      // Trigger the success message
-      setSuccessMessage(`${updatedCadet.forename} ${updatedCadet.surname} successfully updated.`);
-      setTimeout(() => setSuccessMessage(""), 1000); // Automatically hide after 1 second
-
-      // Close the edit popup
-      setIsEditPopupOpen(false);
-      setSelectedCadet(""); // Clear the selected cadet
-    } catch (error) {
-      console.error("Error editing cadet:", error); // Debugging: Log any errors
-      alert("An error occurred while editing the cadet.");
-    }
-  };
+  // NOTE: a handleEditCadet lived here and was passed to PopupManager, but
+  // PopupManager never destructured that prop -- it defines and uses its own.
+  // The copy here was unreachable, so it has been removed; editing is handled
+  // in CadetsDashboardPopupManager.
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -305,7 +274,6 @@ const CadetsDashboard = ({ user }) => {
         setIsEditPopupOpen={setIsEditPopupOpen} // Pass the setter for the new popup
         handleDischarge={handleDischarge}
         handleAddCadet={handleAddCadet}
-        handleEditCadet={handleEditCadet} // Pass the new edit handler
         cadets={data.cadets}
         setCadets={() => {}} // No need to update cadets directly
         selectedCadet={selectedCadet}
@@ -317,6 +285,7 @@ const CadetsDashboard = ({ user }) => {
         rankMap={rankMap}
       />
       <SuccessMessage message={successMessage} />
+      <ErrorMessage message={errorMessage} />
     </div>
   );
 };
