@@ -1,0 +1,3 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`request cards renders a request with its details 1`] = `"Pending PersonEmail: pending@faketon.testStatus: PendingTimestamp: 2025-06-12 11:30:00"`;

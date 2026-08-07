@@ -1,0 +1,19 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`approving a request creates the squadron, its admin, and copies the FlightPoints template 1`] = `
+Array [
+  "set SquadronList/auto-1",
+  "set SquadronDatabases/9997",
+  "set SquadronDatabases/9997/AuthorisedUsers/uid-hopeful",
+  "set SquadronDatabases/9997/FlightPoints/Badge Points",
+  "set SquadronDatabases/9997/FlightPoints/Event Category Points",
+  "set SquadronDatabases/9997/FlightPoints/Badges",
+  "set SquadronDatabases/9997/FlightPoints/Special Awards",
+  "set SquadronDatabases/9997/FlightPoints/TeamPoints",
+  "set SquadronDatabases/9997/UserRequests/auto-2",
+  "set MassUserList/auto-3",
+  "delete NewAccountRequests/nar-01",
+]
+`;
+
+exports[`pending new-squadron requests renders the request card 1`] = `"Squadron Name: NewtownSquadron Number: 9997Flight 1: Staff TeamFlight 2: VulcanFlight 3: LightningRequested By: Hopeful Admin (hopeful@example.test)ApproveDeny"`;

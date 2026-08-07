@@ -1,0 +1,13 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`visibility by role shows only non-admin dashboards to a plain user 1`] = `
+Array [
+  "Mass Event Log",
+  "Cadet List",
+  "Record Categories",
+  "Classification Tracker",
+  "Flight Points",
+  "End of Year Certificates",
+  "PTS Tracker",
+]
+`;

@@ -1,0 +1,118 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Testwood renders the same configuration 1`] = `
+Object {
+  "Blue Badge": "5",
+  "Bronze Badge": "10",
+  "Exam": "8",
+  "Gold Badge": "20",
+  "Silver Badge": "15",
+  "Special": "25",
+}
+`;
+
+exports[`configured values records what every tab contains 1`] = `
+Object {
+  "Badge Points": Object {
+    "headers": Array [
+      "Badge Types",
+      "Points",
+    ],
+    "rows": Array [
+      Array [
+        "Blue Badge",
+        "5",
+      ],
+      Array [
+        "Bronze Badge",
+        "10",
+      ],
+      Array [
+        "Silver Badge",
+        "15",
+      ],
+      Array [
+        "Gold Badge",
+        "20",
+      ],
+      Array [
+        "Exam",
+        "8",
+      ],
+      Array [
+        "Special",
+        "25",
+      ],
+    ],
+  },
+  "Badges": Object {
+    "headers": Array [
+      "Badge Types",
+    ],
+    "rows": Array [
+      Array [
+        "Radio",
+      ],
+      Array [
+        "First Aid",
+      ],
+      Array [
+        "Shooting",
+      ],
+      Array [
+        "Adventure Training",
+      ],
+      Array [
+        "Sports",
+      ],
+      Array [
+        "Music",
+      ],
+    ],
+  },
+  "Record Categories": Object {
+    "headers": Array [
+      "Category",
+      "Points",
+    ],
+    "rows": Array [
+      Array [
+        "Parade Night",
+        "1",
+      ],
+      Array [
+        "Squadron Event",
+        "3",
+      ],
+      Array [
+        "Wing Event",
+        "5",
+      ],
+      Array [
+        "Regional Event",
+        "8",
+      ],
+      Array [
+        "National Event",
+        "12",
+      ],
+    ],
+  },
+  "Special Awards": Object {
+    "headers": Array [
+      "Special Awards",
+    ],
+    "rows": Array [
+      Array [
+        "Cadet of the Year",
+      ],
+      Array [
+        "Most Improved Cadet",
+      ],
+      Array [
+        "Commandant's Commendation",
+      ],
+    ],
+  },
+}
+`;

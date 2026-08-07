@@ -84,7 +84,56 @@ global.Date = FrozenDate;
 global.__FROZEN_NOW__ = new RealDate(FROZEN_MS);
 
 // ---------------------------------------------------------------------------
-// 4. Clean state between tests
+// 4. Browser APIs jsdom does not implement
+// ---------------------------------------------------------------------------
+
+// ClassificationDashboard's GraphContainer observes its own size, and Chart.js
+// measures its canvas. jsdom provides neither, so both need a stand-in. These
+// are inert: nothing under test depends on a resize actually firing or on real
+// canvas output, only on the components mounting without throwing.
+if (typeof global.ResizeObserver === "undefined") {
+  global.ResizeObserver = class {
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+  };
+}
+
+if (typeof HTMLCanvasElement !== "undefined" && !HTMLCanvasElement.prototype.getContext.__stubbed) {
+  const stub = () => ({
+    canvas: { width: 0, height: 0 },
+    fillRect: () => {},
+    clearRect: () => {},
+    getImageData: () => ({ data: [] }),
+    putImageData: () => {},
+    createImageData: () => [],
+    setTransform: () => {},
+    drawImage: () => {},
+    save: () => {},
+    restore: () => {},
+    beginPath: () => {},
+    closePath: () => {},
+    moveTo: () => {},
+    lineTo: () => {},
+    arc: () => {},
+    fill: () => {},
+    stroke: () => {},
+    translate: () => {},
+    scale: () => {},
+    rotate: () => {},
+    measureText: () => ({ width: 0 }),
+    fillText: () => {},
+    strokeText: () => {},
+    createLinearGradient: () => ({ addColorStop: () => {} }),
+    setLineDash: () => {},
+    getLineDash: () => [],
+  });
+  stub.__stubbed = true;
+  HTMLCanvasElement.prototype.getContext = stub;
+}
+
+// ---------------------------------------------------------------------------
+// 5. Clean state between tests
 // ---------------------------------------------------------------------------
 
 // Done centrally so no test file has to remember it. State leaking between tests
