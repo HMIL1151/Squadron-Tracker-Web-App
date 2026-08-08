@@ -68,5 +68,20 @@
     "version": "v0.12.0",
     "date": "20/07/2025",
     "content": "Allowed adding flight points to a flight in the context of flight competitions."
+  },
+  {
+    "version": "v0.12.1",
+    "date": "08/08/2026",
+    "content": "Groundwork for the flights work below, with no change to how anything is used. An automated test suite now runs on every change, Firestore security rules restrict each squadron to its own data, and the app has moved to a faster build.\nPop-up alerts have been replaced with messages shown inside the app, so a warning no longer blocks the page until it is dismissed."
+  },
+  {
+    "version": "v0.13.0",
+    "date": "08/08/2026",
+    "content": "A squadron is no longer fixed at three flights. A new Flights screen (admin only) lets you add flights, rename them, choose which ones compete for points, and archive ones no longer in use. The Flight Points dashboard, the flight picker when adding a cadet, and the new-squadron setup form all follow whatever the squadron has configured.\nThere is deliberately no delete. Archiving retires a flight and removes it from the picker and the points chart, while its cadets and their history stay intact. A flight that still holds cadets cannot be archived.\nAt least one flight must be competing, and flight names must be unique. Existing squadrons keep working unchanged until an admin edits their flights."
+  },
+  {
+    "version": "v0.14.0",
+    "date": "08/08/2026",
+    "content": "The Admin Area can now download a backup of the squadron as a zip of four CSV files: cadets, the event log, flight points and squadron information. Discharging a cadet permanently deletes their record, so take a backup before doing so.\nWeb app account information (emails, access requests and permissions) is deliberately excluded, so the file can be shared without sharing anyone's account details."
   }
 ]
