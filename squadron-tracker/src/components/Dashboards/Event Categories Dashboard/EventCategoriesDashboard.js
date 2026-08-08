@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback, useContext } from "react";
-import { getFirestore, doc, getDoc, updateDoc, deleteField } from "firebase/firestore/lite";
+import { DOCS, fetchDoc, removePrice, setList, setPrice } from "../../../firebase/flightPoints";
 import Table from "../../Table/Table";
 import AddEntry from "./addEntry";
 import AddCategory from "./AddCategory"; // Import the new AddCategory component
@@ -136,25 +136,18 @@ const EventCategoriesDashboard = () => {
   };
 
   const handleDeleteConfirm = async (selectedItem) => {
-    const db = getFirestore();
-    const docRef = doc(
-      db,
-      "SquadronDatabases",
-      squadronNumber.toString(),
-      "FlightPoints",
+    const docName =
       deleteType === "eventcategories"
-        ? "Event Category Points"
+        ? DOCS.categoryPoints
         : deleteType === "badgepoints"
-        ? "Badge Points"
+        ? DOCS.badgePoints
         : deleteType === "badges"
-        ? "Badges"
-        : "Special Awards"
-    );
+        ? DOCS.badges
+        : DOCS.specialAwards;
 
     try {
       if (deleteType === "eventcategories" || deleteType === "badgepoints") {
-        // Delete key-value pair from Firestore
-        await updateDoc(docRef, { [selectedItem]: deleteField() });
+        await removePrice(squadronNumber, docName, selectedItem);
 
         // Update DataContext's flightPoints
         setData((prevData) => {
@@ -177,13 +170,12 @@ const EventCategoriesDashboard = () => {
         // Delete from array in Firestore
         const arrayName =
           deleteType === "badges" ? "Badge Types" : "Special Awards";
-        const docSnap = await getDoc(docRef);
-        if (docSnap.exists()) {
-          const data = docSnap.data();
-          const updatedArray = data[arrayName].filter(
+        const stored = await fetchDoc(squadronNumber, docName);
+        if (stored) {
+          const updatedArray = (stored[arrayName] || []).filter(
             (item) => item !== selectedItem
           );
-          await updateDoc(docRef, { [arrayName]: updatedArray });
+          await setList(squadronNumber, docName, arrayName, updatedArray);
 
           // Update DataContext's flightPoints
           setData((prevData) => {
@@ -389,20 +381,14 @@ const EventCategoriesDashboard = () => {
           isOpen={isEditPopupOpen}
           onClose={() => setIsEditPopupOpen(false)}
           onConfirm={async (updatedData) => {
-            const db = getFirestore();
-            const docRef = doc(
-              db,
-              "SquadronDatabases",
-              squadronNumber.toString(),
-              "FlightPoints",
+            const docName =
               editType === "eventcategories"
-                ? "Event Category Points"
+                ? DOCS.categoryPoints
                 : editType === "badgepoints"
-                ? "Badge Points"
+                ? DOCS.badgePoints
                 : editType === "badges"
-                ? "Badges"
-                : "Special Awards"
-            );
+                ? DOCS.badges
+                : DOCS.specialAwards;
 
             if (editType === "eventcategories" || editType === "badgepoints") {
               // Handle key-value pair updates
@@ -411,13 +397,12 @@ const EventCategoriesDashboard = () => {
               const newValue = parseInt(updatedData.Points, 10); // Ensure Points is an integer
 
               try {
-                // Delete the old field if the key has changed
+                // Renaming means removing the old key, since the key IS the name
                 if (oldKey !== newKey) {
-                  await updateDoc(docRef, { [oldKey]: deleteField() });
+                  await removePrice(squadronNumber, docName, oldKey);
                 }
 
-                // Add the new field with the updated key and value
-                await updateDoc(docRef, { [newKey]: newValue });
+                await setPrice(squadronNumber, docName, newKey, newValue);
 
                 // Update DataContext's flightPoints
                 setData((prevData) => {
@@ -457,13 +442,12 @@ const EventCategoriesDashboard = () => {
               // Handle array updates for badges and special awards
               const arrayName = editType === "badges" ? "Badge Types" : "Special Awards";
               try {
-                const docSnap = await getDoc(docRef);
-                if (docSnap.exists()) {
-                  const data = docSnap.data();
-                  const updatedArray = data[arrayName].map((item) =>
+                const stored = await fetchDoc(squadronNumber, docName);
+                if (stored) {
+                  const updatedArray = (stored[arrayName] || []).map((item) =>
                     item === editData[arrayName] ? updatedData[arrayName] : item
                   );
-                  await updateDoc(docRef, { [arrayName]: updatedArray });
+                  await setList(squadronNumber, docName, arrayName, updatedArray);
 
                   // Update DataContext's flightPoints
                   setData((prevData) => {

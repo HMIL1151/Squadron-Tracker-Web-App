@@ -66,6 +66,30 @@ describe("approving a request", () => {
     expect(created[1].flights).toEqual(["Staff Team", "Vulcan", "Lightning"]);
   });
 
+  it("keys the creator's MassUserList mapping by uid", async () => {
+    // Phase 4 fixed this for AdminDashboard's grant flow but not here, where
+    // squadron creation still minted an auto-id. Phase 8 moved both onto the
+    // same createSquadron/grantAccess helpers, so they now agree -- which
+    // matters because revoking access only deletes the uid-keyed document.
+    const { user, store } = await renderDashboard();
+    await screen.findByText(/Newtown/);
+    await user.click(screen.getByRole("button", { name: "Approve" }));
+
+    expect(store()["MassUserList/uid-hopeful"]).toEqual({ UID: "uid-hopeful", Squadron: 9997 });
+    expect(Object.keys(store()).filter((p) => p.startsWith("MassUserList/auto"))).toEqual([]);
+  });
+
+  it("keys the creator's AuthorisedUsers document by uid", async () => {
+    // The security rules check membership at AuthorisedUsers/{uid}.
+    const { user, store } = await renderDashboard();
+    await screen.findByText(/Newtown/);
+    await user.click(screen.getByRole("button", { name: "Approve" }));
+
+    expect(store()["SquadronDatabases/9997/AuthorisedUsers/uid-hopeful"]).toMatchObject({
+      role: "admin",
+    });
+  });
+
   it("removes the request once approved", async () => {
     const { user, store } = await renderDashboard();
     await screen.findByText(/Newtown/);

@@ -1,7 +1,8 @@
-import { getFirestore, collection, setDoc, doc } from "firebase/firestore/lite";
 import { useContext } from "react";
 import { DataContext } from "../context/DataContext";
 import { useSquadron } from "../context/SquadronContext";
+import { newEventRef } from "../firebase/events";
+import { setDoc } from "../firebase/db";
 
 export const useSaveEvent = () => {
   const { data, setData } = useContext(DataContext); // Access the DataContext
@@ -51,8 +52,6 @@ export const useSaveEvent = () => {
         error: "The event date must be no more than 8 years in the past and no more than 7 days in the future.",
       };
     }
-
-    const db = getFirestore();
 
     try {
       const newEvents = []; // To store the new events for DataContext
@@ -115,7 +114,7 @@ export const useSaveEvent = () => {
           specialAward: specialAward,
         };
 
-        const eventDocRef = doc(collection(db, "SquadronDatabases", squadronNumber.toString(), "EventLog"));
+        const eventDocRef = newEventRef(squadronNumber);
         await setDoc(eventDocRef, newEvent);
 
         // Add the new event to the array for DataContext

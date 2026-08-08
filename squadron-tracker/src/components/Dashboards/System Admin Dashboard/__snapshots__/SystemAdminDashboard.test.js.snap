@@ -11,7 +11,7 @@ Array [
   "set SquadronDatabases/9997/FlightPoints/Special Awards",
   "set SquadronDatabases/9997/FlightPoints/TeamPoints",
   "set SquadronDatabases/9997/UserRequests/auto-2",
-  "set MassUserList/auto-3",
+  "set MassUserList/uid-hopeful",
   "delete NewAccountRequests/nar-01",
 ]
 `;

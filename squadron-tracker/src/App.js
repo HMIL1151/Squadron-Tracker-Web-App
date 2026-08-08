@@ -8,7 +8,7 @@ import { signOut } from "firebase/auth";
 import { auth } from "./firebase/firebase"; // Adjust the import path to your Firebase configuration
 import dashboardList from "./components/Dashboards/Dashboard Components/dashboardList";
 import { useSquadron } from "./context/SquadronContext"; // Import the custom hook
-import { getFirestore, collection, query, where, getDocs } from "firebase/firestore"; // Import Firestore functions
+import { isSystemAdmin } from "./firebase/users";
 
 const App = () => {
   const [user, setUser] = useState(null);
@@ -45,28 +45,16 @@ const App = () => {
   }, []);
 
   const handleUserChange = async (currentUser, isAdminStatus) => {
-    const db = getFirestore();
-    const massUserListRef = collection(db, "MassUserList");
-    const userQuery = query(massUserListRef, where("UID", "==", currentUser.uid));
-    const snapshot = await getDocs(userQuery);
-
-    let isSystemAdmin = false;
-    if (!snapshot.empty) {
-      snapshot.forEach((doc) => {
-        if (doc.data().systemAdmin === true) {
-          isSystemAdmin = true;
-        }
-      });
-    }
+    const systemAdmin = await isSystemAdmin(currentUser.uid);
 
     // Update the user object to include systemAdmin
     const updatedUser = {
       ...currentUser,
-      systemAdmin: isSystemAdmin,
+      systemAdmin,
     };
 
     setUser(updatedUser);
-    setIsAdmin(isAdminStatus || isSystemAdmin);
+    setIsAdmin(isAdminStatus || systemAdmin);
 
     // Squadron identity and its flights land together. flightMap is derived
     // from flights inside the context, so nothing needs building here.

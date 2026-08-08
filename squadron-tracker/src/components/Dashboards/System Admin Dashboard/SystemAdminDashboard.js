@@ -1,87 +1,34 @@
 import React, { useEffect, useState } from "react";
-import { getFirestore, collection, getDocs, doc, deleteDoc, setDoc, writeBatch } from "firebase/firestore";
+import { createSquadron, deleteAccountRequest, fetchAccountRequests } from "../../../firebase/accounts";
 import "./SystemAdminDashboard.css"; // Import styles for the dashboard
 import ErrorMessage from "../Dashboard Components/ErrorMessage";
 
 const SystemAdminDashboard = () => {
   const [requests, setRequests] = useState([]);
   const [errorMessage, setErrorMessage] = useState("");
-  const db = getFirestore();
 
   // Fetch new account requests from Firestore
   useEffect(() => {
     const fetchRequests = async () => {
-      const requestsCollection = collection(db, "NewAccountRequests");
-      const snapshot = await getDocs(requestsCollection);
-      const fetchedRequests = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
-      setRequests(fetchedRequests);
+      setRequests(await fetchAccountRequests());
     };
 
     fetchRequests();
-  }, [db]);
+  }, []);
 
-  // Approve a request
+    // Approve a request
   const handleApprove = async (request) => {
     try {
-      // Create a new squadron in the 'Squadron List' collection
-      const squadronListDocRef = doc(collection(db, "SquadronList"));
-      await setDoc(squadronListDocRef, {
-        Name: request.squadronName,
-        Number: request.squadronNumber,
-        flights: [request.flight1Name, request.flight2Name, request.flight3Name],
-      });
-
-      // Create a new squadron database in the 'Squadron Databases' collection
-      const squadronDatabaseDocRef = doc(db, "SquadronDatabases", String(request.squadronNumber)); // Ensure squadronNumber is a string
-      await setDoc(squadronDatabaseDocRef, {});
-
-      // Add the user as an admin in the 'Authorised Users' subcollection
-      const authorisedUsersDocRef = doc(
-        collection(squadronDatabaseDocRef, "AuthorisedUsers"),
-        request.uid
-      );
-      await setDoc(authorisedUsersDocRef, {
+      await createSquadron({
+        squadronName: request.squadronName,
+        squadronNumber: request.squadronNumber,
+        flights: request.flights || [request.flight1Name, request.flight2Name, request.flight3Name],
+        uid: request.uid,
         displayName: request.displayName,
         email: request.email,
-        role: "admin",
       });
 
-      // Copy the 'Flight Points' collection to the new squadron's database
-      const topLevelFlightPointsRef = collection(db, "FlightPoints");
-      const newFlightPointsRef = collection(squadronDatabaseDocRef, "FlightPoints");
-
-      const topLevelFlightPointsSnapshot = await getDocs(topLevelFlightPointsRef);
-      const batch = writeBatch(db); // Use a batch for efficient writes
-
-      topLevelFlightPointsSnapshot.forEach((topLevelDoc) => {
-        const newDocRef = doc(newFlightPointsRef, topLevelDoc.id);
-        batch.set(newDocRef, topLevelDoc.data());
-      });
-
-      await batch.commit(); // Commit the batch write
-
-      // Create the 'User Requests' subcollection in the new squadron's database
-      const userRequestsDocRef = doc(collection(squadronDatabaseDocRef, "UserRequests"));
-      await setDoc(userRequestsDocRef, {
-        displayName: request.displayName,
-        email: request.email,
-        progress: "granted",
-        timestamp: new Date().toISOString(),
-      });
-
-      // Add a new document to the 'Mass User List' collection
-      const massUserListDocRef = doc(collection(db, "MassUserList"));
-      await setDoc(massUserListDocRef, {
-        UID: request.uid,
-        Squadron: request.squadronNumber,
-      });
-
-      // Delete the request from the 'New Account Requests' collection
-      const requestDocRef = doc(db, "NewAccountRequests", request.id);
-      await deleteDoc(requestDocRef);
+      await deleteAccountRequest(request.id);
 
       // Update the UI
       setRequests((prevRequests) => prevRequests.filter((r) => r.id !== request.id));
@@ -94,9 +41,7 @@ const SystemAdminDashboard = () => {
   // Deny a request
   const handleDeny = async (requestId) => {
     try {
-      // Delete the request from the 'New Account Requests' collection
-      const requestDocRef = doc(db, "NewAccountRequests", requestId);
-      await deleteDoc(requestDocRef);
+      await deleteAccountRequest(requestId);
 
       // Update the UI
       setRequests((prevRequests) => prevRequests.filter((r) => r.id !== requestId));

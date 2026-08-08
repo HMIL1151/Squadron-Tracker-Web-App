@@ -3,8 +3,8 @@ import Popup from "../Dashboard Components/Popup";
 import SuccessMessage from "../Dashboard Components/SuccessMessage"; // Import SuccessMessage
 import ErrorMessage from "../Dashboard Components/ErrorMessage";
 import CadetForm from "./CadetForm";
-import { doc, updateDoc, getFirestore } from "firebase/firestore"; // Import Firestore functions
-import { app } from "../../../firebase/firebase"; // Correct import path for app
+import { updateCadet } from "../../../firebase/cadets";
+import { renameEventCadet } from "../../../firebase/events";
 import { useSquadron } from "../../../context/SquadronContext";
 import { DataContext } from "../../../context/DataContext"; // Import DataContext
 
@@ -30,7 +30,6 @@ const PopupManager = ({
   const [editedCadet, setEditedCadet] = useState(selectedCadet || {});
   const [successMessage, setSuccessMessage] = useState(""); // State for success message
   const [errorMessage, setErrorMessage] = useState("");
-  const db = getFirestore(app); // Initialize Firestore using app
   const { squadronNumber } = useSquadron(); // Access the squadron number from context
   const { setData } = useContext(DataContext); // Access setData from DataContext
 
@@ -73,10 +72,7 @@ const PopupManager = ({
             // Update only the identified events
             const updatedEvents = prevData.events.map((event) => {
                 if (event.cadetName === oldCadetName) {
-                  const eventDocRef = doc(db, "SquadronDatabases", squadronNumber.toString(), "EventLog", event.id);
-
-                  updateDoc(eventDocRef, { cadetName: newCadetName }); // Update the cadetName in Firestore
-
+                  renameEventCadet(squadronNumber, event.id, newCadetName);
                     return { ...event, cadetName: newCadetName }; // Update cadetName
                 }
                 return event; // Leave other events unchanged
@@ -89,12 +85,10 @@ const PopupManager = ({
         });
 
         
-        const cadetDocRef = doc(db, "SquadronDatabases", squadronNumber.toString(), "Cadets", editedCadet.id);
-
         // Exclude the `createdAt` field from the update
         const { id, createdAt, ...cadetData } = editedCadet; // Exclude `id` and `createdAt`
 
-        await updateDoc(cadetDocRef, cadetData);
+        await updateCadet(squadronNumber, editedCadet.id, cadetData);
 
         // Update the DataContext's cadets
         setData((prevData) => ({

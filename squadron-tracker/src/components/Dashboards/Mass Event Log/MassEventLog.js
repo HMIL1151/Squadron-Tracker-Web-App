@@ -12,7 +12,7 @@ import "./MassEventLog.css";
 import "../Dashboard Components/dashboardStyles.css";
 import SuccessMessage from "../Dashboard Components/SuccessMessage";
 import ErrorMessage from "../Dashboard Components/ErrorMessage";
-import { getFirestore, deleteDoc, doc } from "firebase/firestore"; // Import Firestore functions
+import { removeEvent } from "../../../firebase/events";
 import { useSaveEvent } from "../../../databaseTools/databaseTools"; // Import saveEvent function
 import { getEventDescription, getEventPoints } from "../../../utils/points";
 
@@ -233,8 +233,6 @@ const MassEventLog = ({ user }) => {
 
   const handleRemoveEvent = async (eventId) => {
     try {
-      const db = getFirestore(); // Initialize Firestore
-
       if (!eventId) {
         console.error("Invalid event ID. Cannot remove event.");
       }
@@ -243,10 +241,7 @@ const MassEventLog = ({ user }) => {
         console.error("Squadron number is not set. Cannot remove event.");
       }
 
-      // Delete the event document from Firestore
-      const eventDocRef = doc(db, "SquadronDatabases", squadronNumber.toString(), "EventLog", eventId);
-
-      await deleteDoc(eventDocRef);
+      await removeEvent(squadronNumber, eventId);
 
       // Remove the event from the local state
       setEvents((prev) => {

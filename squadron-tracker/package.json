@@ -26,6 +26,7 @@
   },
   "scripts": {
     "start": "react-scripts start",
+    "dev:offline": "cross-env REACT_APP_USE_FAKE_DB=true react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "test:rules": "node scripts/test-rules.js",
@@ -74,6 +75,7 @@
   },
   "devDependencies": {
     "@firebase/rules-unit-testing": "^4.0.1",
+    "cross-env": "^10.1.0",
     "undici": "^6.28.0"
   }
 }

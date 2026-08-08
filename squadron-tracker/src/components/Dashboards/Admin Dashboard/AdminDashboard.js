@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { getFirestore, collection, getDocs, doc, updateDoc, setDoc, deleteDoc } from "firebase/firestore/lite";
+import { fetchAccessRequests, grantAccess, revokeAccess, setRequestProgress } from "../../../firebase/users";
 import "./AdminDashboard.css";
 import "../Dashboard Components/dashboardStyles.css";
 import { useSquadron } from "../../../context/SquadronContext";
@@ -20,16 +20,7 @@ const AdminDashboard = () => {
       setError(null);
 
       try {
-        const db = getFirestore();
-        const userRequestsCollection = collection(db, "SquadronDatabases", squadronNumber.toString(), "UserRequests");
-        const snapshot = await getDocs(userRequestsCollection);
-
-        const requestsData = snapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
-
-        setRequests(requestsData);
+        setRequests(await fetchAccessRequests(squadronNumber));
       } catch (err) {
         console.error("Error fetching user requests:", err);
         setError("Failed to load user requests.");
@@ -76,34 +67,21 @@ const AdminDashboard = () => {
     }
 
     try {
-      const db = getFirestore();
-      const requestDocRef = doc(db, "SquadronDatabases", squadronNumber.toString(), "UserRequests", selectedRequest.id);
+      await setRequestProgress(squadronNumber, selectedRequest.id, newStatus);
 
-      // Update the progress in the UserRequests collection
-      await updateDoc(requestDocRef, { progress: newStatus });
-
-      // Both documents are keyed by the user's uid: the security rules check
-      // membership at AuthorisedUsers/{uid}, and keying MassUserList the same
-      // way makes a re-grant overwrite the row instead of minting a duplicate.
-      const authorisedUserDocRef = doc(db, "SquadronDatabases", squadronNumber.toString(), "AuthorisedUsers", selectedRequest.uid);
-      const massUserListDocRef = doc(db, "MassUserList", selectedRequest.uid);
-
+      // grantAccess/revokeAccess key both the membership document and the login
+      // mapping by uid: the security rules check membership at
+      // AuthorisedUsers/{uid}, and a re-grant overwrites rather than
+      // duplicating. Revoking removes both, so no login mapping survives.
       if (newStatus === "granted") {
-        await setDoc(authorisedUserDocRef, {
+        await grantAccess(squadronNumber, {
+          uid: selectedRequest.uid,
           displayName: selectedRequest.displayName,
           email: selectedRequest.email,
-          role: selectedRole, // Use the selected role
-        });
-        await setDoc(massUserListDocRef, {
-          UID: selectedRequest.uid,
-          Squadron: squadronNumber,
+          role: selectedRole,
         });
       } else {
-        // Revoking removes the membership AND the login mapping. Previously
-        // the mapping survived, so a revoked user still resolved to this
-        // squadron at their next login.
-        await deleteDoc(authorisedUserDocRef);
-        await deleteDoc(massUserListDocRef);
+        await revokeAccess(squadronNumber, selectedRequest.uid);
       }
 
       // Update the local state

@@ -1,12 +1,12 @@
 import jsPDF from "jspdf";
-import { getCadetRank } from "../../../firebase/firestoreUtils"; // Import getCadetRank
+import { getCadetRank } from "../../../utils/cadets";
 
 
 const generateCertificatePDF = async (cadetName, year, events, squadronNumber, data, squadronName) => {
     const doc = new jsPDF();
 
     // Fetch the cadet's rank
-    const rank = await getCadetRank(cadetName, data);
+    const rank = getCadetRank(cadetName, data);
 
     // Fetch the squadron name from Firestore
     // Load the watermark image

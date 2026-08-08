@@ -1,5 +1,5 @@
 import React, { createContext, useState } from "react";
-import { getFirestore, collection, getDocs } from "firebase/firestore/lite";
+import { getDocs, squadronCollection } from "../firebase/db";
 
 export const DataContext = createContext();
 
@@ -17,25 +17,27 @@ export const DataProvider = ({ children, initialData }) => {
   const [data, setData] = useState(initialData || EMPTY_DATA);
 
   const fetchData = async (squadronNumber) => {
-    const db = getFirestore();
     try {
-        const cadetsSnapshot = await getDocs(collection(db, "SquadronDatabases", squadronNumber, "Cadets"));
-        const cadets = cadetsSnapshot.docs
-            .map((doc) => ({ id: doc.id, ...doc.data() }))
-            .sort((a, b) => a.forename.localeCompare(b.forename)); // Sort cadets by forename alphabetically
-        const eventsSnapshot = await getDocs(collection(db, "SquadronDatabases", squadronNumber, "EventLog"));
-        const events = eventsSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+      const [cadetsSnapshot, eventsSnapshot, flightPointsSnapshot] = await Promise.all([
+        getDocs(squadronCollection(squadronNumber, "Cadets")),
+        getDocs(squadronCollection(squadronNumber, "EventLog")),
+        getDocs(squadronCollection(squadronNumber, "FlightPoints")),
+      ]);
 
-        const flightPointsSnapshot = await getDocs(collection(db, "SquadronDatabases", squadronNumber, "FlightPoints"));
-        const flightPoints = {};
-        flightPointsSnapshot.docs.forEach((doc) => {
-            flightPoints[doc.id] = doc.data();
-        });
+      const cadets = cadetsSnapshot.docs
+        .map((doc) => ({ id: doc.id, ...doc.data() }))
+        .sort((a, b) => a.forename.localeCompare(b.forename)); // Sort cadets by forename alphabetically
 
+      const events = eventsSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
 
-        setData({ cadets, events, flightPoints });
+      const flightPoints = {};
+      flightPointsSnapshot.docs.forEach((doc) => {
+        flightPoints[doc.id] = doc.data();
+      });
+
+      setData({ cadets, events, flightPoints });
     } catch (error) {
-        console.error("Error fetching bulk data:", error);
+      console.error("Error fetching bulk data:", error);
     }
   };
 

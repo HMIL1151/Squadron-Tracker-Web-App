@@ -9,7 +9,7 @@ import SuccessMessage from "../Dashboard Components/SuccessMessage";
 import ErrorMessage from "../Dashboard Components/ErrorMessage";
 import "./CadetsDashboard.css";
 import { useSquadron } from "../../../context/SquadronContext";
-import { getFirestore, doc, collection, setDoc, deleteDoc } from "firebase/firestore"; // Import Firestore functions
+import { addCadet, removeCadet } from "../../../firebase/cadets";
 
 const CadetsDashboard = ({ user }) => {
   const [isAddPopupOpen, setIsAddPopupOpen] = useState(false);
@@ -60,11 +60,7 @@ const CadetsDashboard = ({ user }) => {
         return;
       }
 
-      const db = getFirestore(); // Initialize Firestore
-      const cadetDocRef = doc(db, "SquadronDatabases", squadronNumber.toString(), "Cadets", selectedCadet);
-
-      // Delete the cadet from Firestore
-      await deleteDoc(cadetDocRef);
+      await removeCadet(squadronNumber, selectedCadet);
 
       // Update the DataContext's cadets
       setData((prevData) => ({
@@ -124,9 +120,6 @@ const CadetsDashboard = ({ user }) => {
       const date = new Date(startDate);
       const formattedStartDate = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 
-      const db = getFirestore(); // Initialize Firestore
-      const cadetDocRef = doc(collection(db, "SquadronDatabases", squadronNumber.toString(), "Cadets"));
-
       const newCadetData = {
         forename,
         surname,
@@ -137,13 +130,12 @@ const CadetsDashboard = ({ user }) => {
         createdAt: new Date(),
       };
 
-      // Add the new cadet to Firestore
-      await setDoc(cadetDocRef, newCadetData);
+      const newCadetId = await addCadet(squadronNumber, newCadetData);
 
       // Update the DataContext's cadets
       setData((prevData) => ({
         ...prevData,
-        cadets: [...prevData.cadets, { id: cadetDocRef.id, ...newCadetData }],
+        cadets: [...prevData.cadets, { id: newCadetId, ...newCadetData }],
       }));
 
       // Trigger the success message

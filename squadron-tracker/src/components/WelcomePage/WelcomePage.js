@@ -2,8 +2,10 @@
 
 import React, { useState, useEffect, useContext } from "react";
 import { getAuth, signInWithPopup, GoogleAuthProvider, signOut } from "firebase/auth"; // Import Firebase Auth
-import { getFirestore, collection, doc, setDoc, getDocs, writeBatch, query, where } from "firebase/firestore"; // Import Firestore functions
-import { checkUserRole, doesSquadronAccountExist } from "../../firebase/firestoreUtils"; // Import Firestore utility functions
+import { checkUserRole, createAccessRequest } from "../../firebase/users";
+import { doesSquadronExist, fetchSquadronDoc } from "../../firebase/squadron";
+import { createAccountRequest, createSquadron } from "../../firebase/accounts";
+import { squadronCollection, getDocs, query, where } from "../../firebase/db";
 import { DataContext } from "../../context/DataContext"; // Import DataContext
 import "./WelcomePage.css"; // Optional: Add styles for the welcome page
 import "../Dashboards/Dashboard Components/dashboardStyles.css"; // Import styles for buttons and popups
@@ -22,7 +24,6 @@ const WelcomePage = ({ onUserChange }) => {
   const [isRequestSubmitted, setIsRequestSubmitted] = useState(false); // Track if the request has been submitted
   const [changelog, setChangelog] = useState([]); // State to store changelog entries
 
-  const db = getFirestore(); // Initialize Firestore
   const { fetchData } = useContext(DataContext); // Access fetchData from DataContext
 
   useEffect(() => {
@@ -81,22 +82,19 @@ const WelcomePage = ({ onUserChange }) => {
       if (!isNaN(userRole)) {
         const squadronNumber = userRole.toString();
 
-        // Fetch squadron name and flight names. flightMap is rebuilt from
-        // flightNames by App.handleUserChange as soon as onUserChange fires
-        // below. (A branch here used to look up SquadronList by squadron
-        // number as the document ID -- but those documents have auto-generated
-        // IDs, so it never matched and only logged an error on every login.)
-        const squadronName = await fetchSquadronName(squadronNumber);
-        const flightNames = await fetchFlightNames(squadronNumber);
+        // One lookup for name, flights and the document id. This used to be
+        // two identical queries plus a third that could never match.
+        const squadron = await fetchSquadronDoc(squadronNumber);
 
         await fetchData(squadronNumber);
 
         navigateToMainContent({
           displayName,
           uid,
-          squadronName,
+          squadronName: squadron?.Name ?? null,
           squadronNumber: parseInt(squadronNumber, 10),
-          flightNames,
+          squadronDocId: squadron?.id ?? null,
+          flightNames: squadron?.flights ?? [],
         });
         return;
       }
@@ -126,21 +124,17 @@ const WelcomePage = ({ onUserChange }) => {
   const handleSquadronSubmit = async () => {
     try {
       // Check if the squadron account exists
-      const collectionExists = await doesSquadronAccountExist(squadronNumber);
+      const collectionExists = await doesSquadronExist(squadronNumber);
 
       if (role === "First Login" && collectionExists) {
-        // Fetch the squadron name from the Squadron List collection
-        const squadronName = await fetchSquadronName(squadronNumber);
+        const squadron = await fetchSquadronDoc(squadronNumber);
 
-        if (!squadronName) {
+        if (!squadron?.Name) {
           setError("Failed to fetch squadron name. Please try again.");
           return;
         }
 
-        // Add a new document to the 'User Requests' subcollection
-        const squadronDatabaseDocRef = doc(db, "SquadronDatabases", squadronNumber);
-        const userRequestsDocRef = doc(collection(squadronDatabaseDocRef, "UserRequests"));
-        await setDoc(userRequestsDocRef, {
+        await createAccessRequest(squadronNumber, {
           displayName: user.displayName,
           email: user.email,
           uid: user.uid,
@@ -148,22 +142,12 @@ const WelcomePage = ({ onUserChange }) => {
           timestamp: new Date().toISOString(), // Current timestamp in ISO format
         });
 
-        // // Add a new document to the top-level 'Mass User List' collection
-        // const massUserListDocRef = doc(collection(db, "MassUserList"));
-        // await setDoc(massUserListDocRef, {
-        //   UID: user.uid,
-        //   Squadron: parseInt(squadronNumber, 10),
-        // });
-
         // Notify the user
         setError("Your request to join the squadron is pending approval, please contact your Squadron's Admin.");
       } else if (role === "System Admin" && collectionExists) {
-        // Fetch the squadron name from the Squadron List collection
-        const squadronName = await fetchSquadronName(squadronNumber);
-        const flightNames = await fetchFlightNames(squadronNumber); // Fetch flight names
-        
+        const squadron = await fetchSquadronDoc(squadronNumber);
 
-        if (!squadronName) {
+        if (!squadron?.Name) {
           setError("Failed to fetch squadron name. Please try again.");
           return;
         }
@@ -174,9 +158,10 @@ const WelcomePage = ({ onUserChange }) => {
         navigateToMainContent({
           displayName: user.displayName,
           uid: user.uid,
-          squadronName,
+          squadronName: squadron.Name,
           squadronNumber: parseInt(squadronNumber, 10),
-          flightNames,
+          squadronDocId: squadron.id,
+          flightNames: squadron.flights ?? [],
         });
       } else if (!collectionExists) {
         setShowSetupPopup(true); // Show the setup popup if the collection does not exist
@@ -202,9 +187,7 @@ const WelcomePage = ({ onUserChange }) => {
     // Check if the user is a system admin
     if (role !== "System Admin") {
       try {
-        // Add a new document to the 'New Account Requests' collection
-        const newAccountRequestDocRef = doc(collection(db, "NewAccountRequests"));
-        await setDoc(newAccountRequestDocRef, {
+        await createAccountRequest({
           squadronName: squadronName.trim(),
           squadronNumber: parseInt(squadronNumber, 10),
           flight1Name: flightNames[0].trim(),
@@ -235,65 +218,22 @@ const WelcomePage = ({ onUserChange }) => {
     }
 
     try {
-      // Ensure the first flight name is set to 'Training Flight' if left blank
+      // The staff flight name is optional in the form; default it rather than
+      // creating a squadron whose first flight has no name.
       const updatedFlightNames = [...flightNames];
       if (!updatedFlightNames[0].trim()) {
         updatedFlightNames[0] = "Training Flight";
       }
-  
-      // Add a new document to the 'Squadron List' collection
-      const squadronListDocRef = doc(collection(db, "SquadronList"));
-      await setDoc(squadronListDocRef, {
-        Name: squadronName,
-        Number: parseInt(squadronNumber, 10),
-        flights: updatedFlightNames, // Save the flight names as a string array
-      });
-  
-      // Add a new document to the 'Squadron Databases' collection
-      const squadronDatabaseDocRef = doc(db, "SquadronDatabases", squadronNumber);
-      await setDoc(squadronDatabaseDocRef, {}); // Create the document
-  
-      // Add a new subcollection 'Authorised Users' with the user's details
-      const authorisedUsersDocRef = doc(
-        collection(squadronDatabaseDocRef, "AuthorisedUsers"),
-        user.uid
-      );
-      await setDoc(authorisedUsersDocRef, {
+
+      await createSquadron({
+        squadronName,
+        squadronNumber,
+        flights: updatedFlightNames,
+        uid: user.uid,
         displayName: user.displayName,
         email: user.email,
-        role: "admin",
       });
-  
-      // Reproduce the 'Flight Points' collection in the new Squadron Database
-      const topLevelFlightPointsRef = collection(db, "FlightPoints");
-      const newFlightPointsRef = collection(squadronDatabaseDocRef, "FlightPoints");
-  
-      const topLevelFlightPointsSnapshot = await getDocs(topLevelFlightPointsRef);
-      const batch = writeBatch(db); // Use a batch for efficient writes
-  
-      topLevelFlightPointsSnapshot.forEach((topLevelDoc) => {
-        const newDocRef = doc(newFlightPointsRef, topLevelDoc.id); // Correct usage of doc
-        batch.set(newDocRef, topLevelDoc.data()); // Copy the document data
-      });
-  
-      await batch.commit(); // Commit the batch write
-  
-      // Add a new document to the 'User Requests' collection
-      const userRequestsDocRef = doc(collection(squadronDatabaseDocRef, "UserRequests"));
-      await setDoc(userRequestsDocRef, {
-        displayName: user.displayName,
-        email: user.email,
-        progress: "granted",
-        timestamp: new Date().toISOString(), // Current timestamp in ISO format
-      });
-  
-      // Add a new document to the top-level 'Mass User List' collection
-      const massUserListDocRef = doc(collection(db, "MassUserList"));
-      await setDoc(massUserListDocRef, {
-        UID: user.uid,
-        Squadron: parseInt(squadronNumber, 10),
-      });
-  
+
       // Close all popups
       setShowSetupPopup(false);
       setShowBlankPopup(false);
@@ -307,21 +247,16 @@ const WelcomePage = ({ onUserChange }) => {
   };
   
 
-  const navigateToMainContent = async ({ displayName, uid, squadronName, squadronNumber, flightNames }) => {
+  const navigateToMainContent = async ({ displayName, uid, squadronName, squadronNumber, squadronDocId, flightNames }) => {
     let userRole = role; // Default to the role from checkUserRole
   
     if (role !== "System Admin") {
       try {
-        // Navigate to Authorized Users subcollection
-        const authorizedUsersCollectionRef = collection(
-          db,
-          "SquadronDatabases",
-          squadronNumber.toString(),
-          "AuthorisedUsers"
-        );
-  
         // Query for the document where displayName matches the user's displayName
-        const userQuery = query(authorizedUsersCollectionRef, where("displayName", "==", displayName));
+        const userQuery = query(
+          squadronCollection(squadronNumber, "AuthorisedUsers"),
+          where("displayName", "==", displayName)
+        );
         const userSnapshot = await getDocs(userQuery);
   
         if (!userSnapshot.empty) {
@@ -341,53 +276,14 @@ const WelcomePage = ({ onUserChange }) => {
     }
   
     // Call the onUserChange prop to pass the user and squadron data to App.js
+    // squadronDocId travels with it so flight edits can write back to the
+    // SquadronList document, which is only findable by its Number field.
     onUserChange(
-      { displayName, uid, squadronName, squadronNumber, flightNames, role: userRole }, // User data
+      { displayName, uid, squadronName, squadronNumber, squadronDocId, flightNames, role: userRole }, // User data
       userRole === "admin" // isAdmin status
     );
   };
   
-
-  const fetchSquadronName = async (squadronNumber) => {
-    try {
-      const squadronListCollectionRef = collection(db, "SquadronList");
-      const squadronQuery = query(squadronListCollectionRef, where("Number", "==", parseInt(squadronNumber, 10)));
-      const squadronSnapshot = await getDocs(squadronQuery);
-
-      if (!squadronSnapshot.empty) {
-        // Get the first matching document
-        const squadronDoc = squadronSnapshot.docs[0];
-        return squadronDoc.data().Name; // Return the squadron name
-      } else {
-        console.error(`Squadron with number ${squadronNumber} not found in Squadron List.`);
-        return null;
-      }
-    } catch (err) {
-      console.error("Error fetching squadron name:", err);
-      return null;
-    }
-  };
-
-  const fetchFlightNames = async (squadronNumber) => {
-    try {
-      const squadronListCollectionRef = collection(db, "SquadronList");
-      const squadronQuery = query(squadronListCollectionRef, where("Number", "==", parseInt(squadronNumber, 10)));
-      const squadronSnapshot = await getDocs(squadronQuery);
-  
-      if (!squadronSnapshot.empty) {
-        // Get the first matching document
-        const squadronDoc = squadronSnapshot.docs[0];
-        const flightNames = squadronDoc.data().flights || []; // Retrieve the 'flights' array
-        return flightNames; // Return the flight names
-      } else {
-        console.error(`Squadron with number ${squadronNumber} not found in Squadron List.`);
-        return [];
-      }
-    } catch (err) {
-      console.error("Error fetching flight names:", err);
-      return [];
-    }
-  };
 
   const handleFlightNameChange = (index, value) => {
     const updatedFlightNames = [...flightNames];

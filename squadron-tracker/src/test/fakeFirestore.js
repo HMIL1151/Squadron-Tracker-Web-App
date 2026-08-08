@@ -297,10 +297,21 @@ export const deleteField = () => ({ __sentinel: DELETE_FIELD });
 
 export const writeBatch = () => {
   const queued = [];
+  // Each method queues its write and returns the batch, so calls chain the way
+  // the real SDK's do.
   const batch = {
-    set: (ref, data, options) => (queued.push(() => setDoc(ref, data, options)), batch),
-    update: (ref, data) => (queued.push(() => updateDoc(ref, data)), batch),
-    delete: (ref) => (queued.push(() => deleteDoc(ref)), batch),
+    set: (ref, data, options) => {
+      queued.push(() => setDoc(ref, data, options));
+      return batch;
+    },
+    update: (ref, data) => {
+      queued.push(() => updateDoc(ref, data));
+      return batch;
+    },
+    delete: (ref) => {
+      queued.push(() => deleteDoc(ref));
+      return batch;
+    },
     commit: async () => {
       for (const op of queued) await op();
       queued.length = 0;

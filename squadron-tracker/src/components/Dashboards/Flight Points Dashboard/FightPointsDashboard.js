@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from "react";
-import { addPointsToFlight, fetchTeamPoints } from "../../../firebase/firestoreUtils";
+import { addPointsToFlight, fetchTeamPoints } from "../../../firebase/flightPoints";
 import Table from "../../Table/Table";
 import { DataContext } from "../../../context/DataContext";
 import { useSquadron } from "../../../context/SquadronContext";

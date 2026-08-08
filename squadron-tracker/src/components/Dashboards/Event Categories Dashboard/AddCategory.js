@@ -1,5 +1,5 @@
 import React, { useState, useContext } from "react";
-import { getFirestore, doc, updateDoc } from "firebase/firestore/lite";
+import { DOCS, setPrice } from "../../../firebase/flightPoints";
 import "./addCategory.css";
 import { useSquadron } from "../../../context/SquadronContext";
 import { DataContext } from "../../../context/DataContext"; // Import DataContext
@@ -19,19 +19,7 @@ const AddCategory = ({ isOpen, onClose, onConfirm }) => {
     setError("");
 
     try {
-      const db = getFirestore();
-      const docRef = doc(
-        db,
-        "SquadronDatabases",
-        squadronNumber.toString(),
-        "FlightPoints",
-        "Event Category Points"
-      );
-
-      // Update Firestore with the new category and points
-      await updateDoc(docRef, {
-        [category]: parseInt(points, 10),
-      });
+      await setPrice(squadronNumber, DOCS.categoryPoints, category, points);
 
       // Update the DataContext's flightPoints
       setData((prevData) => {

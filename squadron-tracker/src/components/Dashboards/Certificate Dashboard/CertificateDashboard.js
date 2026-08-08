@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from "react";
-import { getEventsForCadet } from "../../../firebase/firestoreUtils"; // Keep this as it uses DataContext
+import { getEventsForCadet } from "../../../utils/cadets";
 import generateCertificatePDF from "./CertificatePDF";
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
@@ -52,7 +52,7 @@ const CertificateDashboard = ({user}) => {
         setErrorMessage("");
 
         try {
-            const events = await getEventsForCadet(selectedCadet, data); // Use DataContext
+            const events = getEventsForCadet(selectedCadet, data); // Use DataContext
             const filteredEvents = events.filter((event) => {
                 const eventYear = new Date(event.date).getFullYear();
                 return eventYear === parseInt(selectedYear, 10);
@@ -135,7 +135,7 @@ const CertificateDashboard = ({user}) => {
             setLoadingMessage(`Generating certificate for ${cadet}... (${i + 1}/${cadetNames.length})`);
 
             try {
-                const events = await getEventsForCadet(cadet, data); // Use DataContext
+                const events = getEventsForCadet(cadet, data); // Use DataContext
                 const filteredEvents = events.filter((event) => {
                     const eventYear = new Date(event.date).getFullYear();
                     return eventYear === parseInt(selectedYear, 10);

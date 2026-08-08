@@ -1,5 +1,5 @@
 import React, { useState, useContext } from "react";
-import { getFirestore, doc, updateDoc, arrayUnion } from "firebase/firestore/lite";
+import { addToList } from "../../../firebase/flightPoints";
 import "./addEntry.css";
 import { useSquadron } from "../../../context/SquadronContext";
 import { DataContext } from "../../../context/DataContext"; // Import DataContext
@@ -18,13 +18,7 @@ const AddEntry = ({ isOpen, onClose, onConfirm, collection, document, arrayName 
     setError("");
 
     try {
-      const db = getFirestore();
-      const docRef = doc(db, "SquadronDatabases", squadronNumber.toString(), collection, document);
-
-      // Add the new entry to Firestore
-      await updateDoc(docRef, {
-        [arrayName]: arrayUnion(entry),
-      });
+      await addToList(squadronNumber, document, arrayName, entry);
 
       // Update the DataContext's flightPoints
       setData((prevData) => {
