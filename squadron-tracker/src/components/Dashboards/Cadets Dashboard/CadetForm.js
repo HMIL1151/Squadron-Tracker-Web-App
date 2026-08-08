@@ -3,6 +3,7 @@
 import React from "react";
 import Form from "../Dashboard Components/Form";
 import { useSquadron } from "../../../context/SquadronContext";
+import { getAssignableFlights } from "../../../utils/flights";
 import "../Dashboard Components/dashboardStyles.css";
 
 const CadetForm = ({
@@ -12,7 +13,22 @@ const CadetForm = ({
 }) => {
   // Flight names are squadron state, not a constant, so they come from
   // context rather than being threaded down as a prop.
-  const { flightMap } = useSquadron();
+  const { flightMap, flights } = useSquadron();
+
+  /*
+   * Archived flights are not offered for new assignments, but a cadet already
+   * in one must still see it selected -- otherwise editing them would silently
+   * blank their flight. So the archived flight they are in is added back.
+   */
+  const assignable = getAssignableFlights(flights).reduce((map, flight) => {
+    map[flight.index] = flight.name;
+    return map;
+  }, {});
+
+  const currentFlight = newCadet.flight;
+  if (currentFlight && !assignable[currentFlight] && flightMap[currentFlight]) {
+    assignable[currentFlight] = `${flightMap[currentFlight]} (archived)`;
+  }
   const fields = [
     {
       id: "forename",
@@ -44,7 +60,7 @@ const CadetForm = ({
       label: "Flight:",
       value: newCadet.flight,
       placeholder: "Select a flight",
-      options: flightMap,
+      options: assignable,
     },
     {
       id: "startDate",

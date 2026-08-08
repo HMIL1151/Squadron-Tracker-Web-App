@@ -91,6 +91,19 @@ describe("signing in as an existing squadron user", () => {
     expect(isAdmin).toBe(true);
   });
 
+  it("passes the SquadronList document id through to the app", async () => {
+    // Without this the Flights screen cannot save: SquadronList documents have
+    // auto-generated ids but are only findable by their Number field, so the
+    // id has to travel with the login. A break here would be silent -- the
+    // screen would render fine and refuse to save.
+    const result = renderPage();
+    await signInAs(result, ADMIN);
+
+    await waitFor(() => expect(result.onUserChange).toHaveBeenCalled());
+    const [userArg] = result.onUserChange.mock.calls[0];
+    expect(userArg.squadronDocId).toBe("sqnlist-faketon");
+  });
+
   it("passes the squadron's flight list through to the app", async () => {
     const result = renderPage();
     await signInAs(result, ADMIN);
@@ -171,17 +184,45 @@ describe("new squadron setup form", () => {
     await screen.findByText("New Squadron Setup");
   };
 
-  it("offers exactly three flight name fields", async () => {
-    // CHARACTERIZATION OF A LIMITATION: flightNames is useState(["", "", ""]).
-    // A squadron with four flights cannot be created. Phase 9 makes this
-    // dynamic, and this expectation changes with it.
+  it("starts with a staff flight and one competing flight", async () => {
+    // Phase 9: was fixed at exactly three, so a four-flight squadron could not
+    // be created at all. Now it starts minimal and grows.
     const result = renderPage();
     await openSetupForm(result);
 
     expect(screen.getByPlaceholderText("Staff Team/Training Flight")).toBeInTheDocument();
     expect(screen.getByPlaceholderText("Flight 1 Name")).toBeInTheDocument();
+    expect(screen.queryByPlaceholderText("Flight 2 Name")).toBeNull();
+  });
+
+  it("adds as many flights as the squadron needs", async () => {
+    const result = renderPage();
+    await openSetupForm(result);
+
+    await result.user.click(screen.getByRole("button", { name: "+ Add another flight" }));
     expect(screen.getByPlaceholderText("Flight 2 Name")).toBeInTheDocument();
-    expect(screen.queryByPlaceholderText("Flight 3 Name")).toBeNull();
+
+    await result.user.click(screen.getByRole("button", { name: "+ Add another flight" }));
+    expect(screen.getByPlaceholderText("Flight 3 Name")).toBeInTheDocument();
+  });
+
+  it("removes an added flight again", async () => {
+    const result = renderPage();
+    await openSetupForm(result);
+    await result.user.click(screen.getByRole("button", { name: "+ Add another flight" }));
+    await result.user.click(screen.getByRole("button", { name: "Remove flight 2" }));
+
+    expect(screen.queryByPlaceholderText("Flight 2 Name")).toBeNull();
+  });
+
+  it("does not allow removing the staff flight or the first competing flight", async () => {
+    // A squadron needs at least one of each; those two rows have no remove
+    // button.
+    const result = renderPage();
+    await openSetupForm(result);
+
+    expect(screen.queryByRole("button", { name: "Remove flight 0" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Remove flight 1" })).toBeNull();
   });
 
   it("locks the squadron number to what was entered", async () => {
@@ -204,7 +245,6 @@ describe("new squadron setup form", () => {
     expect(confirm()).toBeDisabled();
 
     await result.user.type(screen.getByPlaceholderText("Flight 1 Name"), "Vulcan");
-    await result.user.type(screen.getByPlaceholderText("Flight 2 Name"), "Lightning");
     expect(confirm()).toBeDisabled(); // admin box still unticked
 
     await result.user.click(screen.getByRole("checkbox"));
@@ -218,21 +258,22 @@ describe("new squadron setup form", () => {
     await openSetupForm(result);
     await result.user.type(screen.getByPlaceholderText("Enter Squadron Name"), "Newtown");
     await result.user.type(screen.getByPlaceholderText("Flight 1 Name"), "Vulcan");
-    await result.user.type(screen.getByPlaceholderText("Flight 2 Name"), "Lightning");
     await result.user.click(screen.getByRole("checkbox"));
 
     expect(screen.getByRole("button", { name: "Confirm" })).toBeEnabled();
   });
 
-  it("files a NewAccountRequest with the three flat flight fields", async () => {
-    // CHARACTERIZATION: the request document carries flight1Name/2/3 rather
-    // than an array -- the shape SystemAdminDashboard reassembles. Phase 9
-    // replaces both ends with a flights array.
+  it("files a NewAccountRequest carrying a flights array", async () => {
+    // Phase 9: the request now carries `flights`. The flat flight1Name..3Name
+    // fields are still written so a System Admin on an older build can read it.
     const result = renderPage();
     await openSetupForm(result);
     await result.user.type(screen.getByPlaceholderText("Enter Squadron Name"), "Newtown");
     await result.user.type(screen.getByPlaceholderText("Flight 1 Name"), "Vulcan");
+    await result.user.click(screen.getByRole("button", { name: "+ Add another flight" }));
     await result.user.type(screen.getByPlaceholderText("Flight 2 Name"), "Lightning");
+    await result.user.click(screen.getByRole("button", { name: "+ Add another flight" }));
+    await result.user.type(screen.getByPlaceholderText("Flight 3 Name"), "Spitfire");
     await result.user.click(screen.getByRole("checkbox"));
     await result.user.click(screen.getByRole("button", { name: "Confirm" }));
 
@@ -242,9 +283,7 @@ describe("new squadron setup form", () => {
     expect(request.data).toMatchObject({
       squadronName: "Newtown",
       squadronNumber: 7777,
-      flight1Name: "",
-      flight2Name: "Vulcan",
-      flight3Name: "Lightning",
+      flights: ["", "Vulcan", "Lightning", "Spitfire"],
       displayName: "New Person",
       uid: UIDS.stranger,
     });
@@ -281,6 +320,7 @@ describe("signing in as a system admin", () => {
 
     await result.user.type(screen.getByPlaceholderText("Enter Squadron Name"), "Newtown");
     await result.user.type(screen.getByPlaceholderText("Flight 1 Name"), "Vulcan");
+    await result.user.click(screen.getByRole("button", { name: "+ Add another flight" }));
     await result.user.type(screen.getByPlaceholderText("Flight 2 Name"), "Lightning");
     await result.user.click(screen.getByRole("checkbox"));
     await result.user.click(screen.getByRole("button", { name: "Confirm" }));

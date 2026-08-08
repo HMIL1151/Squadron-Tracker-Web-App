@@ -168,3 +168,29 @@
   font-size: 0.9em;
   color: #666;
 }
+/* Dynamic flight rows in the new-squadron setup form. */
+.flight-name-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  justify-content: center;
+}
+
+.remove-flight-button {
+  background: none;
+  border: none;
+  color: #d9534f;
+  font-size: 1.3rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 4px;
+}
+
+.add-flight-button {
+  background: none;
+  border: none;
+  color: #4CAF50;
+  cursor: pointer;
+  font-size: 0.95rem;
+  margin-top: 6px;
+}

@@ -176,16 +176,83 @@ describe("allocating points to a flight", () => {
     expect(result.writes()).toEqual([]);
   });
 
-  it("offers every flight cadets are assigned to, including archived ones", async () => {
-    // CHARACTERIZATION: the dropdown is built from cadet assignments, not the
-    // flights array -- so archived Charlie appears because Grace is in it, and
-    // an empty flight would not appear at all. Phase 9 revisits this.
+  it("offers the squadron's active flights, not whichever ones have cadets", async () => {
+    // Phase 9 changed this. The dropdown used to be built from cadet
+    // assignments, so archived Charlie appeared (Grace is still in it) while a
+    // newly-added empty flight could not be given points at all. It now comes
+    // from the squadron's flight configuration.
     const result = await renderDashboard();
     await openAllocate(result);
     const options = [...screen.getByLabelText(/flight:/i).querySelectorAll("option")]
       .map((o) => o.textContent)
       .filter((t) => t !== "Select Flight");
+    expect(options).toEqual(["Staff Team", "Alpha", "Bravo"]);
+  });
+});
+
+describe("more than two competing flights", () => {
+  // THE POINT OF PHASE 9. This was impossible before: the chart filtered on
+  // `flight === "2" || flight === "3"` in four places, so a third competing
+  // flight simply never appeared however it was configured.
+  const FOUR_FLIGHTS = [
+    { name: "Staff Team", competing: false, archived: false },
+    { name: "Alpha", competing: true, archived: false },
+    { name: "Bravo", competing: true, archived: false },
+    { name: "Charlie", competing: true, archived: false }, // un-archived
+  ];
+
+  const renderWithFourFlights = async () => {
+    const result = renderWithProviders(<FightPointsDashboard />, {
+      squadron: SQUADRONS.FAKETON,
+      user: { ...userFor(SQUADRONS.FAKETON), flightNames: FOUR_FLIGHTS },
+    });
+    await screen.findByRole("table");
+    return result;
+  };
+
+  it("charts all three", async () => {
+    const { container } = await renderWithFourFlights();
+    const names = [...container.querySelectorAll("span")].map((s) => s.textContent.trim());
+    expect(names).toEqual(["Alpha", "Bravo", "Charlie"]);
+  });
+
+  it("gives each its own total", async () => {
+    // Charlie holds Grace, who scored 8 in 2025, plus 10 allocated.
+    const { container } = await renderWithFourFlights();
+    const labels = [...container.querySelectorAll("div")]
+      .map((d) => d.textContent.trim())
+      .filter((t) => /^\d+$/.test(t));
+    expect(labels).toEqual(expect.arrayContaining(["87", "112", "18"]));
+  });
+
+  it("offers all four for point allocation", async () => {
+    const result = await renderWithFourFlights();
+    await result.user.click(screen.getByRole("button", { name: "Allocate Points to Flight" }));
+    await screen.findByRole("heading", { name: "Allocate Points to Flight" });
+    const options = [...screen.getByLabelText(/flight:/i).querySelectorAll("option")]
+      .map((o) => o.textContent)
+      .filter((t) => t !== "Select Flight");
     expect(options).toEqual(["Staff Team", "Alpha", "Bravo", "Charlie"]);
+  });
+});
+
+describe("a squadron with one competing flight", () => {
+  it("charts just the one", async () => {
+    const result = renderWithProviders(<FightPointsDashboard />, {
+      squadron: SQUADRONS.FAKETON,
+      user: {
+        ...userFor(SQUADRONS.FAKETON),
+        flightNames: [
+          { name: "Staff Team", competing: false, archived: false },
+          { name: "Alpha", competing: true, archived: false },
+          { name: "Bravo", competing: false, archived: false },
+          { name: "Charlie", competing: true, archived: true },
+        ],
+      },
+    });
+    await screen.findByRole("table");
+    const names = [...result.container.querySelectorAll("span")].map((s) => s.textContent.trim());
+    expect(names).toEqual(["Alpha"]);
   });
 });
 

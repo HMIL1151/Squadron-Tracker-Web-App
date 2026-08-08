@@ -16,4 +16,4 @@ Array [
 ]
 `;
 
-exports[`pending new-squadron requests renders the request card 1`] = `"Squadron Name: NewtownSquadron Number: 9997Flight 1: Staff TeamFlight 2: VulcanFlight 3: LightningRequested By: Hopeful Admin (hopeful@example.test)ApproveDeny"`;
+exports[`pending new-squadron requests renders the request card 1`] = `"Squadron Name: NewtownSquadron Number: 9997Staff flight: Staff TeamFlight 1: VulcanFlight 2: LightningRequested By: Hopeful Admin (hopeful@example.test)ApproveDeny"`;

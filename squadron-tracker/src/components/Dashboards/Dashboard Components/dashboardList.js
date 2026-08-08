@@ -11,6 +11,7 @@ import AdminDashboard from "../Admin Dashboard/AdminDashboard";
 import FightPointsDashboard from "../Flight Points Dashboard/FightPointsDashboard";
 import CertificateDashboard from "../Certificate Dashboard/CertificateDashboard";
 import PTSTracker from "../PTS Tracker/PTSTracker";
+import FlightsDashboard from "../FlightsDashboard/FlightsDashboard";
 import SystemAdminDashboard from "../System Admin Dashboard/SystemAdminDashboard"; // Import the new dashboard
 
 const dashboardList = [
@@ -55,6 +56,12 @@ const dashboardList = [
     title: "PTS Tracker",
     component: PTSTracker,
     adminOnly: false, // Accessible to all users
+  },
+  {
+    key: "flightsdashboard",
+    title: "Flights",
+    component: FlightsDashboard,
+    adminOnly: true, // Changing flights affects every cadet's records
   },
   {
     key: "admin",

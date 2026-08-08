@@ -202,13 +202,31 @@ describe("adding a cadet", () => {
     expect(await screen.findByText("Please fill in all fields.")).toBeInTheDocument();
   });
 
-  it("offers the squadron's flights in the flight dropdown", async () => {
+  it("offers the squadron's active flights, excluding archived ones", async () => {
+    // Phase 9: archived Charlie is no longer offered for new cadets.
     const result = renderDashboard();
     await result.user.click(screen.getByRole("button", { name: "Add Cadet" }));
     const options = [...screen.getByLabelText("Flight:").querySelectorAll("option")]
       .map((o) => o.textContent)
       .filter((t) => !t.startsWith("Select"));
-    expect(options).toEqual(["Staff Team", "Alpha", "Bravo", "Charlie"]);
+    expect(options).toEqual(["Staff Team", "Alpha", "Bravo"]);
+  });
+
+  it("still shows an archived flight when editing a cadet already in one", async () => {
+    // Grace is in archived Charlie. Hiding it outright would blank her flight
+    // the moment anyone opened her record and pressed Confirm.
+    const result = renderDashboard();
+    const row = [...result.container.querySelectorAll("tbody tr")].find((tr) =>
+      tr.textContent.includes("O'Neill")
+    );
+    await result.user.click(row);
+    await screen.findByText("Edit Cadet");
+
+    const select = screen.getByLabelText("Flight:");
+    expect(select).toHaveValue("4");
+    expect([...select.querySelectorAll("option")].map((o) => o.textContent)).toContain(
+      "Charlie (archived)"
+    );
   });
 });
 

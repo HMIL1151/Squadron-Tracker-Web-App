@@ -3,6 +3,14 @@ import { createSquadron, deleteAccountRequest, fetchAccountRequests } from "../.
 import "./SystemAdminDashboard.css"; // Import styles for the dashboard
 import ErrorMessage from "../Dashboard Components/ErrorMessage";
 
+/** A request's flights, from either the array or the legacy flat fields. */
+const requestedFlights = (request) => {
+  if (Array.isArray(request.flights)) return request.flights;
+  return [request.flight1Name, request.flight2Name, request.flight3Name].filter(
+    (name) => name !== undefined && name !== null
+  );
+};
+
 const SystemAdminDashboard = () => {
   const [requests, setRequests] = useState([]);
   const [errorMessage, setErrorMessage] = useState("");
@@ -22,7 +30,7 @@ const SystemAdminDashboard = () => {
       await createSquadron({
         squadronName: request.squadronName,
         squadronNumber: request.squadronNumber,
-        flights: request.flights || [request.flight1Name, request.flight2Name, request.flight3Name],
+        flights: requestedFlights(request),
         uid: request.uid,
         displayName: request.displayName,
         email: request.email,
@@ -64,9 +72,14 @@ const SystemAdminDashboard = () => {
             <div key={request.id} className="request-card">
               <p><strong>Squadron Name:</strong> {request.squadronName}</p>
               <p><strong>Squadron Number:</strong> {request.squadronNumber}</p>
-              <p><strong>Flight 1:</strong> {request.flight1Name}</p>
-              <p><strong>Flight 2:</strong> {request.flight2Name}</p>
-              <p><strong>Flight 3:</strong> {request.flight3Name}</p>
+              {/* Renders however many flights were requested. Older requests
+                  carry three flat flight1Name..3Name fields instead of an
+                  array, so both shapes are handled. */}
+              {requestedFlights(request).map((name, index) => (
+                <p key={index}>
+                  <strong>{index === 0 ? "Staff flight" : `Flight ${index}`}:</strong> {name}
+                </p>
+              ))}
               <p><strong>Requested By:</strong> {request.displayName} ({request.email})</p>
               <div className="request-actions">
                 <button className="approve-button" onClick={() => handleApprove(request)}>Approve</button>

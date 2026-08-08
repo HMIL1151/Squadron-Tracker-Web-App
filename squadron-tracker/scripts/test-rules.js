@@ -70,41 +70,77 @@ const waitForReady = async (timeoutMs = 60000) => {
   throw new Error(`Firestore emulator did not become ready on ${HOST}:${PORT}`);
 };
 
-const main = async () => {
-  const java = findJava();
+/**
+ * The rules test files, each run against its own freshly-started emulator.
+ *
+ * They are NOT run together. The emulator degrades measurably within a single
+ * process: the 36-test file passes in about 6 seconds, but the 7-test file
+ * that runs after it then takes two minutes and times out -- while passing in
+ * about 2 seconds on its own. Restarting between files costs a few seconds
+ * and removes the problem entirely.
+ */
+const RULES_SUITES = ["firestoreRules.test.js", "firestoreRulesSquadronList.test.js"];
+
+/** Runs one test file against a fresh emulator. Returns its exit status. */
+const runSuite = async (java, testFile) => {
   const javaArgs = ["-Duser.language=en", "-jar", findJar(), "--host", HOST, "--port", String(PORT)];
 
-  console.log(`Starting Firestore emulator on ${HOST}:${PORT} (java: ${java}) ...`);
+  console.log(`\n--- ${testFile} ---`);
+  console.log(`Starting Firestore emulator on ${HOST}:${PORT} ...`);
   const emulator = spawn(java, javaArgs, { stdio: ["ignore", "pipe", "pipe"] });
   emulator.stdout.on("data", () => {}); // drain
   emulator.stderr.on("data", (d) => process.stderr.write(d));
 
   let emulatorExited = false;
-  emulator.on("exit", (code) => {
+  emulator.on("exit", () => {
     emulatorExited = true;
-    if (code !== 0 && code !== null) {
-      console.error(`Emulator exited early with code ${code}`);
-      process.exit(1);
-    }
   });
 
   try {
     await waitForReady();
-    console.log("Emulator ready; running rules tests.");
+    console.log("Emulator ready.");
 
     const result = spawnSync(
       "npx",
-      ["--no-install", "react-scripts", "test", "--watchAll=false", "--testPathPattern=firestoreRules"],
+      [
+        "--no-install",
+        "react-scripts",
+        "test",
+        "--watchAll=false",
+        "--runInBand",
+        `--testPathPattern=${testFile.replace(".", "\\.")}`,
+      ],
       {
         stdio: "inherit",
         shell: true,
         env: { ...process.env, FIRESTORE_EMULATOR_HOST: `${HOST}:${PORT}`, CI: "true" },
       }
     );
-    process.exitCode = result.status === null ? 1 : result.status;
+    return result.status === null ? 1 : result.status;
   } finally {
     if (!emulatorExited) emulator.kill();
+    // Give the port time to free before the next emulator claims it.
+    await new Promise((r) => setTimeout(r, 1500));
   }
+};
+
+const main = async () => {
+  const java = findJava();
+  console.log(`java: ${java}`);
+
+  let failed = 0;
+  for (const suite of RULES_SUITES) {
+    // eslint-disable-next-line no-await-in-loop
+    const status = await runSuite(java, suite);
+    if (status !== 0) failed += 1;
+  }
+
+  if (failed) {
+    console.error(`\n${failed} of ${RULES_SUITES.length} rules suites failed.`);
+  } else {
+    console.log(`\nAll ${RULES_SUITES.length} rules suites passed.`);
+  }
+  process.exitCode = failed ? 1 : 0;
 };
 
 main().catch((err) => {

@@ -56,11 +56,28 @@ service cloud.firestore {
 
     // Squadron directory: number, name, flights. Read by the login flow
     // before membership is known (a first-time user resolving a squadron
-    // name), so any signed-in user may read. Writes are system-admin only;
-    // Phase 9 will widen update to squadron admins for the flights field.
+    // name), so any signed-in user may read.
+    //
+    // Creating and deleting entries stays system-admin only. Updates are
+    // additionally allowed for a squadron's own admin, but ONLY to the
+    // flights field and ONLY on their own squadron -- that is what the
+    // Add/Edit Flights screen needs, and nothing more. Name and Number stay
+    // immutable to squadron admins so nobody can rename or renumber their way
+    // into another squadron's identity.
     match /SquadronList/{doc} {
+      function onlyFlightsChanged() {
+        return request.resource.data.diff(resource.data).affectedKeys()
+                 .hasOnly(['flights'])
+          && request.resource.data.Number == resource.data.Number
+          && request.resource.data.Name == resource.data.Name;
+      }
+
       allow read: if signedIn();
-      allow write: if isSystemAdmin();
+      allow create, delete: if isSystemAdmin();
+      allow update: if isSystemAdmin()
+        || (onlyFlightsChanged()
+            && resource.data.Number is int
+            && isAdminOf(string(resource.data.Number)));
     }
 
     // Login role lookup. The app queries where('UID', '==', uid); the read

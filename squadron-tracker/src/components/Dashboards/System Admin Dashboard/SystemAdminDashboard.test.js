@@ -26,14 +26,31 @@ describe("pending new-squadron requests", () => {
     expect(container.querySelector(".request-card").textContent).toMatchSnapshot();
   });
 
-  it("shows exactly three flights", async () => {
-    // CHARACTERIZATION OF A LIMITATION. A squadron wanting four flights cannot
-    // express it here; Phase 9 replaces this with a rendered `flights` array.
+  it("renders however many flights the request asked for", async () => {
+    // Phase 9: was hardcoded to exactly three. The dummy request still uses
+    // the legacy flat flight1Name..3Name fields, which are still understood.
     await renderDashboard();
-    expect(await screen.findByText("Flight 1:")).toBeInTheDocument();
+    expect(await screen.findByText("Staff flight:")).toBeInTheDocument();
+    expect(screen.getByText("Flight 1:")).toBeInTheDocument();
     expect(screen.getByText("Flight 2:")).toBeInTheDocument();
-    expect(screen.getByText("Flight 3:")).toBeInTheDocument();
-    expect(screen.queryByText("Flight 4:")).toBeNull();
+    expect(screen.queryByText("Flight 3:")).toBeNull();
+  });
+
+  it("renders a request carrying a flights array of any length", async () => {
+    const { __seed, __store } = require("../../../test/fakeFirestore");
+    const { dummyData } = require("../../../test/dummyData");
+    __seed(dummyData);
+    const docs = __store();
+    docs["NewAccountRequests/nar-01"].flights = ["Staff", "Alpha", "Bravo", "Charlie", "Delta"];
+    __seed(docs);
+
+    renderWithProviders(<SystemAdminDashboard />, { seedFirestore: false });
+    await screen.findByRole("heading", { name: "System Admin Dashboard" });
+    await screen.findByText(/Newtown/);
+
+    expect(screen.getByText("Staff flight:")).toBeInTheDocument();
+    expect(screen.getByText("Flight 4:")).toBeInTheDocument();
+    expect(screen.getByText("Delta")).toBeInTheDocument();
   });
 
   it("offers approve and deny", async () => {

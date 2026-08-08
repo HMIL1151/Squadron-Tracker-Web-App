@@ -20,7 +20,10 @@ const WelcomePage = ({ onUserChange }) => {
   const [showSetupPopup, setShowSetupPopup] = useState(false); // Track if the setup popup is shown 
   const [showBlankPopup, setShowBlankPopup] = useState(false); // Track if the blank popup is shown
   const [showAdminWarning, setShowAdminWarning] = useState(false); // Track if the admin warning is shown
-  const [flightNames, setFlightNames] = useState(["", "", ""]); // Track the entered flight names
+  // Starts with a staff flight and one competing flight; rows are added and
+  // removed freely. Previously fixed at exactly three, which meant a squadron
+  // with four flights simply could not be created.
+  const [flightNames, setFlightNames] = useState(["", ""]);
   const [isRequestSubmitted, setIsRequestSubmitted] = useState(false); // Track if the request has been submitted
   const [changelog, setChangelog] = useState([]); // State to store changelog entries
 
@@ -190,9 +193,13 @@ const WelcomePage = ({ onUserChange }) => {
         await createAccountRequest({
           squadronName: squadronName.trim(),
           squadronNumber: parseInt(squadronNumber, 10),
-          flight1Name: flightNames[0].trim(),
-          flight2Name: flightNames[1].trim(),
-          flight3Name: flightNames[2].trim(),
+          // An array now, rather than three flat fields. flight1Name..3Name
+          // are still written so a System Admin running an older build can
+          // read the request; SystemAdminDashboard prefers `flights`.
+          flights: flightNames.map((name) => name.trim()),
+          flight1Name: (flightNames[0] || "").trim(),
+          flight2Name: (flightNames[1] || "").trim(),
+          flight3Name: (flightNames[2] || "").trim(),
           displayName: user.displayName,
           uid: user.uid,
           email: user.email,
@@ -284,6 +291,11 @@ const WelcomePage = ({ onUserChange }) => {
     );
   };
   
+
+  const addFlightRow = () => setFlightNames((prev) => [...prev, ""]);
+
+  const removeFlightRow = (index) =>
+    setFlightNames((prev) => prev.filter((_, i) => i !== index));
 
   const handleFlightNameChange = (index, value) => {
     const updatedFlightNames = [...flightNames];
@@ -406,21 +418,37 @@ const WelcomePage = ({ onUserChange }) => {
             <div>
               <p>Please enter the names of your flights:</p>
               {flightNames.map((flightName, index) => (
-                <input
-                  key={index}
-                  type="text"
-                  value={flightName}
-                  onChange={(e) => handleFlightNameChange(index, e.target.value)}
-                  placeholder={
-                    index === 0
-                      ? "Staff Team/Training Flight"
-                      : index === 1
-                      ? "Flight 1 Name"
-                      : "Flight 2 Name"
-                  } // Dynamic placeholder text
-                  className="squadron-name-input"
-                />
+                <div key={index} className="flight-name-row">
+                  <input
+                    type="text"
+                    value={flightName}
+                    onChange={(e) => handleFlightNameChange(index, e.target.value)}
+                    placeholder={
+                      index === 0
+                        ? "Staff Team/Training Flight"
+                        : `Flight ${index} Name`
+                    }
+                    className="squadron-name-input"
+                    aria-label={index === 0 ? "Staff flight name" : `Flight ${index} name`}
+                  />
+                  {/* The staff flight and the first competing flight are the
+                      minimum a squadron can have, so those two cannot be
+                      removed. */}
+                  {index > 1 && (
+                    <button
+                      type="button"
+                      className="remove-flight-button"
+                      onClick={() => removeFlightRow(index)}
+                      aria-label={`Remove flight ${index}`}
+                    >
+                      &times;
+                    </button>
+                  )}
+                </div>
               ))}
+              <button type="button" className="add-flight-button" onClick={addFlightRow}>
+                + Add another flight
+              </button>
             </div>
             <br></br>
             <div>
@@ -445,7 +473,7 @@ const WelcomePage = ({ onUserChange }) => {
                 onClick={handleSetupConfirm}
                 disabled={
                   !squadronName.trim() || // Squadron name must not be empty
-                  flightNames.slice(1).some((name) => name.trim() === "") || // Check only the second and third flight names
+                  flightNames.slice(1).some((name) => name.trim() === "") || // Every flight after the staff flight needs a name
                   !isAdmin // Admin checkbox must be checked
                 }
               >

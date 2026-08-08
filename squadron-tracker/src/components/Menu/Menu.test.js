@@ -38,6 +38,15 @@ describe("visibility by role", () => {
     expect(visibleItems()).toContain("Admin Area");
   });
 
+  it("shows Flights to an admin but not to a plain user", () => {
+    // Changing flights re-labels every cadet's record, so it is admin-only.
+    renderMenu({ isAdmin: false });
+    expect(visibleItems()).not.toContain("Flights");
+
+    renderMenu({ isAdmin: true, user: { systemAdmin: false } });
+    expect(visibleItems()).toContain("Flights");
+  });
+
   it("hides the system admin area from a plain admin", () => {
     renderMenu({ isAdmin: true, user: { systemAdmin: false } });
     expect(visibleItems()).not.toContain("System Admin Area");

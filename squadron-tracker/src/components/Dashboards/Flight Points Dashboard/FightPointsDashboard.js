@@ -4,6 +4,7 @@ import Table from "../../Table/Table";
 import { DataContext } from "../../../context/DataContext";
 import { useSquadron } from "../../../context/SquadronContext";
 import { getCadetPoints, getFlightPointTotals } from "../../../utils/points";
+import { getAssignableFlights, getCompetingFlights } from "../../../utils/flights";
 
 const FightPointsDashboard = () => {
     const { data } = useContext(DataContext);
@@ -13,16 +14,15 @@ const FightPointsDashboard = () => {
     const [pointsToAdd, setPointsToAdd] = useState("");
     const [popupError, setPopupError] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const { squadronNumber, flightMap } = useSquadron();
-    // Get unique flights for dropdown (as sorted strings, no empty/invalid)
-    const uniqueFlights = Array.from(
-        new Set(
-            (data.cadets || [])
-                .map(c => c.flight)
-                .filter(f => f !== undefined && f !== null && f !== "")
-                .map(f => String(f))
-        )
-    ).sort();
+    const { squadronNumber, flightMap, flights } = useSquadron();
+
+    // Which flights appear in the competition, and which can be allocated
+    // points. Both come from the squadron's configuration -- this used to be
+    // `flight === "2" || flight === "3"` hardcoded in four places, and the
+    // allocation dropdown was built from whichever flights cadets happened to
+    // be in, so an empty flight could not be given points at all.
+    const competingFlights = getCompetingFlights(flights);
+    const allocatableFlights = getAssignableFlights(flights);
     // Ref to trigger data refresh after points allocation
     const [refreshKey, setRefreshKey] = useState(0);
 
@@ -131,9 +131,16 @@ const FightPointsDashboard = () => {
         // Ensure flight is a number for comparison
         const flightNum = Number(flight);
         // Only highlight top cadet in flights 2 and 3
-        if ((flightNum === 2 || flightNum === 3) && topCadets[flight]?.cadetName === cadetName && topCadets[flight]?.pointsEarned > 0) {
-            // Match the bar chart: flight 2 = colors[0], flight 3 = colors[1]
-            color = colors[flightNum - 2]; // flight 2: 0, flight 3: 1
+        // Highlight the top cadet in each competing flight, in that flight's
+        // chart colour. Indexing by position in the competing list rather than
+        // `flightNum - 2`, which assumed flight 2 was always the first one.
+        const competingPosition = competingFlights.findIndex((f) => f.index === flightNum);
+        if (
+            competingPosition !== -1 &&
+            topCadets[flight]?.cadetName === cadetName &&
+            topCadets[flight]?.pointsEarned > 0
+        ) {
+            color = colors[competingPosition % colors.length];
         }
         return {
             row: cadetName,
@@ -197,8 +204,8 @@ const FightPointsDashboard = () => {
                                 style={{ marginLeft: "10px", padding: "6px 12px", borderRadius: "6px" }}
                             >
                                 <option value="">Select Flight</option>
-                                {uniqueFlights.map((f) => (
-                                    <option key={`flight-option-${f}`} value={f}>{flightMap[f] || `Flight ${f}`}</option>
+                                {allocatableFlights.map((f) => (
+                                    <option key={`flight-option-${f.index}`} value={f.index}>{f.name}</option>
                                 ))}
                             </select>
                         </label>
@@ -280,18 +287,16 @@ const FightPointsDashboard = () => {
                         {/* Bars */}
                         <div style={{ display: "flex", alignItems: "flex-end", height: "300px" }}>
                             {(() => {
-                                // Filter flights 2 and 3 and extract their points
-                                const filteredPoints = Object.entries(flightPointsMap)
-                                    .filter(([flight]) => flight === "2" || flight === "3") // Only include flights 2 and 3
-                                    .map(([, points]) => points); // Extract the points
+                                const bars = competingFlights.map((f) => ({
+                                    ...f,
+                                    points: Number(flightPointsMap[f.index] || 0),
+                                }));
 
-                                // Handle empty data or zero points for both flights
-                                const maxPoints = filteredPoints.length > 0 && Math.max(...filteredPoints) > 0 ? Math.max(...filteredPoints) : 0;
+                                const maxPoints = Math.max(0, ...bars.map((b) => b.points));
                                 const scaleFactor = maxPoints > 0 ? 500 / maxPoints : 0; // Scale only if maxPoints > 0
 
-                                return Object.entries(flightPointsMap)
-                                    .filter(([flight]) => flight === "2" || flight === "3") // Only include flights 2 and 3
-                                    .map(([flight, points], index) => (
+                                return bars
+                                    .map(({ index: flight, points }, index) => (
                                         <div
                                             key={flight}
                                             style={{
@@ -326,9 +331,8 @@ const FightPointsDashboard = () => {
 
                         {/* Legend */}
                         <div style={{ display: "flex", justifyContent: "center", marginTop: "10px" }}>
-                            {Object.keys(flightPointsMap)
-                                .filter((flight) => flight === "2" || flight === "3") // Only include flights 2 and 3
-                                .map((flight, index) => (
+                            {competingFlights
+                                .map(({ index: flight, name }, index) => (
                                     <div
                                         key={flight}
                                         style={{
@@ -348,7 +352,7 @@ const FightPointsDashboard = () => {
                                             }}
                                         ></div>
                                         <span style={{ fontSize: "14px", color: "#333" }}>
-                                            {flightMap[flight] || `Flight ${flight}`} {/* Use flightMap for labels */}
+                                            {name || flightMap[flight] || `Flight ${flight}`}
                                         </span>
                                     </div>
                                 ))}

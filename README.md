@@ -74,6 +74,8 @@ Hosting config is in `firebase.json`; the project alias is in `.firebaserc`
 - **Flight Points** — per-cadet and per-flight point totals over a chosen year.
 - **End of Year Certificates** — previewable PDF per cadet, with bulk generation as a `.zip`.
 - **PTS Tracker** — badges earned across the Progressive Training Syllabus.
+- **Flights** — add and rename flights, and choose which ones compete for
+  points (admins only). A squadron can have any number of flights.
 - **Admin Area** — approve or deny squadron access requests (admins only).
 - **System Admin Area** — approve or deny new squadron accounts (system admins only).
 
@@ -117,8 +119,48 @@ MassUserList/{autoId}              { UID, Squadron, systemAdmin? }
 NewAccountRequests/{autoId}        { squadronName, squadronNumber, flights, uid, ... }
 ```
 
-A cadet's `flight` is a **1-based index** into the squadron's `flights` array. Classification is
-*derived* from the count of exam events, not stored.
+### Flights
+
+A cadet's `flight` is a **1-based index** into the squadron's `flights` array — not an id. That
+single fact drives the design of the Flights screen:
+
+- **The array only ever grows.** Removing or reordering an entry would silently move every cadet
+  after it into the wrong flight.
+- **Retiring a flight means archiving it**, not deleting it. An archived flight disappears from
+  the Add Cadet picker and from Flight Points, while its slot, its cadets and its points history
+  stay intact.
+- **`competing` is per flight.** Flight Points charts whichever flights are marked competing, so a
+  squadron can run a competition between two, three or more of them. This used to be hardcoded to
+  "flights 2 and 3".
+
+Two stored shapes exist and both work:
+
+```
+legacy    ["Staff Team", "Atlas", "Tempest"]
+current   [{ name: "Staff Team", competing: false, archived: false }, ...]
+```
+
+Legacy squadrons are read correctly (first flight treated as non-competing staff) and upgrade to
+the object shape the first time an admin saves. No migration is needed.
+
+Classification is *derived* from the count of exam events, not stored.
+
+## Development
+
+```bash
+npm run dev:offline
+```
+
+Runs the app against an in-memory database seeded with two dummy squadrons — no Firebase project,
+no credentials, and no way to touch production data. Useful for UI work and for trying flight
+changes safely. Nothing is saved; reloading resets everything.
+
+```bash
+npm run test:rules
+```
+
+Runs the Firestore security rules against the emulator. See
+[docs/deploy-rules.md](squadron-tracker/docs/deploy-rules.md) before deploying rules.
 
 ## Changelog
 

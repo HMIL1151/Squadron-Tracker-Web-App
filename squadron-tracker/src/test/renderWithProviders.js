@@ -34,6 +34,7 @@ export const renderWithProviders = (ui, options = {}) => {
     squadron = SQUADRONS.FAKETON,
     data,
     user,
+    squadronDocId = null,
     seedFirestore = true,
     ...renderOptions
   } = options;
@@ -49,6 +50,7 @@ export const renderWithProviders = (ui, options = {}) => {
     <DataProvider initialData={contextData}>
       <SquadronProvider
         initialSquadronNumber={squadron}
+        initialSquadronDocId={squadronDocId}
         initialFlights={userProp.flightNames || []}
       >
         {children}
