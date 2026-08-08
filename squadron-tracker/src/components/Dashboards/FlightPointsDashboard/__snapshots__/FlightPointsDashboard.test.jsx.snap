@@ -1,0 +1,25 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`Testwood (legacy flight shape) > scores its cadets 1`] = `
+Object {
+  "Katie Lawson": 8,
+  "Liam Doyle": 1,
+  "Maya Sharma": 25,
+  "Noah Bright": 15,
+}
+`;
+
+exports[`per-cadet points for the current year > scores every cadet 1`] = `
+Object {
+  "Amelia Hart": 28,
+  "Ben Okafor": 6,
+  "Chloe Ramsey": 13,
+  "Daniel Foster": 6,
+  "Eve Nakamura": 53,
+  "Femi Adeyemi": 5,
+  "Grace O'Neill": 8,
+  "Harry Blythe-Jones": 25,
+  "Isla Muir": 0,
+  "Jack Petrov": 23,
+}
+`;

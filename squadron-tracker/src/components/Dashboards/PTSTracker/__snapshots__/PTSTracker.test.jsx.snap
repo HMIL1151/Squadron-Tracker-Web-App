@@ -1,0 +1,72 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`Testwood (legacy flight shape) > records its badges 1`] = `
+Object {
+  "Katie Lawson": Object {
+    "Blue Radio": "2024-06-18",
+  },
+  "Liam Doyle": Object {},
+  "Maya Sharma": Object {
+    "Bronze First Aid": "2024-10-30",
+  },
+  "Noah Bright": Object {
+    "Silver Sports": "2025-02-08",
+  },
+}
+`;
+
+exports[`badge matrix > records which badges each cadet holds, and when 1`] = `
+Object {
+  "Amelia Hart": Object {
+    "Blue Radio": "2024-03-12",
+    "Bronze Radio": "2024-11-05",
+    "Silver Radio": "2025-04-18",
+  },
+  "Ben Okafor": Object {
+    "Blue First Aid": "2025-01-01",
+  },
+  "Chloe Ramsey": Object {
+    "Blue Shooting": "2024-05-14",
+    "Bronze Shooting": "2025-03-22",
+  },
+  "Daniel Foster": Object {
+    "Blue Sports": "2025-02-28",
+  },
+  "Eve Nakamura": Object {
+    "Gold Adventure Training": "2025-01-30",
+    "Silver Adventure Training": "2024-08-19",
+  },
+  "Femi Adeyemi": Object {
+    "Blue Music": "2025-04-12",
+  },
+  "Grace O'Neill": Object {
+    "Blue Radio": "2024-10-08",
+  },
+  "Harry Blythe-Jones": Object {
+    "Gold Shooting": "2024-04-02",
+  },
+  "Isla Muir": Object {},
+  "Jack Petrov": Object {
+    "Bronze First Aid": "2024-12-03",
+    "Silver First Aid": "2025-06-01",
+  },
+}
+`;
+
+exports[`totals > counts holders per badge column 1`] = `
+Object {
+  "Blue First Aid": "1",
+  "Blue Music": "1",
+  "Blue Radio": "2",
+  "Blue Shooting": "1",
+  "Blue Sports": "1",
+  "Bronze First Aid": "1",
+  "Bronze Radio": "1",
+  "Bronze Shooting": "1",
+  "Gold Adventure Training": "1",
+  "Gold Shooting": "1",
+  "Silver Adventure Training": "1",
+  "Silver First Aid": "1",
+  "Silver Radio": "1",
+}
+`;

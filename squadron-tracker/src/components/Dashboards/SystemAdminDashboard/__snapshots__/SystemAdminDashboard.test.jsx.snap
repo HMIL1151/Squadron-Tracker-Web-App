@@ -1,0 +1,19 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`approving a request > creates the squadron, its admin, and copies the FlightPoints template 1`] = `
+Array [
+  "set SquadronList/auto-1",
+  "set SquadronDatabases/9997",
+  "set SquadronDatabases/9997/AuthorisedUsers/uid-hopeful",
+  "set SquadronDatabases/9997/FlightPoints/Badge Points",
+  "set SquadronDatabases/9997/FlightPoints/Event Category Points",
+  "set SquadronDatabases/9997/FlightPoints/Badges",
+  "set SquadronDatabases/9997/FlightPoints/Special Awards",
+  "set SquadronDatabases/9997/FlightPoints/TeamPoints",
+  "set SquadronDatabases/9997/UserRequests/auto-2",
+  "set MassUserList/uid-hopeful",
+  "delete NewAccountRequests/nar-01",
+]
+`;
+
+exports[`pending new-squadron requests > renders the request card 1`] = `"Squadron Name: NewtownSquadron Number: 9997Staff flight: Staff TeamFlight 1: VulcanFlight 2: LightningRequested By: Hopeful Admin (hopeful@example.test)ApproveDeny"`;

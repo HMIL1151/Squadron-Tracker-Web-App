@@ -8,11 +8,10 @@ export const rankMap = {
     5: "Cadet Warrant Officer"
   };
 
-export let flightMap = {
-    1: "Staff Team",
-    2: "Atlas",
-    3: "Tempest"
-    };
+// NOTE: flightMap used to live here as a mutable `let` with a setFlightMap()
+// setter. Flight names vary per squadron and change at runtime, so they are
+// state, not a constant -- they now live in SquadronContext, where updating
+// them actually re-renders. The maps below are genuinely static.
 
 export const classificationMap = {
     1: "Junior",
@@ -29,8 +28,3 @@ export const classificationMap = {
     12: "Master",
     13: " "
     };
-
-// Setter function to dynamically update flightMap
-export const setFlightMap = (newFlightMap) => {
-  flightMap = newFlightMap;
-};

@@ -1,0 +1,150 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`Testwood (legacy flight shape) > records its progression 1`] = `
+Array [
+  Object {
+    "Classification": "Second Class",
+    "Name": "Katie Lawson",
+    "Service (Months)": "33",
+    "Target Classification": "Senior +2",
+  },
+  Object {
+    "Classification": "Junior",
+    "Name": "Liam Doyle",
+    "Service (Months)": "16",
+    "Target Classification": "Leading +1",
+  },
+  Object {
+    "Classification": "Junior",
+    "Name": "Maya Sharma",
+    "Service (Months)": "53",
+    "Target Classification": "Master",
+  },
+  Object {
+    "Classification": "Junior",
+    "Name": "Noah Bright",
+    "Service (Months)": "84",
+    "Target Classification": "Master",
+  },
+]
+`;
+
+exports[`progression table > records every cadet's classification against their target 1`] = `
+Array [
+  Object {
+    "Classification": "First Class",
+    "Name": "Amelia Hart",
+    "Service (Months)": "45",
+    "Target Classification": "Master",
+  },
+  Object {
+    "Classification": "Junior",
+    "Name": "Ben Okafor",
+    "Service (Months)": "17",
+    "Target Classification": "Leading +1",
+  },
+  Object {
+    "Classification": "Second Class",
+    "Name": "Chloe Ramsey",
+    "Service (Months)": "27",
+    "Target Classification": "Senior",
+  },
+  Object {
+    "Classification": "Junior",
+    "Name": "Daniel Foster",
+    "Service (Months)": "9",
+    "Target Classification": "First Class +1",
+  },
+  Object {
+    "Classification": "Second Class",
+    "Name": "Eve Nakamura",
+    "Service (Months)": "61",
+    "Target Classification": "Master",
+  },
+  Object {
+    "Classification": "Junior",
+    "Name": "Femi Adeyemi",
+    "Service (Months)": "4",
+    "Target Classification": "Second Class",
+  },
+  Object {
+    "Classification": "Junior",
+    "Name": "Grace O'Neill",
+    "Service (Months)": "19",
+    "Target Classification": "Leading +1",
+  },
+  Object {
+    "Classification": "Junior",
+    "Name": "Harry Blythe-Jones",
+    "Service (Months)": "74",
+    "Target Classification": "Master",
+  },
+  Object {
+    "Classification": "Junior",
+    "Name": "Isla Muir",
+    "Service (Months)": "1",
+    "Target Classification": "Junior",
+  },
+  Object {
+    "Classification": "Second Class",
+    "Name": "Jack Petrov",
+    "Service (Months)": "35",
+    "Target Classification": "Senior +2",
+  },
+]
+`;
+
+exports[`what gets plotted > records the plotted series 1`] = `
+Array [
+  Object {
+    "cadetName": "Amelia Hart",
+    "classification": 3,
+    "serviceLengthInMonths": 45,
+  },
+  Object {
+    "cadetName": "Ben Okafor",
+    "classification": 1,
+    "serviceLengthInMonths": 17,
+  },
+  Object {
+    "cadetName": "Chloe Ramsey",
+    "classification": 2,
+    "serviceLengthInMonths": 27,
+  },
+  Object {
+    "cadetName": "Daniel Foster",
+    "classification": 1,
+    "serviceLengthInMonths": 9,
+  },
+  Object {
+    "cadetName": "Eve Nakamura",
+    "classification": 2,
+    "serviceLengthInMonths": 61,
+  },
+  Object {
+    "cadetName": "Femi Adeyemi",
+    "classification": 1,
+    "serviceLengthInMonths": 4,
+  },
+  Object {
+    "cadetName": "Grace O'Neill",
+    "classification": 1,
+    "serviceLengthInMonths": 19,
+  },
+  Object {
+    "cadetName": "Harry Blythe-Jones",
+    "classification": 1,
+    "serviceLengthInMonths": 74,
+  },
+  Object {
+    "cadetName": "Isla Muir",
+    "classification": 1,
+    "serviceLengthInMonths": 1,
+  },
+  Object {
+    "cadetName": "Jack Petrov",
+    "classification": 2,
+    "serviceLengthInMonths": 35,
+  },
+]
+`;

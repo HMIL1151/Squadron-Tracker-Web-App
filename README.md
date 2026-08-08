@@ -1,97 +1,180 @@
-<!-- HEADER STYLE: CLASSIC -->
-<div align="center">
+# Squadron Tracker
 
-# Squadron Tracker Web App
+A web app for tracking Air Cadet progression within the RAFAC. Squadron staff log events, badges,
+classifications and exams in one place; the app derives flight points, progression charts and
+end-of-year certificates from that log.
 
-<em></em>
+React 19 + Firebase (Auth, Firestore, Hosting).
 
-<!-- BADGES -->
-<!-- local repository, no metadata badges. -->
+---
 
-<em>Built with the tools and technologies:</em>
+## Getting started
 
-<img src="https://img.shields.io/badge/JSON-000000.svg?style=default&logo=JSON&logoColor=white" alt="JSON">
-<img src="https://img.shields.io/badge/npm-CB3837.svg?style=default&logo=npm&logoColor=white" alt="npm">
-<img src="https://img.shields.io/badge/Firebase-DD2C00.svg?style=default&logo=Firebase&logoColor=white" alt="Firebase">
-<img src="https://img.shields.io/badge/.ENV-ECD53F.svg?style=default&logo=dotenv&logoColor=black" alt=".ENV">
-<img src="https://img.shields.io/badge/JavaScript-F7DF1E.svg?style=default&logo=JavaScript&logoColor=black" alt="JavaScript">
-<br>
-<img src="https://img.shields.io/badge/React-61DAFB.svg?style=default&logo=React&logoColor=black" alt="React">
-<img src="https://img.shields.io/badge/GitHub%20Actions-2088FF.svg?style=default&logo=GitHub-Actions&logoColor=white" alt="GitHub%20Actions">
-<img src="https://img.shields.io/badge/CSS-663399.svg?style=default&logo=CSS&logoColor=white" alt="CSS">
-<img src="https://img.shields.io/badge/Chart.js-FF6384.svg?style=default&logo=chartdotjs&logoColor=white" alt="Chart.js">
+The app lives in `squadron-tracker/`, **not** the repository root.
 
+```bash
+cd squadron-tracker
+npm install
+```
 
-</div>
-<br>
+### Configure Firebase (required)
 
-Squadron Tracker is a web application designed to streamline the management and tracking of the progression of Air Cadets within the RAFAC. It provides a user-friendly interface for squadron staff to log and monitor events, classification and badges while using the data for flight point tracking and certificates of achivement.
+The app will not run without this. Copy the example file and fill in your Firebase web config:
 
-## Overview
+```bash
+cp .env.example .env
+```
 
-A react js project hosted using Google Firestore.
+Values come from **Firebase Console → Project settings → General → Your apps → SDK setup and
+configuration**.
+
+These are Firebase *web* config values. They are public project identifiers, not secrets — they
+ship in the client bundle by design. Access control is enforced by Firebase Auth and the Firestore
+security rules, never by hiding these values.
+
+`.env` is gitignored. `.env.example` and `.env.test` are committed and contain no real credentials.
+
+### Run
+
+```bash
+npm start
+```
+
+---
+
+## Scripts
+
+| Command | What it does |
+|---|---|
+| `npm start` | Dev server on http://localhost:3000 |
+| `npm run dev:offline` | Dev server against an in-memory database (see below) |
+| `npm run build` | Production build into `build/` |
+| `npm test` | Full test suite, single run |
+| `npm run test:watch` | Test suite in watch mode |
+| `npm run test:rules` | Firestore security rules, against the emulator |
+
+Built with **Vite** and tested with **Vitest**. The security-rules tests need a
+JDK for the Firestore emulator and are not part of `npm test` — they skip
+themselves when no emulator is running.
+
+## Deploying
+
+```bash
+cd squadron-tracker
+npm run build
+firebase deploy
+```
+
+Hosting config is in `firebase.json`; the project alias is in `.firebaserc`
+(`squadron-tracker-1151`).
+
+---
 
 ## Features
-- **Mass Event Log:** where users can log events, achievements, badges, classifiation etc all in one place using an intuituve UI.
-- **Cadets List:** Where users can add their cadets - no sensitive information required for tracking.
-- **Record Categories:** To customise event options and flight points associated to events/achievements.
-- **Classification Tracker:** Graph plotting cadet classification against their service length to compare against expected classification progression.
-- **Flight Points:** Calculate the flight points earned by individual cadets and their flights over a time period.
-- **End of Year Certificate:** Generate a certificate with all cadet events in a time period. Previewable PDF to download. Bulk generation and download as .zip.
-- **PTS Tracker:** Log of badges earned in various categories across the Progressive Training Syllabus.
 
-##  Getting Started
+- **Mass Event Log** — log events, badges, exams and awards for one or many cadets at once.
+- **Cadet List** — add, edit and discharge cadets. No personally sensitive data is stored.
+- **Record Categories** — customise event categories and the points attached to each.
+- **Classification Tracker** — plots cadet classification against service length versus the
+  expected progression curve.
+- **Flight Points** — per-cadet and per-flight point totals over a chosen year.
+- **End of Year Certificates** — previewable PDF per cadet, with bulk generation as a `.zip`.
+- **PTS Tracker** — badges earned across the Progressive Training Syllabus.
+- **Flights** — add and rename flights, and choose which ones compete for
+  points (admins only). A squadron can have any number of flights.
+- **Admin Area** — approve or deny squadron access requests (admins only).
+- **System Admin Area** — approve or deny new squadron accounts (system admins only).
 
-###  Prerequisites
+## How it fits together
 
-Before getting started with Squadron-Tracker-Web-App, ensure your runtime environment meets the following requirements:
-
-- **Programming Language:** JavaScript
-- **Package Manager:** Npm
-
-
-###  Installation
-
-Install Squadron-Tracker-Web-App using one of the following methods:
-
-**Build from source:**
-
-1. Clone the Squadron-Tracker-Web-App repository:
-```sh
-❯ git clone https://github.com/HMIL1151/Squadron-Tracker-Web-App
+```
+src/
+  App.js                  Shell: auth state, header, menu, active dashboard
+  index.js                Providers: DataProvider > SquadronProvider > App
+  context/
+    DataContext.js        Bulk-loaded squadron data (cadets, events, flightPoints)
+    SquadronContext.js    Current squadron number
+  components/
+    WelcomePage/          Login, squadron selection, new-squadron setup, changelog
+    Menu/                 Dashboard nav, filtered by admin role
+    Table/                Shared sortable/filterable table
+    Dashboards/           One folder per dashboard, registered in dashboardList.js
+  firebase/               Firebase init and Firestore helpers
+  databaseTools/          Shared write hooks (e.g. useSaveEvent)
+  utils/                  Static maps (rank, classification) and exam list
 ```
 
-2. Navigate to the project directory:
-```sh
-❯ cd Squadron-Tracker-Web-App
+Adding a dashboard means adding a component and one entry to
+`src/components/Dashboards/Dashboard Components/dashboardList.js`. Set `adminOnly` or
+`systemAdminOnly` there to control menu visibility.
+
+### Data model
+
+Firestore, multi-tenant by squadron number:
+
+```
+SquadronList/{autoId}              { Name, Number, flights }
+SquadronDatabases/{squadronNumber}
+  Cadets/{autoId}                  { forename, surname, startDate, flight, rank, ... }
+  EventLog/{autoId}                { cadetName, date, badgeCategory, badgeLevel, examName, ... }
+  FlightPoints/{docName}           "Badge Points" | "Event Category Points" | "Badges"
+                                   | "Special Awards" | "TeamPoints"
+  AuthorisedUsers/{uid}            { displayName, email, role }
+  UserRequests/{autoId}            { displayName, email, uid, progress, timestamp }
+MassUserList/{autoId}              { UID, Squadron, systemAdmin? }
+NewAccountRequests/{autoId}        { squadronName, squadronNumber, flights, uid, ... }
 ```
 
-3. Install the project dependencies:
+### Flights
 
+A cadet's `flight` is a **1-based index** into the squadron's `flights` array — not an id. That
+single fact drives the design of the Flights screen:
 
-**Using `npm`** &nbsp; [<img align="center" src="https://img.shields.io/badge/npm-CB3837.svg?style={badge_style}&logo=npm&logoColor=white" />](https://www.npmjs.com/)
+- **The array only ever grows.** Removing or reordering an entry would silently move every cadet
+  after it into the wrong flight.
+- **Retiring a flight means archiving it**, not deleting it. An archived flight disappears from
+  the Add Cadet picker and from Flight Points, while its slot, its cadets and its points history
+  stay intact.
+- **`competing` is per flight.** Flight Points charts whichever flights are marked competing, so a
+  squadron can run a competition between two, three or more of them. This used to be hardcoded to
+  "flights 2 and 3".
 
-```sh
-❯ npm install
+Two stored shapes exist and both work:
+
+```
+legacy    ["Staff Team", "Atlas", "Tempest"]
+current   [{ name: "Staff Team", competing: false, archived: false }, ...]
 ```
 
+Legacy squadrons are read correctly (first flight treated as non-competing staff) and upgrade to
+the object shape the first time an admin saves. No migration is needed.
 
+Classification is *derived* from the count of exam events, not stored.
 
+## Development
 
-###  Usage
-Run Squadron-Tracker-Web-App using the following command:
-**Using `npm`** &nbsp; [<img align="center" src="https://img.shields.io/badge/npm-CB3837.svg?style={badge_style}&logo=npm&logoColor=white" />](https://www.npmjs.com/)
-
-```sh
-❯ npm start
+```bash
+npm run dev:offline
 ```
 
+Runs the app against an in-memory database seeded with two dummy squadrons — no Firebase project,
+no credentials, and no way to touch production data. Useful for UI work and for trying flight
+changes safely. Nothing is saved; reloading resets everything, and the browser console shows an
+"OFFLINE MODE" banner so it can't be mistaken for the real thing.
 
-###  Testing
-Run the test suite using the following command:
-**Using `npm`** &nbsp; [<img align="center" src="https://img.shields.io/badge/npm-CB3837.svg?style={badge_style}&logo=npm&logoColor=white" />](https://www.npmjs.com/)
+The swap is a build-time alias in [vite.config.js](squadron-tracker/vite.config.js): with the flag
+set, `firebase/firestore/lite` resolves to the in-memory fake instead. Doing it in resolution
+rather than in a runtime branch means a production build contains no reference to the test
+fixtures at all.
 
-```sh
-❯ npm test
+```bash
+npm run test:rules
 ```
 
+Runs the Firestore security rules against the emulator, each suite against a fresh instance. See
+[docs/deploy-rules.md](squadron-tracker/docs/deploy-rules.md) before deploying rules.
+
+## Changelog
+
+Shown on the welcome page and read from `public/changelog.json`. Add an entry there when
+releasing; the highest version becomes the number displayed in the corner of the app.

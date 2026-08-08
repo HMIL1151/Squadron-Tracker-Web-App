@@ -1,0 +1,68 @@
+name: Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: squadron-tracker
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: squadron-tracker/package-lock.json
+
+      - run: npm ci
+
+      # The suite never contacts Firebase -- Firestore and Auth are replaced by
+      # in-memory fakes -- so no credentials are needed here. .env.test supplies
+      # the fake values firebase/firebase.js needs to initialise.
+      - name: Test
+        run: npm test -- --coverage
+
+      - name: Build
+        run: npm run build
+
+  rules:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: squadron-tracker
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: squadron-tracker/package-lock.json
+
+      # Java 11: the emulator needs a JDK, and scripts/test-rules.js prefers a
+      # portable one from tools/ when present (a Windows workaround). On Linux
+      # there is no such directory, so this is the JDK it uses.
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 11
+
+      - run: npm ci
+
+      # Downloads the emulator jar; needs no login.
+      - name: Fetch Firestore emulator
+        run: npx firebase setup:emulators:firestore
+
+      # Runs the two rules suites, each against its own fresh emulator. This is
+      # the enforced proof that per-squadron isolation holds -- these rules
+      # replaced an `allow read, write: if true` ruleset.
+      - name: Rules tests
+        run: npm run test:rules
