@@ -1,6 +1,6 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`Faketon (new flight shape) lists every cadet with mapped rank, flight and classification 1`] = `
+exports[`Faketon (new flight shape) > lists every cadet with mapped rank, flight and classification 1`] = `
 Array [
   Object {
     "Classification": "First Class",
@@ -95,217 +95,217 @@ Array [
 ]
 `;
 
-exports[`Faketon (new flight shape) renders the cadet table 1`] = `
-"<div class=\\"table-dashboard-container\\">
-  <div class=\\"button-container\\">
-    <button class=\\"button-red\\">
-      \\"Discharge Cadet\\"
-    <button class=\\"button-green\\">
-      \\"Add Cadet\\"
-  <div class=\\"table-container\\">
-    <table class=\\"custom-table\\">
+exports[`Faketon (new flight shape) > renders the cadet table 1`] = `
+"<div class="table-dashboard-container">
+  <div class="button-container">
+    <button class="button-red">
+      "Discharge Cadet"
+    <button class="button-green">
+      "Add Cadet"
+  <div class="table-container">
+    <table class="custom-table">
       <thead>
         <tr>
           <th>
-            \\"Forename\\"
+            "Forename"
             <br>
-            <input type=\\"text\\" placeholder=\\"Filter\\">
+            <input type="text" placeholder="Filter">
             <button>
-              \\"Sort\\"
+              "Sort"
           <th>
-            \\"Surname\\"
+            "Surname"
             <br>
-            <input type=\\"text\\" placeholder=\\"Filter\\">
+            <input type="text" placeholder="Filter">
             <button>
-              \\"Sort\\"
+              "Sort"
           <th>
-            \\"Rank\\"
+            "Rank"
             <br>
-            <input type=\\"text\\" placeholder=\\"Filter\\">
+            <input type="text" placeholder="Filter">
             <button>
-              \\"Sort\\"
+              "Sort"
           <th>
-            \\"Flight\\"
+            "Flight"
             <br>
-            <input type=\\"text\\" placeholder=\\"Filter\\">
+            <input type="text" placeholder="Filter">
             <button>
-              \\"Sort\\"
+              "Sort"
           <th>
-            \\"Classification\\"
+            "Classification"
             <br>
-            <input type=\\"text\\" placeholder=\\"Filter\\">
+            <input type="text" placeholder="Filter">
             <button>
-              \\"Sort\\"
+              "Sort"
           <th>
-            \\"Start Date\\"
+            "Start Date"
             <br>
-            <input type=\\"text\\" placeholder=\\"Filter\\">
+            <input type="text" placeholder="Filter">
             <button>
-              \\"Sort\\"
+              "Sort"
           <th>
-            \\"Service Length\\"
+            "Service Length"
             <br>
-            <input type=\\"text\\" placeholder=\\"Filter\\">
+            <input type="text" placeholder="Filter">
             <button>
-              \\"Sort\\"
+              "Sort"
       <tbody>
-        <tr class=\\"clickable-row\\">
+        <tr class="clickable-row">
           <td>
-            \\"Amelia\\"
+            "Amelia"
           <td>
-            \\"Hart\\"
+            "Hart"
           <td>
-            \\"Sergeant\\"
+            "Sergeant"
           <td>
-            \\"Alpha\\"
+            "Alpha"
           <td>
-            \\"First Class\\"
+            "First Class"
           <td>
-            \\"2021-09-06\\"
+            "2021-09-06"
           <td>
-            \\"3 Yrs, 9 Mos, 9 Days\\"
-        <tr class=\\"clickable-row\\">
+            "3 Yrs, 9 Mos, 9 Days"
+        <tr class="clickable-row">
           <td>
-            \\"Ben\\"
+            "Ben"
           <td>
-            \\"Okafor\\"
+            "Okafor"
           <td>
-            \\"Cadet\\"
+            "Cadet"
           <td>
-            \\"Alpha\\"
+            "Alpha"
           <td>
-            \\"Junior\\"
+            "Junior"
           <td>
-            \\"2024-01-15\\"
+            "2024-01-15"
           <td>
-            \\"1 Yrs, 5 Mos, 0 Days\\"
-        <tr class=\\"clickable-row\\">
+            "1 Yrs, 5 Mos, 0 Days"
+        <tr class="clickable-row">
           <td>
-            \\"Chloe\\"
+            "Chloe"
           <td>
-            \\"Ramsey\\"
+            "Ramsey"
           <td>
-            \\"Corporal\\"
+            "Corporal"
           <td>
-            \\"Alpha\\"
+            "Alpha"
           <td>
-            \\"Second Class\\"
+            "Second Class"
           <td>
-            \\"2023-03-20\\"
+            "2023-03-20"
           <td>
-            \\"2 Yrs, 2 Mos, 26 Days\\"
-        <tr class=\\"clickable-row\\">
+            "2 Yrs, 2 Mos, 26 Days"
+        <tr class="clickable-row">
           <td>
-            \\"Daniel\\"
+            "Daniel"
           <td>
-            \\"Foster\\"
+            "Foster"
           <td>
-            \\"Cadet\\"
+            "Cadet"
           <td>
-            \\"Bravo\\"
+            "Bravo"
           <td>
-            \\"Junior\\"
+            "Junior"
           <td>
-            \\"2024-09-02\\"
+            "2024-09-02"
           <td>
-            \\"0 Yrs, 9 Mos, 13 Days\\"
-        <tr class=\\"clickable-row\\">
+            "0 Yrs, 9 Mos, 13 Days"
+        <tr class="clickable-row">
           <td>
-            \\"Eve\\"
+            "Eve"
           <td>
-            \\"Nakamura\\"
+            "Nakamura"
           <td>
-            \\"Flight Sergeant\\"
+            "Flight Sergeant"
           <td>
-            \\"Bravo\\"
+            "Bravo"
           <td>
-            \\"Second Class\\"
+            "Second Class"
           <td>
-            \\"2020-05-11\\"
+            "2020-05-11"
           <td>
-            \\"5 Yrs, 1 Mos, 4 Days\\"
-        <tr class=\\"clickable-row\\">
+            "5 Yrs, 1 Mos, 4 Days"
+        <tr class="clickable-row">
           <td>
-            \\"Femi\\"
+            "Femi"
           <td>
-            \\"Adeyemi\\"
+            "Adeyemi"
           <td>
-            \\"Cadet\\"
+            "Cadet"
           <td>
-            \\"Bravo\\"
+            "Bravo"
           <td>
-            \\"Junior\\"
+            "Junior"
           <td>
-            \\"2025-02-10\\"
+            "2025-02-10"
           <td>
-            \\"0 Yrs, 4 Mos, 5 Days\\"
-        <tr class=\\"clickable-row\\">
+            "0 Yrs, 4 Mos, 5 Days"
+        <tr class="clickable-row">
           <td>
-            \\"Grace\\"
+            "Grace"
           <td>
-            \\"O'Neill\\"
+            "O'Neill"
           <td>
-            \\"Cadet\\"
+            "Cadet"
           <td>
-            \\"Charlie\\"
+            "Charlie"
           <td>
-            \\"Junior\\"
+            "Junior"
           <td>
-            \\"2023-11-01\\"
+            "2023-11-01"
           <td>
-            \\"1 Yrs, 7 Mos, 14 Days\\"
-        <tr class=\\"clickable-row\\">
+            "1 Yrs, 7 Mos, 14 Days"
+        <tr class="clickable-row">
           <td>
-            \\"Harry\\"
+            "Harry"
           <td>
-            \\"Blythe-Jones\\"
+            "Blythe-Jones"
           <td>
-            \\"Cadet Warrant Officer\\"
+            "Cadet Warrant Officer"
           <td>
-            \\"Staff Team\\"
+            "Staff Team"
           <td>
-            \\"Junior\\"
+            "Junior"
           <td>
-            \\"2019-04-08\\"
+            "2019-04-08"
           <td>
-            \\"6 Yrs, 2 Mos, 7 Days\\"
-        <tr class=\\"clickable-row\\">
+            "6 Yrs, 2 Mos, 7 Days"
+        <tr class="clickable-row">
           <td>
-            \\"Isla\\"
+            "Isla"
           <td>
-            \\"Muir\\"
+            "Muir"
           <td>
-            \\"Cadet\\"
+            "Cadet"
           <td>
-            \\"Alpha\\"
+            "Alpha"
           <td>
-            \\"Junior\\"
+            "Junior"
           <td>
-            \\"2025-05-01\\"
+            "2025-05-01"
           <td>
-            \\"0 Yrs, 1 Mos, 14 Days\\"
-        <tr class=\\"clickable-row\\">
+            "0 Yrs, 1 Mos, 14 Days"
+        <tr class="clickable-row">
           <td>
-            \\"Jack\\"
+            "Jack"
           <td>
-            \\"Petrov\\"
+            "Petrov"
           <td>
-            \\"Corporal\\"
+            "Corporal"
           <td>
-            \\"Bravo\\"
+            "Bravo"
           <td>
-            \\"Second Class\\"
+            "Second Class"
           <td>
-            \\"2022-07-19\\"
+            "2022-07-19"
           <td>
-            \\"2 Yrs, 10 Mos, 27 Days\\"
-  <div class=\\"cadet-count\\">
+            "2 Yrs, 10 Mos, 27 Days"
+  <div class="cadet-count">
     <p>
-      \\"Total Cadets:\\"
-      \\"10\\""
+      "Total Cadets:"
+      "10""
 `;
 
-exports[`Testwood (legacy string[] flight shape) renders the cadet table 1`] = `
+exports[`Testwood (legacy string[] flight shape) > renders the cadet table 1`] = `
 Array [
   Object {
     "Classification": "Second Class",

@@ -90,11 +90,10 @@ describe("module substitution", () => {
     expect(typeof auth.__setNextUser).toBe("function");
   });
 
-  it("imports src/firebase/firebase.js without throwing", () => {
+  it("imports src/firebase/firebase.js without throwing", async () => {
     // getAuth() there throws auth/invalid-api-key when the key is missing, and
     // the module runs on any import. .env.test supplies a well-formed fake key.
-    // eslint-disable-next-line global-require
-    expect(() => require("../firebase/firebase")).not.toThrow();
+    await expect(import("../firebase/firebase")).resolves.toBeDefined();
   });
 });
 

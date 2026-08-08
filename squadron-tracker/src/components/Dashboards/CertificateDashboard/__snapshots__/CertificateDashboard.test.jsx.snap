@@ -1,6 +1,6 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`certificate lines lists a cadet's achievements 1`] = `
+exports[`certificate lines > lists a cadet's achievements 1`] = `
 Array [
   "Leading: Airmanship Knowledge Exam (20 Feb 2025)",
   "Silver Radio (18 Apr 2025)",

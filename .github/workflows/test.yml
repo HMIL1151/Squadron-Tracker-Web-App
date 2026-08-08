@@ -27,7 +27,7 @@ jobs:
       # in-memory fakes -- so no credentials are needed here. .env.test supplies
       # the fake values firebase/firebase.js needs to initialise.
       - name: Test
-        run: npm test -- --watchAll=false --coverage
+        run: npm test -- --coverage
 
       - name: Build
         run: npm run build
@@ -47,10 +47,13 @@ jobs:
           cache: npm
           cache-dependency-path: squadron-tracker/package-lock.json
 
+      # Java 11: the emulator needs a JDK, and scripts/test-rules.js prefers a
+      # portable one from tools/ when present (a Windows workaround). On Linux
+      # there is no such directory, so this is the JDK it uses.
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: 17
+          java-version: 11
 
       - run: npm ci
 
@@ -58,8 +61,8 @@ jobs:
       - name: Fetch Firestore emulator
         run: npx firebase setup:emulators:firestore
 
-      # Runs src/test/firestoreRules.test.js against the emulator. This is the
-      # enforced proof that per-squadron isolation holds -- these rules replaced
-      # an `allow read, write: if true` ruleset.
+      # Runs the two rules suites, each against its own fresh emulator. This is
+      # the enforced proof that per-squadron isolation holds -- these rules
+      # replaced an `allow read, write: if true` ruleset.
       - name: Rules tests
         run: npm run test:rules

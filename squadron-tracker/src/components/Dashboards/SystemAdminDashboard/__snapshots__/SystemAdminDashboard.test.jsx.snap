@@ -1,6 +1,6 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`approving a request creates the squadron, its admin, and copies the FlightPoints template 1`] = `
+exports[`approving a request > creates the squadron, its admin, and copies the FlightPoints template 1`] = `
 Array [
   "set SquadronList/auto-1",
   "set SquadronDatabases/9997",
@@ -16,4 +16,4 @@ Array [
 ]
 `;
 
-exports[`pending new-squadron requests renders the request card 1`] = `"Squadron Name: NewtownSquadron Number: 9997Staff flight: Staff TeamFlight 1: VulcanFlight 2: LightningRequested By: Hopeful Admin (hopeful@example.test)ApproveDeny"`;
+exports[`pending new-squadron requests > renders the request card 1`] = `"Squadron Name: NewtownSquadron Number: 9997Staff flight: Staff TeamFlight 1: VulcanFlight 2: LightningRequested By: Hopeful Admin (hopeful@example.test)ApproveDeny"`;

@@ -1,7 +1,7 @@
 //TODO: Add a change log txt (not sure how to do this in firestore )
 
 import "./Styles/App.css";
-import { useState, useEffect } from "react";
+import { Suspense, useState, useEffect } from "react";
 import Menu from "./components/Menu/Menu"; // Import the Menu component
 import WelcomePage from "./components/WelcomePage/WelcomePage"; // Import the new WelcomePage component
 import { signOut } from "firebase/auth";
@@ -122,7 +122,11 @@ const App = () => {
         user={user} // Pass the user object
         isMenuCollapsed={isMenuCollapsed} // Pass the state to Menu
       />
-      <main className="main-content">{renderMainContent()}</main>
+      <main className="main-content">
+        {/* Dashboards are lazy-loaded (see dashboardList.js), so a boundary is
+            required while the chunk downloads. */}
+        <Suspense fallback={<p>Loading...</p>}>{renderMainContent()}</Suspense>
+      </main>
       {/* Version number in the bottom-right corner */}
       <div className="version-number">{version}</div>
     </div>

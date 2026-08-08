@@ -15,7 +15,8 @@ import { screen, within } from "@testing-library/react";
 
 import AdminDashboard from "./AdminDashboard";
 import { renderWithProviders } from "../../../test/renderWithProviders";
-import { SQUADRONS } from "../../../test/dummyData";
+import { SQUADRONS, dummyData } from "../../../test/dummyData";
+import { __seed, __store } from "../../../test/fakeFirestore";
 
 // Accepts a squadron number or a renderWithProviders options object.
 const renderDashboard = async (arg = {}) => {
@@ -147,8 +148,6 @@ describe("granting a request", () => {
   it("refuses to act on a request that carries no uid", async () => {
     // A legacy request document might predate the uid field; acting on it
     // would write membership documents keyed "undefined".
-    const { __seed, __store } = require("../../../test/fakeFirestore");
-    const { dummyData } = require("../../../test/dummyData");
     __seed(dummyData);
     const docs = __store();
     delete docs["SquadronDatabases/9999/UserRequests/req-9999-pending"].uid;

@@ -1,65 +1,75 @@
 /**
- * Offline dev mode, end to end.
+ * Offline dev mode.
  *
- * `npm run dev:offline` is meant to run the real app against the in-memory
- * fake with no Firebase project. That claim is only worth making if something
- * checks it, so this drives a real dashboard through the real data layer with
- * the flag set -- not through the test harness's own mocks.
+ * `npm run dev:offline` runs the real app against the in-memory fake with no
+ * Firebase project. Two halves have to hold, and they are checked separately
+ * because they work by different mechanisms:
+ *
+ *   1. The SWAP is a build-time alias in vite.config.js -- with the flag set,
+ *      every `firebase/firestore/lite` import resolves to the fake instead.
+ *      That cannot be triggered by setting an environment variable at runtime,
+ *      so it is asserted against the config.
+ *
+ *   2. The BEHAVIOUR -- that the app's real data-layer modules work correctly
+ *      against the fake, seeded with the dummy squadrons -- is exercised for
+ *      real below, through the same functions the dashboards call.
  */
 
-// The global harness routes Firestore to the fake for every test. Here that
-// would defeat the point: what is under test is whether db.js does the routing
-// itself when the flag is set.
-jest.unmock("firebase/firestore");
-jest.unmock("firebase/firestore/lite");
+import fs from "fs";
+import path from "path";
 
-describe("REACT_APP_USE_FAKE_DB", () => {
-  /**
-   * Loads a fresh copy of db.js with the flag set, and returns it.
-   *
-   * This has to happen inside each test, not in beforeAll: setupTests.js calls
-   * __reset() on the fake in a global beforeEach, which would wipe the seed
-   * db.js installs at import time. That reset is right for every other test in
-   * the suite -- so this one re-imports rather than fighting it.
-   */
-  const loadOfflineDb = () => {
-    process.env.REACT_APP_USE_FAKE_DB = "true";
-    jest.resetModules();
-    // eslint-disable-next-line global-require
-    return require("../firebase/db");
-  };
+import { dummyData } from "./dummyData";
+import { __reset, __seed } from "./fakeFirestore";
+import { fetchSquadronDoc, updateFlights } from "../firebase/squadron";
+import { squadronCollection, collection, db, getDocs } from "../firebase/db";
+
+const CONFIG = fs.readFileSync(
+  path.resolve(__dirname, "..", "..", "vite.config.js"),
+  "utf8"
+);
+
+describe("the offline swap", () => {
+  it("is wired as a resolve alias keyed on the flag", () => {
+    expect(CONFIG).toMatch(/REACT_APP_USE_FAKE_DB\s*===\s*["']true["']/);
+    expect(CONFIG).toMatch(/["']firebase\/firestore\/lite["']\s*:/);
+    expect(CONFIG).toMatch(/fakeFirestore/);
+  });
+
+  it("only applies when the flag is set", () => {
+    // The alias object is empty otherwise, so an ordinary build and an ordinary
+    // test run both get the real SDK specifier.
+    expect(CONFIG).toMatch(/offline\s*\?\s*\{[\s\S]*?\}\s*:\s*\{\}/);
+  });
+
+  it("is exposed to the app as isOfflineMode, off by default", async () => {
+    const { isOfflineMode } = await import("../firebase/db");
+    expect(isOfflineMode).toBe(false);
+  });
+});
+
+describe("the app's data layer against the seeded fake", () => {
+  // This is what offline mode actually does once the alias is in place: the
+  // real modules, the real dummy squadrons, no Firebase.
+  beforeEach(() => {
+    __seed(dummyData);
+  });
 
   afterEach(() => {
-    delete process.env.REACT_APP_USE_FAKE_DB;
-    jest.resetModules();
+    __reset();
   });
 
-  it("reports that it is offline", () => {
-    expect(loadOfflineDb().isOfflineMode).toBe(true);
-  });
-
-  it("is off without the flag", () => {
-    jest.resetModules();
-    // eslint-disable-next-line global-require
-    expect(require("../firebase/db").isOfflineMode).toBe(false);
-  });
-
-  it("seeds both dummy squadrons", async () => {
-    const db = loadOfflineDb();
-    const squadrons = await db.getDocs(db.collection(db.db(), "SquadronList"));
+  it("serves both dummy squadrons", async () => {
+    const squadrons = await getDocs(collection(db(), "SquadronList"));
     expect(squadrons.docs.map((d) => d.data().Number).sort()).toEqual([9998, 9999]);
   });
 
   it("serves a squadron's cadets", async () => {
-    const db = loadOfflineDb();
-    const cadets = await db.getDocs(db.squadronCollection(9999, "Cadets"));
+    const cadets = await getDocs(squadronCollection(9999, "Cadets"));
     expect(cadets.size).toBe(10);
   });
 
   it("serves the flights an admin would edit", async () => {
-    const db = loadOfflineDb();
-    const squadrons = await db.getDocs(db.collection(db.db(), "SquadronList"));
-    const faketon = squadrons.docs.find((d) => d.data().Number === 9999).data();
+    const faketon = await fetchSquadronDoc(9999);
     expect(faketon.flights.map((f) => f.name)).toEqual([
       "Staff Team",
       "Alpha",
@@ -68,12 +78,7 @@ describe("REACT_APP_USE_FAKE_DB", () => {
     ]);
   });
 
-  it("accepts a flight edit written through the real data layer", async () => {
-    loadOfflineDb();
-    // The exact calls FlightsDashboard makes, through the real modules.
-    // eslint-disable-next-line global-require
-    const { updateFlights, fetchSquadronDoc } = require("../firebase/squadron");
-
+  it("accepts a flight edit through the same calls the dashboard makes", async () => {
     const before = await fetchSquadronDoc(9999);
     await updateFlights(before.id, [
       ...before.flights,
@@ -82,15 +87,5 @@ describe("REACT_APP_USE_FAKE_DB", () => {
 
     const after = await fetchSquadronDoc(9999);
     expect(after.flights.map((f) => f.name)).toContain("Delta");
-  });
-
-  it("never opens a real connection", () => {
-    // db.js re-exports the fake's own functions, not the SDK's. If this fails,
-    // offline mode is talking to Firebase.
-    const db = loadOfflineDb();
-    // eslint-disable-next-line global-require
-    const fake = require("./fakeFirestore");
-    expect(db.collection).toBe(fake.collection);
-    expect(typeof fake.__seed).toBe("function");
   });
 });

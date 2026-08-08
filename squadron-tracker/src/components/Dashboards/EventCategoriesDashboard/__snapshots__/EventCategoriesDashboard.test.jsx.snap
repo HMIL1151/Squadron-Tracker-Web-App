@@ -1,6 +1,6 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`Testwood renders the same configuration 1`] = `
+exports[`Testwood > renders the same configuration 1`] = `
 Object {
   "Blue Badge": "5",
   "Bronze Badge": "10",
@@ -11,7 +11,7 @@ Object {
 }
 `;
 
-exports[`configured values records what every tab contains 1`] = `
+exports[`configured values > records what every tab contains 1`] = `
 Object {
   "Badge Points": Object {
     "headers": Array [

@@ -62,33 +62,59 @@ describe("only the data layer talks to the SDK", () => {
 
 describe("test fixtures cannot reach production", () => {
   const dbSource = fs.readFileSync(path.join(SRC, "firebase", "db.js"), "utf8");
+  const viteConfig = fs.readFileSync(path.resolve(SRC, "..", "vite.config.js"), "utf8");
 
-  it("guards the fake behind a NODE_ENV check webpack can fold away", () => {
-    // Load-bearing: written as a ternary instead, the require is not
-    // eliminated and the fake plus both dummy squadrons ship to users. That
-    // happened once and was caught by grepping the built bundle.
-    expect(dbSource).toMatch(/process\.env\.NODE_ENV !== ["']production["']/);
+  /** Import and require statements only -- comments may mention anything. */
+  const moduleRefs = (source) => [
+    ...source.matchAll(/(?:from\s+|import\s*\(|require\s*\()\s*["']([^"']+)["']/g),
+  ].map((m) => m[1]);
 
-    const guardIndex = dbSource.indexOf("process.env.NODE_ENV");
-    const fakeIndex = dbSource.indexOf('require("../test/fakeFirestore")');
-    expect(guardIndex).toBeGreaterThan(-1);
-    expect(fakeIndex).toBeGreaterThan(guardIndex);
+  it("never imports the fake in application code", () => {
+    // The swap happens in resolution, not in code: vite.config.js aliases
+    // firebase/firestore/lite to the fake when the flag is set. A production
+    // build therefore has no reference to eliminate.
+    //
+    // This replaced a runtime `useFake ? require(...) : liteSdk`, which webpack
+    // did NOT eliminate -- the fake and both dummy squadrons shipped to users.
+    expect(moduleRefs(dbSource).filter((r) => r.includes("fakeFirestore"))).toEqual([]);
+    expect(dbSource).toMatch(/from ["']firebase\/firestore\/lite["']/);
   });
 
-  it("imports the fake and the dummy data only via require, never a static import", () => {
-    // A top-level `import` is unconditional and would always be bundled.
-    expect(dbSource).not.toMatch(/^import .*fakeFirestore/m);
+  it("does the offline swap by alias in the build config", () => {
+    expect(viteConfig).toMatch(/REACT_APP_USE_FAKE_DB/);
+    expect(viteConfig).toMatch(/fakeFirestore/);
+    expect(viteConfig).toMatch(/alias/);
+  });
+
+  it("guards the dummy-data seed behind a PROD check Vite can fold away", () => {
+    // Only the seeding remains in db.js, and it must stay inside a branch the
+    // bundler can prove dead.
+    expect(dbSource).toMatch(/!import\.meta\.env\.PROD/);
+
+    const guardIndex = dbSource.indexOf("import.meta.env.PROD");
+    const seedIndex = dbSource.indexOf('import("../test/dummyData")');
+    expect(guardIndex).toBeGreaterThan(-1);
+    expect(seedIndex).toBeGreaterThan(guardIndex);
+  });
+
+  it("imports the dummy data only dynamically, never statically", () => {
+    // A top-level import is unconditional and would always be bundled.
     expect(dbSource).not.toMatch(/^import .*dummyData/m);
   });
 
   it("has no other source file importing the fake or the dummy data", () => {
-    // setupTests.js is allowed: Jest loads it, webpack never does, so it
-    // cannot pull the fixtures into a bundle.
-    const ALLOWED = ["firebase/db.js", "setupTests.js"];
+    // setupTests.js is allowed: only the test runner loads it, so it cannot
+    // pull the fixtures into a bundle. db.js is allowed exactly one reference,
+    // the guarded dynamic import of the dummy data, asserted above.
+    const ALLOWED = ["setupTests.js", "firebase/db.js"];
 
     const offenders = sourceFiles()
       .filter((file) => !ALLOWED.includes(relative(file)))
-      .filter((file) => /(fakeFirestore|dummyData)/.test(fs.readFileSync(file, "utf8")))
+      .filter((file) =>
+        moduleRefs(fs.readFileSync(file, "utf8")).some(
+          (ref) => ref.includes("fakeFirestore") || ref.includes("dummyData")
+        )
+      )
       .map(relative);
 
     expect(offenders).toEqual([]);
@@ -96,9 +122,8 @@ describe("test fixtures cannot reach production", () => {
 });
 
 describe("offline mode", () => {
-  it("is off unless the flag is set", () => {
-    // eslint-disable-next-line global-require
-    const { isOfflineMode } = require("./db");
+  it("is off unless the flag is set", async () => {
+    const { isOfflineMode } = await import("./db");
     expect(isOfflineMode).toBe(false);
   });
 });

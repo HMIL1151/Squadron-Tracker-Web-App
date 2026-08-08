@@ -104,11 +104,12 @@ const runSuite = async (java, testFile) => {
       "npx",
       [
         "--no-install",
-        "react-scripts",
-        "test",
-        "--watchAll=false",
-        "--runInBand",
-        `--testPathPattern=${testFile.replace(".", "\\.")}`,
+        "vitest",
+        "run",
+        "--no-file-parallelism",
+        // vite.config.js excludes these from the default run because they need
+        // an emulator, so each is named explicitly here.
+        `src/test/${testFile}`,
       ],
       {
         stdio: "inherit",

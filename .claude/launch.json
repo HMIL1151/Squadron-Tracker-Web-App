@@ -7,6 +7,13 @@
       "runtimeExecutable": "npm",
       "runtimeArgs": ["start"],
       "port": 3000
+    },
+    {
+      "name": "squadron-tracker-offline",
+      "cwd": "squadron-tracker",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev:offline"],
+      "port": 3000
     }
   ]
 }

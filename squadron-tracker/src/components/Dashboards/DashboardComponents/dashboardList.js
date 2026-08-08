@@ -3,16 +3,26 @@
 //TODO: Uniform & Attendance Dashboard
 //TODO: PTS Dashboard
 
-import CadetsDashboard from "../CadetsDashboard/CadetsDashboard";
-import MassEventLog from ".././MassEventLog/MassEventLog";
-import EventCategoriesDashboard from "../EventCategoriesDashboard/EventCategoriesDashboard";
-import ClassificationDashboard from "../ClassificationDashboard/ClassificationDashboard";
-import AdminDashboard from "../AdminDashboard/AdminDashboard";
-import FlightPointsDashboard from "../FlightPointsDashboard/FlightPointsDashboard";
-import CertificateDashboard from "../CertificateDashboard/CertificateDashboard";
-import PTSTracker from "../PTSTracker/PTSTracker";
-import FlightsDashboard from "../FlightsDashboard/FlightsDashboard";
-import SystemAdminDashboard from "../SystemAdminDashboard/SystemAdminDashboard"; // Import the new dashboard
+import { lazy } from "react";
+
+/*
+ * Dashboards are loaded on demand.
+ *
+ * Only one is ever on screen, and the Certificate dashboard alone pulls in
+ * jspdf, jszip and react-pdf -- a large chunk that most users never open.
+ * React.lazy plus the Suspense boundary in App.jsx keeps them out of the
+ * initial download.
+ */
+const CadetsDashboard = lazy(() => import("../CadetsDashboard/CadetsDashboard"));
+const MassEventLog = lazy(() => import("../MassEventLog/MassEventLog"));
+const EventCategoriesDashboard = lazy(() => import("../EventCategoriesDashboard/EventCategoriesDashboard"));
+const ClassificationDashboard = lazy(() => import("../ClassificationDashboard/ClassificationDashboard"));
+const AdminDashboard = lazy(() => import("../AdminDashboard/AdminDashboard"));
+const FlightPointsDashboard = lazy(() => import("../FlightPointsDashboard/FlightPointsDashboard"));
+const CertificateDashboard = lazy(() => import("../CertificateDashboard/CertificateDashboard"));
+const PTSTracker = lazy(() => import("../PTSTracker/PTSTracker"));
+const FlightsDashboard = lazy(() => import("../FlightsDashboard/FlightsDashboard"));
+const SystemAdminDashboard = lazy(() => import("../SystemAdminDashboard/SystemAdminDashboard"));
 
 const dashboardList = [
   {

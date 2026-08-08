@@ -16,28 +16,32 @@
  *      credentials and no risk of touching production data.
  */
 
-import * as liteSdk from "firebase/firestore/lite";
+import * as sdk from "firebase/firestore/lite";
 import { app } from "./firebase";
 
-let sdk = liteSdk;
-let offline = false;
-
 /*
- * The NODE_ENV guard is load-bearing, not belt-and-braces.
+ * How offline mode is wired.
  *
- * Webpack folds `process.env.NODE_ENV` to a literal at build time and then
- * skips dependencies inside provably-dead branches, so a production build
- * never even sees these requires. Written as a ternary
- * (`useFake ? require(...) : liteSdk`) the require is NOT eliminated -- that
- * was the first attempt, and it shipped the fake and both dummy squadrons to
- * users. Verified by grepping the built bundle; keep it in this shape.
+ * The import above is unconditional and always says `firebase/firestore/lite`.
+ * When REACT_APP_USE_FAKE_DB is set, vite.config.js ALIASES that specifier to
+ * src/test/fakeFirestore.js, so this module transparently gets the fake with
+ * no branch here at all.
+ *
+ * That is deliberate. The first attempt did the swap at runtime with a
+ * conditional require(), and under webpack the require was not eliminated: the
+ * fake and both dummy squadrons shipped to users. Doing it in resolution
+ * rather than in code makes leaking structurally impossible -- a production
+ * build has no reference to the fake to eliminate in the first place. Verified
+ * by grepping the built bundle either way.
+ *
+ * Seeding is top-level await so the database is populated before any consumer
+ * can read from it. Guarded on PROD, so Rollup drops the dynamic import.
  */
-/* eslint-disable global-require */
-if (process.env.NODE_ENV !== "production" && process.env.REACT_APP_USE_FAKE_DB === "true") {
-  sdk = require("../test/fakeFirestore");
-  const { dummyData } = require("../test/dummyData");
+const offline = !import.meta.env.PROD && import.meta.env.REACT_APP_USE_FAKE_DB === "true";
+
+if (offline && typeof sdk.__seed === "function") {
+  const { dummyData } = await import("../test/dummyData");
   sdk.__seed(dummyData);
-  offline = true;
   // eslint-disable-next-line no-console
   console.info(
     "%c OFFLINE MODE ",
@@ -46,12 +50,14 @@ if (process.env.NODE_ENV !== "production" && process.env.REACT_APP_USE_FAKE_DB =
       "Nothing is saved; reloading resets everything."
   );
 }
-/* eslint-enable global-require */
 
 export const isOfflineMode = offline;
 
 /** The Firestore handle. Callers should not need to think about which SDK. */
 export const db = () => (offline ? sdk.getFirestore() : sdk.getFirestore(app));
+
+// Re-exported so tests can drive the fake without reaching around this module.
+export const __sdk = sdk;
 
 // Re-exported primitives, so no module outside src/firebase/ imports the SDK.
 export const {

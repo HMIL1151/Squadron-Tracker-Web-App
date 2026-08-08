@@ -1,6 +1,6 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`Testwood (legacy flight shape) scores its cadets 1`] = `
+exports[`Testwood (legacy flight shape) > scores its cadets 1`] = `
 Object {
   "Katie Lawson": 8,
   "Liam Doyle": 1,
@@ -9,7 +9,7 @@ Object {
 }
 `;
 
-exports[`per-cadet points for the current year scores every cadet 1`] = `
+exports[`per-cadet points for the current year > scores every cadet 1`] = `
 Object {
   "Amelia Hart": 28,
   "Ben Okafor": 6,

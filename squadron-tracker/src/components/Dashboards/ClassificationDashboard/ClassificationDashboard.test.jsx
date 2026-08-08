@@ -8,6 +8,7 @@
  */
 
 import React from "react";
+import { vi } from "vitest";
 
 import ClassificationDashboard from "./ClassificationDashboard";
 import { renderWithProviders } from "../../../test/renderWithProviders";
@@ -23,11 +24,18 @@ import { SQUADRONS, userFor } from "../../../test/dummyData";
  * records the props it was handed. That characterizes what the dashboard plots,
  * which is the part this app owns; how Chart.js draws it is not.
  */
-const graphProps = [];
-jest.mock("./Graph", () => (props) => {
-  graphProps.push(props);
-  return <canvas data-testid="classification-graph" />;
-});
+// vi.hoisted, because vi.mock is hoisted above the imports: a plain const here
+// would still be in its temporal dead zone when the factory is registered.
+// The factory also has to return a module shape ({ default }), where Jest's
+// interop accepted the component directly.
+const { graphProps } = vi.hoisted(() => ({ graphProps: [] }));
+
+vi.mock("./Graph", () => ({
+  default: (props) => {
+    graphProps.push(props);
+    return <canvas data-testid="classification-graph" />;
+  },
+}));
 
 const renderDashboard = (squadron = SQUADRONS.FAKETON) => {
   graphProps.length = 0;

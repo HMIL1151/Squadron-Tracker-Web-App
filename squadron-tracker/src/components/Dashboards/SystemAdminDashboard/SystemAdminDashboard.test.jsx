@@ -12,6 +12,8 @@ import { screen, within } from "@testing-library/react";
 
 import SystemAdminDashboard from "./SystemAdminDashboard";
 import { renderWithProviders } from "../../../test/renderWithProviders";
+import { __seed, __store } from "../../../test/fakeFirestore";
+import { dummyData } from "../../../test/dummyData";
 
 const renderDashboard = async () => {
   const result = renderWithProviders(<SystemAdminDashboard />);
@@ -37,8 +39,6 @@ describe("pending new-squadron requests", () => {
   });
 
   it("renders a request carrying a flights array of any length", async () => {
-    const { __seed, __store } = require("../../../test/fakeFirestore");
-    const { dummyData } = require("../../../test/dummyData");
     __seed(dummyData);
     const docs = __store();
     docs["NewAccountRequests/nar-01"].flights = ["Staff", "Alpha", "Bravo", "Charlie", "Delta"];

@@ -1,6 +1,6 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`Testwood (legacy flight shape) records its progression 1`] = `
+exports[`Testwood (legacy flight shape) > records its progression 1`] = `
 Array [
   Object {
     "Classification": "Second Class",
@@ -29,7 +29,7 @@ Array [
 ]
 `;
 
-exports[`progression table records every cadet's classification against their target 1`] = `
+exports[`progression table > records every cadet's classification against their target 1`] = `
 Array [
   Object {
     "Classification": "First Class",
@@ -94,7 +94,7 @@ Array [
 ]
 `;
 
-exports[`what gets plotted records the plotted series 1`] = `
+exports[`what gets plotted > records the plotted series 1`] = `
 Array [
   Object {
     "cadetName": "Amelia Hart",

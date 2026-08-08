@@ -21,7 +21,29 @@
 // before workers spawn -- an assignment here would be too late, because imports
 // hoist above it.
 
+import { beforeEach, vi } from "vitest";
 import "@testing-library/jest-dom";
+
+import * as fakeFirestore from "./test/fakeFirestore";
+import * as fakeAuth from "./test/fakeAuth";
+
+/*
+ * `jest` -> `vi`.
+ *
+ * The suite was written against Jest and its API is close enough to Vitest's
+ * that aliasing the global was far cheaper, and far less risky, than rewriting
+ * ~490 tests. jest.mock, jest.fn, jest.unmock and jest.resetModules all exist
+ * on `vi` with the same signatures.
+ *
+ * NOT everything maps: `vi.setTimeout` does not exist, and call sites were
+ * changed to `vi.setConfig({ testTimeout, hookTimeout })`. Anything else that
+ * fails with "is not a function" needs the same treatment rather than a
+ * wrapper here -- a shim would hide which Jest APIs the suite still leans on.
+ *
+ * Note jest.mock/jest.unmock calls are hoisted by Vitest's transform the same
+ * way Jest hoists them, so this alias does not change when they run.
+ */
+globalThis.jest = vi;
 
 // ---------------------------------------------------------------------------
 // 1. Firestore -> in-memory fake
@@ -30,14 +52,14 @@ import "@testing-library/jest-dom";
 // Both entry points, because the app imports from each: nine files use the lite
 // SDK and seven the full one. Mocking only one would let real Firestore through.
 // (Phase 8 collapses this to one; until then both must be covered.)
-jest.mock("firebase/firestore", () => require("./test/fakeFirestore"));
-jest.mock("firebase/firestore/lite", () => require("./test/fakeFirestore"));
+vi.mock("firebase/firestore", () => import("./test/fakeFirestore"));
+vi.mock("firebase/firestore/lite", () => import("./test/fakeFirestore"));
 
 // ---------------------------------------------------------------------------
 // 2. Firebase Auth -> controllable stub
 // ---------------------------------------------------------------------------
 
-jest.mock("firebase/auth", () => require("./test/fakeAuth"));
+vi.mock("firebase/auth", () => import("./test/fakeAuth"));
 
 // ---------------------------------------------------------------------------
 // 3. Freeze the clock
@@ -142,9 +164,7 @@ if (typeof HTMLCanvasElement !== "undefined" && !HTMLCanvasElement.prototype.get
 //
 // These are the same module instances the jest.mock factories above return --
 // Jest's registry hands back one instance per module per test file.
-/* eslint-disable global-require */
 beforeEach(() => {
-  require("./test/fakeFirestore").__reset();
-  require("./test/fakeAuth").__reset();
+  fakeFirestore.__reset();
+  fakeAuth.__reset();
 });
-/* eslint-enable global-require */

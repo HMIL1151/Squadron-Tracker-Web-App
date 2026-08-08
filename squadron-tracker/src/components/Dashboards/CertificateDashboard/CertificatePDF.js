@@ -10,7 +10,7 @@ const generateCertificatePDF = async (cadetName, year, events, squadronNumber, d
 
     // Fetch the squadron name from Firestore
     // Load the watermark image
-    const logoUrl = `${process.env.PUBLIC_URL}/${squadronNumber}.png?timestamp=${new Date().getTime()}`; // Add a timestamp to bypass cache
+    const logoUrl = `/${squadronNumber}.png?timestamp=${new Date().getTime()}`; // Add a timestamp to bypass cache
     let logoImage;
 
     try {
@@ -36,7 +36,7 @@ const generateCertificatePDF = async (cadetName, year, events, squadronNumber, d
         console.warn("Squadron logo not found or invalid, defaulting to RAFAC logo:", error);
 
         // Default to RAFAC.png if the squadron logo is not found or invalid
-        const defaultLogoUrl = `${process.env.PUBLIC_URL}/RAFAC.png?timestamp=${new Date().getTime()}`; // Add a timestamp to bypass cache
+        const defaultLogoUrl = `/RAFAC.png?timestamp=${new Date().getTime()}`; // Add a timestamp to bypass cache
         logoImage = await fetch(defaultLogoUrl)
             .then((response) => {
                 const contentType = response.headers.get("Content-Type");

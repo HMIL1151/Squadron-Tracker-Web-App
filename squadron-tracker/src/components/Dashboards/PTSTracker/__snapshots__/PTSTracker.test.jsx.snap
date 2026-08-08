@@ -1,6 +1,6 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`Testwood (legacy flight shape) records its badges 1`] = `
+exports[`Testwood (legacy flight shape) > records its badges 1`] = `
 Object {
   "Katie Lawson": Object {
     "Blue Radio": "2024-06-18",
@@ -15,7 +15,7 @@ Object {
 }
 `;
 
-exports[`badge matrix records which badges each cadet holds, and when 1`] = `
+exports[`badge matrix > records which badges each cadet holds, and when 1`] = `
 Object {
   "Amelia Hart": Object {
     "Blue Radio": "2024-03-12",
@@ -53,7 +53,7 @@ Object {
 }
 `;
 
-exports[`totals counts holders per badge column 1`] = `
+exports[`totals > counts holders per badge column 1`] = `
 Object {
   "Blue First Aid": "1",
   "Blue Music": "1",

@@ -47,9 +47,15 @@ npm start
 | Command | What it does |
 |---|---|
 | `npm start` | Dev server on http://localhost:3000 |
+| `npm run dev:offline` | Dev server against an in-memory database (see below) |
 | `npm run build` | Production build into `build/` |
-| `npm test` | Test suite (watch mode) |
-| `npm test -- --watchAll=false` | Test suite, single run — use this in CI |
+| `npm test` | Full test suite, single run |
+| `npm run test:watch` | Test suite in watch mode |
+| `npm run test:rules` | Firestore security rules, against the emulator |
+
+Built with **Vite** and tested with **Vitest**. The security-rules tests need a
+JDK for the Firestore emulator and are not part of `npm test` — they skip
+themselves when no emulator is running.
 
 ## Deploying
 
@@ -153,13 +159,19 @@ npm run dev:offline
 
 Runs the app against an in-memory database seeded with two dummy squadrons — no Firebase project,
 no credentials, and no way to touch production data. Useful for UI work and for trying flight
-changes safely. Nothing is saved; reloading resets everything.
+changes safely. Nothing is saved; reloading resets everything, and the browser console shows an
+"OFFLINE MODE" banner so it can't be mistaken for the real thing.
+
+The swap is a build-time alias in [vite.config.js](squadron-tracker/vite.config.js): with the flag
+set, `firebase/firestore/lite` resolves to the in-memory fake instead. Doing it in resolution
+rather than in a runtime branch means a production build contains no reference to the test
+fixtures at all.
 
 ```bash
 npm run test:rules
 ```
 
-Runs the Firestore security rules against the emulator. See
+Runs the Firestore security rules against the emulator, each suite against a fresh instance. See
 [docs/deploy-rules.md](squadron-tracker/docs/deploy-rules.md) before deploying rules.
 
 ## Changelog

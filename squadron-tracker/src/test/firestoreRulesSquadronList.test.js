@@ -53,6 +53,7 @@ if (typeof globalThis.fetch === "undefined") {
 }
 /* eslint-enable global-require */
 
+import { vi } from "vitest";
 import fs from "fs";
 import path from "path";
 import {
@@ -116,7 +117,10 @@ describeRules("firestore.rules -- squadron directory", () => {
     await env.clearFirestore();
   });
 
-  jest.setTimeout(30000);
+  // vi has no setTimeout(); per-file timeouts go through setConfig.
+  // hookTimeout matters as much as testTimeout here: the emulator seed
+  // runs in beforeEach.
+  vi.setConfig({ testTimeout: 30000, hookTimeout: 30000 });
 
   /*
    * A deliberately minimal fixture.

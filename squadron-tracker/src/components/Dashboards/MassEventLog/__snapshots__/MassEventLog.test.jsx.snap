@@ -1,6 +1,6 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`Testwood (legacy flight shape) renders its own events 1`] = `
+exports[`Testwood (legacy flight shape) > renders its own events 1`] = `
 Array [
   "Katie Lawson | Blue Radio | 5",
   "Katie Lawson | First Class Cadet | 8",
@@ -11,7 +11,7 @@ Array [
 ]
 `;
 
-exports[`event log contents renders every event with its description and points 1`] = `
+exports[`event log contents > renders every event with its description and points 1`] = `
 Array [
   "Amelia Hart | Blue Radio | 5",
   "Amelia Hart | Bronze Radio | 10",
