@@ -35,6 +35,16 @@ describe("the offline swap", () => {
     expect(CONFIG).toMatch(/fakeFirestore/);
   });
 
+  it("swaps auth as well as the database", () => {
+    // Both halves are required. With only Firestore faked, the app booted
+    // against the dummy squadrons and then sent the user to a real Google
+    // popup; the real uid that came back is not in the fixture, so the app
+    // treated them as a first-time visitor and the seeded squadrons could not
+    // be reached at all.
+    expect(CONFIG).toMatch(/["']firebase\/auth["']\s*:/);
+    expect(CONFIG).toMatch(/devAuth/);
+  });
+
   it("only applies when the flag is set", () => {
     // The alias object is empty otherwise, so an ordinary build and an ordinary
     // test run both get the real SDK specifier.

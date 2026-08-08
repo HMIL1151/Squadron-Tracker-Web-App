@@ -158,14 +158,29 @@ npm run dev:offline
 ```
 
 Runs the app against an in-memory database seeded with two dummy squadrons — no Firebase project,
-no credentials, and no way to touch production data. Useful for UI work and for trying flight
-changes safely. Nothing is saved; reloading resets everything, and the browser console shows an
-"OFFLINE MODE" banner so it can't be mistaken for the real thing.
+no credentials, no network, and no way to touch production data. Useful for UI work and for trying
+flight changes safely. Nothing is saved; reloading resets everything, and the browser console shows
+an "OFFLINE MODE" banner so it can't be mistaken for the real thing.
+
+**Click "Sign in with Google" and you are straight in** — there is no popup and no real account.
+You sign in as a fixture user, chosen from the URL:
+
+| URL | You are |
+|---|---|
+| `localhost:3000` | **9999 Faketon, admin** (default) — the flights playground |
+| `localhost:3000/?as=user` | 9999 Faketon, ordinary user — no Flights or Admin menu |
+| `localhost:3000/?as=legacy` | 9998 Testwood, admin — the old `string[]` flight format |
+| `localhost:3000/?as=sysadmin` | System admin — asks which squadron, then adds System Admin Area |
+| `localhost:3000/?as=new` | Signed in but authorised for nothing — the request-access flow |
+
+Faketon has an archived flight (Charlie) and a non-competing one (Staff Team) already set up, so
+the awkward cases are there to click through. Testwood is deliberately still in the legacy format,
+so switching to it shows that old squadrons keep working.
 
 The swap is a build-time alias in [vite.config.js](squadron-tracker/vite.config.js): with the flag
-set, `firebase/firestore/lite` resolves to the in-memory fake instead. Doing it in resolution
-rather than in a runtime branch means a production build contains no reference to the test
-fixtures at all.
+set, `firebase/firestore/lite` resolves to the in-memory fake and `firebase/auth` to a stub that
+returns a fixture user. Doing it in resolution rather than in a runtime branch means a production
+build contains no reference to the test fixtures at all.
 
 ```bash
 npm run test:rules

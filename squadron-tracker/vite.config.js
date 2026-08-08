@@ -22,13 +22,21 @@ import react from "@vitejs/plugin-react";
  * Offline mode is a resolution-time swap, not a runtime branch.
  *
  * With REACT_APP_USE_FAKE_DB set, every `firebase/firestore/lite` import
- * resolves to the in-memory fake instead. src/firebase/db.js needs no
- * conditional, and a production build contains no reference to the fake at
+ * resolves to the in-memory fake instead, and every `firebase/auth` import to
+ * a stub that signs in as a fixture user. src/firebase/db.js needs no
+ * conditional, and a production build contains no reference to either at
  * all -- which is stronger than relying on dead-branch elimination to remove
  * one. (An earlier runtime version shipped the fake and both dummy squadrons
  * to users.)
+ *
+ * Auth has to be swapped as well as Firestore, not instead of it. With only
+ * the database faked, the app booted against the dummy squadrons and then sent
+ * you to a real Google popup; the real uid that came back is not in the
+ * fixture, so the app treated you as a first-time visitor and the seeded
+ * squadrons were unreachable.
  */
 const offline = process.env.REACT_APP_USE_FAKE_DB === "true";
+const fixture = (file) => new URL(`./src/test/${file}`, import.meta.url).pathname;
 
 export default defineConfig({
   plugins: [react()],
@@ -48,7 +56,10 @@ export default defineConfig({
 
   resolve: {
     alias: offline
-      ? { "firebase/firestore/lite": new URL("./src/test/fakeFirestore.js", import.meta.url).pathname }
+      ? {
+          "firebase/firestore/lite": fixture("fakeFirestore.js"),
+          "firebase/auth": fixture("devAuth.js"),
+        }
       : {},
   },
 
