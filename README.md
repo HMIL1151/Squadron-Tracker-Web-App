@@ -68,6 +68,22 @@ firebase deploy
 Hosting config is in `firebase.json`; the project alias is in `.firebaserc`
 (`squadron-tracker-1151`).
 
+### Cache headers
+
+`firebase.json` sets `Cache-Control` explicitly because Hosting's default for HTML is
+`max-age=3600` — which meant users could sit on an hour-old page after a deploy, and you could
+spend that hour debugging a fix that had already shipped.
+
+Everything is `no-cache` except `/assets/**`, which Vite fills with content-hashed filenames and
+which is therefore safe to cache forever. `changelog.json` is deliberately in the `no-cache` set:
+the version number in the corner of the app is read from it at runtime.
+
+The broad `**` rule is listed **first** and the narrow `/assets/**` rule second, on purpose.
+Firebase does not document whether header `source` globs are matched before or after a rewrite, nor
+which entry wins when two match. This order is correct either way: if the last match wins, assets
+get the long cache and HTML gets `no-cache`; if the first match wins, everything gets `no-cache` —
+slower, but never stale. The reverse order would be stale-by-default under one of those readings.
+
 ---
 
 ## Features
