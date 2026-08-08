@@ -57,6 +57,7 @@
     "cross-env": "^10.1.0",
     "firebase-tools": "^15.26.0",
     "jsdom": "^25.0.1",
+    "postcss": "^8.5.26",
     "undici": "^6.28.0",
     "vite": "^5.4.21",
     "vitest": "^2.1.9"
