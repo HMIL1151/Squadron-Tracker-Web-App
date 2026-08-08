@@ -180,7 +180,7 @@ describe("edge cases later phases rely on", () => {
   });
 
   it("has an event with a name but no category", () => {
-    // MassEventLog keys category points off eventName, FightPointsDashboard off
+    // MassEventLog keys category points off eventName, FlightPointsDashboard off
     // eventCategory. This row scores differently in the two dashboards today.
     const uncategorised = faketon.events.filter((e) => e.eventName && !e.eventCategory);
     expect(uncategorised).toHaveLength(1);

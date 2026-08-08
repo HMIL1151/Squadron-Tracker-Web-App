@@ -127,7 +127,7 @@ const FAKETON_EVENTS = {
 
   // -- Ben Okafor
   // THE BOUNDARY EVENT. `new Date("2025-01-01").getFullYear()` is 2024 west of
-  // UTC, while `"2025-01-01".slice(0,4)` is 2025. FightPointsDashboard uses the
+  // UTC, while `"2025-01-01".slice(0,4)` is 2025. FlightPointsDashboard uses the
   // former and firestoreUtils the latter, so this one row makes the three points
   // implementations disagree. Phase 6 exists to fix that; do not move this date.
   "event-9999-08": event({ cadetName: "Ben Okafor", date: "2025-01-01", badgeCategory: "First Aid", badgeLevel: "Blue" }),
@@ -169,7 +169,7 @@ const FAKETON_EVENTS = {
   "event-9999-27": event({ cadetName: "Jack Petrov", date: "2025-06-01", badgeCategory: "First Aid", badgeLevel: "Silver" }),
   "event-9999-28": event({ cadetName: "Jack Petrov", date: "2025-01-15", examName: "Leading: Principles of Flight Exam" }),
   // eventName set but eventCategory blank. MassEventLog keys category points off
-  // eventName, FightPointsDashboard off eventCategory -- so this row scores
+  // eventName, FlightPointsDashboard off eventCategory -- so this row scores
   // differently in the two dashboards today. Second input to Phase 6.
   "event-9999-29": event({ cadetName: "Jack Petrov", date: "2025-03-29", eventName: "Ad-hoc Range Day" }),
 };

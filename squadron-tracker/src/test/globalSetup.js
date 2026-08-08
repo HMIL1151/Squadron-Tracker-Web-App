@@ -9,7 +9,7 @@
  * fixed. Setting it in globalSetup means workers inherit it from process.env at
  * spawn time. (Verified -- the setupTests.js version genuinely did not work.)
  *
- * Why it matters: FightPointsDashboard buckets events with
+ * Why it matters: FlightPointsDashboard buckets events with
  * `new Date(event.date).getFullYear()`, which reads the *local* year from a
  * UTC-midnight instant. West of UTC that yields the previous year for any
  * 1 January event, so identical code gives a US developer different flight

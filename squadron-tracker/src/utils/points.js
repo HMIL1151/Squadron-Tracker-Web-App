@@ -2,7 +2,7 @@
  * What an event is worth, and what it is called.
  *
  * Single authority, replacing three separate implementations that lived inline
- * in firestoreUtils, MassEventLog and FightPointsDashboard. They agreed on every
+ * in firestoreUtils, MassEventLog and FlightPointsDashboard. They agreed on every
  * event in a realistic dataset, but each dispatched slightly differently, so
  * they could drift apart at any time -- and any new dashboard would have made a
  * fourth copy.
@@ -18,7 +18,7 @@
  *   Years compare as strings, via date.slice(0, 4).
  *     Dates are stored as "YYYY-MM-DD". `new Date("2025-01-01").getFullYear()`
  *     reads the *local* year of a UTC-midnight instant, which is 2024 anywhere
- *     west of UTC -- so FightPointsDashboard bucketed 1 January events into the
+ *     west of UTC -- so FlightPointsDashboard bucketed 1 January events into the
  *     previous year for those users. Never wrong for UK squadrons (London is
  *     never behind UTC), but fragile for no benefit.
  */

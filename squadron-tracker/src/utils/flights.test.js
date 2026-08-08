@@ -100,7 +100,7 @@ describe("getCompetingFlights", () => {
   });
 
   it("reproduces the old hardcoded 'flights 2 and 3' for a legacy squadron", () => {
-    // Exactly what FightPointsDashboard used to hardcode.
+    // Exactly what FlightPointsDashboard used to hardcode.
     expect(getCompetingFlights(TESTWOOD_FLIGHTS).map((f) => f.index)).toEqual([2, 3]);
   });
 

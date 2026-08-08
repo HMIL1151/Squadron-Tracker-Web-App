@@ -5,7 +5,7 @@
  *
  *   1. firestoreUtils.getTotalPointsForCadet   -- year via date.substring(0,4)
  *   2. MassEventLog (inline)                   -- no year filter
- *   3. FightPointsDashboard (inline)           -- year via new Date(d).getFullYear()
+ *   3. FlightPointsDashboard (inline)           -- year via new Date(d).getFullYear()
  *
  * All three are transcribed below exactly as they were written. This file is
  * now a regression guard: it proves the unified implementation still scores
@@ -44,7 +44,7 @@ const massEventLogPoints = (event) => {
   return 0;
 };
 
-/** FightPointsDashboard.js -- dispatched category points off `eventCategory`. */
+/** FlightPointsDashboard.js -- dispatched category points off `eventCategory`. */
 const flightPointsPoints = (event) => {
   if (event.badgeLevel && event.badgeCategory) {
     return parseInt(badgePoints?.[`${event.badgeLevel} Badge`] || 0, 10);
@@ -151,7 +151,7 @@ describe("where the unified implementation deliberately differs", () => {
 describe("year bucketing", () => {
   const YEAR_STYLES = {
     substring: (date) => date?.substring(0, 4), // firestoreUtils
-    dateParse: (date) => String(new Date(date).getFullYear()), // FightPointsDashboard
+    dateParse: (date) => String(new Date(date).getFullYear()), // FlightPointsDashboard
   };
 
   it("agrees with both old styles under the suite's pinned UTC timezone", () => {
@@ -163,7 +163,7 @@ describe("year bucketing", () => {
 
   it("uses the string form, which cannot drift west of UTC", () => {
     // `new Date("2025-01-01")` is midnight UTC, so its *local* year is 2024
-    // anywhere behind UTC -- FightPointsDashboard used to bucket 1 January
+    // anywhere behind UTC -- FlightPointsDashboard used to bucket 1 January
     // events into the previous year for those users. Never wrong for UK
     // squadrons (London is never behind UTC), but fragile for no benefit.
     const utcMidnight = new Date("2025-01-01T00:00:00Z");
