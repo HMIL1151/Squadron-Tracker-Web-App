@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { fetchAccessRequests, grantAccess, revokeAccess, setRequestProgress } from "../../../firebase/users";
+import { downloadSquadronBackup } from "./squadronBackup";
 import "./AdminDashboard.css";
 import "../DashboardComponents/dashboardStyles.css";
 import { useSquadron } from "../../../context/SquadronContext";
@@ -12,6 +13,8 @@ const AdminDashboard = () => {
   const [selectedRole, setSelectedRole] = useState("user"); // Track the selected role when granting access
   const [newStatus, setNewStatus] = useState(""); // Track the new status to be confirmed
   const [activeTab, setActiveTab] = useState("pending"); // Track the active tab (default: "pending")
+  const [isBackingUp, setIsBackingUp] = useState(false); // Track an in-flight backup
+  const [backupError, setBackupError] = useState(null);
   const { squadronNumber } = useSquadron(); // Access the squadron number from context
 
   useEffect(() => {
@@ -98,6 +101,20 @@ const AdminDashboard = () => {
     }
   };
 
+  const handleBackup = async () => {
+    setIsBackingUp(true);
+    setBackupError(null);
+
+    try {
+      await downloadSquadronBackup(squadronNumber);
+    } catch (err) {
+      console.error("Error backing up squadron data:", err);
+      setBackupError("Backup failed. Please try again.");
+    } finally {
+      setIsBackingUp(false);
+    }
+  };
+
   const closeModal = () => {
     setSelectedRequest(null); // Close the modal
     setSelectedRole("user"); // Reset the role to default
@@ -160,6 +177,23 @@ const AdminDashboard = () => {
           ))}
         </div>
       )}
+
+      {/*
+        Backup. A level-2 heading, not level 3: the request cards use h3, and
+        the tests read every h3 as a card name.
+      */}
+      <h2>Backup</h2>
+      <p>
+        Download every cadet, event log entry and flight points setting as CSV files
+        in a single .zip. Squadron records only &mdash; web app accounts and access
+        requests are not included.
+      </p>
+      <div className="button-container">
+        <button className="button-green" onClick={handleBackup} disabled={isBackingUp}>
+          {isBackingUp ? "Backing up..." : "Backup Squadron Data"}
+        </button>
+      </div>
+      {backupError && <p className="backup-error">{backupError}</p>}
 
       {/* Modal for changing status */}
       {selectedRequest && (

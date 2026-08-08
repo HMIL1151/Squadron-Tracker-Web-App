@@ -167,6 +167,12 @@
   background-color: #bbb;
 }
 
+/* Backup section */
+.backup-error {
+  color: #a94442;
+  font-weight: bold;
+}
+
 /* Tabs styles */
 .tabs {
   display: flex;
