@@ -121,7 +121,11 @@ export default defineConfig({
     // skipped rather than pretending they do not exist. Excluding them by
     // pattern also made them unrunnable by path, since `exclude` wins over a
     // positional argument -- scripts/test-rules.js names each file directly.
-    exclude: ["**/node_modules/**", "**/build/**"],
+    //
+    // e2e/ IS excluded: those are Playwright specs, and Vitest's default
+    // include picks up *.spec.js. Without this it collects them and fails on
+    // the @playwright/test import, which has no meaning outside its own runner.
+    exclude: ["**/node_modules/**", "**/build/**", "**/e2e/**"],
 
     coverage: {
       provider: "v8",

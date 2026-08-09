@@ -29,3 +29,8 @@ yarn-error.log*
 # Firebase CLI debug artifacts
 firebase-debug.log
 firestore-debug.log
+
+# Playwright
+/test-results
+/playwright-report
+/blob-report
