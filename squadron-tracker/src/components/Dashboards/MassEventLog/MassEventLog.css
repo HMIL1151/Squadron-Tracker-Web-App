@@ -13,7 +13,7 @@
     font-size: 1rem;
     border: none;
     background-color: var(--color-action); /* Green background */
-    color: var(--color-text-inverse);
+    color: var(--color-on-action);
     border-radius: 5px;
     cursor: pointer;
     transition: background-color 0.3s ease, transform 0.2s ease;
@@ -58,7 +58,7 @@
 
 .popup-button:not(.cancel) {
   background-color: var(--color-action); /* Green */
-  color: var(--color-text-inverse);
+  color: var(--color-on-action);
 }
 
 .flex-container {
@@ -113,7 +113,7 @@
 
 .autocomplete-suggestions li.highlighted {
   background-color: var(--color-accent); /* Highlight color */
-  color: var(--color-text-inverse);
+  color: var(--color-on-accent);
 }
 
 .selected-names {
@@ -167,7 +167,7 @@
 
 .grid-button.selected {
   background-color: var(--color-accent); /* Blue background for selected button */
-  color: var(--color-text-inverse);
+  color: var(--color-on-accent);
   border-color: var(--color-accent);
 }
 
@@ -198,12 +198,12 @@
 
 .cancel-button {
   background-color: var(--color-danger);
-  color: var(--color-text-inverse);
+  color: var(--color-on-danger);
 }
 
 .confirm-button {
   background-color: var(--color-action);
-  color: var(--color-text-inverse);
+  color: var(--color-on-action);
 }
 
 .cancel-button:hover {

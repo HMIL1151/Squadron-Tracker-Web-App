@@ -45,7 +45,7 @@
 
 .approve-button {
   background-color: var(--color-action);
-  color: var(--color-text-inverse);
+  color: var(--color-on-action);
   border: none;
   border-radius: 5px;
   padding: 10px 20px;

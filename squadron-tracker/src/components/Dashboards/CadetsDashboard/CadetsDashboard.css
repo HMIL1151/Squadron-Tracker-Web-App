@@ -26,7 +26,7 @@
     font-size: 1rem;
     border: none;
     background-color: var(--color-action); /* Green background */
-    color: var(--color-text-inverse);
+    color: var(--color-on-action);
     border-radius: 5px;
     cursor: pointer;
     transition: background-color 0.3s ease, transform 0.2s ease;
@@ -42,7 +42,7 @@
     font-size: 1rem;
     border: none;
     background-color: var(--color-danger); /* Green background */
-    color: var(--color-text-inverse);
+    color: var(--color-on-danger);
     border-radius: 5px;
     cursor: pointer;
     transition: background-color 0.3s ease, transform 0.2s ease;

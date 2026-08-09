@@ -57,7 +57,7 @@
 
 .certificate-dashboard .generate-button {
   background-color: var(--color-action);
-  color: var(--color-text-inverse);
+  color: var(--color-on-action);
 }
 
 .certificate-dashboard .generate-button:hover {
@@ -66,7 +66,7 @@
 
 .certificate-dashboard .download-button {
   background-color: var(--color-accent);
-  color: var(--color-text-inverse);
+  color: var(--color-on-accent);
 }
 
 .certificate-dashboard .download-button:hover {

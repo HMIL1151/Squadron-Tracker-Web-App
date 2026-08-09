@@ -58,12 +58,15 @@
   --slate-800: #343a40;
   --slate-900: #282c34; /* x2 the header bar */
   --black: #000;
+  --ink-900: #10151a; /* text that sits ON a light accent in dark mode */
 
   /* Blues. */
   --blue-200: #8ea9db; /* x6 */
   --blue-500: #007bff; /* x17 the accent */
   --blue-600: #0275d8;
   --blue-700: #0056b3; /* x3 accent hover */
+  --blue-800: #0069d9; /* the accent colour: AA against white */
+  --blue-900: #0a4fa8;
   --google-blue: #4285f4;
   --google-blue-hover: #357ae8;
 
@@ -73,6 +76,8 @@
   --green-500: #4caf50; /* x22 the primary action */
   --green-600: #45a049; /* x8  primary action hover */
   --green-700: #388e3c; /* x4 */
+  --green-800: #2e7d32; /* the action colour: AA against white */
+  --green-900: #256a29;
 
   /* Reds. */
   --red-100: #f8d7da; /* x3 error background */
@@ -128,14 +133,36 @@
    * roles that happen to both be "the button colour" depending on the screen,
    * and collapsing them would be a visual change rather than a rename.
    */
-  --color-accent: var(--blue-500);
-  --color-accent-hover: var(--blue-700);
-  --color-action: var(--green-500);
-  --color-action-hover: var(--green-600);
+  /*
+   * These are darker than the colours the app shipped with, and deliberately.
+   * White text on the old #4caf50 was 2.78:1 against a 4.5:1 requirement --
+   * the primary action in the app, and the least readable thing in it. Same
+   * for the accent blue at 3.98 and the logout red at 3.27.
+   *
+   * Each is the least darkening that clears AA rather than a redesign, so the
+   * app still looks like itself. src/test/contrast.test.js measures every pair.
+   */
+  --color-accent: var(--blue-800);
+  --color-accent-hover: var(--blue-900);
+  --color-action: var(--green-800);
+  --color-action-hover: var(--green-900);
   --color-danger: var(--red-600);
   --color-danger-hover: var(--red-800);
-  --color-logout: var(--red-300);
-  --color-logout-hover: var(--red-700);
+  --color-logout: var(--red-600);
+  --color-logout-hover: var(--red-800);
+
+  /*
+   * The text that goes ON those buttons.
+   *
+   * A token rather than an assumption of white, because dark mode inverts the
+   * relationship: there the accents are LIGHTENED so they read against a dark
+   * surface, and white text on a light green button is 2.05:1. Dark text on it
+   * is 8.94:1. Whether a button's label is light or dark is a property of the
+   * theme, not a constant.
+   */
+  --color-on-action: var(--white);
+  --color-on-danger: var(--white);
+  --color-on-accent: var(--white);
 
   /*
    * Neutral button.
@@ -312,6 +339,9 @@
   --color-divider-active: #5c6470;
   --color-warning-bg: #3a3320;
   --color-warning-border: #574d2a;
+  --color-on-action: var(--ink-900);
+  --color-on-danger: var(--ink-900);
+  --color-on-accent: var(--ink-900);
   --color-success-bg: #1d3524;
     --color-success-border: #2c5233;
     --color-error-bg: #3a2124;
@@ -369,6 +399,9 @@
   --color-divider-active: #5c6470;
   --color-warning-bg: #3a3320;
   --color-warning-border: #574d2a;
+  --color-on-action: var(--ink-900);
+  --color-on-danger: var(--ink-900);
+  --color-on-accent: var(--ink-900);
   --color-success-bg: #1d3524;
   --color-success-border: #2c5233;
   --color-error-bg: #3a2124;

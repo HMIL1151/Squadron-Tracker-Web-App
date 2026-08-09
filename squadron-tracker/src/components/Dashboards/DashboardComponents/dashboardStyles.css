@@ -101,7 +101,7 @@
   top: 80px;
   right: 20px;
   background-color: var(--color-action);
-  color: var(--color-text-inverse);
+  color: var(--color-on-action);
   padding: 10px 20px;
   border-radius: 5px;
   box-shadow: 0 4px 6px var(--black-a10);

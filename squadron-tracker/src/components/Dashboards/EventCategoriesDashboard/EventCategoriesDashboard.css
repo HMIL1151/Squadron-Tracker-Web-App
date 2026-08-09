@@ -33,7 +33,7 @@
 
 .horizontal-menu button.active {
     background-color: var(--color-accent);
-    color: var(--color-text-inverse);
+    color: var(--color-on-accent);
   }
 
 .content-area {
@@ -51,7 +51,7 @@
   display: block; /* Makes the button behave like a block element */
   margin: 20px auto; /* Centers the button horizontally and adds vertical spacing */
   background-color: var(--color-action); /* Green background */
-  color: var(--color-text-inverse); /* White text */
+  color: var(--color-on-action); /* White text */
   border: none;
   border-radius: 5px;
   padding: 10px 15px;

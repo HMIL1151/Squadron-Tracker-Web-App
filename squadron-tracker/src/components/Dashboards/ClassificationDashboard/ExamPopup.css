@@ -83,7 +83,7 @@
 .add-exam-section .add-exam-button {
   margin-top: 10px; /* Add spacing above the button */
   background-color: var(--color-accent); /* Primary blue color for the button */
-  color: var(--color-text-inverse); /* White text for contrast */
+  color: var(--color-on-accent); /* White text for contrast */
   border: none; /* Remove border */
   border-radius: 4px; /* Slightly round the corners */
   padding: 6px 12px; /* Adjust padding for a compact button */

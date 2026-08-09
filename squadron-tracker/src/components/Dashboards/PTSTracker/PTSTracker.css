@@ -35,7 +35,7 @@
 
 .PTSTracker-tab.expanded {
   background-color: var(--color-accent); /* Solid blue background for expanded state */
-  color: var(--color-text-inverse); /* White text for expanded state */
+  color: var(--color-on-accent); /* White text for expanded state */
   box-shadow: 0 4px 10px var(--black-a20); /* Match hover shadow */
 }
 

@@ -47,7 +47,7 @@
     border: none;
     border-radius: 5px;
     background-color: var(--color-action);
-    color: var(--color-text-inverse);
+    color: var(--color-on-action);
     cursor: pointer;
     transition: background-color 0.3s;
 }
