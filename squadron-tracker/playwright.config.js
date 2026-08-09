@@ -41,7 +41,7 @@ export default defineConfig({
   reporter: process.env.CI ? [["github"], ["html", { open: "never" }]] : [["list"]],
 
   use: {
-    baseURL: "http://localhost:3000",
+    baseURL: "http://localhost:3247",
     // Fixed viewport: a screenshot diff should mean a style changed, not that
     // the window was a different size.
     viewport: { width: 1280, height: 900 },
@@ -50,9 +50,25 @@ export default defineConfig({
 
   expect: {
     toHaveScreenshot: {
-      // Anti-aliasing differs slightly between machines; a real style change is
-      // far larger than this.
-      maxDiffPixelRatio: 0.01,
+      /*
+       * Pixel-exact, and `threshold` is the part that matters.
+       *
+       * `threshold` is a PER-PIXEL colour tolerance, applied before
+       * maxDiffPixelRatio counts anything. At its default of 0.2 this harness
+       * did not notice the entire page header changing from #282c34 to a
+       * bright purple: too few pixels registered as "different" for the ratio
+       * to trip, so the suite reported a pass against a baseline it visibly
+       * did not match. A tolerance that hides a whole header is not tolerance,
+       * it is a blindfold.
+       *
+       * At 0 the same change is 69,208 pixels, 8% of the image. Verified
+       * stable: two consecutive runs of all thirteen against an unchanged tree
+       * pass, so anti-aliasing is not producing drift on a fixed viewport and
+       * browser. Baselines carry a platform suffix, so a different OS gets its
+       * own set rather than fighting these.
+       */
+      maxDiffPixelRatio: 0,
+      threshold: 0,
       animations: "disabled",
     },
   },
@@ -60,11 +76,23 @@ export default defineConfig({
   projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
 
   webServer: {
-    // The same script a developer uses by hand, so there is one offline path
-    // rather than a second one that only the tests take.
-    command: "npm run dev:offline",
-    url: "http://localhost:3000",
-    reuseExistingServer: !process.env.CI,
+    /*
+     * Always a fresh server, on a port the normal dev server does not use.
+     *
+     * Both halves of that are load-bearing, and were learned the hard way.
+     * With `reuseExistingServer` on port 3000, this silently attached to a dev
+     * server someone else had already started, whose in-memory module graph had
+     * gone stale: requesting tokens.css directly returned the edited values
+     * while the index.css module it injects still carried the old ones. Every
+     * screenshot then matched, because the page under test was not the code
+     * under test -- the suite reported thirteen passes having verified nothing.
+     *
+     * strictPort so a busy 3247 is an error rather than a silent hop to another
+     * port that baseURL would not be pointing at.
+     */
+    command: "cross-env REACT_APP_USE_FAKE_DB=true vite --port 3247 --strictPort",
+    url: "http://localhost:3247",
+    reuseExistingServer: false,
     timeout: 180_000,
   },
 });
