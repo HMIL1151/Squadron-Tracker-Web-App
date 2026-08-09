@@ -11,7 +11,7 @@
 
 .requests-table th,
 .requests-table td {
-  border: 1px solid var(--grey-300);
+  border: 1px solid var(--color-border-subtle);
   padding: 8px;
   text-align: left;
 }
@@ -30,7 +30,7 @@
 /* General card styles */
 .request-card {
   background-color: var(--color-surface-sunken);
-  border: 1px solid var(--grey-300);
+  border: 1px solid var(--color-border-subtle);
   border-radius: 8px;
   padding: 16px;
   width: 300px;
@@ -63,8 +63,8 @@
 }
 
 .request-card.pending {
-  background-color: var(--amber-100); /* Light yellow */
-  border-color: var(--amber-200);
+  background-color: var(--color-warning-bg);
+  border-color: var(--color-warning-border);
 }
 
 .request-card.denied {
@@ -122,12 +122,13 @@
   border: none;
   border-radius: 4px;
   cursor: pointer;
-  background-color: var(--grey-150);
+  background-color: var(--color-button-neutral);
+  color: var(--color-button-neutral-text);
   transition: background-color 0.3s ease;
 }
 
 .modal-actions button:hover {
-  background-color: var(--color-surface-hover);
+  background-color: var(--color-button-neutral-hover);
 }
 
 .modal-actions button.active {
@@ -164,7 +165,7 @@
 }
 
 .close-modal:hover {
-  background-color: var(--grey-400);
+  background-color: var(--color-border-strong);
 }
 
 /* Backup section */
@@ -186,12 +187,13 @@
   border: none;
   border-radius: 4px;
   cursor: pointer;
-  background-color: var(--grey-150);
+  background-color: var(--color-button-neutral);
+  color: var(--color-button-neutral-text);
   transition: background-color 0.3s ease;
 }
 
 .tabs button:hover {
-  background-color: var(--color-surface-hover);
+  background-color: var(--color-button-neutral-hover);
 }
 
 .tabs button.active-tab {

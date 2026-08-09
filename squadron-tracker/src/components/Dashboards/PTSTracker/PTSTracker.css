@@ -28,7 +28,7 @@
 
 /* General tab hover effect */
 .PTSTracker-tab:hover {
-  background-color: var(--color-surface-hover); /* Slightly darker blue on hover */
+  background-color: var(--color-button-neutral-hover); /* Slightly darker blue on hover */
   box-shadow: 0 4px 10px var(--black-a20); /* More pronounced shadow on hover */
   box-shadow: 0px 4px 6px var(--black-a20); /* Add shadow on hover */
 }
@@ -40,8 +40,8 @@
 }
 
 .PTSTracker-tab.show-all {
-  background-color: var(--grey-150);
-  color: var(--color-text);
+  background-color: var(--color-button-neutral);
+  color: var(--color-button-neutral-text);
   border: 2px solid var(--color-border);
   padding: 10px 20px;
   font-weight: bold;
@@ -53,7 +53,7 @@
 
 /* Prevent "Show all Badge Types" button from having shadow on hover */
 .PTSTracker-tab.show-all:hover {
-  background-color: var(--color-surface-hover);
+  background-color: var(--color-button-neutral-hover);
   border-color: var(--color-border-strong);
   box-shadow: none; /* No shadow on hover */
 }
@@ -296,8 +296,8 @@
 }
 
 .PTSTracker-button.show-all {
-  background-color: var(--grey-150);
-  color: var(--color-text);
+  background-color: var(--color-button-neutral);
+  color: var(--color-button-neutral-text);
   border: 2px solid var(--color-border);
   padding: 10px 20px;
   font-weight: bold;
@@ -308,7 +308,7 @@
 }
 
 .PTSTracker-button.show-all:hover {
-  background-color: var(--color-surface-hover);
+  background-color: var(--color-button-neutral-hover);
   border-color: var(--color-border-strong);
   transform: scale(1); /* No scaling on hover */
 }

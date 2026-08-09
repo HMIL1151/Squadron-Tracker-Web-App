@@ -25,7 +25,7 @@
   background-color: var(--color-app-bar);
   color: var(--color-text-inverse);
   box-shadow: var(--shadow-sm);
-  z-index: 1000;
+  z-index: var(--z-app-header);
 }
 
 .title {
@@ -60,7 +60,7 @@
   overflow-y: auto;
   box-sizing: border-box;
   position: relative;
-  z-index: 990;
+  z-index: var(--z-content);
 }
 
 .version-number {
@@ -77,7 +77,7 @@
   top: 50%; /* Vertically center the button */
   left: 200px; /* Default position when the menu is expanded */
   transform: translateY(-50%); /* Adjust for the button's height */
-  z-index: 998;
+  z-index: var(--z-menu-toggle);
   background-color: var(--color-surface-muted);
   color: var(--color-text);
   border: solid 1px var(--color-border);
@@ -106,3 +106,18 @@
  * duplicates of the live `.menu` and `.menu.collapsed` rules. Removing them
  * changes nothing and leaves one place to look.
  */
+
+/*
+ * Hide the menu collapse control while a dialog is open.
+ *
+ * It was never above the scrim -- measured, the overlay does paint over it --
+ * but at 70% opacity its border and lighter fill still read as a live control
+ * sitting on top of the dialog, and it is the only piece of chrome that does.
+ * Dimming is not the same as being out of the way.
+ *
+ * react-modal puts this class on <body> for exactly this purpose, and takes it
+ * off when the last dialog closes, so nesting is handled.
+ */
+body.ReactModal__Body--open .menu-toggle-button {
+  visibility: hidden;
+}

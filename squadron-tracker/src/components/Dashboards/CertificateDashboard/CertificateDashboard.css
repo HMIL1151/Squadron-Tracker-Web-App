@@ -86,8 +86,8 @@
 
 .certificate-dashboard .events-section p {
   padding: 10px;
-  background-color: var(--grey-50);
-  border: 1px solid var(--grey-300);
+  background-color: var(--color-surface-sunken);
+  border: 1px solid var(--color-border-subtle);
   border-radius: 5px;
   margin-bottom: 10px;
   cursor: pointer;
@@ -95,7 +95,7 @@
 }
 
 .certificate-dashboard .events-section p:hover {
-  background-color: var(--grey-150);
+  background-color: var(--color-button-neutral);
   transform: scale(1.02);
   color: var(--color-danger);
 }
@@ -182,11 +182,11 @@
 }
 
 .divider:hover {    
-    background-color: var(--grey-450);
+    background-color: var(--color-divider-hover);
 }
 
 .divider.dragging {
-    background-color: var(--grey-600);
+    background-color: var(--color-divider-active);
 }
 
 /* Loading popup styles */

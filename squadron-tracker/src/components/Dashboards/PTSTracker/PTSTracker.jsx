@@ -392,7 +392,7 @@ const PTSTracker = ({ user }) => {
             ))}
             {/* Totals Row */}
             <tr>
-              <td style={{ fontWeight: "bold", background: "var(--grey-150)" }}>Total</td>
+              <td style={{ fontWeight: "bold", background: "var(--color-button-neutral)" }}>Total</td>
               {Object.entries(groupedBadgeColumns).flatMap(([type, levels]) =>
                 expandedTabs[type]
                   ? levels.map((level) => {
@@ -406,7 +406,7 @@ const PTSTracker = ({ user }) => {
                       return (
                         <td
                           key={`total-${type}-${level}`}
-                          style={{ fontWeight: "bold", background: "var(--grey-150)" }}
+                          style={{ fontWeight: "bold", background: "var(--color-button-neutral)" }}
                         >
                           {count}
                         </td>

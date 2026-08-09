@@ -58,6 +58,14 @@
     transform: scale(1.05);
 }
 
+/* Disabled dialog actions -- here, beside the only definition of these two. */
+.popup-button-green:disabled,
+.popup-button-red:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
 .popup-bottom-buttons {
     display: flex;
     justify-content: space-between; /* Push buttons to opposite ends */
@@ -123,7 +131,7 @@
   box-shadow: 0 4px 6px var(--black-a10);
   font-size: 1rem;
   animation: fadeOut 10s ease forwards;
-  z-index: 1100;
+  z-index: var(--z-toast);
 }
 
 /* Inline error line inside popups, replacing window.alert() validation. */

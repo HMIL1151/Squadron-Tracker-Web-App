@@ -108,7 +108,7 @@
 }
 
 .autocomplete-suggestions li:hover {
-  background-color: var(--grey-150);
+  background-color: var(--color-button-neutral);
 }
 
 .autocomplete-suggestions li.highlighted {
@@ -162,7 +162,7 @@
 }
 
 .grid-button:hover {
-  background-color: var(--grey-150);
+  background-color: var(--color-button-neutral);
 }
 
 .grid-button.selected {

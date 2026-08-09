@@ -30,7 +30,14 @@ const EditPopup = ({ isOpen, onClose, onConfirm, data, type }) => {
   if (!isOpen) return null;
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} label="Edit entry" size="sm" variant="edit-popup">
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title="Edit Entry"
+      size="sm"
+      variant="edit-popup"
+      onConfirm={handleSubmit}
+    >
       <h3>
     {type === "eventcategories"
         ? "Edit Event Category"
@@ -72,14 +79,6 @@ const EditPopup = ({ isOpen, onClose, onConfirm, data, type }) => {
             />
           </label>
         )}
-        <div className="popup-bottom-buttons">
-          <button className="popup-button-red" onClick={onClose}>
-            Cancel
-          </button>
-          <button className="popup-button-green" onClick={handleSubmit}>
-            Confirm
-          </button>
-        </div>
     </Modal>
   );
 };

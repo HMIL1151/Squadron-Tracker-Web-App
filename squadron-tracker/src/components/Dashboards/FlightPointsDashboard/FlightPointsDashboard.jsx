@@ -5,6 +5,8 @@ import { DataContext } from "../../../context/DataContext";
 import { useSquadron } from "../../../context/SquadronContext";
 import { getCadetPoints, getFlightPointTotals } from "../../../utils/points";
 import { getAssignableFlights, getCompetingFlights } from "../../../utils/flights";
+import Modal from "../DashboardComponents/Modal";
+import "../DashboardComponents/dashboardStyles.css";
 
 const FlightPointsDashboard = () => {
     const { data } = useContext(DataContext);
@@ -127,7 +129,13 @@ const FlightPointsDashboard = () => {
 
     // Create rowColors array for the Table component
     const rowColors = cadetPoints.map(({ cadetName, flight }) => {
-        let color = "var(--color-text-inverse)"; // Default color for all rows
+        /*
+         * undefined, not a colour. A default of white here painted every row
+         * white regardless of theme -- Table.jsx leaves --row-bg unset when the
+         * value is undefined, so the table's own themed surface shows through
+         * and only the highlighted rows carry a colour.
+         */
+        let color;
         // Ensure flight is a number for comparison
         const flightNum = Number(flight);
         // Only highlight top cadet in flights 2 and 3
@@ -171,74 +179,52 @@ const FlightPointsDashboard = () => {
                 </button>
             </div>
 
-            {/* Popup Modal */}
-            {showPopup && (
-                <div style={{
-                    position: "fixed",
-                    top: 0,
-                    left: 0,
-                    width: "100vw",
-                    height: "100vh",
-                    background: "var(--black-a30)",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    zIndex: 1000
-                }}>
-                    <div style={{
-                        background: "var(--color-text-inverse)",
-                        padding: "32px 24px",
-                        borderRadius: "12px",
-                        minWidth: "320px",
-                        boxShadow: "var(--shadow-xl)",
-                        display: "flex",
-                        flexDirection: "column",
-                        gap: "18px"
-                    }}>
-                        <h2 style={{ margin: 0 }}>Allocate Points to Flight</h2>
-                        <label style={{ fontWeight: "bold" }}>
-                            Flight:
-                            <select
-                                value={selectedFlight}
-                                onChange={e => setSelectedFlight(e.target.value)}
-                                style={{ marginLeft: "10px", padding: "6px 12px", borderRadius: "6px" }}
-                            >
-                                <option value="">Select Flight</option>
-                                {allocatableFlights.map((f) => (
-                                    <option key={`flight-option-${f.index}`} value={f.index}>{f.name}</option>
-                                ))}
-                            </select>
-                        </label>
-                        <label style={{ fontWeight: "bold" }}>
-                            Points to Add:
-                            <input
-                                type="number"
-                                value={pointsToAdd}
-                                onChange={e => setPointsToAdd(e.target.value)}
-                                style={{ marginLeft: "10px", padding: "6px 12px", borderRadius: "6px", width: "100px" }}
-                                min="1"
-                            />
-                        </label>
-                        {popupError && <div style={{ color: "var(--chart-series-4)", fontWeight: "bold" }}>{popupError}</div>}
-                        <div style={{ display: "flex", justifyContent: "flex-end", gap: "12px" }}>
-                            <button
-                                onClick={() => setShowPopup(false)}
-                                style={{ padding: "8px 18px", borderRadius: "6px", border: "1px solid var(--color-border)", background: "var(--color-surface-muted)", color: "var(--color-text)", fontWeight: "bold", cursor: "pointer" }}
-                                disabled={isSubmitting}
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                onClick={handleConfirm}
-                                style={{ padding: "8px 18px", borderRadius: "6px", background: "var(--chart-series-1)", color: "var(--color-text-inverse)", fontWeight: "bold", border: "none", cursor: "pointer" }}
-                                disabled={isSubmitting}
-                            >
-                                {isSubmitting ? "Allocating..." : "Confirm"}
-                            </button>
-                        </div>
-                    </div>
+            {/*
+              * The shared Modal, not a hand-rolled overlay.
+              *
+              * This dialog used to be ~60 lines of inline styles: its own
+              * scrim, its own card, its own button arrangement with Confirm
+              * styled in a chart colour. It looked nothing like the other
+              * dialogs, stayed white in dark mode, and had no Escape key, no
+              * focus trap and no dialog role -- because none of that comes for
+              * free when you build a modal out of a div.
+              */}
+            <Modal
+                isOpen={showPopup}
+                onClose={() => setShowPopup(false)}
+                title="Allocate Points to Flight"
+                variant="allocate-points"
+                onConfirm={handleConfirm}
+                confirmLabel={isSubmitting ? "Allocating..." : "Confirm"}
+                confirmDisabled={isSubmitting}
+            >
+                <div className="form-group">
+                    <label className="form-label" htmlFor="allocate-flight">Flight:</label>
+                    <select
+                        id="allocate-flight"
+                        className="form-select"
+                        value={selectedFlight}
+                        onChange={e => setSelectedFlight(e.target.value)}
+                    >
+                        <option value="">Select Flight</option>
+                        {allocatableFlights.map((f) => (
+                            <option key={`flight-option-${f.index}`} value={f.index}>{f.name}</option>
+                        ))}
+                    </select>
                 </div>
-            )}
+                <div className="form-group">
+                    <label className="form-label" htmlFor="allocate-points">Points to Add:</label>
+                    <input
+                        id="allocate-points"
+                        className="form-input"
+                        type="number"
+                        value={pointsToAdd}
+                        onChange={e => setPointsToAdd(e.target.value)}
+                        min="1"
+                    />
+                </div>
+                {popupError && <div className="popup-error">{popupError}</div>}
+            </Modal>
             {/* Year Dropdown Section */}
             <div style={{ marginBottom: "20px" }}>
                 <label htmlFor="yearDropdown" style={{ marginRight: "10px", fontWeight: "bold" }}>

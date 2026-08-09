@@ -8,7 +8,7 @@
   border-radius: 8px; /* Rounded corners */
   box-shadow: 0 4px 6px var(--black-a10); /* Subtle shadow for the popup */
   text-align: center; /* Center-align the text inside the popup */
-  z-index: 1000;
+  z-index: var(--z-modal);
 }
 
 .loading-spinner {

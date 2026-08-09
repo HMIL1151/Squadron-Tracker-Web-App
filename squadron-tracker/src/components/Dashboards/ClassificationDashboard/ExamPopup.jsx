@@ -111,46 +111,58 @@ const ExamPopup = ({ isOpen, onClose, cadetName, classification, user }) => {
       setExamSelections([...updatedSelections, { selectedExam: "", examDate: "" }]);
     }
   };
-  return (
-    <Modal isOpen={isOpen} onClose={onClose} label="Add exam" size="lg" variant="exam-popup">
-        <button className="popup-close" onClick={onClose}>
-          &times;
-        </button>
-        <h2>Cadet Details</h2>
-        <p><strong>Name:</strong> {cadetName}</p>
-        <p><strong>Classification:</strong> {classification}</p>
-        <h3>Classification Records:</h3>
-        {loading ? (
-          <p>Loading exams...</p>
-        ) : exams.length > 0 ? (
-          <div>
-            {exams.map((exam, index) => (
-              <span key={index} className="exam-item">{exam}</span>
-            ))}
-          </div>
-        ) : (
-          <p>No classification records found for this cadet.</p>
-        )}
+  /*
+   * Still an early return, even though Modal takes isOpen: JSX children are
+   * built before Modal can decide not to show them.
+   */
+  if (!isOpen) return null;
 
-        {/* Add Exam Section */}
+  return (
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title={`Add Exam${cadetName ? ` -- ${cadetName}` : ""}`}
+      size="lg"
+      variant="exam-popup"
+      onConfirm={handleAddExam}
+      confirmLabel={
+        examSelections.filter((s) => s.selectedExam && s.examDate).length > 1
+          ? "Add Exams"
+          : "Add Exam"
+      }
+      /*
+       * What the cadet already has goes in the pane, beside the form rather
+       * than above it. This dialog is the reason Modal has a pane at all: you
+       * are choosing which exams to add while needing to see which are already
+       * recorded, and stacking them meant scrolling away from one to use the
+       * other.
+       */
+      pane={
+        <>
+          <h3>Classification Records</h3>
+          <p><strong>Classification:</strong> {classification}</p>
+          {loading ? (
+            <p>Loading exams...</p>
+          ) : exams.length > 0 ? (
+            <div>
+              {exams.map((exam, index) => (
+                <span key={index} className="exam-item">{exam}</span>
+              ))}
+            </div>
+          ) : (
+            <p>No classification records found for this cadet.</p>
+          )}
+        </>
+      }
+    >
         <div className="add-exam-section">
-          <h3>Add Exam</h3>
           {examSelections.map((selection, index) => {
             // Calculate available exams for this dropdown
             const availableExams = examList.filter(
               (exam) => !exams.includes(exam) && !examSelections.some((sel, selIndex) => selIndex !== index && sel.selectedExam === exam)
             );
 
-            /*
-   * Still an early return, even though Modal takes isOpen.
-   *
-   * JSX children are built before Modal can decide not to show them, so
-   * without this the closed state evaluates markup that reads props which
-   * are only populated while open, and throws.
-   */
-  if (!isOpen) return null;
-
-  return (
+            return (
               <div key={index} className="form-group-inline">
                 <select
                   className="exam-select"
@@ -178,16 +190,6 @@ const ExamPopup = ({ isOpen, onClose, cadetName, classification, user }) => {
             );
           })}
           {validationError && <p className="popup-error">{validationError}</p>}
-          <div className="popup-bottom-buttons">
-          <button className="popup-button-red" onClick={onClose}>
-              Cancel
-            </button>
-            <button className="popup-button-green" onClick={handleAddExam}>
-              {examSelections.filter(selection => selection.selectedExam && selection.examDate).length > 1
-                ? "Add Exams"
-                : "Add Exam"}
-            </button>
-          </div>
         </div>
     </Modal>
   );

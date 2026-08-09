@@ -137,7 +137,29 @@
   --color-logout: var(--red-300);
   --color-logout-hover: var(--red-700);
 
+  /*
+   * Neutral button.
+   *
+   * The "show all" / tab-strip buttons had no semantic name and reached for
+   * --grey-150 directly. Primitives do not flip, so in dark mode those became a
+   * near-white fill under near-white text. Any surface token needs a matching
+   * text token or exactly that happens.
+   */
+  --color-button-neutral: var(--grey-150);
+  --color-button-neutral-hover: var(--grey-200);
+  --color-button-neutral-text: var(--color-text);
+
+  /* A quieter line than --color-border, for panels inside panels. */
+  --color-border-subtle: var(--grey-300);
+
+  /* Drag handles and dividers, which need two interaction states. */
+  --color-divider: var(--grey-350);
+  --color-divider-hover: var(--grey-450);
+  --color-divider-active: var(--grey-600);
+
   /* Feedback surfaces. */
+  --color-warning-bg: var(--amber-100);
+  --color-warning-border: var(--amber-200);
   --color-success-bg: var(--green-100);
   --color-success-border: var(--green-200);
   --color-error-bg: var(--red-100);
@@ -150,6 +172,19 @@
    */
   --ring-action: rgba(76, 175, 80, 0.5);
   --ring-accent: rgba(0, 123, 255, 0.5);
+
+  /*
+   * Layering.
+   *
+   * Nine stylesheets each declared `z-index: 1000` for something different,
+   * which is not a scale -- it is nine files agreeing by accident. Named steps
+   * make the intended order readable, and leave room between them.
+   */
+  --z-content: 1;
+  --z-menu-toggle: 20;
+  --z-app-header: 30;
+  --z-modal: 100;
+  --z-toast: 200;
 
   /* Depth. */
   --shadow-sm: 0 2px 4px var(--black-a10);
@@ -259,7 +294,25 @@
     --color-logout: #e5615d;
     --color-logout-hover: #f0817e;
 
-    --color-success-bg: #1d3524;
+    --color-button-neutral: #323740;
+    --color-button-neutral-hover: #3d434d;
+    --color-button-neutral-text: #e3e6ea;
+    --color-border-subtle: #333941;
+    --color-divider: #3a4049;
+    --color-divider-hover: #4a515c;
+    --color-divider-active: #5c6470;
+    --color-warning-bg: #3a3320;
+    --color-warning-border: #574d2a;
+    --color-button-neutral: #323740;
+  --color-button-neutral-hover: #3d434d;
+  --color-button-neutral-text: #e3e6ea;
+  --color-border-subtle: #333941;
+  --color-divider: #3a4049;
+  --color-divider-hover: #4a515c;
+  --color-divider-active: #5c6470;
+  --color-warning-bg: #3a3320;
+  --color-warning-border: #574d2a;
+  --color-success-bg: #1d3524;
     --color-success-border: #2c5233;
     --color-error-bg: #3a2124;
     --color-error-border: #5c3237;
@@ -307,6 +360,15 @@
   --color-logout: #e5615d;
   --color-logout-hover: #f0817e;
 
+  --color-button-neutral: #323740;
+  --color-button-neutral-hover: #3d434d;
+  --color-button-neutral-text: #e3e6ea;
+  --color-border-subtle: #333941;
+  --color-divider: #3a4049;
+  --color-divider-hover: #4a515c;
+  --color-divider-active: #5c6470;
+  --color-warning-bg: #3a3320;
+  --color-warning-border: #574d2a;
   --color-success-bg: #1d3524;
   --color-success-border: #2c5233;
   --color-error-bg: #3a2124;

@@ -12,7 +12,7 @@
 
 .request-card {
   background-color: var(--color-surface-sunken);
-  border: 1px solid var(--grey-300);
+  border: 1px solid var(--color-border-subtle);
   border-radius: 10px;
   padding: 20px 20px 20px 20px; /* Ensure consistent padding on all sides */
   width: 80%;

@@ -22,7 +22,7 @@
 
 .custom-table td {
     padding: 2px;
-    border-bottom: 1px solid var(--grey-300);
+    border-bottom: 1px solid var(--color-border-subtle);
     text-align: center; /* Center-align text in table cells */
 }
 
@@ -61,7 +61,7 @@
     font-size: 1.5em; /* Adjust the size as needed */
     margin-bottom: 10px; /* Space between title and table */
     padding-bottom: 5px;
-    border-bottom: 2px solid var(--grey-800); /* Line under the title */
+    border-bottom: 2px solid var(--color-border-strong); /* Line under the title */
     display: inline-block; /* Ensure it doesn’t stretch across the entire width */
 }
 
