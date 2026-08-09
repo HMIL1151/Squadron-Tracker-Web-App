@@ -114,3 +114,17 @@
   text-decoration: underline;
   cursor: pointer;
 }
+
+/*
+ * The dashboard table wrapper, moved here from CadetsDashboard.css.
+ *
+ * ClassificationDashboard, MassEventLog and FlightsDashboard all render it
+ * without importing that file, which only worked while class names were
+ * global.
+ */
+.table-dashboard-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+  }

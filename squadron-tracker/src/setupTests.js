@@ -21,7 +21,7 @@
 // before workers spawn -- an assignment here would be too late, because imports
 // hoist above it.
 
-import { beforeEach, vi } from "vitest";
+import { afterEach, beforeEach, vi } from "vitest";
 import "@testing-library/jest-dom";
 import ReactModal from "react-modal";
 
@@ -197,4 +197,29 @@ if (typeof document !== "undefined") {
 beforeEach(() => {
   fakeFirestore.__reset();
   fakeAuth.__reset();
+});
+
+/*
+ * Catch a class name that does not exist.
+ *
+ * The CSS-module Proxy in tests answers EVERY key, so `styles.typo` returns a
+ * plausible string rather than undefined and a misspelling sails through the
+ * suite to break only in the browser. Where a lookup genuinely misses -- a
+ * dynamic `styles[status]` with an unexpected status -- React renders the
+ * literal "undefined" into the class attribute, which is the one shape that is
+ * always a bug and is cheap to detect.
+ */
+afterEach(() => {
+  if (typeof document === "undefined") return;
+  const broken = [...document.querySelectorAll('[class*="undefined"]')];
+  if (broken.length) {
+    const detail = broken
+      .slice(0, 3)
+      .map((el) => `  <${el.tagName.toLowerCase()} class="${el.className}">`)
+      .join("\n");
+    throw new Error(
+      `Rendered ${broken.length} element(s) with "undefined" in the class ` +
+        `attribute, which means a styles[...] lookup missed:\n${detail}`
+    );
+  }
 });

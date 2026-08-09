@@ -97,6 +97,28 @@ export default defineConfig({
     // Do not let an unhandled error be swallowed into a green run.
     dangerouslyIgnoreUnhandledErrors: false,
 
+    /*
+     * CSS Modules class names, in tests, are the names as written.
+     *
+     * Vitest does not process CSS -- `css.include: []` keeps it that way, since
+     * pushing every stylesheet through jsdom for each component file buys no
+     * assertion. What it DOES do is replace a `.module.css` import with a Proxy
+     * whose keys resolve according to classNameStrategy, and the default
+     * ("stable") returns a hashed name derived from the file path. That would
+     * turn every `querySelector(".popup-content")` in the suite red, and churn
+     * the committed snapshots into unreadable hashes that move again the next
+     * time a file is renamed.
+     *
+     * "non-scoped" returns the raw key instead, so styles["popup-content"] is
+     * "popup-content" in tests and a scoped name in the browser. The thirty-odd
+     * class-coupled assertions keep working, and keep being regression
+     * detectors through the migration rather than churn.
+     */
+    css: {
+      include: [],
+      modules: { classNameStrategy: "non-scoped" },
+    },
+
     // CRA's default. Several tests rely on module mocks persisting across
     // tests within a file, so this must stay false.
     restoreMocks: false,

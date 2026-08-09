@@ -187,3 +187,55 @@
   display: flex;
   justify-content: center;
 }
+
+/*
+ * Dialog buttons, moved here from dashboardStyles.css.
+ *
+ * Modal renders these, so under CSS Modules it has to be the module that
+ * scopes them -- a class defined in one module and rendered from another
+ * simply does not match once the names are hashed.
+ */
+.popup-button-green,
+.popup-button-red {
+    padding: 10px 20px;
+    font-size: 14px;
+    border: none;
+    color: var(--color-text-inverse);
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.popup-button-green {
+    background-color: var(--color-action);
+}
+
+.popup-button-green:hover {
+    background-color: var(--color-action-hover);
+    transform: scale(1.05);
+}
+
+.popup-button-red {
+    background-color: var(--color-danger);
+}
+
+.popup-button-red:hover {
+    background-color: var(--color-danger-hover);
+    transform: scale(1.05);
+}
+
+/* Disabled dialog actions -- here, beside the only definition of these two. */
+.popup-button-green:disabled,
+.popup-button-red:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.popup-bottom-buttons {
+    display: flex;
+    justify-content: space-between; /* Push buttons to opposite ends */
+    align-items: center; /* Vertically align buttons */
+    width: 100%; /* Ensure the flexbox spans the full width of the container */
+    padding: 10px 0; /* Optional: Add some vertical padding */
+}

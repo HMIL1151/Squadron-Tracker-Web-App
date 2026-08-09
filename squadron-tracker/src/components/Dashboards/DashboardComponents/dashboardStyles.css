@@ -28,52 +28,6 @@
     transform: scale(1.05);
 }
 
-
-.popup-button-green,
-.popup-button-red {
-    padding: 10px 20px;
-    font-size: 14px;
-    border: none;
-    color: var(--color-text-inverse);
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s ease, transform 0.2s ease;
-}
-
-.popup-button-green {
-    background-color: var(--color-action);
-}
-
-.popup-button-green:hover {
-    background-color: var(--color-action-hover);
-    transform: scale(1.05);
-}
-
-.popup-button-red {
-    background-color: var(--color-danger);
-}
-
-.popup-button-red:hover {
-    background-color: var(--color-danger-hover);
-    transform: scale(1.05);
-}
-
-/* Disabled dialog actions -- here, beside the only definition of these two. */
-.popup-button-green:disabled,
-.popup-button-red:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-    transform: none;
-}
-
-.popup-bottom-buttons {
-    display: flex;
-    justify-content: space-between; /* Push buttons to opposite ends */
-    align-items: center; /* Vertically align buttons */
-    width: 100%; /* Ensure the flexbox spans the full width of the container */
-    padding: 10px 0; /* Optional: Add some vertical padding */
-}
-
 .button-container {
     display: flex;
     justify-content: center;
@@ -139,4 +93,38 @@
   color: var(--red-400);
   font-weight: bold;
   margin: 8px 0;
+}
+
+/* Dialog buttons and the inline error moved to Modal.module.css, which is
+   where the component that renders them lives. */
+
+/*
+ * The shared form vocabulary, moved here from Popup.css.
+ *
+ * Form.jsx, FlightPointsDashboard and FlightsDashboard all render these and
+ * none of them imported Popup.css -- they were relying on it having been
+ * pulled in by something else on the page.
+ */
+.form-label {
+  font-weight: bold;
+  font-size: 14px;
+  width: 100px; /* Fixed width for labels to align inputs */
+  text-align: right; /* Align label text to the right */
+}
+
+.form-input,
+.form-select {
+  padding: 1px; /* Reduce padding */
+  font-size: 14px;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  flex: 1; /* Allow inputs to take up remaining space */
+  box-sizing: border-box;
+}
+
+.form-input:focus,
+.form-select:focus {
+  border-color: var(--color-accent);
+  outline: none;
+  box-shadow: 0 0 3px var(--ring-accent); /* Subtle focus effect */
 }

@@ -1,9 +1,4 @@
-.table-dashboard-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-direction: column;
-  }
+
   
   /*
    * .button-container lives in dashboardStyles.css, which CadetsDashboard.jsx
@@ -81,3 +76,6 @@
     justify-content: flex-end; /* Align buttons to the right */
     gap: 0.5rem; /* Add spacing between buttons */
   }
+
+/* .table-dashboard-container moved to Table/Table.module.css -- three other
+   dashboards render it and none of them imports this file. */

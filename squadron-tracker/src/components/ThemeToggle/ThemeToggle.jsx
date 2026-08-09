@@ -1,5 +1,5 @@
 import { useTheme } from "../../context/ThemeContext";
-import "./ThemeToggle.css";
+import styles from "./ThemeToggle.module.css";
 
 /**
  * Switches between light and dark.
@@ -21,7 +21,7 @@ const ThemeToggle = () => {
   return (
     <button
       type="button"
-      className="theme-toggle"
+      className={styles["theme-toggle"]}
       onClick={toggleTheme}
       aria-pressed={isDark}
       aria-label="Dark mode"
