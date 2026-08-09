@@ -1,11 +1,25 @@
 import React, { useState, useEffect, useContext } from "react";
 import { motion } from "framer-motion";
 import { badgeLevel } from "../../../utils/examList";
-import "./PTSTracker.css";
-import "../DashboardComponents/dashboardStyles.css";
+import styles from "./PTSTracker.module.css";
+import shared from "../DashboardComponents/dashboardStyles.module.css";
 import { DataContext } from "../../../context/DataContext"; // Import DataContext
 import { useSaveEvent } from "../../../databaseTools/databaseTools"; // Import saveEvent 
 import Modal from "../DashboardComponents/Modal";
+
+/*
+ * Badge level -> scoped class. A map rather than `badge-level-${level}`,
+ * because the rendered name is a hash once the stylesheet is a module and
+ * cannot be assembled from a string. The level comes from data
+ * (level.split(" ")[0]), so an unexpected value now yields undefined and is
+ * caught by the setupTests guard rather than silently matching nothing.
+ */
+const BADGE_LEVEL = {
+  blue: styles["badge-level-blue"],
+  bronze: styles["badge-level-bronze"],
+  silver: styles["badge-level-silver"],
+  gold: styles["badge-level-gold"],
+};
 
 const PTSTracker = ({ user }) => {
   const [cadetNames, setCadetNames] = useState([]);
@@ -194,18 +208,18 @@ const PTSTracker = ({ user }) => {
   };
 
   return (
-    <div className="PTSTracker">
+    <div className={styles["PTSTracker"]}>
       {/* All Time / Date Range Toggle */}
       <div style={{ marginBottom: "1rem", display: "flex", alignItems: "center", gap: 12 }}>
         <button
-          className="PTSTracker-button show-all"
+          className={[styles["PTSTracker-button"], styles["show-all"]].join(" ")}
           style={{ minWidth: 140 }}
           onClick={() => setDateMode(dateMode === "all" ? "range" : "all")}
         >
           {dateMode === "all" ? "Switch to Date Range" : "Show All Time"}
         </button>
         {dateMode === "range" && (
-          <div className="PTSTracker-year-filter" style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <div className={"PTSTracker-year-filter"} style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <label style={{ fontWeight: "bold", marginRight: 8 }}>Date Range:</label>
             <select value={startMonth} onChange={e => setStartMonth(e.target.value)} style={{ padding: "6px 8px", borderRadius: 4, fontSize: 16 }}>
               {months.map(m => <option key={m.value} value={m.value}>{m.label}</option>)}
@@ -224,14 +238,14 @@ const PTSTracker = ({ user }) => {
         )}
       </div>
       {/* Badge Colors Buttons */}
-      <div className="PTSTracker-buttons">
+      <div className={styles["PTSTracker-buttons"]}>
         <button
           onClick={() =>
             setSelectedButton(
               selectedButton.length === 4 ? [] : ["Blue", "Bronze", "Silver", "Gold"]
             ) // Toggle between selecting all and deselecting all
           }
-          className="PTSTracker-button show-all"
+          className={[styles["PTSTracker-button"], styles["show-all"]].join(" ")}
         >
           {selectedButton.length === 4 ? "Hide All Badge Levels" : "Show All Badge Levels"}
         </button>
@@ -239,7 +253,7 @@ const PTSTracker = ({ user }) => {
           <button
             key={color}
             onClick={() => handleButtonClick(color)}
-            className={`PTSTracker-button ${selectedButton.includes(color) ? "selected" : ""}`}
+            className={[styles["PTSTracker-button"], selectedButton.includes(color) ? styles["selected"] : ""].filter(Boolean).join(" ")}
             style={{
               borderColor: getColorHex(color),
               backgroundColor: selectedButton.includes(color) ? getColorHex(color) : "transparent",
@@ -252,7 +266,7 @@ const PTSTracker = ({ user }) => {
       </div>
 
       {/* Badge Types Tabs */}
-      <div className="PTSTracker-tabs">
+      <div className={styles["PTSTracker-tabs"]}>
         <button
           onClick={() =>
             setExpandedTabs(
@@ -262,7 +276,7 @@ const PTSTracker = ({ user }) => {
               }, {})
             )
           }
-          className="PTSTracker-tab show-all"
+          className={[styles["PTSTracker-tab"], styles["show-all"]].join(" ")}
         >
           {Object.values(expandedTabs).every((isExpanded) => isExpanded)
             ? "Hide All Badge Types"
@@ -272,7 +286,7 @@ const PTSTracker = ({ user }) => {
           <div
             key={`tab-${index}`}
             onClick={() => toggleTab(type)}
-            className={`PTSTracker-tab ${expandedTabs[type] ? "expanded" : ""}`}
+            className={[styles["PTSTracker-tab"], expandedTabs[type] ? styles["expanded"] : ""].filter(Boolean).join(" ")}
           >
             {type}
           </div>
@@ -281,7 +295,7 @@ const PTSTracker = ({ user }) => {
 
       {/* Table */}
       <motion.div
-        className="PTSTracker-table-container"
+        className={styles["PTSTracker-table-container"]}
         style={{ textAlign: "left" }}
         initial={{ opacity: 0, x: -50 }}
         animate={{ opacity: 1, x: 0 }}
@@ -291,7 +305,7 @@ const PTSTracker = ({ user }) => {
           initial={{ width: "auto" }}
           animate={{ width: "auto" }}
           transition={{ duration: 0.5 }}
-          className="PTSTracker-table"
+          className={styles["PTSTracker-table"]}
           style={{ borderCollapse: "collapse" }}
         >
           <thead>
@@ -334,7 +348,7 @@ const PTSTracker = ({ user }) => {
                           animate={{ opacity: 1, x: 0 }}
                           transition={{ duration: 0.5, delay: 0.1 }}
                           style={{ minWidth: "90px", padding: "1px" }}
-                          className={`badge-level-${levelName.toLowerCase()}`}
+                          className={BADGE_LEVEL[levelName.toLowerCase()]}
                         >
                           {levelName}
                         </motion.th>
@@ -353,7 +367,7 @@ const PTSTracker = ({ user }) => {
                     ? levels.map((level, colIndex) => {
                         const levelName = level.split(" ")[0];
                         const badgeDate = getBadgeDate(name, level);
-                        const badgeLevelClass = badgeDate ? `badge-level-${levelName.toLowerCase()}` : "";
+                        const badgeLevelClass = badgeDate ? BADGE_LEVEL[levelName.toLowerCase()] : "";
 
                         // Only render the badge level cell if it is selected
                         return selectedButton.includes(levelName) ? (
@@ -444,7 +458,7 @@ const PTSTracker = ({ user }) => {
                 }
               />
 
-              {validationError && <p className="popup-error">{validationError}</p>}
+              {validationError && <p className={shared["popup-error"]}>{validationError}</p>}
           </Modal>
         )}
       </motion.div>

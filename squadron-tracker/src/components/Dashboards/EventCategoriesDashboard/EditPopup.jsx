@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from "react";
 import Modal from "../DashboardComponents/Modal";
-import "../DashboardComponents/dashboardStyles.css";
+import shared from "../DashboardComponents/dashboardStyles.module.css";
+// .edit-popup is scoped by the dashboard's module, so the class has to be
+// read from there -- a name defined in one module does not match another.
+import styles from "./EventCategoriesDashboard.module.css";
 
 const EditPopup = ({ isOpen, onClose, onConfirm, data, type }) => {
   const [formData, setFormData] = useState({});
@@ -35,7 +38,7 @@ const EditPopup = ({ isOpen, onClose, onConfirm, data, type }) => {
       onClose={onClose}
       title="Edit Entry"
       size="sm"
-      variant="edit-popup"
+      variant={styles["edit-popup"]}
       onConfirm={handleSubmit}
     >
       <h3>

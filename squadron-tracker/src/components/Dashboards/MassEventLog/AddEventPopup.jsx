@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import Modal from "../DashboardComponents/Modal";
-import "./MassEventLog.css";
-import "../DashboardComponents/dashboardStyles.css";
+import styles from "./MassEventLog.module.css";
+import shared from "../DashboardComponents/dashboardStyles.module.css";
 import { examList, badgeLevel } from "../../../utils/examList";
 
 const AddEventPopup = ({
@@ -125,26 +125,26 @@ const AddEventPopup = ({
       onConfirm={onAddEventClick}
       confirmLabel="Add Event"
     >
-        <div className="flex-container">
-          <label className="popup-label" htmlFor="autocomplete-input">
+        <div className={styles["flex-container"]}>
+          <label className={styles["popup-label"]} htmlFor="autocomplete-input">
             Name(s):
           </label>
-          <div className="autocomplete-container">
+          <div className={styles["autocomplete-container"]}>
             <input
               id="autocomplete-input"
               type="text"
-              className="autocomplete-input"
+              className={styles["autocomplete-input"]}
               placeholder="Enter name(s)..."
               value={inputValue}
               onChange={handleInputChange}
               onKeyDown={handleKeyDown}
             />
             {filteredNames.length > 0 && (
-              <ul className="autocomplete-suggestions">
+              <ul className={styles["autocomplete-suggestions"]}>
                 {filteredNames.map((name, index) => (
                   <li
                     key={name}
-                    className={index === highlightedIndex ? "highlighted" : ""}
+                    className={index === highlightedIndex ? styles["highlighted"] : ""}
                     onClick={() => handleNameSelect(name)}
                   >
                     {name}
@@ -154,12 +154,12 @@ const AddEventPopup = ({
             )}
           </div>
         </div>
-        <div className="selected-names">
+        <div className={styles["selected-names"]}>
           {selectedNames.map((name) => (
-            <span key={name} className="selected-name">
+            <span key={name} className={styles["selected-name"]}>
               {name}
               <button
-                className="remove-name-button"
+                className={styles["remove-name-button"]}
                 onClick={() => handleRemoveName(name)}
               >
                 &times;
@@ -167,40 +167,40 @@ const AddEventPopup = ({
             </span>
           ))}
         </div>
-        <div className="flex-container">
-          <label className="popup-label" htmlFor="event-date">
+        <div className={styles["flex-container"]}>
+          <label className={styles["popup-label"]} htmlFor="event-date">
             Date:
           </label>
           <input
             id="event-date"
             type="date"
-            className="date-input"
+            className={"date-input"}
             value={eventDate}
             onChange={handleDateChange}
           />
         </div>
-        <div className="button-grid">
+        <div className={styles["button-grid"]}>
           {["Badge", "Classification/Exam", "Event/Other", "Special"].map((buttonText) => (
             <button
               key={buttonText}
-              className={`grid-button ${
-                selectedButton === buttonText ? "selected" : ""
-              }`}
+              className={[styles["grid-button"], 
+                selectedButton === buttonText ? styles["selected"] : ""
+              ].filter(Boolean).join(" ")}
               onClick={() => handleButtonClick(buttonText)}
               dangerouslySetInnerHTML={{ __html: buttonText }}
             />
           ))}
         </div>
-        <div className="dynamic-fields">
+        <div className={styles["dynamic-fields"]}>
           {selectedButton === "Badge" && (
             <>
-              <div className="flex-container">
-                <label className="popup-label" htmlFor="badge-type">
+              <div className={styles["flex-container"]}>
+                <label className={styles["popup-label"]} htmlFor="badge-type">
                   Badge Type:
                 </label>
                 <select
                   id="badge-type"
-                  className="dropdown"
+                  className={styles["dropdown"]}
                   value={selectedBadgeType}
                   onChange={(e) => setSelectedBadgeType(e.target.value)}
                 >
@@ -214,13 +214,13 @@ const AddEventPopup = ({
                   ))}
                 </select>
               </div>
-              <div className="flex-container">
-                <label className="popup-label" htmlFor="badge-level">
+              <div className={styles["flex-container"]}>
+                <label className={styles["popup-label"]} htmlFor="badge-level">
                   Badge Level:
                 </label>
                 <select
                   id="badge-level"
-                  className="dropdown"
+                  className={styles["dropdown"]}
                   value={selectedBadgeLevel}
                   onChange={(e) => setSelectedBadgeLevel(e.target.value)}
                 >
@@ -237,13 +237,13 @@ const AddEventPopup = ({
             </>
           )}
           {selectedButton === "Classification/Exam" && (
-            <div className="flex-container">
-              <label className="popup-label" htmlFor="exam">
+            <div className={styles["flex-container"]}>
+              <label className={styles["popup-label"]} htmlFor="exam">
                 Exam:
               </label>
               <select
                 id="exam"
-                className="dropdown"
+                className={styles["dropdown"]}
                 value={selectedExam}
                 onChange={(e) => setSelectedExam(e.target.value)}
               >
@@ -260,26 +260,26 @@ const AddEventPopup = ({
           )}
           {selectedButton === "Event/Other" && (
             <>
-              <div className="flex-container">
-                <label className="popup-label" htmlFor="event-text">
+              <div className={styles["flex-container"]}>
+                <label className={styles["popup-label"]} htmlFor="event-text">
                   Event Description:
                 </label>
                 <input
                   id="event-text"
                   type="text"
-                  className="text-input"
+                  className={"text-input"}
                   placeholder="Enter event description..."
                   value={freeText}
                   onChange={(e) => setFreeText(e.target.value)}
                 />
               </div>
-              <div className="flex-container">
-                <label className="popup-label" htmlFor="event-category">
+              <div className={styles["flex-container"]}>
+                <label className={styles["popup-label"]} htmlFor="event-category">
                   Event Category:
                 </label>
                 <select
                   id="event-category"
-                  className="dropdown"
+                  className={styles["dropdown"]}
                   value={selectedEventCategory}
                   onChange={(e) => setSelectedEventCategory(e.target.value)}
                 >
@@ -299,13 +299,13 @@ const AddEventPopup = ({
             </>
           )}
           {selectedButton === "Special" && (
-            <div className="flex-container">
-              <label className="popup-label" htmlFor="special-award">
+            <div className={styles["flex-container"]}>
+              <label className={styles["popup-label"]} htmlFor="special-award">
                 Special Award:
               </label>
               <select
                 id="special-award"
-                className="dropdown"
+                className={styles["dropdown"]}
                 value={selectedSpecialAward}
                 onChange={(e) => setSelectedSpecialAward(e.target.value)}
               >
@@ -321,7 +321,7 @@ const AddEventPopup = ({
             </div>
           )}
         </div>
-        {validationError && <p className="popup-error">{validationError}</p>}
+        {validationError && <p className={shared["popup-error"]}>{validationError}</p>}
     </Modal>
   );
 };

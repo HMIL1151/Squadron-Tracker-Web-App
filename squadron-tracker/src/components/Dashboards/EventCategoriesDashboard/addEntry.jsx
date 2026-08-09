@@ -1,9 +1,10 @@
 import React, { useState, useContext } from "react";
 import { addToList } from "../../../firebase/flightPoints";
-import "./addEntry.css";
+import styles from "./addEntry.module.css";
 import { useSquadron } from "../../../context/SquadronContext";
 import { DataContext } from "../../../context/DataContext"; // Import DataContext
 import Modal from "../DashboardComponents/Modal";
+import shared from "../DashboardComponents/dashboardStyles.module.css";
 
 const AddEntry = ({ isOpen, onClose, onConfirm, collection, document, arrayName }) => {
   const [entry, setEntry] = useState("");
@@ -54,7 +55,7 @@ const AddEntry = ({ isOpen, onClose, onConfirm, collection, document, arrayName 
       title="Add Entry"
       onConfirm={handleConfirm}
     >
-        <div className="form-group">
+        <div className={styles["form-group"]}>
           <label htmlFor="entry">New Entry:</label>
           <input
             type="text"
@@ -64,7 +65,7 @@ const AddEntry = ({ isOpen, onClose, onConfirm, collection, document, arrayName 
             placeholder="Enter new entry"
           />
         </div>
-        {error && <p className="popup-error">{error}</p>}
+        {error && <p className={shared["popup-error"]}>{error}</p>}
     </Modal>
   );
 };

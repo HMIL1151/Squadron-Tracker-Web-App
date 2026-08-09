@@ -1,9 +1,10 @@
 import React, { useState, useContext } from "react";
 import { DOCS, setPrice } from "../../../firebase/flightPoints";
-import "./addBadgePoints.css";
+import styles from "./addBadgePoints.module.css";
 import { useSquadron } from "../../../context/SquadronContext";
 import { DataContext } from "../../../context/DataContext"; // Import DataContext
 import Modal from "../DashboardComponents/Modal";
+import shared from "../DashboardComponents/dashboardStyles.module.css";
 
 const AddBadgePoints = ({ isOpen, onClose, onConfirm }) => {
   const [badgeType, setBadgeType] = useState("");
@@ -55,7 +56,7 @@ const AddBadgePoints = ({ isOpen, onClose, onConfirm }) => {
       title="Add Badge Points"
       onConfirm={handleConfirm}
     >
-        <div className="form-group">
+        <div className={styles["form-group"]}>
           <label htmlFor="badgeType">Badge Type:</label>
           <input
             type="text"
@@ -65,7 +66,7 @@ const AddBadgePoints = ({ isOpen, onClose, onConfirm }) => {
             placeholder="Enter badge type"
           />
         </div>
-        <div className="form-group">
+        <div className={styles["form-group"]}>
           <label htmlFor="points">Points:</label>
           <input
             type="number"
@@ -75,7 +76,7 @@ const AddBadgePoints = ({ isOpen, onClose, onConfirm }) => {
             placeholder="Enter points"
           />
         </div>
-        {error && <p className="popup-error">{error}</p>}
+        {error && <p className={shared["popup-error"]}>{error}</p>}
     </Modal>
   );
 };

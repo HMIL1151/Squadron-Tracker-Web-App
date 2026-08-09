@@ -1,5 +1,5 @@
 import { useTheme } from "../../context/ThemeContext";
-import styles from "./ThemeToggle.module.css";
+import styles from "./ThemeToggle.module.module.css";
 
 /**
  * Switches between light and dark.

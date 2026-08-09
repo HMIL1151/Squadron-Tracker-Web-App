@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { createSquadron, deleteAccountRequest, fetchAccountRequests } from "../../../firebase/accounts";
-import "./SystemAdminDashboard.css"; // Import styles for the dashboard
+import styles from "./SystemAdminDashboard.module.css"; // Import styles for the dashboard
 import ErrorMessage from "../DashboardComponents/ErrorMessage";
 
 /** A request's flights, from either the array or the legacy flat fields. */
@@ -60,16 +60,16 @@ const SystemAdminDashboard = () => {
   };
 
   return (
-    <div className="system-admin-dashboard">
+    <div className={styles["system-admin-dashboard"]}>
       <h1>System Admin Dashboard</h1>
       <p>Welcome, System Admin! Here you can review and manage new account requests.</p>
 
       {requests.length === 0 ? (
         <p>No new account requests to review.</p>
       ) : (
-        <div className="requests-container">
+        <div className={styles["requests-container"]}>
           {requests.map((request) => (
-            <div key={request.id} className="request-card">
+            <div key={request.id} className={styles["request-card"]}>
               <p><strong>Squadron Name:</strong> {request.squadronName}</p>
               <p><strong>Squadron Number:</strong> {request.squadronNumber}</p>
               {/* Renders however many flights were requested. Older requests
@@ -81,9 +81,9 @@ const SystemAdminDashboard = () => {
                 </p>
               ))}
               <p><strong>Requested By:</strong> {request.displayName} ({request.email})</p>
-              <div className="request-actions">
-                <button className="approve-button" onClick={() => handleApprove(request)}>Approve</button>
-                <button className="deny-button" onClick={() => handleDeny(request.id)}>Deny</button>
+              <div className={styles["request-actions"]}>
+                <button className={styles["approve-button"]} onClick={() => handleApprove(request)}>Approve</button>
+                <button className={styles["deny-button"]} onClick={() => handleDeny(request.id)}>Deny</button>
               </div>
             </div>
           ))}

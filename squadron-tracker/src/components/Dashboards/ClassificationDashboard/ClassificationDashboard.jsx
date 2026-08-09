@@ -13,8 +13,9 @@ import {
 import Graph from "./Graph"; // Moved this import to the top
 import Table from "../../Table/Table"; // Import the Table component
 import ExamPopup from "./ExamPopup"; // Import ExamPopup component
-import "./ClassificationDashboard.css"; // Import CSS for styling
+import styles from "./ClassificationDashboard.module.css"; // Import CSS for styling
 import { DataContext } from "../../../context/DataContext"; // Import DataContext
+import table from "../../Table/Table.module.css";
 
 
 // Register Chart.js components
@@ -268,7 +269,7 @@ const ClassificationDashboard = ({user}) => {
           }}
         >
           
-          <div className="table-dashboard-container">
+          <div className={table["table-dashboard-container"]}>
           <Table
             columns={[
               "Name",

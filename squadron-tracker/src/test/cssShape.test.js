@@ -25,37 +25,22 @@ const sheets = cssFiles().map(analyseCss);
 const sources = sourceFiles().map(analyseSource);
 
 /**
- * Class names defined in more than one stylesheet.
+ * Class names defined in more than one GLOBAL stylesheet.
  *
- * All of these are decided by CSS load order, and load order is decided by
- * which lazily-loaded dashboard the user opened first -- so several of them
- * genuinely render differently depending on the route taken through the app.
+ * This used to cover every stylesheet, because every class name was global and
+ * a name defined twice was a collision decided by which lazily-loaded dashboard
+ * the user opened first. That is no longer true: the component stylesheets are
+ * CSS Modules, so two files may both define `.active` and the two never meet.
  *
- * The popup family, which was the worst of it at six definitions of
- * .popup-overlay and five of .popup-content, is gone: those live once in
- * DashboardComponents/Modal.css and every dialog is built from Modal.
+ * What still matters is the handful of genuinely global sheets under Styles/,
+ * where a duplicate is a real collision again. The list is empty and should
+ * stay that way.
  *
- * "Defined" here means the class is the subject of a selector. A file saying
- * `.popup-content h2 { ... }` is describing a heading, not offering a second
- * opinion about what a popup is, and counting those made the target
- * unreachable. See classesIn in cssShape.js.
+ * "Defined" means the class is the subject of a selector -- `.popup-content h2`
+ * describes a heading, not a second opinion about what a popup is. See
+ * classesIn in cssShape.js.
  */
-const KNOWN_DUPLICATE_CLASSES = [
-  "active",
-  "add-entry-button",
-  "button-red",
-  "cancel-button",
-  "close-icon",
-  "confirm-button",
-  "form-group",
-  "heading-with-button",
-  "loading-popup",
-  "popup-actions",
-  "popup-bottom-buttons",
-  "remove-button",
-  "request-card",
-  "selected",
-];
+const KNOWN_DUPLICATE_CLASSES = [];
 
 /**
  * `animation:` naming a @keyframes defined in another file.
@@ -109,9 +94,23 @@ describe("stylesheet shape", () => {
     expect(sources.length).toBeGreaterThanOrEqual(40);
   });
 
-  it("defines each class name in exactly one stylesheet", () => {
-    const found = [...duplicateClasses(sheets).keys()];
+  it("defines each class name in exactly one GLOBAL stylesheet", () => {
+    const globals = sheets.filter((s) => s.file.startsWith("Styles/"));
+    const found = [...duplicateClasses(globals).keys()];
     expect(found.sort()).toEqual([...KNOWN_DUPLICATE_CLASSES].sort());
+  });
+
+  it("scopes every component stylesheet", () => {
+    /*
+     * The check that replaces the old duplicate hunt. Collisions are no longer
+     * possible between modules, so what matters is that no component stylesheet
+     * has slipped back to being global -- one plain .css under components/ and
+     * its class names are shared with everything again.
+     */
+    const unscoped = sheets
+      .filter((s) => !s.file.startsWith("Styles/") && !s.file.includes(".module.css"))
+      .map((s) => s.file);
+    expect(unscoped).toEqual([]);
   });
 
   it("keeps every @keyframes in the file that animates with it", () => {

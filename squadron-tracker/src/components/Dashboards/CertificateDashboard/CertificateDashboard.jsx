@@ -1,10 +1,10 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect, useRef, useContext } from "react";
 import { getEventsForCadet } from "../../../utils/cadets";
 import generateCertificatePDF from "./CertificatePDF";
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
-import "./CertificateDashboard.css";
-import "../DashboardComponents/dashboardStyles.css";
+import styles from "./CertificateDashboard.module.css";
+import shared from "../DashboardComponents/dashboardStyles.module.css";
 import { useSquadron } from "../../../context/SquadronContext";
 import { DataContext } from "../../../context/DataContext"; // Import DataContext
 
@@ -172,6 +172,11 @@ const CertificateDashboard = ({user}) => {
         setPdfBlobUrl(null); // Clear the PDF preview
     };
 
+    const containerRef = useRef(null);
+    const leftPanelRef = useRef(null);
+    const rightPanelRef = useRef(null);
+    const dividerRef = useRef(null);
+
     const handleYearChange = (value) => {
         setSelectedYear(value);
         setIsGenerateClicked(false);
@@ -179,17 +184,28 @@ const CertificateDashboard = ({user}) => {
         setPdfBlobUrl(null); // Clear the PDF preview
     };
 
+    /*
+     * Refs, not document.querySelector(".divider").
+     *
+     * Those four lookups were hardcoded class-name selectors, which stopped
+     * matching the moment this stylesheet became a module and the rendered
+     * names became hashes -- divider was null, addEventListener threw, and the
+     * whole dashboard rendered blank. Nothing in the suite caught it, because
+     * jsdom never runs the drag. Refs point at the elements directly and cannot
+     * drift from what is rendered.
+     */
     useEffect(() => {
-        const divider = document.querySelector(".divider");
-        const container = document.querySelector(".certificate-dashboard-container");
-        const leftPanel = document.querySelector(".left-panel");
-        const rightPanel = document.querySelector(".right-panel");
+        const divider = dividerRef.current;
+        const container = containerRef.current;
+        const leftPanel = leftPanelRef.current;
+        const rightPanel = rightPanelRef.current;
+        if (!divider || !container || !leftPanel || !rightPanel) return undefined;
 
         let isDragging = false;
 
-        const handleMouseDown = (e) => {
+        const handleMouseDown = () => {
             isDragging = true;
-            divider.classList.add("dragging");
+            divider.classList.add(styles["dragging"]);
         };
 
         const handleMouseMove = (e) => {
@@ -207,7 +223,7 @@ const CertificateDashboard = ({user}) => {
 
         const handleMouseUp = () => {
             isDragging = false;
-            divider.classList.remove("dragging");
+            divider.classList.remove(styles["dragging"]);
         };
 
         divider.addEventListener("mousedown", handleMouseDown);
@@ -222,10 +238,10 @@ const CertificateDashboard = ({user}) => {
     }, []);
 
     return (
-        <div className="certificate-dashboard-container">
-            <div className="left-panel">
-                <div className="certificate-dashboard">
-                    {errorMessage && <p className="popup-error">{errorMessage}</p>}
+        <div className={styles["certificate-dashboard-container"]} ref={containerRef}>
+            <div className={styles["left-panel"]} ref={leftPanelRef}>
+                <div className={styles["certificate-dashboard"]}>
+                    {errorMessage && <p className={shared["popup-error"]}>{errorMessage}</p>}
                     <label htmlFor="cadet-select">Select Cadet:</label>
                     <select
                         id="cadet-select"
@@ -256,13 +272,13 @@ const CertificateDashboard = ({user}) => {
                     </select>
 
                     {selectedCadet && selectedCadet !== "all" && selectedYear && (
-                        <button className="generate-button" onClick={fetchCadetEvents}>
+                        <button className={styles["generate-button"]} onClick={fetchCadetEvents}>
                             Generate
                         </button>
                     )}
 
                     {isGenerateClicked && selectedCadet !== "all" && (
-                        <div className="events-section">
+                        <div className={styles["events-section"]}>
                             <h2>Review Certificate Lines</h2>
                             {eventStrings.length > 0 ? (
                                 <div>
@@ -277,40 +293,40 @@ const CertificateDashboard = ({user}) => {
                                     ))}
                                 </div>
                             ) : (
-                                <p className="no-events">No events found for the selected cadet and year.</p>
+                                <p className={styles["no-events"]}>No events found for the selected cadet and year.</p>
                             )}
                         </div>
                     )}
 
                     {selectedCadet === "all" && selectedYear && (
-                        <button className="download-button" onClick={handleDownloadAllCertificates}>
+                        <button className={styles["download-button"]} onClick={handleDownloadAllCertificates}>
                             Download All Certificates as .zip Folder
                         </button>
                     )}
 
                     {isGenerateClicked && selectedCadet !== "all" && eventStrings.length > 0 && (
                         <>
-                            <button className="preview-button" onClick={handleGeneratePDF}>Preview PDF</button>
-                            <button className="download-button" onClick={handleDownloadPDF}>Download PDF</button>
+                            <button className={"preview-button"} onClick={handleGeneratePDF}>Preview PDF</button>
+                            <button className={styles["download-button"]} onClick={handleDownloadPDF}>Download PDF</button>
                         </>
                     )}
                 </div>
             </div>
-            <div className="divider" />
-            <div className="right-panel" style={{ position: "relative" }}>
+            <div className={styles["divider"]} ref={dividerRef} />
+            <div className={styles["right-panel"]} ref={rightPanelRef} style={{ position: "relative" }}>
                 {isLoading && (
-                    <div className="loading-popup">
+                    <div className={styles["loading-popup"]}>
                         <p>{loadingMessage || "Loading..."}</p>
-                        <div className="progress-bar-container">
+                        <div className={styles["progress-bar-container"]}>
                             <div
-                                className="progress-bar"
+                                className={styles["progress-bar"]}
                                 style={{ width: `${progress}%` }}
                             ></div>
                         </div>
                     </div>
                 )}
                 {!isLoading && pdfBlobUrl ? (
-                    <div className="pdf-preview">
+                    <div className={styles["pdf-preview"]}>
                         <h2>Certificate Preview</h2>
                         <iframe
                             src={pdfBlobUrl}
@@ -321,7 +337,7 @@ const CertificateDashboard = ({user}) => {
                         />
                     </div>
                 ) : (
-                    !isLoading && <p className="no-preview">No preview available</p>
+                    !isLoading && <p className={styles["no-preview"]}>No preview available</p>
                 )}
             </div>
         </div>

@@ -128,3 +128,13 @@
   outline: none;
   box-shadow: 0 0 3px var(--ring-accent); /* Subtle focus effect */
 }
+
+.form-group {
+  display: flex;
+  align-items: center; /* Align label and input vertically */
+  gap: 10px; /* Add spacing between label and input */
+}
+
+.form-group + .form-group {
+  margin-top: 1px; /* Reduce spacing between groups */
+}

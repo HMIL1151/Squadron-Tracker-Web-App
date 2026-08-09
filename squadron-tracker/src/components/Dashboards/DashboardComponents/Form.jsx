@@ -1,13 +1,13 @@
 import React from "react";
-import "./dashboardStyles.css";
+import shared from "./dashboardStyles.module.css";
 
 const Form = ({ title, fields, handleInputChange }) => {
   return (
-    <form className="form">
-      {title && <h2 className="form-title">{title}</h2>}
+    <form className={"form"}>
+      {title && <h2 className={"form-title"}>{title}</h2>}
       {fields.map((field, index) => (
-        <div className="form-group" key={index}>
-          <label className="form-label" htmlFor={field.id}>
+        <div className={shared["form-group"]} key={index}>
+          <label className={shared["form-label"]} htmlFor={field.id}>
             {field.label}
           </label>
           {field.type === "select" ? (
@@ -16,7 +16,7 @@ const Form = ({ title, fields, handleInputChange }) => {
               name={field.name}
               value={field.value || ""}
               onChange={handleInputChange}
-              className="form-select"
+              className={shared["form-select"]}
             >
               <option value="" disabled>
                 {field.placeholder}
@@ -34,7 +34,7 @@ const Form = ({ title, fields, handleInputChange }) => {
               name={field.name}
               value={field.value || ""}
               onChange={handleInputChange}
-              className="form-input"
+              className={shared["form-input"]}
             />
           )}
         </div>

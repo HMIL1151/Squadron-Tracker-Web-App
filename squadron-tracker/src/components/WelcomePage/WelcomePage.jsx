@@ -7,8 +7,8 @@ import { doesSquadronExist, fetchSquadronDoc } from "../../firebase/squadron";
 import { createAccountRequest, createSquadron } from "../../firebase/accounts";
 import { squadronCollection, getDocs, query, where } from "../../firebase/db";
 import { DataContext } from "../../context/DataContext"; // Import DataContext
-import "./WelcomePage.css"; // Optional: Add styles for the welcome page
-import "../Dashboards/DashboardComponents/dashboardStyles.css"; // Import styles for buttons and popups
+import styles from "./WelcomePage.module.css"; // Optional: Add styles for the welcome page
+import shared from "../Dashboards/DashboardComponents/dashboardStyles.module.css"; // Import styles for buttons and popups
 import Modal from "../Dashboards/DashboardComponents/Modal";
 
 const WelcomePage = ({ onUserChange }) => {
@@ -305,9 +305,9 @@ const WelcomePage = ({ onUserChange }) => {
   };
 
   return (
-    <div className="welcome-page">
+    <div className={styles["welcome-page"]}>
       <h1>Welcome to the Squadron Tracker</h1>
-      {error && <p className="error-message">{error}</p>}
+      {error && <p className={"error-message"}>{error}</p>}
 
       {user ? (
         <div>
@@ -327,11 +327,11 @@ const WelcomePage = ({ onUserChange }) => {
                       }
                     }}
                     placeholder="Enter Squadron Number"
-                    className="squadron-input"
+                    className={styles["squadron-input"]}
                     autoFocus
                   />
                   <button
-                    className="submit-squadron-button"
+                    className={styles["submit-squadron-button"]}
                     onClick={handleSquadronSubmit}
                     disabled={!squadronNumber}
                   >
@@ -341,23 +341,23 @@ const WelcomePage = ({ onUserChange }) => {
               ) : null}
             </>
           )}
-          <button className="logout-button" onClick={handleLogout}>
+          <button className={"logout-button"} onClick={handleLogout}>
             Log Out
           </button>
         </div>
       ) : (
-        <button className="google-login-button" onClick={handleGoogleLogin}>
+        <button className={styles["google-login-button"]} onClick={handleGoogleLogin}>
           Sign in with Google
         </button>
       )}
 
       {/* Changelog Section */}
-      <div className="changelog-container">
+      <div className={styles["changelog-container"]}>
         <h2>Change Log</h2>
-        <div className="changelog-box">
+        <div className={styles["changelog-box"]}>
           {changelog.length > 0 ? (
             changelog.map((entry) => (
-              <div key={entry.version} className="changelog-entry">
+              <div key={entry.version} className={styles["changelog-entry"]}>
                 <h3>{`${entry.version} - ${entry.date}`}</h3> {/* Combine version and date */}
                 <p
                   dangerouslySetInnerHTML={{
@@ -400,29 +400,29 @@ const WelcomePage = ({ onUserChange }) => {
           }
         >
             <div>
-              <label className="label-spacing">Squadron Name:</label>
+              <label className={styles["label-spacing"]}>Squadron Name:</label>
               <input
                 type="text"
                 value={squadronName}
                 onChange={(e) => setSquadronName(e.target.value)}
                 placeholder="Enter Squadron Name"
-                className="squadron-name-input"
+                className={styles["squadron-name-input"]}
               />
             </div>
             <br></br>
             <div>
-              <label className="label-spacing">Squadron Number:</label>
+              <label className={styles["label-spacing"]}>Squadron Number:</label>
               <input
                 type="number"
                 value={squadronNumber}
                 readOnly
-                className="squadron-input"
+                className={styles["squadron-input"]}
               />
             </div>
             <div>
               <p>Please enter the names of your flights:</p>
               {flightNames.map((flightName, index) => (
-                <div key={index} className="flight-name-row">
+                <div key={index} className={styles["flight-name-row"]}>
                   <input
                     type="text"
                     value={flightName}
@@ -432,7 +432,7 @@ const WelcomePage = ({ onUserChange }) => {
                         ? "Staff Team/Training Flight"
                         : `Flight ${index} Name`
                     }
-                    className="squadron-name-input"
+                    className={styles["squadron-name-input"]}
                     aria-label={index === 0 ? "Staff flight name" : `Flight ${index} name`}
                   />
                   {/* The staff flight and the first competing flight are the
@@ -441,7 +441,7 @@ const WelcomePage = ({ onUserChange }) => {
                   {index > 1 && (
                     <button
                       type="button"
-                      className="remove-flight-button"
+                      className={styles["remove-flight-button"]}
                       onClick={() => removeFlightRow(index)}
                       aria-label={`Remove flight ${index}`}
                     >
@@ -450,7 +450,7 @@ const WelcomePage = ({ onUserChange }) => {
                   )}
                 </div>
               ))}
-              <button type="button" className="add-flight-button" onClick={addFlightRow}>
+              <button type="button" className={styles["add-flight-button"]} onClick={addFlightRow}>
                 + Add another flight
               </button>
             </div>
@@ -466,7 +466,7 @@ const WelcomePage = ({ onUserChange }) => {
               </label>
             </div>
             {showAdminWarning && (
-              <p className="error-message">You must confirm that you will be the account admin.</p>
+              <p className={"error-message"}>You must confirm that you will be the account admin.</p>
             )}
         </Modal>
       )}

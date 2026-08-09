@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import Modal from "../DashboardComponents/Modal";
-import "./DeletePopup.css";
-import "./addEntry.css";
+import styles from "./DeletePopup.module.css";
+import stylesX from "./addEntry.module.css";
 
 const DeletePopup = ({ isOpen, onClose, onConfirm, options, labelKey }) => {
   const [selectedOption, setSelectedOption] = useState("");

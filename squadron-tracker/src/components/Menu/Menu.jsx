@@ -2,7 +2,7 @@
 
 import React from "react";
 import dashboardList from "../Dashboards/DashboardComponents/dashboardList";
-import "./Menu.css";
+import styles from "./Menu.module.css";
 
 const Menu = ({ activeMenu, setActiveMenu, isAdmin, isMenuCollapsed, user }) => {
   const filteredDashboards = dashboardList.filter((dashboard) => {
@@ -18,12 +18,12 @@ const Menu = ({ activeMenu, setActiveMenu, isAdmin, isMenuCollapsed, user }) => 
   });
 
   return (
-    <nav className={`menu ${isMenuCollapsed ? "collapsed" : ""}`}>
+    <nav className={[styles["menu"], isMenuCollapsed ? styles["collapsed"] : ""].filter(Boolean).join(" ")}>
       <ul>
         {filteredDashboards.map((dashboard) => (
           <li
             key={dashboard.key}
-            className={activeMenu === dashboard.key ? "active" : ""}
+            className={activeMenu === dashboard.key ? styles["active"] : ""}
             onClick={() => setActiveMenu(dashboard.key)}
           >
             {dashboard.title}

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { rankMap, classificationMap } from "../../utils/mappings"; // Import the mappings
 import { useSquadron } from "../../context/SquadronContext";
-import "./Table.css";
+import styles from "./Table.module.css";
 
 const Table = ({ columns, data, onRowClick, onRowHover, disableHover = false, width = "90%", hoveredCadet, rowColors = [] }) => {
   const [filters, setFilters] = useState({});
@@ -93,8 +93,8 @@ const Table = ({ columns, data, onRowClick, onRowHover, disableHover = false, wi
   };
 
   return (
-    <div className="table-container">
-      <table className="custom-table" style={{ width }}>
+    <div className={styles["table-container"]}>
+      <table className={styles["custom-table"]} style={{ width }}>
         <thead>
           <tr>
             {columns.map((col, index) => (
@@ -118,9 +118,9 @@ const Table = ({ columns, data, onRowClick, onRowHover, disableHover = false, wi
               onMouseEnter={() => onRowHover && onRowHover(row.Name)} // Trigger hover
               onMouseLeave={() => onRowHover && onRowHover(null)} // Clear hover
               onClick={() => onRowClick && onRowClick(row)} // Trigger onRowClick if provided
-              className={`${
-                hoveredCadet && hoveredCadet.includes(row.Name) ? "highlighted-row" : ""
-              } ${onRowClick ? "clickable-row" : ""}`}
+              className={[
+                hoveredCadet && hoveredCadet.includes(row.Name) ? styles["highlighted-row"] : ""
+              , onRowClick ? styles["clickable-row"] : ""].filter(Boolean).join(" ")}
               /*
                * The caller's colour goes in as a custom property rather than as
                * backgroundColor. An inline background beats any class, which is

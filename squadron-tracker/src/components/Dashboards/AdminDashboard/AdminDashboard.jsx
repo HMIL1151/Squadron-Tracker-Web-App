@@ -1,9 +1,23 @@
 import React, { useEffect, useState } from "react";
 import { fetchAccessRequests, grantAccess, revokeAccess, setRequestProgress } from "../../../firebase/users";
 import { downloadSquadronBackup } from "./squadronBackup";
-import "./AdminDashboard.css";
-import "../DashboardComponents/dashboardStyles.css";
+import styles from "./AdminDashboard.module.css";
+import shared from "../DashboardComponents/dashboardStyles.module.css";
 import { useSquadron } from "../../../context/SquadronContext";
+import dialog from "../DashboardComponents/Modal.module.css";
+
+/*
+ * Request status -> scoped class.
+ *
+ * The status comes from Firestore, so `request-card ${progress}` cannot work
+ * once the name is hashed. Listing the three here also means an unexpected
+ * value renders no modifier rather than a class that matches nothing.
+ */
+const PROGRESS = {
+  pending: styles["pending"],
+  granted: styles["granted"],
+  denied: styles["denied"],
+};
 
 const AdminDashboard = () => {
   const [requests, setRequests] = useState([]);
@@ -132,25 +146,25 @@ const AdminDashboard = () => {
   }
 
   return (
-    <div className="admin-dashboard">
+    <div className={styles["admin-dashboard"]}>
       <h2>Access Requests</h2>
 
       {/* Tabs for filtering requests */}
-      <div className="tabs">
+      <div className={styles["tabs"]}>
         <button
-          className={activeTab === "pending" ? "active-tab" : ""}
+          className={activeTab === "pending" ? styles["active-tab"] : ""}
           onClick={() => setActiveTab("pending")}
         >
           Pending
         </button>
         <button
-          className={activeTab === "granted" ? "active-tab" : ""}
+          className={activeTab === "granted" ? styles["active-tab"] : ""}
           onClick={() => setActiveTab("granted")}
         >
           Granted
         </button>
         <button
-          className={activeTab === "denied" ? "active-tab" : ""}
+          className={activeTab === "denied" ? styles["active-tab"] : ""}
           onClick={() => setActiveTab("denied")}
         >
           Denied
@@ -160,15 +174,17 @@ const AdminDashboard = () => {
       {filteredRequests.length === 0 ? (
         <p>No {capitalize(activeTab)} requests found.</p>
       ) : (
-        <div className="requests-cards">
+        <div className={styles["requests-cards"]}>
           {filteredRequests.map((request) => (
             <div
               key={request.id}
-              className={`request-card ${request.progress.toLowerCase()}`}
+              className={[styles["request-card"], PROGRESS[request.progress?.toLowerCase()]]
+                .filter(Boolean)
+                .join(" ")}
               onClick={() => handleCardClick(request)}
             >
               <h3>{request.displayName}</h3>
-              <div className="details">
+              <div className={styles["details"]}>
                 <p><strong>Email:</strong> {request.email}</p>
                 <p><strong>Status:</strong> {capitalize(request.progress)}</p>
                 <p><strong>Timestamp:</strong> {formatTimestamp(request.timestamp)}</p>
@@ -188,33 +204,33 @@ const AdminDashboard = () => {
         in a single .zip. Squadron records only &mdash; web app accounts and access
         requests are not included.
       </p>
-      <div className="button-container">
-        <button className="button-green" onClick={handleBackup} disabled={isBackingUp}>
+      <div className={shared["button-container"]}>
+        <button className={shared["button-green"]} onClick={handleBackup} disabled={isBackingUp}>
           {isBackingUp ? "Backing up..." : "Backup Squadron Data"}
         </button>
       </div>
-      {backupError && <p className="backup-error">{backupError}</p>}
+      {backupError && <p className={styles["backup-error"]}>{backupError}</p>}
 
       {/* Modal for changing status */}
       {selectedRequest && (
-        <div className="modal">
-          <div className="modal-content">
+        <div className={styles["modal"]}>
+          <div className={styles["modal-content"]}>
             <h3>Change Status for {selectedRequest.displayName}</h3>
-            <div className="modal-actions">
+            <div className={styles["modal-actions"]}>
               <button
-                className={newStatus === "granted" ? "active" : ""}
+                className={newStatus === "granted" ? styles["active"] : ""}
                 onClick={() => handleStatusChange("granted")}
               >
                 Granted
               </button>
               <button
-                className={newStatus === "denied" ? "active" : ""}
+                className={newStatus === "denied" ? styles["active"] : ""}
                 onClick={() => handleStatusChange("denied")}
               >
                 Denied
               </button>
               <button
-                className={newStatus === "pending" ? "active" : ""}
+                className={newStatus === "pending" ? styles["active"] : ""}
                 onClick={() => handleStatusChange("pending")}
               >
                 Pending
@@ -222,7 +238,7 @@ const AdminDashboard = () => {
             </div>
 
             {newStatus === "granted" && (
-              <div className="role-selection">
+              <div className={styles["role-selection"]}>
                 <label>
                   <strong>Role:</strong>
                   <select
@@ -236,11 +252,11 @@ const AdminDashboard = () => {
               </div>
             )}
 
-            <div className="popup-bottom-buttons">
-              <button className="popup-button-red" onClick={closeModal}>
+            <div className={dialog["popup-bottom-buttons"]}>
+              <button className={dialog["popup-button-red"]} onClick={closeModal}>
                 Cancel
               </button>
-              <button className="popup-button-green" onClick={confirmStatusChange} disabled={!newStatus}>
+              <button className={dialog["popup-button-green"]} onClick={confirmStatusChange} disabled={!newStatus}>
                 Confirm
               </button>
             </div>

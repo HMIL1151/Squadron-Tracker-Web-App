@@ -4,7 +4,8 @@ import React from "react";
 import Form from "../DashboardComponents/Form";
 import { useSquadron } from "../../../context/SquadronContext";
 import { getAssignableFlights } from "../../../utils/flights";
-import "../DashboardComponents/dashboardStyles.css";
+import shared from "../DashboardComponents/dashboardStyles.module.css";
+import styles from "./CadetsDashboard.module.css";
 
 const CadetForm = ({
   newCadet,
@@ -72,9 +73,9 @@ const CadetForm = ({
   ];
 
   return (
-    <div className="cadet-form-container">
+    <div className={styles["cadet-form-container"]}>
       <Form title="" fields={fields} handleInputChange={handleInputChange} />
-      <div className="form-buttons-container">
+      <div className={styles["form-buttons-container"]}>
         {/* Buttons will be rendered here by the parent Popup component */}
       </div>
     </div>

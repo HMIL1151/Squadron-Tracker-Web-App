@@ -7,10 +7,11 @@ import Table from "../../Table/Table";
 import PopupManager from "./CadetsDashboardPopupManager";
 import SuccessMessage from "../DashboardComponents/SuccessMessage";
 import ErrorMessage from "../DashboardComponents/ErrorMessage";
-import "./CadetsDashboard.css";
-import "../DashboardComponents/dashboardStyles.css";
+import styles from "./CadetsDashboard.module.css";
+import shared from "../DashboardComponents/dashboardStyles.module.css";
 import { useSquadron } from "../../../context/SquadronContext";
 import { addCadet, removeCadet } from "../../../firebase/cadets";
+import table from "../../Table/Table.module.css";
 
 const CadetsDashboard = ({ user }) => {
   const [isAddPopupOpen, setIsAddPopupOpen] = useState(false);
@@ -236,12 +237,12 @@ const CadetsDashboard = ({ user }) => {
 
 
   return (
-    <div className="table-dashboard-container">
-      <div className="button-container">
-        <button className="button-red" onClick={() => setIsPopupOpen(true)}>
+    <div className={table["table-dashboard-container"]}>
+      <div className={shared["button-container"]}>
+        <button className={shared["button-red"]} onClick={() => setIsPopupOpen(true)}>
           Discharge Cadet
         </button>
-        <button className="button-green" onClick={() => setIsAddPopupOpen(true)}>
+        <button className={shared["button-green"]} onClick={() => setIsAddPopupOpen(true)}>
           Add Cadet
         </button>
       </div>
@@ -253,7 +254,7 @@ const CadetsDashboard = ({ user }) => {
         width="95%"
       />
       {/* Add text below the table to display the number of cadets */}
-      <div className="cadet-count">
+      <div className={"cadet-count"}>
         <p>Total Cadets: {formattedCadets.length}</p>
       </div>
       <PopupManager

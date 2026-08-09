@@ -1,5 +1,5 @@
 import ReactModal from "react-modal";
-import "./Modal.css";
+import styles from "./Modal.module.css";
 
 /**
  * The dialog every popup in the app is built from.
@@ -58,13 +58,28 @@ const Modal = ({
   // Resolved here rather than inline, so the className below contains class
   // names and nothing else -- a ternary on `confirmTone` inside className
   // reads as a class to anything scanning this file, including cssShape.
-  const confirmClass = confirmTone === "danger" ? "popup-button-red" : "popup-button-green";
+  const confirmClass =
+    confirmTone === "danger" ? styles["popup-button-red"] : styles["popup-button-green"];
+
+  /*
+   * Explicit maps, because a scoped class name cannot be built by string
+   * concatenation. `popup-${size}` used to work when the name in the CSS was
+   * the name in the DOM; it is now a hash, so the only way to reach it is to
+   * look it up. Naming the three sizes here also means an unknown one is
+   * visibly undefined rather than silently producing a class that matches
+   * nothing.
+   */
+  const SIZES = {
+    sm: styles["popup-sm"],
+    md: styles["popup-md"],
+    lg: styles["popup-lg"],
+  };
 
   return (
   <ReactModal
     isOpen={isOpen}
     onRequestClose={onClose}
-    overlayClassName="popup-overlay"
+    overlayClassName={styles["popup-overlay"]}
     /*
      * `variant` is how a dialog claims its own content styling.
      *
@@ -74,7 +89,7 @@ const Modal = ({
      * Qualifying those rules with a variant instead keeps them where they
      * belong, without another wrapper element to disturb the layout.
      */
-    className={["popup-content", `popup-${size}`, variant].filter(Boolean).join(" ")}
+    className={[styles["popup-content"], SIZES[size], variant].filter(Boolean).join(" ")}
     contentLabel={label || title}
     shouldCloseOnOverlayClick={closeOnOverlayClick}
     /*
@@ -94,23 +109,23 @@ const Modal = ({
       */}
     <button
       type="button"
-      className="popup-close"
+      className={styles["popup-close"]}
       onClick={onClose}
       aria-label="Close dialog"
     >
       &times;
     </button>
 
-    {title && <h3 className="modal-title">{title}</h3>}
+    {title && <h3 className={styles["modal-title"]}>{title}</h3>}
 
-    <div className={pane ? "modal-body modal-body-split" : "modal-body"}>
-      <div className="modal-main">{children}</div>
-      {pane && <div className="modal-pane">{pane}</div>}
+    <div className={pane ? [styles["modal-body"], styles["modal-body-split"]].join(" ") : styles["modal-body"]}>
+      <div className={styles["modal-main"]}>{children}</div>
+      {pane && <div className={styles["modal-pane"]}>{pane}</div>}
     </div>
 
     {onConfirm && (
-      <div className="popup-bottom-buttons">
-        <button type="button" className="popup-button-red" onClick={onClose}>
+      <div className={styles["popup-bottom-buttons"]}>
+        <button type="button" className={styles["popup-button-red"]} onClick={onClose}>
           {cancelLabel}
         </button>
         {/*
@@ -118,7 +133,7 @@ const Modal = ({
           * either end, so that Cancel and Confirm never move when a dialog
           * gains or loses it.
           */}
-        {extraAction ? <div className="modal-extra-action">{extraAction}</div> : <span />}
+        {extraAction ? <div className={styles["modal-extra-action"]}>{extraAction}</div> : <span />}
         <button
           type="button"
           className={confirmClass}

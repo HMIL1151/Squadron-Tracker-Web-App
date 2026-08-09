@@ -8,13 +8,14 @@ import Table from "../../Table/Table";
 import AddEventPopup from "./AddEventPopup";
 import EventDetailsPopup from "./EventDetailsPopup"; // Import the new popup
 import LoadingPopup from "../DashboardComponents/LoadingPopup"; // Import the new LoadingPopup component
-import "./MassEventLog.css";
-import "../DashboardComponents/dashboardStyles.css";
+import styles from "./MassEventLog.module.css";
+import shared from "../DashboardComponents/dashboardStyles.module.css";
 import SuccessMessage from "../DashboardComponents/SuccessMessage";
 import ErrorMessage from "../DashboardComponents/ErrorMessage";
 import { removeEvent } from "../../../firebase/events";
 import { useSaveEvent } from "../../../databaseTools/databaseTools"; // Import saveEvent function
 import { getEventDescription, getEventPoints } from "../../../utils/points";
+import table from "../../Table/Table.module.css";
 
 const MassEventLog = ({ user }) => {
   const [events, setEvents] = useState([]);
@@ -276,10 +277,10 @@ const MassEventLog = ({ user }) => {
   };
 
   return (
-    <div className="table-dashboard-container">
+    <div className={table["table-dashboard-container"]}>
       {loading && <LoadingPopup />} {/* Show loading popup while loading */}
-      <div className="button-container">
-        <button className="button-green" onClick={() => setIsPopupOpen(true)}>
+      <div className={shared["button-container"]}>
+        <button className={shared["button-green"]} onClick={() => setIsPopupOpen(true)}>
           Add New Record
         </button>
       </div>

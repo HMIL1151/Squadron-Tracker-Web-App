@@ -1,6 +1,6 @@
 import React from "react";
 import Modal from "../DashboardComponents/Modal";
-import "./EventDetailsPopup.css";
+import styles from "./EventDetailsPopup.module.css";
 
 /*
  * The Escape listener and the backdrop click handler that used to live here are

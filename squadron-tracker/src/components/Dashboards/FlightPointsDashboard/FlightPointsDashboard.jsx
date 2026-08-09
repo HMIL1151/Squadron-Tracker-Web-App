@@ -6,7 +6,7 @@ import { useSquadron } from "../../../context/SquadronContext";
 import { getCadetPoints, getFlightPointTotals } from "../../../utils/points";
 import { getAssignableFlights, getCompetingFlights } from "../../../utils/flights";
 import Modal from "../DashboardComponents/Modal";
-import "../DashboardComponents/dashboardStyles.css";
+import shared from "../DashboardComponents/dashboardStyles.module.css";
 
 const FlightPointsDashboard = () => {
     const { data } = useContext(DataContext);
@@ -193,16 +193,15 @@ const FlightPointsDashboard = () => {
                 isOpen={showPopup}
                 onClose={() => setShowPopup(false)}
                 title="Allocate Points to Flight"
-                variant="allocate-points"
                 onConfirm={handleConfirm}
                 confirmLabel={isSubmitting ? "Allocating..." : "Confirm"}
                 confirmDisabled={isSubmitting}
             >
-                <div className="form-group">
-                    <label className="form-label" htmlFor="allocate-flight">Flight:</label>
+                <div className={shared["form-group"]}>
+                    <label className={shared["form-label"]} htmlFor="allocate-flight">Flight:</label>
                     <select
                         id="allocate-flight"
-                        className="form-select"
+                        className={shared["form-select"]}
                         value={selectedFlight}
                         onChange={e => setSelectedFlight(e.target.value)}
                     >
@@ -212,18 +211,18 @@ const FlightPointsDashboard = () => {
                         ))}
                     </select>
                 </div>
-                <div className="form-group">
-                    <label className="form-label" htmlFor="allocate-points">Points to Add:</label>
+                <div className={shared["form-group"]}>
+                    <label className={shared["form-label"]} htmlFor="allocate-points">Points to Add:</label>
                     <input
                         id="allocate-points"
-                        className="form-input"
+                        className={shared["form-input"]}
                         type="number"
                         value={pointsToAdd}
                         onChange={e => setPointsToAdd(e.target.value)}
                         min="1"
                     />
                 </div>
-                {popupError && <div className="popup-error">{popupError}</div>}
+                {popupError && <div className={shared["popup-error"]}>{popupError}</div>}
             </Modal>
             {/* Year Dropdown Section */}
             <div style={{ marginBottom: "20px" }}>

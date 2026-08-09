@@ -6,8 +6,8 @@ import AddCategory from "./AddCategory"; // Import the new AddCategory component
 import AddBadgePoints from "./AddBadgePoints"; // Import the new AddBadgePoints component
 import EditPopup from "./EditPopup";
 import DeletePopup from "./DeletePopup"; // Import the DeletePopup component
-import "./EventCategoriesDashboard.css";
-import "../DashboardComponents/dashboardStyles.css";
+import styles from "./EventCategoriesDashboard.module.css";
+import shared from "../DashboardComponents/dashboardStyles.module.css";
 import { useSquadron } from "../../../context/SquadronContext";
 import { DataContext } from "../../../context/DataContext";
 
@@ -219,29 +219,29 @@ const EventCategoriesDashboard = () => {
   }, [fetchSpecialAwards, fetchBadgePoints, fetchEventCategories, fetchBadges]); // Add the memoized functions as dependencies
 
   return (
-    <div className="event-categories-dashboard">
+    <div className={styles["event-categories-dashboard"]}>
       {/* Horizontal Menu */}
-      <div className="horizontal-menu">
+      <div className={styles["horizontal-menu"]}>
         <button
-          className={activeTab === "eventcategories" ? "active" : ""}
+          className={activeTab === "eventcategories" ? styles["active"] : ""}
           onClick={() => setActiveTab("eventcategories")}
         >
           Record Categories
         </button>
         <button
-          className={activeTab === "badges" ? "active" : ""}
+          className={activeTab === "badges" ? styles["active"] : ""}
           onClick={() => setActiveTab("badges")}
         >
           Badges
         </button>
         <button
-          className={activeTab === "badgepoints" ? "active" : ""}
+          className={activeTab === "badgepoints" ? styles["active"] : ""}
           onClick={() => setActiveTab("badgepoints")}
         >
           Badge Points
         </button>
         <button
-          className={activeTab === "specialawards" ? "active" : ""}
+          className={activeTab === "specialawards" ? styles["active"] : ""}
           onClick={() => setActiveTab("specialawards")}
         >
           Special Awards
@@ -249,18 +249,18 @@ const EventCategoriesDashboard = () => {
       </div>
 
       {/* Content Area */}
-      <div className="content-area">
+      <div className={styles["content-area"]}>
         {activeTab === "eventcategories" && (
           <div style={{ textAlign: "center" }}>
-            <div className="button-container">
+            <div className={shared["button-container"]}>
               <button
-                className="button-green"
+                className={shared["button-green"]}
                 onClick={() => setIsAddCategoryOpen(true)}
               >
                 Add New Category
               </button>
               <button
-                className="button-red"
+                className={shared["button-red"]}
                 onClick={() => handleDeleteClick("eventcategories")}
               >
                 Delete Category
@@ -284,12 +284,12 @@ const EventCategoriesDashboard = () => {
         )}
         {activeTab === "badges" && (
           <div style={{ textAlign: "center" }}>
-            <div className="button-container">
-              <button className="button-green" onClick={() => setIsAddEntryOpen(true)}>
+            <div className={shared["button-container"]}>
+              <button className={shared["button-green"]} onClick={() => setIsAddEntryOpen(true)}>
                 Add New Badge
               </button>
               <button
-                className="button-red"
+                className={shared["button-red"]}
                 onClick={() => handleDeleteClick("badges")}
               >
                 Delete Badge
@@ -316,15 +316,15 @@ const EventCategoriesDashboard = () => {
         )}
         {activeTab === "badgepoints" && (
           <div style={{ textAlign: "center" }}>
-            <div className="button-container">
+            <div className={shared["button-container"]}>
               <button
-                className="button-green"
+                className={shared["button-green"]}
                 onClick={() => setIsAddBadgePointsOpen(true)}
               >
                 Add Badge Type
               </button>
               <button
-                className="button-red"
+                className={shared["button-red"]}
                 onClick={() => handleDeleteClick("badgepoints")}
               >
                 Delete Badge Type
@@ -348,11 +348,11 @@ const EventCategoriesDashboard = () => {
         )}
         {activeTab === "specialawards" && (
           <div style={{ textAlign: "center" }}>
-            <div className="button-container">
-              <button className="button-green" onClick={() => setIsAddEntryOpen(true)}>
+            <div className={shared["button-container"]}>
+              <button className={shared["button-green"]} onClick={() => setIsAddEntryOpen(true)}>
                 Add New Special Award
               </button>
-              <button className="button-red" onClick={() => handleDeleteClick("specialawards")}>
+              <button className={shared["button-red"]} onClick={() => handleDeleteClick("specialawards")}>
                 Delete Special Award
               </button>
             </div>
@@ -494,7 +494,7 @@ const EventCategoriesDashboard = () => {
             ? "Badge Types"
             : "Special Awards"
         }
-        className="add-entry-modal" // Use the same class as AddEntry for consistent styling
+        className={"add-entry-modal"} // Use the same class as AddEntry for consistent styling
       />
     </div>
   );

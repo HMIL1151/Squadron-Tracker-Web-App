@@ -12,8 +12,9 @@ import {
   updateFlight,
   validateFlights,
 } from "../../../utils/flights";
-import "../DashboardComponents/dashboardStyles.css";
-import "./FlightsDashboard.css";
+import shared from "../DashboardComponents/dashboardStyles.module.css";
+import styles from "./FlightsDashboard.module.css";
+import table from "../../Table/Table.module.css";
 
 /**
  * Add and edit a squadron's flights.
@@ -124,9 +125,9 @@ const FlightsDashboard = () => {
   }
 
   return (
-    <div className="table-dashboard-container">
-      <div className="button-container">
-        <button className="button-green" onClick={openAdd}>
+    <div className={table["table-dashboard-container"]}>
+      <div className={shared["button-container"]}>
+        <button className={shared["button-green"]} onClick={openAdd}>
           Add Flight
         </button>
       </div>
@@ -139,7 +140,7 @@ const FlightsDashboard = () => {
         width="70%"
       />
 
-      <p className="flights-hint">
+      <p className={styles["flights-hint"]}>
         Click a flight to edit it. Flights cannot be deleted, because each cadet
         records their flight by position &mdash; removing one would move
         everybody else. Archive a flight instead: it disappears from the Add
@@ -154,20 +155,20 @@ const FlightsDashboard = () => {
           onConfirm={isSaving ? () => {} : handleAddConfirm}
         >
           <h2>Add Flight</h2>
-          <div className="form-group">
-            <label className="form-label" htmlFor="new-flight-name">
+          <div className={shared["form-group"]}>
+            <label className={shared["form-label"]} htmlFor="new-flight-name">
               Flight name:
             </label>
             <input
               id="new-flight-name"
-              className="form-input"
+              className={shared["form-input"]}
               type="text"
               autoFocus
               value={adding.name}
               onChange={(e) => setAdding({ ...adding, name: e.target.value })}
             />
           </div>
-          <div className="form-group">
+          <div className={shared["form-group"]}>
             <label>
               <input
                 type="checkbox"
@@ -177,7 +178,7 @@ const FlightsDashboard = () => {
               Competes for flight points
             </label>
           </div>
-          {popupError && <p className="popup-error">{popupError}</p>}
+          {popupError && <p className={shared["popup-error"]}>{popupError}</p>}
         </Popup>
       )}
 
@@ -189,20 +190,20 @@ const FlightsDashboard = () => {
           onConfirm={isSaving ? () => {} : handleEditConfirm}
         >
           <h2>Edit Flight</h2>
-          <div className="form-group">
-            <label className="form-label" htmlFor="edit-flight-name">
+          <div className={shared["form-group"]}>
+            <label className={shared["form-label"]} htmlFor="edit-flight-name">
               Flight name:
             </label>
             <input
               id="edit-flight-name"
-              className="form-input"
+              className={shared["form-input"]}
               type="text"
               autoFocus
               value={editing.name}
               onChange={(e) => setEditing({ ...editing, name: e.target.value })}
             />
           </div>
-          <div className="form-group">
+          <div className={shared["form-group"]}>
             <label>
               <input
                 type="checkbox"
@@ -212,7 +213,7 @@ const FlightsDashboard = () => {
               Competes for flight points
             </label>
           </div>
-          <div className="form-group">
+          <div className={shared["form-group"]}>
             <label>
               <input
                 type="checkbox"
@@ -222,11 +223,11 @@ const FlightsDashboard = () => {
               Archived (hidden from new cadets and from Flight Points)
             </label>
           </div>
-          <p className="flights-cadet-count">
+          <p className={styles["flights-cadet-count"]}>
             {countCadetsInFlight(cadets, editing.index)} cadet
             {countCadetsInFlight(cadets, editing.index) === 1 ? "" : "s"} currently in this flight.
           </p>
-          {popupError && <p className="popup-error">{popupError}</p>}
+          {popupError && <p className={shared["popup-error"]}>{popupError}</p>}
         </Popup>
       )}
 

@@ -1,8 +1,8 @@
 import React, { useEffect, useState, useContext } from "react";
 import { examList } from "../../../utils/examList"; // Import the examList
 import Modal from "../DashboardComponents/Modal";
-import "./ExamPopup.css";
-import "../DashboardComponents/dashboardStyles.css"; // Optional: Add styles for the popup
+import styles from "./ExamPopup.module.css";
+import shared from "../DashboardComponents/dashboardStyles.module.css"; // Optional: Add styles for the popup
 import { DataContext } from "../../../context/DataContext"; // Import DataContext
 import { useSaveEvent } from "../../../databaseTools/databaseTools";
 
@@ -123,7 +123,7 @@ const ExamPopup = ({ isOpen, onClose, cadetName, classification, user }) => {
       onClose={onClose}
       title={`Add Exam${cadetName ? ` -- ${cadetName}` : ""}`}
       size="lg"
-      variant="exam-popup"
+      variant={styles["exam-popup"]}
       onConfirm={handleAddExam}
       confirmLabel={
         examSelections.filter((s) => s.selectedExam && s.examDate).length > 1
@@ -146,7 +146,7 @@ const ExamPopup = ({ isOpen, onClose, cadetName, classification, user }) => {
           ) : exams.length > 0 ? (
             <div>
               {exams.map((exam, index) => (
-                <span key={index} className="exam-item">{exam}</span>
+                <span key={index} className={styles["exam-item"]}>{exam}</span>
               ))}
             </div>
           ) : (
@@ -155,7 +155,7 @@ const ExamPopup = ({ isOpen, onClose, cadetName, classification, user }) => {
         </>
       }
     >
-        <div className="add-exam-section">
+        <div className={styles["add-exam-section"]}>
           {examSelections.map((selection, index) => {
             // Calculate available exams for this dropdown
             const availableExams = examList.filter(
@@ -163,9 +163,9 @@ const ExamPopup = ({ isOpen, onClose, cadetName, classification, user }) => {
             );
 
             return (
-              <div key={index} className="form-group-inline">
+              <div key={index} className={styles["form-group-inline"]}>
                 <select
-                  className="exam-select"
+                  className={styles["exam-select"]}
                   value={selection.selectedExam}
                   onChange={(e) =>
                     handleSelectionChange(index, "selectedExam", e.target.value)
@@ -180,7 +180,7 @@ const ExamPopup = ({ isOpen, onClose, cadetName, classification, user }) => {
                 </select>
                 <input
                   type="date"
-                  className="exam-date"
+                  className={styles["exam-date"]}
                   value={selection.examDate}
                   onChange={(e) =>
                     handleSelectionChange(index, "examDate", e.target.value)
@@ -189,7 +189,7 @@ const ExamPopup = ({ isOpen, onClose, cadetName, classification, user }) => {
               </div>
             );
           })}
-          {validationError && <p className="popup-error">{validationError}</p>}
+          {validationError && <p className={shared["popup-error"]}>{validationError}</p>}
         </div>
     </Modal>
   );

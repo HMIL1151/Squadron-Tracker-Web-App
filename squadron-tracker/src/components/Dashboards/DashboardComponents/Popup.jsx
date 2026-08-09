@@ -1,6 +1,6 @@
 import React from "react";
 import Modal from "./Modal";
-import "./Popup.css";
+import styles from "./Popup.module.css";
 
 /**
  * A confirm/cancel prompt.

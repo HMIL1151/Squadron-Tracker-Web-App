@@ -1,9 +1,10 @@
 import React, { useState, useContext } from "react";
 import { DOCS, setPrice } from "../../../firebase/flightPoints";
-import "./addCategory.css";
+import styles from "./addCategory.module.css";
 import { useSquadron } from "../../../context/SquadronContext";
 import { DataContext } from "../../../context/DataContext"; // Import DataContext
 import Modal from "../DashboardComponents/Modal";
+import shared from "../DashboardComponents/dashboardStyles.module.css";
 
 const AddCategory = ({ isOpen, onClose, onConfirm }) => {
   const [category, setCategory] = useState("");
@@ -57,7 +58,7 @@ const AddCategory = ({ isOpen, onClose, onConfirm }) => {
       title="Add New Category"
       onConfirm={handleConfirm}
     >
-        <div className="form-group">
+        <div className={styles["form-group"]}>
           <label htmlFor="category">Category Name:</label>
           <input
             type="text"
@@ -67,7 +68,7 @@ const AddCategory = ({ isOpen, onClose, onConfirm }) => {
             placeholder="Enter category name"
           />
         </div>
-        <div className="form-group">
+        <div className={styles["form-group"]}>
           <label htmlFor="points">Points:</label>
           <input
             type="number"
@@ -77,7 +78,7 @@ const AddCategory = ({ isOpen, onClose, onConfirm }) => {
             placeholder="Enter points"
           />
         </div>
-        {error && <p className="popup-error">{error}</p>}
+        {error && <p className={shared["popup-error"]}>{error}</p>}
     </Modal>
   );
 };

@@ -12,16 +12,8 @@
 }
 
 /* Form styling. .edit-cadet-form removed -- no component renders it. */
-.form-group {
-  display: flex;
-  align-items: center; /* Align label and input vertically */
-  gap: 10px; /* Add spacing between label and input */
-}
 
 /* Add spacing between form fields */
-.form-group + .form-group {
-  margin-top: 1px; /* Reduce spacing between groups */
-}
 
 /*
  * Popup.jsx's buttons are styled in dashboardStyles.css, not here.
