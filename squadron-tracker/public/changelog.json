@@ -1,4 +1,4 @@
-[  
+[
   {
     "version": "v0.9.1",
     "date": "09/04/2025",
@@ -83,5 +83,10 @@
     "version": "v0.14.0",
     "date": "08/08/2026",
     "content": "The Admin Area can now download a backup of the squadron as a zip of four CSV files: cadets, the event log, flight points and squadron information. Discharging a cadet permanently deletes their record, so take a backup before doing so.\nWeb app account information (emails, access requests and permissions) is deliberately excluded, so the file can be shared without sharing anyone's account details."
+  },
+  {
+    "version": "v0.15.0",
+    "date": "09/08/2026",
+    "content": "Dark mode. Use the sun/moon button in the header to switch; your choice is saved to your account, so it follows you to any device you sign in on. If you have never chosen, the app follows whatever your device is set to.\nBehind the scenes this is a large tidy-up of how the app is styled. Every colour now has a name in one place, which is what made a second theme possible at all. Along the way a number of long-standing oddities were fixed: popups could appear at different sizes depending on which screens you had visited first, the success message was unstyled unless you had opened the Cadet List, and dropdowns looked different from page to page for the same reason.\nPopups are now proper dialogs -- they trap focus, close on Escape, and announce themselves to screen readers, none of which they did before. Charts follow the theme, and no longer animate, which respects the reduced-motion setting."
   }
 ]

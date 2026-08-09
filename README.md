@@ -124,6 +124,44 @@ Adding a dashboard means adding a component and one entry to
 `src/components/Dashboards/Dashboard Components/dashboardList.js`. Set `adminOnly` or
 `systemAdminOnly` there to control menu visibility.
 
+### Styling and themes
+
+All colour lives in [src/Styles/tokens.css](squadron-tracker/src/Styles/tokens.css), in two tiers.
+Primitives (`--grey-350`, `--green-500`) say what a colour **is**; semantic tokens
+(`--color-border`, `--color-action`) say what it is **for**. Components use the semantic tier only —
+dark mode reassigns that tier and leaves the primitives alone, so anything reaching past it simply
+will not theme. A Stylelint rule enforces this: raw colours are an error outside `tokens.css`.
+
+Some colours are deliberately exempt and must never be themed: the PTS badge levels, the
+certificate medals, and the categorical chart series, where the colour *is* the data key. The
+End of Year Certificates are drawn through jsPDF from JavaScript and never follow the theme either.
+
+**Dark mode** is a block of token values plus a toggle in the header. The choice is stored twice, on
+purpose: `localStorage` is read by an inline script in `index.html` before first paint (a deferred
+script would flash white), and Firestore holds the account-level preference so it follows the user
+across devices, reconciled once auth resolves.
+
+**Charts cannot read CSS.** Chart.js paints to a canvas, so colours are pushed into its global
+defaults from the tokens in
+[chartTheme.js](squadron-tracker/src/components/Dashboards/ClassificationDashboard/chartTheme.js).
+
+Two checks guard all of this:
+
+```bash
+npm run lint:css      # no raw colours outside tokens.css
+npm run test:visual   # 13 golden-master screenshots, Playwright
+```
+
+The screenshots run against the offline dev server on a dedicated port. Note `threshold: 0` in
+[playwright.config.js](squadron-tracker/playwright.config.js) is load-bearing — at Playwright's
+default the harness did not notice an entire page header changing colour.
+
+`src/test/cssShape.test.js` is a ratchet over the stylesheets: no class defined in two files, no
+`@keyframes` referenced across files, no bare element selectors outside the globals. Its lists
+record what is still outstanding, and it fails both when something is added to the pile and when
+something is fixed without being crossed off. Background on why any of this was necessary is in
+[docs/styling-cascade.md](squadron-tracker/docs/styling-cascade.md).
+
 ### Data model
 
 Firestore, multi-tenant by squadron number:
