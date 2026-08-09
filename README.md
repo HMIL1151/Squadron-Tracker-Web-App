@@ -126,6 +126,13 @@ Adding a dashboard means adding a component and one entry to
 
 ### Styling and themes
 
+Component stylesheets are **CSS Modules** (`Foo.module.css`, imported as `styles`). Two files can
+no longer share a class name, which is what a popup's width used to depend on. Only `src/Styles/`
+stays global — tokens and the element-level base. A class name that is computed at runtime needs an
+explicit map, because a scoped name cannot be built by string concatenation; see `SIZES` in
+`Modal.jsx` or `PROGRESS` in `AdminDashboard.jsx`. For the same reason, never find an element by its
+class name — use a ref.
+
 All colour lives in [src/Styles/tokens.css](squadron-tracker/src/Styles/tokens.css), in two tiers.
 Primitives (`--grey-350`, `--green-500`) say what a colour **is**; semantic tokens
 (`--color-border`, `--color-action`) say what it is **for**. Components use the semantic tier only —
@@ -156,7 +163,9 @@ The screenshots run against the offline dev server on a dedicated port. Note `th
 [playwright.config.js](squadron-tracker/playwright.config.js) is load-bearing — at Playwright's
 default the harness did not notice an entire page header changing colour.
 
-`src/test/cssShape.test.js` is a ratchet over the stylesheets: no class defined in two files, no
+`src/test/contrast.test.js` measures every text/background token pair against WCAG AA, in both
+themes, by reading `tokens.css` from disk. `src/test/cssShape.test.js` is a ratchet over the
+stylesheets: no class defined in two files, no
 `@keyframes` referenced across files, no bare element selectors outside the globals. Its lists
 record what is still outstanding, and it fails both when something is added to the pile and when
 something is fixed without being crossed off. Background on why any of this was necessary is in

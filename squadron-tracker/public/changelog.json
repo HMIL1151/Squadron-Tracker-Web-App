@@ -88,5 +88,10 @@
     "version": "v0.15.0",
     "date": "09/08/2026",
     "content": "Dark mode. Use the sun/moon button in the header to switch; your choice is saved to your account, so it follows you to any device you sign in on. If you have never chosen, the app follows whatever your device is set to.\nBehind the scenes this is a large tidy-up of how the app is styled. Every colour now has a name in one place, which is what made a second theme possible at all. Along the way a number of long-standing oddities were fixed: popups could appear at different sizes depending on which screens you had visited first, the success message was unstyled unless you had opened the Cadet List, and dropdowns looked different from page to page for the same reason.\nPopups are now proper dialogs -- they trap focus, close on Escape, and announce themselves to screen readers, none of which they did before. Charts follow the theme, and no longer animate, which respects the reduced-motion setting."
+  },
+  {
+    "version": "v0.15.1",
+    "date": "09/08/2026",
+    "content": "Fixes to dark mode: the access request cards, the PTS Tracker buttons and totals, the certificate panels and the Flight Points table were all hard to read.\nAllocating points to a flight now works. Points were being saved and then discarded again straight away, so nothing ever appeared on the chart. If you tried this and thought you had done something wrong, you had not.\nEvery popup is now the same shape, with Cancel and the confirming button always in the same places, and the menu collapse tab no longer shows through them. Buttons are a little deeper in colour so the white text on them is properly readable."
   }
 ]
