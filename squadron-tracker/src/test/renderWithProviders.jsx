@@ -14,6 +14,7 @@ import { DataProvider } from "../context/DataContext";
 import { SquadronProvider } from "../context/SquadronContext";
 import { SQUADRONS, dataContextFor, dummyData, userFor } from "./dummyData";
 import { __seed, __writes, __store } from "./fakeFirestore";
+import { ThemeProvider } from "../context/ThemeContext";
 
 /**
  * @param ui           element to render
@@ -36,6 +37,7 @@ export const renderWithProviders = (ui, options = {}) => {
     user,
     squadronDocId = null,
     seedFirestore = true,
+    theme = "light",
     ...renderOptions
   } = options;
 
@@ -46,7 +48,16 @@ export const renderWithProviders = (ui, options = {}) => {
 
   // Flights are seeded into context exactly as App.handleUserChange does on
   // login, so dashboards see the squadron's real flight names.
+  /*
+   * ThemeProvider is outermost and takes an explicit theme.
+   *
+   * Explicit because the default reads prefers-color-scheme, which jsdom
+   * reports as light but which a CI runner could in principle differ on -- a
+   * suite whose theme depends on the machine is a suite that fails somewhere
+   * else. Tests that care about dark pass `theme: "dark"`.
+   */
   const Wrapper = ({ children }) => (
+    <ThemeProvider initialTheme={theme} uid={userProp.uid || "test-uid"}>
     <DataProvider initialData={contextData}>
       <SquadronProvider
         initialSquadronNumber={squadron}
@@ -56,6 +67,7 @@ export const renderWithProviders = (ui, options = {}) => {
         {children}
       </SquadronProvider>
     </DataProvider>
+    </ThemeProvider>
   );
 
   const result = render(ui, { wrapper: Wrapper, ...renderOptions });

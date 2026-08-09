@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from "react";
+import React, { useRef, useEffect, useLayoutEffect, useMemo } from "react";
 import { Scatter } from "react-chartjs-2";
 import {
   Chart as ChartJS,
@@ -11,6 +11,8 @@ import {
   CategoryScale,
 } from "chart.js";
 import { classificationMap } from "../../../utils/mappings";
+import { applyChartTheme, crosshairColours } from "./chartTheme";
+import { useTheme } from "../../../context/ThemeContext";
 
 // Crosshair plugin
 const crosshairPlugin = {
@@ -18,12 +20,16 @@ const crosshairPlugin = {
   afterDraw: (chart) => {
     if (chart.tooltip?._active?.length) {
       const ctx = chart.ctx;
+      // Read per draw, not once at module scope: this plugin lives outside
+      // React and has no way of being told the theme changed, so the next
+      // repaint is when it finds out.
+      const crosshair = crosshairColours();
       const activePoint = chart.tooltip._active[0];
       const { x, y } = activePoint.element;
       const { left, bottom } = chart.chartArea;
 
       ctx.save();
-      ctx.strokeStyle = "rgba(0, 0, 0, 0.3)";
+      ctx.strokeStyle = crosshair.line;
       ctx.lineWidth = 1;
       ctx.setLineDash([5, 5]);
 
@@ -43,7 +49,7 @@ const crosshairPlugin = {
       const xValue = Math.round(chart.scales.x.getValueForPixel(x));
       if (xValue % 5 !== 0) {
         ctx.font = "bold 12px Arial";
-        ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
+        ctx.fillStyle = crosshair.label;
         ctx.textAlign = "center";
         ctx.fillText(`${xValue}`, x, bottom + 18); // Adjust position as needed
       }
@@ -101,6 +107,24 @@ ChartJS.register(
 
 const Graph = ({ cadetData, longestServiceInMonths, onPointHover, hoveredCadet, onPointClick }) => {
   const chartRef = useRef(null);
+  const { theme } = useTheme();
+
+  /*
+   * Push the theme into Chart.js's global defaults.
+   *
+   * Global rather than per-chart because the ten or so keys involved -- tick,
+   * grid, axis title, legend and tooltip colours -- are all ABSENT from the
+   * options below and currently fall back to values tuned for a light page.
+   * Setting them here covers this chart and any future one; setting them in
+   * the options object would mean remembering all ten again next time.
+   *
+   * Keyed on theme so a switch re-reads the tokens, and layout-effect timing
+   * so the defaults are in place before the chart draws with the old ones.
+   */
+  useLayoutEffect(() => {
+    applyChartTheme(ChartJS);
+    chartRef.current?.update?.();
+  }, [theme]);
 
   // Trigger hover logic when hoveredCadet changes
   useEffect(() => {
@@ -176,7 +200,16 @@ const Graph = ({ cadetData, longestServiceInMonths, onPointHover, hoveredCadet, 
     }
   };
 
-  const scatterData = {
+  /*
+   * Memoised, and this became necessary rather than merely nice.
+   *
+   * Both objects were rebuilt on every render, so react-chartjs-2 did a full
+   * chart update each time the parent re-rendered. Adding a theme dependency
+   * to a chart that already rebuilds constantly would make that worse, so the
+   * memo lands in the same change that introduces the dependency rather than
+   * being left as a follow-up nobody does.
+   */
+  const scatterData = useMemo(() => ({
     datasets: [
       {
         label: "Cadets",
@@ -207,9 +240,9 @@ const Graph = ({ cadetData, longestServiceInMonths, onPointHover, hoveredCadet, 
         hoverRadius: 0,
       },
     ],
-  };
+  }), [cadetData, longestServiceInMonths]);
 
-  const scatterOptions = {
+  const scatterOptions = useMemo(() => ({
     responsive: true,
     plugins: {
       legend: {
@@ -277,7 +310,7 @@ const Graph = ({ cadetData, longestServiceInMonths, onPointHover, hoveredCadet, 
         hoverBorderWidth: 2,
       },
     },
-  };
+  }), [cadetData, longestServiceInMonths, theme]);
 
   return (
     <div style={{ width: "100%", height: "100%" }}>

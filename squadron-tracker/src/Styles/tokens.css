@@ -159,6 +159,21 @@
   --shadow-soft: 0 2px 5px var(--black-a10);
   --shadow-xl: 0 4px 16px var(--black-a20);
   --color-scrim: var(--black-a50);
+
+  /*
+   * Chart canvas colours. Separate names because canvas code has to read them
+   * through getComputedStyle rather than by cascading, so they must be
+   * resolvable on :root rather than inherited from a parent.
+   */
+  --chart-crosshair: var(--black-a30);
+  --chart-crosshair-label: var(--black-a70);
+  /*
+   * Gridlines are not borders. Chart.js's own default is a very faint
+   * rgba(0,0,0,0.1); using --color-border here made every chart's grid a solid
+   * #ccc, which is a visible change to a chart nobody asked to restyle.
+   */
+  --chart-grid: rgba(0, 0, 0, 0.1);
+  --chart-tick: #666;
 }
 
 /* -------------------------------------------------------------------------
@@ -259,6 +274,11 @@
     --shadow-lg: 0 4px 10px rgba(0, 0, 0, 0.55);
     --shadow-xl: 0 4px 16px rgba(0, 0, 0, 0.6);
     --color-scrim: rgba(0, 0, 0, 0.7);
+
+    --chart-crosshair: rgba(255, 255, 255, 0.4);
+    --chart-crosshair-label: rgba(255, 255, 255, 0.85);
+    --chart-grid: rgba(255, 255, 255, 0.12);
+    --chart-tick: #a7aeb8;
   }
 }
 
@@ -301,6 +321,11 @@
   --shadow-lg: 0 4px 10px rgba(0, 0, 0, 0.55);
   --shadow-xl: 0 4px 16px rgba(0, 0, 0, 0.6);
   --color-scrim: rgba(0, 0, 0, 0.7);
+
+  --chart-crosshair: rgba(255, 255, 255, 0.4);
+  --chart-crosshair-label: rgba(255, 255, 255, 0.85);
+  --chart-grid: rgba(255, 255, 255, 0.12);
+  --chart-tick: #a7aeb8;
 }
 
 /*
