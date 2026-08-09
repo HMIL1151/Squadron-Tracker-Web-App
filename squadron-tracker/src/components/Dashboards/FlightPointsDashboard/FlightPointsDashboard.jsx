@@ -115,7 +115,7 @@ const FlightPointsDashboard = () => {
     }));
 
     // Define the colors array first
-    const colors = ["#6C91C2", "#88C0A9", "#F4A261", "#E76F51", "#A8DADC"]; // Softer, pastel-like colors
+    const colors = ["var(--chart-series-1)", "var(--chart-series-2)", "var(--chart-series-3)", "var(--chart-series-4)", "var(--chart-series-5)"]; // Softer, pastel-like colors
 
     // Determine the cadets with the most points in their flight
     const topCadets = cadetPoints.reduce((acc, { cadetName, pointsEarned, flight }) => {
@@ -127,7 +127,7 @@ const FlightPointsDashboard = () => {
 
     // Create rowColors array for the Table component
     const rowColors = cadetPoints.map(({ cadetName, flight }) => {
-        let color = "white"; // Default color for all rows
+        let color = "var(--color-text-inverse)"; // Default color for all rows
         // Ensure flight is a number for comparison
         const flightNum = Number(flight);
         // Only highlight top cadet in flights 2 and 3
@@ -156,13 +156,13 @@ const FlightPointsDashboard = () => {
                     style={{
                         padding: "10px 20px",
                         borderRadius: "8px",
-                        background: "#6C91C2",
-                        color: "white",
+                        background: "var(--chart-series-1)",
+                        color: "var(--color-text-inverse)",
                         fontWeight: "bold",
                         border: "none",
                         cursor: "pointer",
                         fontSize: "16px",
-                        boxShadow: "0 2px 5px rgba(0,0,0,0.1)",
+                        boxShadow: "var(--shadow-soft)",
                         marginRight: "10px"
                     }}
                     onClick={() => setShowPopup(true)}
@@ -179,18 +179,18 @@ const FlightPointsDashboard = () => {
                     left: 0,
                     width: "100vw",
                     height: "100vh",
-                    background: "rgba(0,0,0,0.3)",
+                    background: "var(--black-a30)",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
                     zIndex: 1000
                 }}>
                     <div style={{
-                        background: "white",
+                        background: "var(--color-text-inverse)",
                         padding: "32px 24px",
                         borderRadius: "12px",
                         minWidth: "320px",
-                        boxShadow: "0 4px 16px rgba(0,0,0,0.2)",
+                        boxShadow: "var(--shadow-xl)",
                         display: "flex",
                         flexDirection: "column",
                         gap: "18px"
@@ -219,18 +219,18 @@ const FlightPointsDashboard = () => {
                                 min="1"
                             />
                         </label>
-                        {popupError && <div style={{ color: "#E76F51", fontWeight: "bold" }}>{popupError}</div>}
+                        {popupError && <div style={{ color: "var(--chart-series-4)", fontWeight: "bold" }}>{popupError}</div>}
                         <div style={{ display: "flex", justifyContent: "flex-end", gap: "12px" }}>
                             <button
                                 onClick={() => setShowPopup(false)}
-                                style={{ padding: "8px 18px", borderRadius: "6px", border: "1px solid #ccc", background: "#f4f4f4", color: "#333", fontWeight: "bold", cursor: "pointer" }}
+                                style={{ padding: "8px 18px", borderRadius: "6px", border: "1px solid var(--color-border)", background: "var(--color-surface-muted)", color: "var(--color-text)", fontWeight: "bold", cursor: "pointer" }}
                                 disabled={isSubmitting}
                             >
                                 Cancel
                             </button>
                             <button
                                 onClick={handleConfirm}
-                                style={{ padding: "8px 18px", borderRadius: "6px", background: "#6C91C2", color: "white", fontWeight: "bold", border: "none", cursor: "pointer" }}
+                                style={{ padding: "8px 18px", borderRadius: "6px", background: "var(--chart-series-1)", color: "var(--color-text-inverse)", fontWeight: "bold", border: "none", cursor: "pointer" }}
                                 disabled={isSubmitting}
                             >
                                 {isSubmitting ? "Allocating..." : "Confirm"}
@@ -251,17 +251,17 @@ const FlightPointsDashboard = () => {
                     style={{
                         padding: "8px 12px",
                         borderRadius: "8px",
-                        border: "1px solid #ccc",
-                        backgroundColor: "#f9f9f9",
+                        border: "1px solid var(--color-border)",
+                        backgroundColor: "var(--color-surface-sunken)",
                         fontSize: "16px",
                         fontWeight: "bold",
                         width: "140px",
                         cursor: "pointer",
                         transition: "0.2s ease-in-out",
-                        boxShadow: "0 2px 5px rgba(0, 0, 0, 0.1)",
+                        boxShadow: "var(--shadow-soft)",
                     }}
-                    onMouseOver={(e) => (e.target.style.backgroundColor = "#e6e6e6")}
-                    onMouseOut={(e) => (e.target.style.backgroundColor = "#f9f9f9")}
+                    onMouseOver={(e) => (e.target.style.backgroundColor = "var(--grey-175)")}
+                    onMouseOut={(e) => (e.target.style.backgroundColor = "var(--color-surface-sunken)")}
                 >
                     {years.map((yearOption) => (
                         <option key={yearOption} value={yearOption}>
@@ -306,7 +306,7 @@ const FlightPointsDashboard = () => {
                                                 margin: "0 10px",
                                                 position: "relative", // Enable positioning for the label
                                                 borderRadius: "5px", // Rounded corners for a modern look
-                                                boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)", // Subtle shadow for depth
+                                                boxShadow: "var(--shadow-md)", // Subtle shadow for depth
                                                 transition: "height 0.5s ease-in-out", // Add smooth transition for height
                                             }}
                                         >
@@ -317,7 +317,7 @@ const FlightPointsDashboard = () => {
                                                     top: "-20px", // Position above the bar
                                                     left: "50%",
                                                     transform: "translateX(-50%)", // Center horizontally
-                                                    color: "#333", // Darker text color for readability
+                                                    color: "var(--color-text)", // Darker text color for readability
                                                     fontSize: "14px",
                                                     fontWeight: "bold",
                                                 }}
@@ -348,10 +348,10 @@ const FlightPointsDashboard = () => {
                                                 backgroundColor: colors[index % colors.length],
                                                 marginRight: "5px",
                                                 borderRadius: "3px", // Rounded corners for the legend
-                                                boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)", // Subtle shadow for depth
+                                                boxShadow: "var(--shadow-sm)", // Subtle shadow for depth
                                             }}
                                         ></div>
-                                        <span style={{ fontSize: "14px", color: "#333" }}>
+                                        <span style={{ fontSize: "14px", color: "var(--color-text)" }}>
                                             {name || flightMap[flight] || `Flight ${flight}`}
                                         </span>
                                     </div>

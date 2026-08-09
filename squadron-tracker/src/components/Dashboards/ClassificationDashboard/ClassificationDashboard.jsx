@@ -225,16 +225,16 @@ const ClassificationDashboard = ({user}) => {
               <div style={{ marginTop: "15px", display: "flex", justifyContent: "center" }}>
                 <div
                   style={{
-                    backgroundColor: "#e9ecef", // Neutral light gray background
+                    backgroundColor: "var(--grey-75)", // Neutral light gray background
                     border: "1px solid #6c757d", // Subtle gray border
                     borderRadius: "8px", // Slightly rounded corners
                     padding: "10px 15px", // Padding inside the box
-                    boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)", // Subtle shadow for depth
+                    boxShadow: "var(--shadow-sm)", // Subtle shadow for depth
                     textAlign: "center", // Center the text
                     width: "fit-content", // Adjust width to fit content
                   }}
                 >
-                  <h3 style={{ color: "#343a40", margin: 0, fontSize: "1.2rem" }}>
+                  <h3 style={{ color: "var(--slate-800)", margin: 0, fontSize: "1.2rem" }}>
                     {onTrackPercentage.toFixed(1)}% On Track
                   </h3>
                 </div>
@@ -250,7 +250,7 @@ const ClassificationDashboard = ({user}) => {
           style={{
             width: "5px",
             cursor: "col-resize",
-            backgroundColor: "#ccc",
+            backgroundColor: "var(--color-border)",
             height: "100%",
           }}
           onMouseDown={handleMouseDown}
@@ -296,8 +296,8 @@ const ClassificationDashboard = ({user}) => {
               row: cadet.cadetName,
               color:
                 cadet.classification >= cadet.targetClassification
-                  ? "#d4edda" // Green for on-track
-                  : "#f8d7da", // Red for off-track
+                  ? "var(--color-success-bg)" // Green for on-track
+                  : "var(--color-error-bg)", // Red for off-track
             }))}
             onRowClick={(rowName) => {
               const cadetName = rowName.Name; // Extract the Name property

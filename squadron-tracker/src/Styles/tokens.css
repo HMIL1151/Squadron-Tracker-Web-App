@@ -40,6 +40,8 @@
   /* Neutrals. Ordered light to dark. */
   --white: #fff; /* x76 including `white` and #ffffff */
   --grey-50: #f9f9f9; /* x10 */
+  --grey-75: #e9ecef;
+  --grey-175: #e6e6e6;
   --grey-100: #f4f4f4; /* x5  menu and toggle background */
   --grey-150: #f0f0f0; /* x8 */
   --grey-200: #e0e0e0; /* x10 hover */
@@ -53,6 +55,7 @@
   --grey-700: #666; /* x4 */
   --grey-750: #555; /* x3 */
   --grey-800: #333; /* x19 including #333333, the default body text */
+  --slate-800: #343a40;
   --slate-900: #282c34; /* x2 the header bar */
   --black: #000;
 
@@ -151,6 +154,10 @@
   --shadow-sm: 0 2px 4px var(--black-a10);
   --shadow-md: 0 4px 6px var(--black-a10);
   --shadow-lg: 0 4px 10px var(--black-a20);
+  /* Two more, kept distinct rather than rounded into the above: the blur
+   * radii differ and this layer is not the place to change appearance. */
+  --shadow-soft: 0 2px 5px var(--black-a10);
+  --shadow-xl: 0 4px 16px var(--black-a20);
   --color-scrim: var(--black-a50);
 }
 

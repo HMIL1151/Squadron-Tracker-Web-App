@@ -99,8 +99,8 @@ describe("progression table", () => {
      * left the hover highlight unable to apply. The colour this dashboard
      * chooses per row is unchanged; only where it is applied moved.
      */
-    expect(amelia.style.getPropertyValue("--row-bg")).toBe("#f8d7da"); // behind
-    expect(isla.style.getPropertyValue("--row-bg")).toBe("#d4edda"); // on track
+    expect(amelia.style.getPropertyValue("--row-bg")).toBe("var(--color-error-bg)"); // behind
+    expect(isla.style.getPropertyValue("--row-bg")).toBe("var(--color-success-bg)"); // on track
   });
 });
 

@@ -126,15 +126,15 @@ const PTSTracker = ({ user }) => {
   const getColorHex = (color) => {
     switch (color) {
       case "Blue":
-        return "#8EA9DB";
+        return "var(--badge-blue)";
       case "Bronze":
-        return "#d2a679";
+        return "var(--badge-bronze)";
       case "Silver":
-        return "#c0c0c0";
+        return "var(--badge-silver)";
       case "Gold":
-        return "#ffd700";
+        return "var(--badge-gold)";
       default:
-        return "#000000"; // Fallback color
+        return "var(--black)"; // Fallback color
     }
   };
 
@@ -242,7 +242,7 @@ const PTSTracker = ({ user }) => {
             style={{
               borderColor: getColorHex(color),
               backgroundColor: selectedButton.includes(color) ? getColorHex(color) : "transparent",
-              color: selectedButton.includes(color) ? "white" : getColorHex(color),
+              color: selectedButton.includes(color) ? "var(--color-text-inverse)" : getColorHex(color),
             }}
           >
             {color}
@@ -365,7 +365,7 @@ const PTSTracker = ({ user }) => {
                               minWidth: "90px",
                               padding: "1px",
                               cursor: badgeDate ? "default" : "pointer", // Pointer only for empty cells
-                              border: "1px solid #ccc", // Default border
+                              border: "1px solid var(--color-border)", // Default border
                             }}
                             className={badgeLevelClass}
                             onMouseEnter={(e) => {
@@ -374,7 +374,7 @@ const PTSTracker = ({ user }) => {
                               }
                             }}
                             onMouseLeave={(e) => {
-                              e.target.style.border = "1px solid #ccc"; // Reset border on hover out
+                              e.target.style.border = "1px solid var(--color-border)"; // Reset border on hover out
                             }}
                             onClick={() => {
                               if (!badgeDate) {
@@ -392,7 +392,7 @@ const PTSTracker = ({ user }) => {
             ))}
             {/* Totals Row */}
             <tr>
-              <td style={{ fontWeight: "bold", background: "#f0f0f0" }}>Total</td>
+              <td style={{ fontWeight: "bold", background: "var(--grey-150)" }}>Total</td>
               {Object.entries(groupedBadgeColumns).flatMap(([type, levels]) =>
                 expandedTabs[type]
                   ? levels.map((level) => {
@@ -406,7 +406,7 @@ const PTSTracker = ({ user }) => {
                       return (
                         <td
                           key={`total-${type}-${level}`}
-                          style={{ fontWeight: "bold", background: "#f0f0f0" }}
+                          style={{ fontWeight: "bold", background: "var(--grey-150)" }}
                         >
                           {count}
                         </td>

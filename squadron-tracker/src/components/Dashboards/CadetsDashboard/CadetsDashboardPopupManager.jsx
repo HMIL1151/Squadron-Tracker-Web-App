@@ -175,7 +175,7 @@ const PopupManager = ({
                 rankMap={rankMap}
               />
               {/* Display addedBy and createdAt at the bottom */}
-              <div style={{ marginTop: "0px", fontSize: "0.9em", color: "#555" }}> {/* Reduced marginTop */}
+              <div style={{ marginTop: "0px", fontSize: "0.9em", color: "var(--grey-750)" }}> {/* Reduced marginTop */}
                 <p><strong>Added By:</strong> {editedCadet.addedBy || "Unknown"}</p>
                 <p>
                   <strong>Created At:</strong>{" "}
