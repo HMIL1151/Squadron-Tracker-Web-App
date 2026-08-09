@@ -79,9 +79,17 @@ const Table = ({ columns, data, onRowClick, onRowHover, disableHover = false, wi
     return 0; // If values are equal, maintain original order
   });
 
+  /*
+   * Undefined rather than "white" when the caller has no opinion.
+   *
+   * A literal white here overrode the table's own themed surface, which showed
+   * up as pale text on a white row the moment a dark theme existed. Returning
+   * nothing lets --row-bg stay unset, so the `transparent` fallback in
+   * Table.css applies and the table's background shows through.
+   */
   const getRowColor = (row) => {
     const colorMapping = rowColors.find((mapping) => mapping.row === row.Name); // Assuming "Name" uniquely identifies a row
-    return colorMapping ? colorMapping.color : "white"; // Default to white if no color is specified
+    return colorMapping ? colorMapping.color : undefined;
   };
 
   return (

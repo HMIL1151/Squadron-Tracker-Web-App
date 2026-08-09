@@ -493,4 +493,46 @@ describeRules("firestore.rules", () => {
   // Squadron directory writes
   // -------------------------------------------------------------------------
 
+
+  // -------------------------------------------------------------------------
+  // Per-user preferences
+  // -------------------------------------------------------------------------
+
+  describe("user preferences", () => {
+    /*
+     * Self-write is a new class of permission in this ruleset -- everywhere
+     * else, writing a document about yourself is exactly what is forbidden,
+     * because MassUserList doubles as the role lookup. These check that
+     * UserPreferences grants it narrowly and to nobody else.
+     */
+    it("a user reads and writes their own preferences", async () => {
+      await assertSucceeds(
+        faketonUser.doc(`UserPreferences/${UIDS.faketonUser}`).set({ theme: "dark" })
+      );
+      await assertSucceeds(faketonUser.doc(`UserPreferences/${UIDS.faketonUser}`).get());
+    });
+
+    it("nobody reads anyone else's, not even an admin or a system admin", async () => {
+      await assertFails(faketonAdmin.doc(`UserPreferences/${UIDS.faketonUser}`).get());
+      await assertFails(sysAdmin.doc(`UserPreferences/${UIDS.faketonUser}`).get());
+      await assertFails(stranger.doc(`UserPreferences/${UIDS.faketonUser}`).get());
+    });
+
+    it("nobody writes anyone else's", async () => {
+      await assertFails(
+        testwoodAdmin.doc(`UserPreferences/${UIDS.faketonUser}`).set({ theme: "dark" })
+      );
+      await assertFails(
+        sysAdmin.doc(`UserPreferences/${UIDS.faketonUser}`).set({ theme: "dark" })
+      );
+    });
+
+    it("signed-out access is refused", async () => {
+      await assertFails(anon.doc(`UserPreferences/${UIDS.faketonUser}`).get());
+      await assertFails(
+        anon.doc(`UserPreferences/${UIDS.faketonUser}`).set({ theme: "dark" })
+      );
+    });
+  });
+
   });

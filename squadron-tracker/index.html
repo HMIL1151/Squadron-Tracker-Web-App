@@ -4,7 +4,42 @@
     <meta charset="utf-8" />
     <link rel="icon" type="image/png" href="/logo.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#000000" />
+    <!--
+      Browser chrome colour, one per scheme. It was a single hardcoded #000000,
+      which was wrong in light mode and would have been wrong in exactly one of
+      the two once a theme existed. ThemeContext updates these when the user
+      chooses explicitly, since a media query cannot see that choice.
+    -->
+    <meta name="theme-color" content="#282c34" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#16181d" media="(prefers-color-scheme: dark)" />
+
+    <!--
+      Theme, applied before first paint.
+
+      Deliberately an inline, non-module, non-deferred script. A module script
+      is deferred by spec and would run AFTER the first paint, which is the
+      white flash this exists to prevent -- and on a dark-mode device that flash
+      is the whole screen.
+
+      localStorage is the source of truth for paint because it is the only one
+      readable synchronously. Firestore holds the account-level preference and
+      reconciles once auth resolves; see ThemeContext.
+    -->
+    <script>
+      (function () {
+        try {
+          var stored = localStorage.getItem("squadron-tracker:theme");
+          if (stored === "light" || stored === "dark") {
+            document.documentElement.setAttribute("data-theme", stored);
+          }
+          // No stored choice: the prefers-color-scheme block in tokens.css
+          // handles it, so nothing to set here.
+        } catch (e) {
+          // Private browsing can make localStorage throw on read. Falling
+          // through to the media query is the correct outcome, not an error.
+        }
+      })();
+    </script>
     <meta
       name="description"
       content="Web site created using create-react-app"

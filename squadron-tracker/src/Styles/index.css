@@ -12,6 +12,40 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+
+  /*
+   * The page background and default text colour.
+   *
+   * Neither was ever declared -- the app relied on the browser's white and
+   * black, which costs nothing until a theme exists and then leaves the whole
+   * content area white behind a dark header.
+   *
+   * --color-surface rather than --color-surface-sunken so that light mode stays
+   * exactly the white it already was; there is no visual hierarchy being
+   * expressed here, only a value being stated instead of inherited. The text
+   * does shift, from the browser's #000 to the app's own #333, which is the
+   * colour every component that bothers to say already uses.
+   *
+   * color-scheme tells the browser to render its own furniture -- scrollbars,
+   * form control defaults, the spellcheck underline -- to match, which CSS
+   * cannot reach.
+   */
+  background-color: var(--color-surface);
+  color: var(--color-text);
+}
+
+:root {
+  color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+  }
 }
 
 code {

@@ -1,0 +1,30 @@
+/*
+ * Sits in the app header, which is dark in both themes, so this deliberately
+ * uses the inverse text colour rather than the body text colour.
+ */
+.theme-toggle {
+  background: transparent;
+  border: 1px solid var(--color-border-strong);
+  color: var(--color-text-inverse);
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1rem;
+  line-height: 1;
+  padding: 5px 9px;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.theme-toggle:hover {
+  background-color: rgba(255, 255, 255, 0.12);
+  border-color: var(--color-text-inverse);
+}
+
+/*
+ * A visible focus ring, because this is reachable by keyboard and the header
+ * has no other affordance. :focus-visible rather than :focus so a mouse click
+ * does not leave a ring behind.
+ */
+.theme-toggle:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}

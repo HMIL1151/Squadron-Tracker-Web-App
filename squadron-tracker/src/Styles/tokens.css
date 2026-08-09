@@ -196,3 +196,125 @@
   --chart-series-4: #e76f51;
   --chart-series-5: #a8dadc;
 }
+
+/* -------------------------------------------------------------------------
+ * Dark.
+ *
+ * Only the semantic tier is reassigned. The primitives above keep their values,
+ * because "what #4caf50 is" does not change with the theme -- only which role
+ * it plays does. A component that reached past the semantic tier to a primitive
+ * would simply not respond to any of this, which is the whole reason for the
+ * split.
+ *
+ * Applied by [data-theme="dark"] on <html>, set by the inline script in
+ * index.html before first paint. The prefers-color-scheme block below is the
+ * default for anyone who has never chosen; an explicit choice writes the
+ * attribute and wins, because an attribute selector beats a media query that
+ * only sets :root.
+ *
+ * These are not the light values inverted. Pure inversion produces grey text on
+ * near-black that vibrates, and accents that were readable on white become
+ * muddy. Surfaces are lifted off true black, text stops short of pure white,
+ * and the accent blue is lightened to hold contrast against a dark background.
+ * ---------------------------------------------------------------------- */
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --color-surface: #21252b;
+    --color-surface-sunken: #1a1d22;
+    --color-surface-muted: #272b33;
+    --color-surface-hover: #323740;
+    --color-app-bar: #16181d;
+
+    --color-text: #e3e6ea;
+    --color-text-muted: #a7aeb8;
+    --color-text-faint: #858d98;
+    --color-text-inverse: #ffffff;
+
+    --color-border: #3a4049;
+    --color-border-strong: #565d68;
+
+    --color-accent: #5aa9ff;
+    --color-accent-hover: #86c2ff;
+    --color-action: #56b65b;
+    --color-action-hover: #6cc971;
+    --color-danger: #e5615d;
+    --color-danger-hover: #f0817e;
+    --color-logout: #e5615d;
+    --color-logout-hover: #f0817e;
+
+    --color-success-bg: #1d3524;
+    --color-success-border: #2c5233;
+    --color-error-bg: #3a2124;
+    --color-error-border: #5c3237;
+    --color-highlight-row: #4a4520;
+
+    --ring-action: rgba(86, 182, 91, 0.55);
+    --ring-accent: rgba(90, 169, 255, 0.55);
+
+    /* Shadows read as depth on light and as dirt on dark, so they harden. */
+    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.45);
+    --shadow-soft: 0 2px 5px rgba(0, 0, 0, 0.45);
+    --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.5);
+    --shadow-lg: 0 4px 10px rgba(0, 0, 0, 0.55);
+    --shadow-xl: 0 4px 16px rgba(0, 0, 0, 0.6);
+    --color-scrim: rgba(0, 0, 0, 0.7);
+  }
+}
+
+:root[data-theme="dark"] {
+  --color-surface: #21252b;
+  --color-surface-sunken: #1a1d22;
+  --color-surface-muted: #272b33;
+  --color-surface-hover: #323740;
+  --color-app-bar: #16181d;
+
+  --color-text: #e3e6ea;
+  --color-text-muted: #a7aeb8;
+  --color-text-faint: #858d98;
+  --color-text-inverse: #ffffff;
+
+  --color-border: #3a4049;
+  --color-border-strong: #565d68;
+
+  --color-accent: #5aa9ff;
+  --color-accent-hover: #86c2ff;
+  --color-action: #56b65b;
+  --color-action-hover: #6cc971;
+  --color-danger: #e5615d;
+  --color-danger-hover: #f0817e;
+  --color-logout: #e5615d;
+  --color-logout-hover: #f0817e;
+
+  --color-success-bg: #1d3524;
+  --color-success-border: #2c5233;
+  --color-error-bg: #3a2124;
+  --color-error-border: #5c3237;
+  --color-highlight-row: #4a4520;
+
+  --ring-action: rgba(86, 182, 91, 0.55);
+  --ring-accent: rgba(90, 169, 255, 0.55);
+
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.45);
+  --shadow-soft: 0 2px 5px rgba(0, 0, 0, 0.45);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 4px 10px rgba(0, 0, 0, 0.55);
+  --shadow-xl: 0 4px 16px rgba(0, 0, 0, 0.6);
+  --color-scrim: rgba(0, 0, 0, 0.7);
+}
+
+/*
+ * Print always uses the light values, whatever the screen is doing. A user who
+ * prints from dark mode wants a readable page, not a black one.
+ */
+@media print {
+  :root[data-theme="dark"] {
+    --color-surface: #fff;
+    --color-surface-sunken: #f9f9f9;
+    --color-surface-muted: #f4f4f4;
+    --color-app-bar: #282c34;
+    --color-text: #333;
+    --color-text-muted: #666;
+    --color-border: #ccc;
+  }
+}

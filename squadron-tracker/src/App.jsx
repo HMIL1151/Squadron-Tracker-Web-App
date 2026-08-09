@@ -3,6 +3,7 @@
 import "./Styles/App.css";
 import { Suspense, useState, useEffect } from "react";
 import Menu from "./components/Menu/Menu"; // Import the Menu component
+import ThemeToggle from "./components/ThemeToggle/ThemeToggle";
 import WelcomePage from "./components/WelcomePage/WelcomePage"; // Import the new WelcomePage component
 import { signOut } from "firebase/auth";
 import { auth } from "./firebase/firebase"; // Adjust the import path to your Firebase configuration
@@ -107,6 +108,7 @@ const App = () => {
         <div className="title">Squadron Tracker, {user.squadronNumber} ({user.squadronName}) Squadron ATC</div>
         <div className="user-info">
           <span>Logged in as {user.displayName}</span>
+          <ThemeToggle />
           <button className="logout-button" onClick={handleLogout}>
             Log Out
           </button>

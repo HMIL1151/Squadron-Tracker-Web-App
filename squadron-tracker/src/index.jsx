@@ -21,6 +21,7 @@ import App from "./App";
 import reportWebVitals from "./misc/reportWebVitals";
 import { SquadronProvider } from "./context/SquadronContext"; // Import the provider
 import { DataProvider } from "./context/DataContext";
+import { ThemeProvider } from "./context/ThemeContext";
 
 // Create the root element
 const rootElement = document.getElementById("root");
@@ -34,11 +35,13 @@ const root = ReactDOM.createRoot(rootElement); // Use createRoot instead of rend
 
 root.render(
   <React.StrictMode>
-    <DataProvider>
-      <SquadronProvider>
-        <App />
-      </SquadronProvider>
-    </DataProvider>
+    <ThemeProvider>
+      <DataProvider>
+        <SquadronProvider>
+          <App />
+        </SquadronProvider>
+      </DataProvider>
+    </ThemeProvider>
   </React.StrictMode>
 );
 

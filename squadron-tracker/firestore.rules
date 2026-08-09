@@ -108,6 +108,22 @@ service cloud.firestore {
             && isAdminOf(string(resource.data.Squadron)));
     }
 
+    // Per-user interface preferences, keyed by uid. Currently just the theme.
+    //
+    // A separate collection rather than a field on MassUserList, deliberately.
+    // That collection is the role lookup: its rules stop a user writing their
+    // own document at all, because checkUserRole treats `systemAdmin: true` on
+    // any row there as system-admin status, so a self-write would be privilege
+    // escalation. Preferences need exactly the opposite -- self-write and
+    // nothing else -- so they get their own space where that is safe.
+    //
+    // Nothing else may read them: a preference is not interesting to another
+    // user, and keeping the rule this narrow means adding a field later cannot
+    // widen anyone's access by accident.
+    match /UserPreferences/{uid} {
+      allow read, write: if signedIn() && request.auth.uid == uid;
+    }
+
     // New squadron applications. Anyone signed in may file their own; only
     // system admins review them.
     match /NewAccountRequests/{doc} {
