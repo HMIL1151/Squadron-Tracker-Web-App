@@ -79,7 +79,7 @@
 
 /* Apply styles to all table header cells */
 .PTSTracker-table th {
-  background-color: black; /* Black background */
+  background-color: var(--black); /* Black background */
   color: var(--color-text-inverse); /* White text */
   font-weight: bold; /* Make the text bold */
   text-align: center; /* Center-align the text */
@@ -89,7 +89,7 @@
 
 /* Ensure the merged cells (badge types) also follow the same style */
 .PTSTracker-table th[colspan] {
-  background-color: black; /* Black background for merged cells */
+  background-color: var(--black); /* Black background for merged cells */
   color: var(--color-text-inverse); /* White text */
 }
 
@@ -100,63 +100,53 @@
   text-align: center; /* Center-align the text */
 }
 
-/* Specific colors for badge levels */
-.PTSTracker-table thead tr:nth-child(2) th:contains("Blue") {
-  background-color: blue;
-}
-
-.PTSTracker-table thead tr:nth-child(2) th:contains("Bronze") {
-  background-color: var(--medal-bronze); /* Bronze color */
-}
-
-.PTSTracker-table thead tr:nth-child(2) th:contains("Silver") {
-  background-color: silver;
-}
-
-.PTSTracker-table thead tr:nth-child(2) th:contains("Gold") {
-  background-color: gold;
-}
+/*
+ * Four rules keyed on th:contains("Blue") and friends were removed here.
+ * :contains() is jQuery syntax, not a CSS selector, so they never matched
+ * anything -- the badge colours below, keyed on the real .badge-level-*
+ * classes, are what has always been doing the work.
+ */
 
 /* Badge level colors with pastel shades */
 .PTSTracker-table th.badge-level-blue {
   background-color: var(--badge-blue); /* Pastel blue */
-  color: black; /* Black text for better contrast */
+  color: var(--black); /* Black text for better contrast */
 }
 
 .PTSTracker-table th.badge-level-bronze {
   background-color: var(--badge-bronze); /* Pastel bronze */
-  color: black; /* Black text for better contrast */
+  color: var(--black); /* Black text for better contrast */
 }
 
 .PTSTracker-table th.badge-level-silver {
   background-color: var(--badge-silver); /* Pastel silver */
-  color: black; /* Black text for better contrast */
+  color: var(--black); /* Black text for better contrast */
 }
 
 .PTSTracker-table th.badge-level-gold {
   background-color: var(--badge-gold); /* Pastel gold */
-  color: black; /* Black text for better contrast */
+  color: var(--black); /* Black text for better contrast */
 }
 
 /* Badge level colors for filled cells */
 .PTSTracker-table td.badge-level-blue {
   background-color: var(--badge-blue); /* Pastel blue */
-  color: black; /* Black text for better contrast */
+  color: var(--black); /* Black text for better contrast */
 }
 
 .PTSTracker-table td.badge-level-bronze {
   background-color: var(--badge-bronze); /* Pastel bronze */
-  color: black; /* Black text for better contrast */
+  color: var(--black); /* Black text for better contrast */
 }
 
 .PTSTracker-table td.badge-level-silver {
   background-color: var(--badge-silver); /* Pastel silver */
-  color: black; /* Black text for better contrast */
+  color: var(--black); /* Black text for better contrast */
 }
 
 .PTSTracker-table td.badge-level-gold {
   background-color: var(--badge-gold); /* Pastel gold */
-  color: black; /* Black text for better contrast */
+  color: var(--black); /* Black text for better contrast */
 }
 
 /* Table cells */

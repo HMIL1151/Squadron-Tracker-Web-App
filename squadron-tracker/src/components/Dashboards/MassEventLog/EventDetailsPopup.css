@@ -28,7 +28,7 @@
 }
 
 .close-button {
-  background: gray;
+  background: var(--color-text-faint);
   color: var(--color-text-inverse);
   border: none;
   padding: 10px 20px;

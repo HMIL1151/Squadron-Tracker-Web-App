@@ -121,7 +121,7 @@
 .popup-title {
   font-size: 1.5rem; /* Adjust the font size */
   font-weight: bold; /* Make the text bold */
-  color: black; /* Set the text color to solid black */
+  color: var(--black); /* Set the text color to solid black */
   margin-bottom: 20px; /* Add spacing below the title */
   text-align: center; /* Center-align the title */
 }

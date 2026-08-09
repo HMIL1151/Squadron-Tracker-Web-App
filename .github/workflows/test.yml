@@ -23,6 +23,20 @@ jobs:
 
       - run: npm ci
 
+      # Report-only for now, deliberately.
+      #
+      # A lint introduced and enforced in the same commit turns someone else's
+      # unrelated PR red for something they did not do. This runs for one cycle
+      # so the output is visible and the config can be corrected in the open,
+      # then `continue-on-error` comes off in its own commit.
+      #
+      # The rule bans raw colours outside Styles/tokens.css. Verified it bites
+      # by planting a hex, a named colour and an rgba() and watching all three
+      # fail.
+      - name: Lint CSS (report only)
+        run: npm run lint:css
+        continue-on-error: true
+
       # The suite never contacts Firebase -- Firestore and Auth are replaced by
       # in-memory fakes -- so no credentials are needed here. .env.test supplies
       # the fake values firebase/firebase.js needs to initialise.

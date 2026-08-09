@@ -1,0 +1,37 @@
+{
+  "rules": {
+    "color-no-hex": [
+      true,
+      {
+        "message": "Use a token from Styles/tokens.css instead of a raw colour. See docs/styling-cascade.md."
+      }
+    ],
+    "function-disallowed-list": [
+      ["rgb", "rgba", "hsl", "hsla"],
+      {
+        "message": "Use a token from Styles/tokens.css instead of a raw colour. See docs/styling-cascade.md."
+      }
+    ],
+    "declaration-property-value-disallowed-list": [
+      {
+        "/^(color|background|background-color|border|border-color|border-top|border-right|border-bottom|border-left|outline|outline-color|fill|stroke|box-shadow|text-shadow)$/": [
+          "/(^|[\\s,(])(white|black|silver|gray|grey|red|green|blue|yellow|orange|gold|purple|pink|brown|navy|teal|lime|aqua|maroon|olive|fuchsia)($|[\\s,;)])/"
+        ]
+      },
+      {
+        "message": "Named CSS colours are still raw colours. Use a token from Styles/tokens.css."
+      }
+    ]
+  },
+  "ignoreFiles": ["build/**", "coverage/**", "node_modules/**"],
+  "overrides": [
+    {
+      "files": ["src/Styles/tokens.css"],
+      "rules": {
+        "color-no-hex": null,
+        "function-disallowed-list": null,
+        "declaration-property-value-disallowed-list": null
+      }
+    }
+  ]
+}

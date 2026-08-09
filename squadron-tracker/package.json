@@ -33,7 +33,8 @@
     "test:watch": "vitest",
     "test:rules": "node scripts/test-rules.js",
     "test:visual": "playwright test",
-    "test:visual:update": "playwright test --update-snapshots"
+    "test:visual:update": "playwright test --update-snapshots",
+    "lint:css": "stylelint \"src/**/*.css\""
   },
   "eslintConfig": {
     "extends": [
@@ -62,6 +63,8 @@
     "firebase-tools": "^15.26.0",
     "jsdom": "^25.0.1",
     "postcss": "^8.5.26",
+    "stylelint": "^17.14.1",
+    "stylelint-config-standard": "^40.0.0",
     "undici": "^6.28.0",
     "vite": "^5.4.21",
     "vitest": "^2.1.9"

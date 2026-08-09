@@ -15,7 +15,7 @@
 }
 
 .theme-toggle:hover {
-  background-color: rgba(255, 255, 255, 0.12);
+  background-color: var(--white-a12);
   border-color: var(--color-text-inverse);
 }
 

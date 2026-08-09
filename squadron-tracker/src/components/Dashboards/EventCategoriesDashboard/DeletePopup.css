@@ -24,7 +24,7 @@
 
 .button-gray {
   background-color: var(--color-border);
-  color: black;
+  color: var(--color-text);
   border: none;
   padding: 10px 20px;
   border-radius: 5px;
