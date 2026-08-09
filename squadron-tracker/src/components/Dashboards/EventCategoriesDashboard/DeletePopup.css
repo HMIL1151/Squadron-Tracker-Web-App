@@ -1,5 +1,5 @@
 .delete-popup {
-  background: white;
+  background: var(--color-surface);
   padding: 20px;
   border-radius: 8px;
   max-width: 400px;
@@ -14,8 +14,8 @@
 }
 
 .button-red {
-  background-color: #ff4d4d;
-  color: white;
+  background-color: var(--color-logout);
+  color: var(--color-text-inverse);
   border: none;
   padding: 10px 20px;
   border-radius: 5px;
@@ -23,7 +23,7 @@
 }
 
 .button-gray {
-  background-color: #ccc;
+  background-color: var(--color-border);
   color: black;
   border: none;
   padding: 10px 20px;

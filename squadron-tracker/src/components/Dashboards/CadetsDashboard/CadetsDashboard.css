@@ -15,7 +15,7 @@
   .dashboard-table-title {
     font-size: 1.5rem;
     font-weight: bold;
-    color: #333;
+    color: var(--color-text);
     margin-right: 40px; /* space between span and buttons */
     text-decoration: none; /* Ensure no underline */
 
@@ -25,15 +25,15 @@
     padding: 10px 20px;
     font-size: 1rem;
     border: none;
-    background-color: #4CAF50; /* Green background */
-    color: white;
+    background-color: var(--color-action); /* Green background */
+    color: var(--color-text-inverse);
     border-radius: 5px;
     cursor: pointer;
     transition: background-color 0.3s ease, transform 0.2s ease;
   }
   
   .table-button:hover {
-    background-color: #45a049; /* Slightly darker green */
+    background-color: var(--color-action-hover); /* Slightly darker green */
     transform: scale(1.05); /* Button grow effect on hover */
   }
 
@@ -41,15 +41,15 @@
     padding: 10px 20px;
     font-size: 1rem;
     border: none;
-    background-color: #D32F2F; /* Green background */
-    color: white;
+    background-color: var(--color-danger); /* Green background */
+    color: var(--color-text-inverse);
     border-radius: 5px;
     cursor: pointer;
     transition: background-color 0.3s ease, transform 0.2s ease;
   }
   
   .table-button-red:hover {
-    background-color: #B71C1C; /* Slightly darker green */
+    background-color: var(--color-danger-hover); /* Slightly darker green */
     transform: scale(1.05); /* Button grow effect on hover */
   }
 

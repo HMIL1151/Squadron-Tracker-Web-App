@@ -29,7 +29,7 @@
 .form-select {
   padding: 1px; /* Reduce padding */
   font-size: 14px;
-  border: 1px solid #ccc;
+  border: 1px solid var(--color-border);
   border-radius: 4px;
   flex: 1; /* Allow inputs to take up remaining space */
   box-sizing: border-box;
@@ -37,9 +37,9 @@
 
 .form-input:focus,
 .form-select:focus {
-  border-color: #007bff;
+  border-color: var(--color-accent);
   outline: none;
-  box-shadow: 0 0 3px rgba(0, 123, 255, 0.5); /* Subtle focus effect */
+  box-shadow: 0 0 3px var(--ring-accent); /* Subtle focus effect */
 }
 
 /* Add spacing between form fields */

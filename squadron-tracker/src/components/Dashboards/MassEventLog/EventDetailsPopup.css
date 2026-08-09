@@ -13,8 +13,8 @@
 }
 
 .remove-button {
-  background: #D32F2F;
-  color: white;
+  background: var(--color-danger);
+  color: var(--color-text-inverse);
   border: none;
   padding: 10px 20px;
   margin-top: 20px;
@@ -23,13 +23,13 @@
 }
 
 .remove-button:hover {
-  background: #B71C1C;
+  background: var(--color-danger-hover);
   transform: scale(1.05);
 }
 
 .close-button {
   background: gray;
-  color: white;
+  color: var(--color-text-inverse);
   border: none;
   padding: 10px 20px;
   margin-top: 10px;

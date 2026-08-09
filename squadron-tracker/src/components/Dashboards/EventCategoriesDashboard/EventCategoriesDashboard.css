@@ -7,17 +7,17 @@
 .horizontal-menu {
   display: flex;
   justify-content: center; /* Center the buttons horizontally */
-  background-color: #ffffff;
+  background-color: var(--color-surface);
   padding: 10px;
 }
 
 .horizontal-menu button {
   padding: 8px 16px; /* Adjusted padding for a sleeker look */
   margin-right: 8px; /* Reduced margin for tighter spacing */
-  border: 1px solid #ccc; /* Added border for a subtle outline */
+  border: 1px solid var(--color-border); /* Added border for a subtle outline */
   border-radius: 4px;
-  background-color: #ffffff; /* Neutral background color */
-  color: #333; /* Darker text for better contrast */
+  background-color: var(--color-surface); /* Neutral background color */
+  color: var(--color-text); /* Darker text for better contrast */
   font-size: 14px; /* Adjusted font size for consistency */
   cursor: pointer;
   transition: all 0.3s ease; /* Smooth transition for hover effects */
@@ -28,12 +28,12 @@
 }
 
 .horizontal-menu button:hover {
-  background-color: #e0e0e0;
+  background-color: var(--color-surface-hover);
 }
 
 .horizontal-menu button.active {
-    background-color: #007bff;
-    color: white;
+    background-color: var(--color-accent);
+    color: var(--color-text-inverse);
   }
 
 .content-area {
@@ -50,8 +50,8 @@
 .add-entry-button {
   display: block; /* Makes the button behave like a block element */
   margin: 20px auto; /* Centers the button horizontally and adds vertical spacing */
-  background-color: #4caf50; /* Green background */
-  color: white; /* White text */
+  background-color: var(--color-action); /* Green background */
+  color: var(--color-text-inverse); /* White text */
   border: none;
   border-radius: 5px;
   padding: 10px 15px;
@@ -62,7 +62,7 @@
 }
 
 .add-entry-button:hover {
-  background-color: #388e3c; /* Darker green on hover */
+  background-color: var(--green-700); /* Darker green on hover */
 }
 
 /* Add hover effect for table rows */
@@ -102,10 +102,10 @@
   left: 50%;
   transform: translate(-50%, -50%);
   z-index: 1000; /* Ensure it appears above other elements */
-  background-color: white;
+  background-color: var(--color-surface);
   padding: 20px;
   border-radius: 8px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 6px var(--black-a10);
   width: 400px; /* Adjust width as needed */
   text-align: center;
   display: flex;

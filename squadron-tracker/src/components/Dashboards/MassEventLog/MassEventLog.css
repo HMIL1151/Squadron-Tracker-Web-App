@@ -12,14 +12,14 @@
     padding: 10px 20px;
     font-size: 1rem;
     border: none;
-    background-color: #4CAF50; /* Green background */
-    color: white;
+    background-color: var(--color-action); /* Green background */
+    color: var(--color-text-inverse);
     border-radius: 5px;
     cursor: pointer;
     transition: background-color 0.3s ease, transform 0.2s ease;
   }
   .add-entry-button:hover {
-    background-color: #45a049; /* Slightly darker green */
+    background-color: var(--color-action-hover); /* Slightly darker green */
     transform: scale(1.05); /* Button grow effect on hover */
   }
 
@@ -52,13 +52,13 @@
 }
 
 .popup-button.cancel {
-  background-color: #f44336; /* Red */
-  color: white;
+  background-color: var(--red-500); /* Red */
+  color: var(--color-text-inverse);
 }
 
 .popup-button:not(.cancel) {
-  background-color: #4caf50; /* Green */
-  color: white;
+  background-color: var(--color-action); /* Green */
+  color: var(--color-text-inverse);
 }
 
 .flex-container {
@@ -82,7 +82,7 @@
 .autocomplete-input {
   width: 100%;
   padding: 10px;
-  border: 1px solid #ccc;
+  border: 1px solid var(--color-border);
   border-radius: 5px;
 }
 
@@ -91,8 +91,8 @@
   top: 100%;
   left: 0;
   right: 0;
-  background: white;
-  border: 1px solid #ccc;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
   border-radius: 5px;
   max-height: 150px;
   overflow-y: auto;
@@ -108,12 +108,12 @@
 }
 
 .autocomplete-suggestions li:hover {
-  background-color: #f0f0f0;
+  background-color: var(--grey-150);
 }
 
 .autocomplete-suggestions li.highlighted {
-  background-color: #007bff; /* Highlight color */
-  color: white;
+  background-color: var(--color-accent); /* Highlight color */
+  color: var(--color-text-inverse);
 }
 
 .selected-names {
@@ -124,7 +124,7 @@
 }
 
 .selected-name {
-  background: #e0e0e0;
+  background: var(--color-surface-hover);
   padding: 5px 10px;
   border-radius: 5px;
   display: flex;
@@ -134,7 +134,7 @@
 .remove-name-button {
   background: none;
   border: none;
-  color: #f44336;
+  color: var(--red-500);
   font-size: 1rem;
   margin-left: 5px;
   cursor: pointer;
@@ -152,9 +152,9 @@
 .grid-button {
   padding: 10px;
   font-size: 16px;
-  border: 1px solid #ccc;
+  border: 1px solid var(--color-border);
   border-radius: 5px;
-  background-color: white;
+  background-color: var(--color-surface);
   cursor: pointer;
   transition: background-color 0.3s ease;
   text-align: center;
@@ -162,17 +162,17 @@
 }
 
 .grid-button:hover {
-  background-color: #f0f0f0;
+  background-color: var(--grey-150);
 }
 
 .grid-button.selected {
-  background-color: #007bff; /* Blue background for selected button */
-  color: white;
-  border-color: #007bff;
+  background-color: var(--color-accent); /* Blue background for selected button */
+  color: var(--color-text-inverse);
+  border-color: var(--color-accent);
 }
 
 .dropdown option[value=""] {
-  color: grey; /* Make the default option text grey */
+  color: var(--color-text-faint); /* Make the default option text grey */
 }
 
 /* Position the buttons at the bottom */
@@ -197,22 +197,22 @@
 }
 
 .cancel-button {
-  background-color: #d32f2f;
-  color: white;
+  background-color: var(--color-danger);
+  color: var(--color-text-inverse);
 }
 
 .confirm-button {
-  background-color: #4caf50;
-  color: white;
+  background-color: var(--color-action);
+  color: var(--color-text-inverse);
 }
 
 .cancel-button:hover {
-  background-color: #b71c1c;
+  background-color: var(--color-danger-hover);
   transform: scale(1.05);
 }
 
 .confirm-button:hover {
-  background-color: #388e3c;
+  background-color: var(--green-700);
   transform: scale(1.05);
 }
 

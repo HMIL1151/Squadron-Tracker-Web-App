@@ -44,7 +44,7 @@ select {
 select:focus {
   outline: none;
   border-color: var(--color-action);
-  box-shadow: 0 0 5px rgba(76, 175, 80, 0.5);
+  box-shadow: 0 0 5px var(--ring-action);
 }
 
 /*

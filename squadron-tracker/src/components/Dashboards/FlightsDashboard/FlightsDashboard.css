@@ -1,7 +1,7 @@
 .flights-hint {
   max-width: 70%;
   margin: 16px auto 0;
-  color: #555;
+  color: var(--grey-750);
   font-size: 0.9em;
   line-height: 1.5;
   text-align: left;
@@ -9,6 +9,6 @@
 
 .flights-cadet-count {
   margin: 4px 0 0;
-  color: #555;
+  color: var(--grey-750);
   font-size: 0.9em;
 }

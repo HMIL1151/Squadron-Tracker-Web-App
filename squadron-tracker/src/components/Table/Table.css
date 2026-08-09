@@ -7,22 +7,22 @@
 .custom-table {
     width: 90%;
     border-collapse: collapse;
-    background: white;
+    background: var(--color-surface);
     border-radius: 10px;
     overflow: hidden;
-    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    box-shadow: 0px 4px 6px var(--black-a10);
 }
 
 .custom-table th {
-    background: #333;
-    color: white;
+    background: var(--grey-800);
+    color: var(--color-text-inverse);
     padding: 10px;
     text-align: center; /* Center-align text in table headers */
 }
 
 .custom-table td {
     padding: 2px;
-    border-bottom: 1px solid #ddd;
+    border-bottom: 1px solid var(--grey-300);
     text-align: center; /* Center-align text in table cells */
 }
 
@@ -36,7 +36,7 @@
     width: 40%;
     padding: 5px;
     margin-top: 5px;
-    border: 1px solid #ccc;
+    border: 1px solid var(--color-border);
     border-radius: 5px;
     text-align: center;
 }
@@ -46,28 +46,28 @@
     padding: 5px 10px;
     border: none;
     border-radius: 5px;
-    background-color: #4CAF50;
-    color: white;
+    background-color: var(--color-action);
+    color: var(--color-text-inverse);
     cursor: pointer;
     transition: background-color 0.3s;
 }
 
 .custom-table button:hover {
     transform: scale(1.05);
-    background-color: #45a049;
+    background-color: var(--color-action-hover);
 }
 
 .table-title {
     font-size: 1.5em; /* Adjust the size as needed */
     margin-bottom: 10px; /* Space between title and table */
     padding-bottom: 5px;
-    border-bottom: 2px solid #333; /* Line under the title */
+    border-bottom: 2px solid var(--grey-800); /* Line under the title */
     display: inline-block; /* Ensure it doesn’t stretch across the entire width */
 }
 
 .blame-info {
-    background-color: rgba(0, 0, 0, 0.7);
-    color: white;
+    background-color: var(--black-a70);
+    color: var(--color-text-inverse);
     padding: 5px 10px;
     border-radius: 5px;
     font-size: 12px;
@@ -94,7 +94,7 @@
 }
 
 .custom-table tbody tr.highlighted-row {
-  background-color: #ffff99;
+  background-color: var(--color-highlight-row);
 }
 
 /*

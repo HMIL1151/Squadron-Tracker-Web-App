@@ -93,6 +93,7 @@
   --black-a30: rgba(0, 0, 0, 0.3); /* x2 */
   --black-a50: rgba(0, 0, 0, 0.5); /* x10 modal scrim */
   --black-a70: rgba(0, 0, 0, 0.7); /* x2 */
+  --white-a80: rgba(255, 255, 255, 0.8);
 
   /* ---------------------------------------------------------------------
    * Tier 2: semantic
@@ -139,6 +140,13 @@
   --color-error-border: var(--red-200);
   --color-highlight-row: var(--amber-300);
 
+  /*
+   * Focus rings. Two, because the app has two accent colours doing the job
+   * depending on the control -- green on form fields, blue on tabs.
+   */
+  --ring-action: rgba(76, 175, 80, 0.5);
+  --ring-accent: rgba(0, 123, 255, 0.5);
+
   /* Depth. */
   --shadow-sm: 0 2px 4px var(--black-a10);
   --shadow-md: 0 4px 6px var(--black-a10);
@@ -160,6 +168,17 @@
  * JavaScript and must keep producing the same document whatever the theme.
  * ---------------------------------------------------------------------- */
 :root {
+  /*
+   * The PTS Tracker's badge levels. Note bronze here is NOT the same bronze as
+   * --medal-bronze below -- the tracker uses a softer #d2a679 against its pale
+   * table, the certificate a deeper #cd7f32. Two names, because they are two
+   * decisions, and collapsing them would change one of them.
+   */
+  --badge-blue: #8ea9db;
+  --badge-bronze: #d2a679;
+  --badge-silver: #c0c0c0;
+  --badge-gold: #ffd700;
+
   --medal-gold: #ffd700;
   --medal-silver: #c0c0c0;
   --medal-bronze: #cd7f32;

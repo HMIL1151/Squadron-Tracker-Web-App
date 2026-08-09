@@ -3,7 +3,7 @@
     padding: 10px 20px;
     font-size: 1rem;
     border: none;
-    color: white;
+    color: var(--color-text-inverse);
     border-radius: 5px;
     cursor: pointer;
     transition: background-color 0.3s ease, transform 0.2s ease;
@@ -11,20 +11,20 @@
 }
 
 .button-green {
-    background-color: #4CAF50;
+    background-color: var(--color-action);
 }
 
 .button-green:hover {
-    background-color: #45a049;
+    background-color: var(--color-action-hover);
     transform: scale(1.05);
 }
 
 .button-red {
-    background-color: #D32F2F;
+    background-color: var(--color-danger);
 }
 
 .button-red:hover {
-    background-color: #B71C1C;
+    background-color: var(--color-danger-hover);
     transform: scale(1.05);
 }
 
@@ -34,27 +34,27 @@
     padding: 10px 20px;
     font-size: 14px;
     border: none;
-    color: white;
+    color: var(--color-text-inverse);
     border-radius: 5px;
     cursor: pointer;
     transition: background-color 0.3s ease, transform 0.2s ease;
 }
 
 .popup-button-green {
-    background-color: #4CAF50;
+    background-color: var(--color-action);
 }
 
 .popup-button-green:hover {
-    background-color: #45a049;
+    background-color: var(--color-action-hover);
     transform: scale(1.05);
 }
 
 .popup-button-red {
-    background-color: #D32F2F;
+    background-color: var(--color-danger);
 }
 
 .popup-button-red:hover {
-    background-color: #B71C1C;
+    background-color: var(--color-danger-hover);
     transform: scale(1.05);
 }
 
@@ -92,11 +92,11 @@
   position: fixed;
   top: 80px;
   right: 20px;
-  background-color: #4CAF50;
-  color: white;
+  background-color: var(--color-action);
+  color: var(--color-text-inverse);
   padding: 10px 20px;
   border-radius: 5px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 6px var(--black-a10);
   font-size: 1rem;
   animation: fadeOut 10s ease forwards;
 }
@@ -116,11 +116,11 @@
   position: fixed;
   top: 80px;
   right: 20px;
-  background-color: #d9534f;
-  color: white;
+  background-color: var(--red-400);
+  color: var(--color-text-inverse);
   padding: 10px 20px;
   border-radius: 5px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 6px var(--black-a10);
   font-size: 1rem;
   animation: fadeOut 10s ease forwards;
   z-index: 1100;
@@ -128,7 +128,7 @@
 
 /* Inline error line inside popups, replacing window.alert() validation. */
 .popup-error {
-  color: #d9534f;
+  color: var(--red-400);
   font-weight: bold;
   margin: 8px 0;
 }

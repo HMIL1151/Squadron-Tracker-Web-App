@@ -16,33 +16,33 @@
 
 .PTSTracker-tab {
   padding: 0.5rem 1rem;
-  border: 1px solid #ccc; /* Blue border */
+  border: 1px solid var(--color-border); /* Blue border */
   margin-right: 0.5rem;
-  background-color: #ffffff; /* Light blue background */
+  background-color: var(--color-surface); /* Light blue background */
   border-radius: 8px; /* Rounded corners */
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Subtle shadow */
-  color: #333; /* Blue text */
+  box-shadow: 0 2px 5px var(--black-a10); /* Subtle shadow */
+  color: var(--color-text); /* Blue text */
   transition: all 0.3s ease; /* Smooth transition for hover effects */
   cursor: pointer;
 }
 
 /* General tab hover effect */
 .PTSTracker-tab:hover {
-  background-color: #e0e0e0; /* Slightly darker blue on hover */
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); /* More pronounced shadow on hover */
-  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2); /* Add shadow on hover */
+  background-color: var(--color-surface-hover); /* Slightly darker blue on hover */
+  box-shadow: 0 4px 10px var(--black-a20); /* More pronounced shadow on hover */
+  box-shadow: 0px 4px 6px var(--black-a20); /* Add shadow on hover */
 }
 
 .PTSTracker-tab.expanded {
-  background-color: #007bff; /* Solid blue background for expanded state */
-  color: white; /* White text for expanded state */
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); /* Match hover shadow */
+  background-color: var(--color-accent); /* Solid blue background for expanded state */
+  color: var(--color-text-inverse); /* White text for expanded state */
+  box-shadow: 0 4px 10px var(--black-a20); /* Match hover shadow */
 }
 
 .PTSTracker-tab.show-all {
-  background-color: #f0f0f0;
-  color: #333;
-  border: 2px solid #ccc;
+  background-color: var(--grey-150);
+  color: var(--color-text);
+  border: 2px solid var(--color-border);
   padding: 10px 20px;
   font-weight: bold;
   font-size: 16px; /* Explicitly set font size to match */
@@ -53,8 +53,8 @@
 
 /* Prevent "Show all Badge Types" button from having shadow on hover */
 .PTSTracker-tab.show-all:hover {
-  background-color: #e0e0e0;
-  border-color: #999;
+  background-color: var(--color-surface-hover);
+  border-color: var(--color-border-strong);
   box-shadow: none; /* No shadow on hover */
 }
 
@@ -71,8 +71,8 @@
   border-collapse: collapse; /* Ensures grid lines are consistent */
   width: 100%; /* Ensures the table takes up the full width of the container */
   border-radius: 12px; /* Rounds the table itself */
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15); /* Adds a shadow around the table */
-  background-color: white; /* Ensures the table background is white */
+  box-shadow: 0 4px 10px var(--black-a15); /* Adds a shadow around the table */
+  background-color: var(--color-surface); /* Ensures the table background is white */
   overflow: hidden; /* Ensures rounded corners are visible */
   margin: 1rem 0; /* Adds space around the table to make the shadow visible */
 }
@@ -80,22 +80,22 @@
 /* Apply styles to all table header cells */
 .PTSTracker-table th {
   background-color: black; /* Black background */
-  color: white; /* White text */
+  color: var(--color-text-inverse); /* White text */
   font-weight: bold; /* Make the text bold */
   text-align: center; /* Center-align the text */
   padding: 10px; /* Add padding for better spacing */
-  border: 1px solid #ccc; /* Keep grid lines consistent */
+  border: 1px solid var(--color-border); /* Keep grid lines consistent */
 }
 
 /* Ensure the merged cells (badge types) also follow the same style */
 .PTSTracker-table th[colspan] {
   background-color: black; /* Black background for merged cells */
-  color: white; /* White text */
+  color: var(--color-text-inverse); /* White text */
 }
 
 /* Badge levels (second row of the header) */
 .PTSTracker-table thead tr:nth-child(2) th {
-  color: rgb(0, 0, 0, 0.7); /* White text for better contrast */
+  color: var(--black-a70); /* White text for better contrast */
   font-weight: bold; /* Make the text bold */
   text-align: center; /* Center-align the text */
 }
@@ -106,7 +106,7 @@
 }
 
 .PTSTracker-table thead tr:nth-child(2) th:contains("Bronze") {
-  background-color: #cd7f32; /* Bronze color */
+  background-color: var(--medal-bronze); /* Bronze color */
 }
 
 .PTSTracker-table thead tr:nth-child(2) th:contains("Silver") {
@@ -119,50 +119,50 @@
 
 /* Badge level colors with pastel shades */
 .PTSTracker-table th.badge-level-blue {
-  background-color: #8EA9DB; /* Pastel blue */
+  background-color: var(--badge-blue); /* Pastel blue */
   color: black; /* Black text for better contrast */
 }
 
 .PTSTracker-table th.badge-level-bronze {
-  background-color: #d2a679; /* Pastel bronze */
+  background-color: var(--badge-bronze); /* Pastel bronze */
   color: black; /* Black text for better contrast */
 }
 
 .PTSTracker-table th.badge-level-silver {
-  background-color: #c0c0c0; /* Pastel silver */
+  background-color: var(--badge-silver); /* Pastel silver */
   color: black; /* Black text for better contrast */
 }
 
 .PTSTracker-table th.badge-level-gold {
-  background-color: #ffd700; /* Pastel gold */
+  background-color: var(--badge-gold); /* Pastel gold */
   color: black; /* Black text for better contrast */
 }
 
 /* Badge level colors for filled cells */
 .PTSTracker-table td.badge-level-blue {
-  background-color: #8EA9DB; /* Pastel blue */
+  background-color: var(--badge-blue); /* Pastel blue */
   color: black; /* Black text for better contrast */
 }
 
 .PTSTracker-table td.badge-level-bronze {
-  background-color: #d2a679; /* Pastel bronze */
+  background-color: var(--badge-bronze); /* Pastel bronze */
   color: black; /* Black text for better contrast */
 }
 
 .PTSTracker-table td.badge-level-silver {
-  background-color: #c0c0c0; /* Pastel silver */
+  background-color: var(--badge-silver); /* Pastel silver */
   color: black; /* Black text for better contrast */
 }
 
 .PTSTracker-table td.badge-level-gold {
-  background-color: #ffd700; /* Pastel gold */
+  background-color: var(--badge-gold); /* Pastel gold */
   color: black; /* Black text for better contrast */
 }
 
 /* Table cells */
 .PTSTracker-table th,
 .PTSTracker-table td {
-  border: 1px solid #ccc; /* Adds grid lines between cells */
+  border: 1px solid var(--color-border); /* Adds grid lines between cells */
   text-align: center;
   width: 95px;
   min-width: 95px;
@@ -266,49 +266,49 @@
 }
 
 .PTSTracker-button:nth-child(1) {
-  border-color: #8EA9DB; /* Blue */
-  color: #8EA9DB;
+  border-color: var(--badge-blue); /* Blue */
+  color: var(--badge-blue);
 }
 
 .PTSTracker-button:nth-child(2) {
-  border-color: #d2a679; /* Bronze */
-  color: #d2a679;
+  border-color: var(--badge-bronze); /* Bronze */
+  color: var(--badge-bronze);
 }
 
 .PTSTracker-button:nth-child(3) {
-  border-color: #c0c0c0; /* Silver */
-  color: #c0c0c0;
+  border-color: var(--badge-silver); /* Silver */
+  color: var(--badge-silver);
 }
 
 .PTSTracker-button:nth-child(4) {
-  border-color: #ffd700; /* Gold */
-  color: #ffd700;
+  border-color: var(--badge-gold); /* Gold */
+  color: var(--badge-gold);
 }
 
 .PTSTracker-button.selected:nth-child(1) {
-  background-color: #8EA9DB; /* Blue */
-  color: white;
+  background-color: var(--badge-blue); /* Blue */
+  color: var(--color-text-inverse);
 }
 
 .PTSTracker-button.selected:nth-child(2) {
-  background-color: #d2a679; /* Bronze */
-  color: white;
+  background-color: var(--badge-bronze); /* Bronze */
+  color: var(--color-text-inverse);
 }
 
 .PTSTracker-button.selected:nth-child(3) {
-  background-color: #c0c0c0; /* Silver */
-  color: white;
+  background-color: var(--badge-silver); /* Silver */
+  color: var(--color-text-inverse);
 }
 
 .PTSTracker-button.selected:nth-child(4) {
-  background-color: #ffd700; /* Gold */
-  color: white;
+  background-color: var(--badge-gold); /* Gold */
+  color: var(--color-text-inverse);
 }
 
 .PTSTracker-button.show-all {
-  background-color: #f0f0f0;
-  color: #333;
-  border: 2px solid #ccc;
+  background-color: var(--grey-150);
+  color: var(--color-text);
+  border: 2px solid var(--color-border);
   padding: 10px 20px;
   font-weight: bold;
   font-size: 16px; /* Explicitly set font size */
@@ -318,16 +318,16 @@
 }
 
 .PTSTracker-button.show-all:hover {
-  background-color: #e0e0e0;
-  border-color: #999;
+  background-color: var(--color-surface-hover);
+  border-color: var(--color-border-strong);
   transform: scale(1); /* No scaling on hover */
 }
 
 .popup-contents {
-  background: white;
+  background: var(--color-surface);
   padding: 20px;
   border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 10px var(--black-a10);
   text-align: center;
   width: 300px; /* Set a fixed width */
   max-width: 90%; /* Ensure it doesn't exceed the viewport width */

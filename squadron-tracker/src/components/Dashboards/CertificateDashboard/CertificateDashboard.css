@@ -2,15 +2,15 @@
 .certificate-dashboard {
   padding: 20px;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  color: #333;
+  color: var(--color-text);
 }
 
 .certificate-dashboard h1 {
   font-size: 2rem;
-  color: #007bff;
+  color: var(--color-accent);
   text-align: center;
   margin-bottom: 20px;
-  border-bottom: 2px solid #007bff;
+  border-bottom: 2px solid var(--color-accent);
   display: inline-block;
   padding-bottom: 5px;
 }
@@ -24,16 +24,16 @@
 .certificate-dashboard select {
   padding: 10px;
   font-size: 1rem;
-  border: 1px solid #ccc;
+  border: 1px solid var(--color-border);
   border-radius: 5px;
   margin-bottom: 20px;
   transition: border-color 0.3s ease;
 }
 
 .certificate-dashboard select:focus {
-  border-color: #007bff;
+  border-color: var(--color-accent);
   outline: none;
-  box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+  box-shadow: 0 0 5px var(--ring-accent);
 }
 
 /* Buttons */
@@ -56,21 +56,21 @@
 }
 
 .certificate-dashboard .generate-button {
-  background-color: #4caf50;
-  color: white;
+  background-color: var(--color-action);
+  color: var(--color-text-inverse);
 }
 
 .certificate-dashboard .generate-button:hover {
-  background-color: #45a049;
+  background-color: var(--color-action-hover);
 }
 
 .certificate-dashboard .download-button {
-  background-color: #007bff;
-  color: white;
+  background-color: var(--color-accent);
+  color: var(--color-text-inverse);
 }
 
 .certificate-dashboard .download-button:hover {
-  background-color: #0056b3;
+  background-color: var(--color-accent-hover);
 }
 
 /* Events Section */
@@ -80,14 +80,14 @@
 
 .certificate-dashboard .events-section h2 {
   font-size: 1.5rem;
-  color: #333;
+  color: var(--color-text);
   margin-bottom: 10px;
 }
 
 .certificate-dashboard .events-section p {
   padding: 10px;
-  background-color: #f8f9fa;
-  border: 1px solid #ddd;
+  background-color: var(--grey-50);
+  border: 1px solid var(--grey-300);
   border-radius: 5px;
   margin-bottom: 10px;
   cursor: pointer;
@@ -95,15 +95,15 @@
 }
 
 .certificate-dashboard .events-section p:hover {
-  background-color: #f1f1f1;
+  background-color: var(--grey-150);
   transform: scale(1.02);
-  color: #d32f2f;
+  color: var(--color-danger);
 }
 
 /* No Events Message */
 .certificate-dashboard .no-events {
   font-size: 1rem;
-  color: #666;
+  color: var(--color-text-muted);
   text-align: center;
   margin-top: 20px;
 }
@@ -123,12 +123,12 @@
 
 .left-panel {
     width: 65%; /* Default width */
-    background-color: #f9f9f9;
+    background-color: var(--color-surface-sunken);
 }
 
 .right-panel {
     width: 35%; /* Default width */
-    background-color: #ffffff;
+    background-color: var(--color-surface);
     height: 100%;
     display: flex;
     flex-direction: column;
@@ -150,7 +150,7 @@
 .pdf-preview h2 {
     text-align: center; /* Center the text */
     font-size: 1.5rem;
-    color: #333;
+    color: var(--color-text);
     margin-bottom: 10px;
 }
 
@@ -169,24 +169,24 @@
     align-items: center; /* Center vertically */
     height: 100%; /* Take up the full height of the container */
     font-size: 1.2rem; /* Adjust font size */
-    color: #666; /* Set a neutral color */
+    color: var(--color-text-muted); /* Set a neutral color */
     text-align: center; /* Center the text */
 }
 
 .divider {
     width: 5px;
-    background-color: #ccc;
+    background-color: var(--color-border);
     cursor: col-resize;
     position: relative;
     z-index: 1;
 }
 
 .divider:hover {    
-    background-color: #aaa;
+    background-color: var(--grey-450);
 }
 
 .divider.dragging {
-    background-color: #888;
+    background-color: var(--grey-600);
 }
 
 /* Loading popup styles */
@@ -195,8 +195,8 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    background-color: rgba(255, 255, 255, 0.8);
-    color: white;
+    background-color: var(--white-a80);
+    color: var(--color-text-inverse);
     padding: 20px;
     border-radius: 10px;
     width: 300px;
@@ -211,7 +211,7 @@
 .progress-bar-container {
     width: 100%;
     height: 10px;
-    background-color: #e0e0e0;
+    background-color: var(--color-surface-hover);
     border-radius: 5px;
     overflow: hidden;
     margin-top: 10px; /* Add spacing between text and progress bar */
@@ -219,6 +219,6 @@
 
 .progress-bar {
     height: 100%;
-    background-color: #4caf50;
+    background-color: var(--color-action);
     transition: width 0.3s ease;
 }

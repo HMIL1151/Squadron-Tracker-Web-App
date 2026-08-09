@@ -11,13 +11,13 @@
 }
 
 .request-card {
-  background-color: #f9f9f9;
-  border: 1px solid #ddd;
+  background-color: var(--color-surface-sunken);
+  border: 1px solid var(--grey-300);
   border-radius: 10px;
   padding: 20px 20px 20px 20px; /* Ensure consistent padding on all sides */
   width: 80%;
   max-width: 600px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 6px var(--black-a10);
   text-align: center;
   margin: 20px 0; /* Add gap above and below the card */
 }
@@ -44,8 +44,8 @@
 }
 
 .approve-button {
-  background-color: #4caf50;
-  color: white;
+  background-color: var(--color-action);
+  color: var(--color-text-inverse);
   border: none;
   border-radius: 5px;
   padding: 10px 20px;
@@ -55,12 +55,12 @@
 }
 
 .approve-button:hover {
-  background-color: #45a049;
+  background-color: var(--color-action-hover);
 }
 
 .deny-button {
-  background-color: #f44336;
-  color: white;
+  background-color: var(--red-500);
+  color: var(--color-text-inverse);
   border: none;
   border-radius: 5px;
   padding: 10px 20px;
@@ -69,5 +69,5 @@
 }
 
 .deny-button:hover {
-  background-color: #e53935;
+  background-color: var(--red-500);
 }

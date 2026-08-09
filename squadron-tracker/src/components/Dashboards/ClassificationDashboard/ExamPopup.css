@@ -53,8 +53,8 @@
 }
 
 .remove-button {
-  background: #D32F2F;
-  color: white;
+  background: var(--color-danger);
+  color: var(--color-text-inverse);
   border: none;
   padding: 10px 20px;
   margin-top: 20px;
@@ -65,15 +65,15 @@
 .add-exam-section {
   margin-top: 15px; /* Add some spacing above the section */
   padding: 10px; /* Add padding for better spacing inside the section */
-  border: 1px solid #ccc; /* Add a light border for separation */
+  border: 1px solid var(--color-border); /* Add a light border for separation */
   border-radius: 8px; /* Round the corners */
-  background-color: #f9f9f9; /* Light background for contrast */
+  background-color: var(--color-surface-sunken); /* Light background for contrast */
 }
 
 .add-exam-section h3 {
   margin: 5px 0 10px; /* Tighten spacing around the heading */
   font-size: 16px; /* Adjust font size for better readability */
-  color: #333; /* Darker text color for emphasis */
+  color: var(--color-text); /* Darker text color for emphasis */
 }
 
 .add-exam-section .form-group-inline {
@@ -82,8 +82,8 @@
 
 .add-exam-section .add-exam-button {
   margin-top: 10px; /* Add spacing above the button */
-  background-color: #007bff; /* Primary blue color for the button */
-  color: white; /* White text for contrast */
+  background-color: var(--color-accent); /* Primary blue color for the button */
+  color: var(--color-text-inverse); /* White text for contrast */
   border: none; /* Remove border */
   border-radius: 4px; /* Slightly round the corners */
   padding: 6px 12px; /* Adjust padding for a compact button */
@@ -92,6 +92,6 @@
 }
 
 .add-exam-section .add-exam-button:hover {
-  background-color: #0056b3; /* Darker blue on hover */
+  background-color: var(--color-accent-hover); /* Darker blue on hover */
 }
 
