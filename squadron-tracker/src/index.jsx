@@ -1,5 +1,20 @@
 import React from "react";
 import ReactDOM from "react-dom/client"; // Import the new createRoot API
+/*
+ * Tokens first, and as their own module rather than an @import inside
+ * index.css.
+ *
+ * Both matter. Importing here keeps the colour vocabulary in the eager entry
+ * chunk, so it is defined on first paint whichever lazily-loaded dashboard the
+ * user lands on -- an undefined var() resolves to nothing, not to a default.
+ *
+ * The @import version also went stale: editing tokens.css left the dev server
+ * serving the previous values inside index.css, because the import was not
+ * registered as an invalidation dependency, and Vite's on-disk cache carried
+ * that across restarts. A separate module gets its own node in the graph and
+ * invalidates properly.
+ */
+import "./Styles/tokens.css";
 import "./Styles/index.css";
 import App from "./App";
 import reportWebVitals from "./misc/reportWebVitals";

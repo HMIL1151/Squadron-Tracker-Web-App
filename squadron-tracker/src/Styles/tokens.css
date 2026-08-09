@@ -1,0 +1,172 @@
+/*
+ * The colour vocabulary.
+ *
+ * Every colour in the app should eventually be a var() pointing here, for two
+ * reasons. The near one is dark mode: a theme becomes one more block of values
+ * rather than a hunt through 23 stylesheets. The far one is that a colour with
+ * a name is a decision someone made, and a colour written as #f0f0f0 in the
+ * eighth stylesheet to need a grey is not.
+ *
+ * Two tiers, and the distinction matters:
+ *
+ *   Tier 1, primitives -- what the colour IS. Do not reference these from a
+ *   component. They exist so tier 2 has something to point at.
+ *
+ *   Tier 2, semantic -- what the colour is FOR. Components use only these.
+ *   Dark mode reassigns tier 2 and leaves tier 1 alone, which is exactly why
+ *   a component that reaches past tier 2 will not theme.
+ *
+ * This file MUST be imported from Styles/index.css, which src/index.jsx loads
+ * eagerly. Every dashboard is React.lazy-loaded and gets its own CSS chunk, so
+ * a token defined in any of those would be undefined on first paint for anyone
+ * arriving at a different dashboard -- and an undefined var() falls back to
+ * nothing, not to a sensible default.
+ *
+ * Values here are copied EXACTLY from what the app already renders. Phase 1
+ * introduces the vocabulary and changes no pixels; the Playwright baselines in
+ * e2e/ are the proof. Consolidating the near-duplicates below (fourteen greys
+ * doing about five jobs) is deliberately later work, so that "no visual change"
+ * stays a claim that can be checked rather than argued.
+ */
+
+:root {
+  /* ---------------------------------------------------------------------
+   * Tier 1: primitives
+   *
+   * Counts are occurrences across the stylesheets at the time of writing, and
+   * are here to show where the sprawl is rather than as anything to maintain.
+   * ------------------------------------------------------------------- */
+
+  /* Neutrals. Ordered light to dark. */
+  --white: #fff; /* x76 including `white` and #ffffff */
+  --grey-50: #f9f9f9; /* x10 */
+  --grey-100: #f4f4f4; /* x5  menu and toggle background */
+  --grey-150: #f0f0f0; /* x8 */
+  --grey-200: #e0e0e0; /* x10 hover */
+  --grey-300: #ddd; /* x6 */
+  --grey-350: #ccc; /* x34 the default border */
+  --grey-400: #bbb;
+  --grey-450: #aaa;
+  --grey-500: #999; /* x2 */
+  --grey-550: #808080; /* the CSS keyword `grey`, used for the version number */
+  --grey-600: #888;
+  --grey-700: #666; /* x4 */
+  --grey-750: #555; /* x3 */
+  --grey-800: #333; /* x19 including #333333, the default body text */
+  --slate-900: #282c34; /* x2 the header bar */
+  --black: #000;
+
+  /* Blues. */
+  --blue-200: #8ea9db; /* x6 */
+  --blue-500: #007bff; /* x17 the accent */
+  --blue-600: #0275d8;
+  --blue-700: #0056b3; /* x3 accent hover */
+  --google-blue: #4285f4;
+  --google-blue-hover: #357ae8;
+
+  /* Greens. */
+  --green-100: #d4edda; /* x3 success background */
+  --green-200: #c3e6cb;
+  --green-500: #4caf50; /* x22 the primary action */
+  --green-600: #45a049; /* x8  primary action hover */
+  --green-700: #388e3c; /* x4 */
+
+  /* Reds. */
+  --red-100: #f8d7da; /* x3 error background */
+  --red-200: #f5c6cb;
+  --red-300: #ff4d4d; /* x2 log out */
+  --red-400: #d9534f; /* x4 */
+  --red-500: #f44336; /* x6 */
+  --red-600: #d32f2f; /* x9 */
+  --red-700: #ff1a1a; /* log out hover */
+  --red-800: #b71c1c; /* x6 */
+
+  /* Ambers. */
+  --amber-100: #fff3cd;
+  --amber-200: #ffeeba;
+  --amber-300: #ffff99; /* the highlighted table row */
+
+  /* Translucent blacks, used for shadows and scrims. */
+  --black-a10: rgba(0, 0, 0, 0.1); /* x25 */
+  --black-a15: rgba(0, 0, 0, 0.15);
+  --black-a20: rgba(0, 0, 0, 0.2); /* x4 */
+  --black-a30: rgba(0, 0, 0, 0.3); /* x2 */
+  --black-a50: rgba(0, 0, 0, 0.5); /* x10 modal scrim */
+  --black-a70: rgba(0, 0, 0, 0.7); /* x2 */
+
+  /* ---------------------------------------------------------------------
+   * Tier 2: semantic
+   * ------------------------------------------------------------------- */
+
+  /* Surfaces. */
+  --color-surface: var(--white);
+  --color-surface-sunken: var(--grey-50);
+  --color-surface-muted: var(--grey-100);
+  --color-surface-hover: var(--grey-200);
+  --color-app-bar: var(--slate-900);
+
+  /* Text. */
+  --color-text: var(--grey-800);
+  --color-text-muted: var(--grey-700);
+  --color-text-faint: var(--grey-550);
+  --color-text-inverse: var(--white);
+
+  /* Lines. */
+  --color-border: var(--grey-350);
+  --color-border-strong: var(--grey-500);
+
+  /*
+   * Actions.
+   *
+   * `accent` is the blue used for selection and links; `action` is the green
+   * used for the confirming button in almost every popup. They are separate
+   * roles that happen to both be "the button colour" depending on the screen,
+   * and collapsing them would be a visual change rather than a rename.
+   */
+  --color-accent: var(--blue-500);
+  --color-accent-hover: var(--blue-700);
+  --color-action: var(--green-500);
+  --color-action-hover: var(--green-600);
+  --color-danger: var(--red-600);
+  --color-danger-hover: var(--red-800);
+  --color-logout: var(--red-300);
+  --color-logout-hover: var(--red-700);
+
+  /* Feedback surfaces. */
+  --color-success-bg: var(--green-100);
+  --color-success-border: var(--green-200);
+  --color-error-bg: var(--red-100);
+  --color-error-border: var(--red-200);
+  --color-highlight-row: var(--amber-300);
+
+  /* Depth. */
+  --shadow-sm: 0 2px 4px var(--black-a10);
+  --shadow-md: 0 4px 6px var(--black-a10);
+  --shadow-lg: 0 4px 10px var(--black-a20);
+  --color-scrim: var(--black-a50);
+}
+
+/* -------------------------------------------------------------------------
+ * Colours that must NOT be themed, and must not be linted into tier 2.
+ *
+ * These encode meaning rather than style. A gold medal is gold in both light
+ * and dark mode; recolouring it to suit a background destroys the thing it is
+ * communicating. Same for the categorical chart series, where the colour IS
+ * the data key -- if two series drift towards each other to fit a palette, the
+ * chart stops being readable.
+ *
+ * This is the exemption list for the Stylelint rule added later, alongside
+ * CertificateDashboard/CertificatePDF.js, which draws through jsPDF from
+ * JavaScript and must keep producing the same document whatever the theme.
+ * ---------------------------------------------------------------------- */
+:root {
+  --medal-gold: #ffd700;
+  --medal-silver: #c0c0c0;
+  --medal-bronze: #cd7f32;
+
+  --chart-series-1: #6c91c2;
+  --chart-series-2: #88c0a9;
+  --chart-series-3: #f4a261;
+  --chart-series-4: #e76f51;
+  --chart-series-5: #a8dadc;
+}

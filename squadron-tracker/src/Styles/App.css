@@ -15,6 +15,14 @@
   grid-template-columns: 0px auto; /* Collapse menu */
 }
 
+/*
+ * DEAD -- create-react-app leftovers. Nothing renders .App-logo, .App-header,
+ * .App-link or .auth-modal; verified by searching every JSX file for each.
+ * Deliberately not tokenised, because giving a name to a colour no user ever
+ * sees would put junk in the vocabulary. Removed in the hygiene pass, together
+ * with the no-preference media query below, which guards only the dead logo
+ * spin and predates the real reduced-motion rule now in index.css.
+ */
 .App-logo {
   height: 40vmin;
   pointer-events: none;
@@ -78,9 +86,9 @@
   justify-content: space-between;
   align-items: center;
   padding: 10px 20px;
-  background-color: #282c34;
-  color: white;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  background-color: var(--color-app-bar);
+  color: var(--color-text-inverse);
+  box-shadow: var(--shadow-sm);
   z-index: 1000;
 }
 
@@ -96,8 +104,8 @@
 }
 
 .logout-button {
-  background-color: #ff4d4d;
-  color: white;
+  background-color: var(--color-logout);
+  color: var(--color-text-inverse);
   border: none;
   padding: 5px 10px;
   border-radius: 4px;
@@ -106,7 +114,7 @@
 }
 
 .logout-button:hover {
-  background-color: #ff1a1a;
+  background-color: var(--color-logout-hover);
 }
 
 /* Content Section */
@@ -124,7 +132,7 @@
   bottom: 10px;
   right: 20px;
   font-size: 14px;
-  color: grey;
+  color: var(--color-text-faint);
   opacity: 0.8;
 }
 
@@ -134,9 +142,9 @@
   left: 200px; /* Default position when the menu is expanded */
   transform: translateY(-50%); /* Adjust for the button's height */
   z-index: 998;
-  background-color: #f4f4f4; /* Grey background */
-  color: #333333; /* Darker text for contrast */
-  border: solid 1px #ccc; /* Light grey border */
+  background-color: var(--color-surface-muted);
+  color: var(--color-text);
+  border: solid 1px var(--color-border);
   border-left: none;
   padding: 50px 10px; /* Wider and taller button */
   border-radius: 0 6px 6px 0; /* Only round the top-right and bottom-right corners */
@@ -150,12 +158,12 @@
 }
 
 .menu-toggle-button:hover {
-  background-color: #e0e0e0; /* Slightly darker grey on hover */
+  background-color: var(--color-surface-hover);
 }
 
 .Menu {
   grid-area: menu;
-  background-color: #f4f4f4;
+  background-color: var(--color-surface-muted);
   overflow-y: auto;
   position: absolute; /* Change to absolute positioning */
   left: 0; /* Start at the left edge */
