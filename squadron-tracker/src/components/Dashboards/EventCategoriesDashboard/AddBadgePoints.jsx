@@ -3,6 +3,7 @@ import { DOCS, setPrice } from "../../../firebase/flightPoints";
 import "./addBadgePoints.css";
 import { useSquadron } from "../../../context/SquadronContext";
 import { DataContext } from "../../../context/DataContext"; // Import DataContext
+import Modal from "../DashboardComponents/Modal";
 
 const AddBadgePoints = ({ isOpen, onClose, onConfirm }) => {
   const [badgeType, setBadgeType] = useState("");
@@ -48,9 +49,12 @@ const AddBadgePoints = ({ isOpen, onClose, onConfirm }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="add-badge-points-overlay" onClick={onClose}>
-      <div className="add-badge-points-popup" onClick={(e) => e.stopPropagation()}>
-        <h2>Add Badge Points</h2>
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title="Add Badge Points"
+      onConfirm={handleConfirm}
+    >
         <div className="form-group">
           <label htmlFor="badgeType">Badge Type:</label>
           <input
@@ -72,16 +76,7 @@ const AddBadgePoints = ({ isOpen, onClose, onConfirm }) => {
           />
         </div>
         {error && <p className="popup-error">{error}</p>}
-        <div className="popup-bottom-buttons">
-          <button className="popup-button-red" onClick={onClose}>
-            Cancel
-          </button>
-          <button className="popup-button-green" onClick={handleConfirm}>
-            Confirm
-          </button>
-        </div>
-      </div>
-    </div>
+    </Modal>
   );
 };
 

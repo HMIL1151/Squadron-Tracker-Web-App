@@ -3,6 +3,7 @@ import { addToList } from "../../../firebase/flightPoints";
 import "./addEntry.css";
 import { useSquadron } from "../../../context/SquadronContext";
 import { DataContext } from "../../../context/DataContext"; // Import DataContext
+import Modal from "../DashboardComponents/Modal";
 
 const AddEntry = ({ isOpen, onClose, onConfirm, collection, document, arrayName }) => {
   const [entry, setEntry] = useState("");
@@ -47,9 +48,12 @@ const AddEntry = ({ isOpen, onClose, onConfirm, collection, document, arrayName 
   if (!isOpen) return null;
 
   return (
-    <div className="add-entry-overlay" onClick={onClose}>
-      <div className="add-entry-popup" onClick={(e) => e.stopPropagation()}>
-        <h2>Add Entry</h2>
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title="Add Entry"
+      onConfirm={handleConfirm}
+    >
         <div className="form-group">
           <label htmlFor="entry">New Entry:</label>
           <input
@@ -61,16 +65,7 @@ const AddEntry = ({ isOpen, onClose, onConfirm, collection, document, arrayName 
           />
         </div>
         {error && <p className="popup-error">{error}</p>}
-        <div className="popup-bottom-buttons">
-          <button className="popup-button-red" onClick={onClose}>
-            Cancel
-          </button>
-          <button className="popup-button-green" onClick={handleConfirm}>
-            Confirm
-          </button>
-        </div>
-      </div>
-    </div>
+    </Modal>
   );
 };
 

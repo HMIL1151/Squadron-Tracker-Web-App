@@ -85,6 +85,22 @@ const Modal = ({
      */
     ariaHideApp
   >
+    {/*
+      * The dismiss affordance is rendered here rather than by each dialog, for
+      * the same reason the footer is: three of them had one, four did not, and
+      * the ones that did put it in different corners with different markup --
+      * a span in one, a button with an inline SVG in another. Only the button
+      * was reachable by keyboard.
+      */}
+    <button
+      type="button"
+      className="popup-close"
+      onClick={onClose}
+      aria-label="Close dialog"
+    >
+      &times;
+    </button>
+
     {title && <h3 className="modal-title">{title}</h3>}
 
     <div className={pane ? "modal-body modal-body-split" : "modal-body"}>

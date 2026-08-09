@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import "./DeletePopup.css"; // Optional: Add styles for the popup
+import Modal from "../DashboardComponents/Modal";
+import "./DeletePopup.css";
 import "./addEntry.css";
 
 const DeletePopup = ({ isOpen, onClose, onConfirm, options, labelKey }) => {
@@ -17,9 +18,15 @@ const DeletePopup = ({ isOpen, onClose, onConfirm, options, labelKey }) => {
   }
 
   return (
-    <div className="add-entry-overlay">
-      <div className="add-entry-popup">
-        <h2>Select an Item to Delete</h2>
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title="Select an Item to Delete"
+      onConfirm={handleConfirm}
+      confirmLabel="Delete"
+      confirmTone="danger"
+      confirmDisabled={!selectedOption}
+    >
         <select
           value={selectedOption}
           onChange={(e) => setSelectedOption(e.target.value)}
@@ -33,18 +40,7 @@ const DeletePopup = ({ isOpen, onClose, onConfirm, options, labelKey }) => {
             </option>
           ))}
         </select>
-        <div className="popup-buttons">
-
-           <button className="button-red" onClick={onClose}>
-            Cancel
-          </button> 
-          <button className="button-green" onClick={handleConfirm}>
-            Confirm
-          </button>
-          
-        </div>
-      </div>
-    </div>
+    </Modal>
   );
 };
 

@@ -5,6 +5,7 @@ import "./PTSTracker.css";
 import "../DashboardComponents/dashboardStyles.css";
 import { DataContext } from "../../../context/DataContext"; // Import DataContext
 import { useSaveEvent } from "../../../databaseTools/databaseTools"; // Import saveEvent 
+import Modal from "../DashboardComponents/Modal";
 
 const PTSTracker = ({ user }) => {
   const [cadetNames, setCadetNames] = useState([]);
@@ -419,18 +420,14 @@ const PTSTracker = ({ user }) => {
         </motion.table>
         {/* Popup */}
         {popupData && (
-          <div className="popup-overlay" onClick={closePopup}>
-            <div
-              className="popup-contents"
-              onClick={(e) => e.stopPropagation()}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  document.getElementById("confirm-button").click(); // Trigger the confirm button on Enter
-                }
-              }}
-              tabIndex={0} // Make the div focusable to capture key events
-            >
-              <h3>Add New Badge</h3>
+          <Modal
+            isOpen={!!popupData}
+            onClose={closePopup}
+            title="Add New Badge"
+            onConfirm={handleConfirm}
+            cancelLabel="Close"
+          >
+
               <p><strong>Cadet Name:</strong> {popupData.cadetName}</p>
               <p><strong>Badge:</strong> {popupData.badge}</p>
               
@@ -448,26 +445,7 @@ const PTSTracker = ({ user }) => {
               />
 
               {validationError && <p className="popup-error">{validationError}</p>}
-
-              {/* Confirm and Close Buttons */}
-              <div className="popup-bottom-buttons">
-                <button
-                  className="popup-button-red" // Use the red button style
-                  onClick={closePopup}
-                >
-                  Close
-                </button>
-
-                <button
-                  id="confirm-button" // Add an ID to the confirm button
-                  className="popup-button-green" // Use the green button style
-                  onClick={handleConfirm} // Use the handleConfirm function
-                >
-                  Confirm
-                </button>
-              </div>
-            </div>
-          </div>
+          </Modal>
         )}
       </motion.div>
     </div>

@@ -12,19 +12,8 @@ import "./Popup.css";
  * dialog rather than as an anonymous div.
  */
 const Popup = ({ isOpen, onClose, onConfirm, label = "Confirm", children }) => (
-  <Modal isOpen={isOpen} onClose={onClose} label={label} size="sm">
-    <span className="popup-close" onClick={onClose}>
-      &times;
-    </span>
+  <Modal isOpen={isOpen} onClose={onClose} label={label} size="sm" onConfirm={onConfirm}>
     {children}
-    <div className="popup-bottom-buttons">
-      <button className="popup-button-red" onClick={onClose}>
-        Cancel
-      </button>
-      <button className="popup-button-green" onClick={onConfirm}>
-        Confirm
-      </button>
-    </div>
   </Modal>
 );
 

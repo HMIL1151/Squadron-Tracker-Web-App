@@ -3,6 +3,7 @@ import { DOCS, setPrice } from "../../../firebase/flightPoints";
 import "./addCategory.css";
 import { useSquadron } from "../../../context/SquadronContext";
 import { DataContext } from "../../../context/DataContext"; // Import DataContext
+import Modal from "../DashboardComponents/Modal";
 
 const AddCategory = ({ isOpen, onClose, onConfirm }) => {
   const [category, setCategory] = useState("");
@@ -50,9 +51,12 @@ const AddCategory = ({ isOpen, onClose, onConfirm }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="add-category-overlay" onClick={onClose}>
-      <div className="add-category-popup" onClick={(e) => e.stopPropagation()}>
-        <h2>Add New Category</h2>
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title="Add New Category"
+      onConfirm={handleConfirm}
+    >
         <div className="form-group">
           <label htmlFor="category">Category Name:</label>
           <input
@@ -74,16 +78,7 @@ const AddCategory = ({ isOpen, onClose, onConfirm }) => {
           />
         </div>
         {error && <p className="popup-error">{error}</p>}
-        <div className="popup-bottom-buttons">
-          <button className="popup-button-red" onClick={onClose}>
-            Cancel
-          </button>
-          <button className="popup-button-green" onClick={handleConfirm}>
-            Confirm
-          </button>
-        </div>
-      </div>
-    </div>
+    </Modal>
   );
 };
 

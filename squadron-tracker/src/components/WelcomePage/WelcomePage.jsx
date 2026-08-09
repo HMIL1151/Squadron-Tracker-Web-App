@@ -9,6 +9,7 @@ import { squadronCollection, getDocs, query, where } from "../../firebase/db";
 import { DataContext } from "../../context/DataContext"; // Import DataContext
 import "./WelcomePage.css"; // Optional: Add styles for the welcome page
 import "../Dashboards/DashboardComponents/dashboardStyles.css"; // Import styles for buttons and popups
+import Modal from "../Dashboards/DashboardComponents/Modal";
 
 const WelcomePage = ({ onUserChange }) => {
   const [user, setUser] = useState(null); // Track the logged-in user
@@ -373,28 +374,31 @@ const WelcomePage = ({ onUserChange }) => {
 
       {/* Setup Squadron Popup */}
       {showSetupPopup && (
-        <>
-          <div className="popup-overlay"></div>
-          <div className="popup">
-            <p>Squadron does not exist. Would you like to set up a new Squadron account?</p>
-            <div className="popup-bottom-buttons">
-              <button className="popup-button-red" onClick={handleSetupCancel}>
-                Cancel
-              </button>
-              <button className="popup-button-green" onClick={() => setShowBlankPopup(true)}>
-                Set Up
-              </button>
-            </div>
-          </div>
-        </>
+        <Modal
+          isOpen={showSetupPopup}
+          onClose={handleSetupCancel}
+          title="Squadron Not Found"
+          onConfirm={() => setShowBlankPopup(true)}
+          confirmLabel="Set Up"
+        >
+          <p>Squadron does not exist. Would you like to set up a new Squadron account?</p>
+        </Modal>
       )}
 
       {/* New Squadron Setup Popup */}
       {showBlankPopup && (
-        <>
-          <div className="popup-overlay"></div>
-          <div className="popup">
-            <p className="popup-title">New Squadron Setup</p>
+        <Modal
+          isOpen={showBlankPopup}
+          onClose={handleSetupCancel}
+          title="New Squadron Setup"
+          size="md"
+          onConfirm={handleSetupConfirm}
+          confirmDisabled={
+            !squadronName.trim() ||
+            flightNames.slice(1).some((name) => name.trim() === "") ||
+            !isAdmin
+          }
+        >
             <div>
               <label className="label-spacing">Squadron Name:</label>
               <input
@@ -464,24 +468,7 @@ const WelcomePage = ({ onUserChange }) => {
             {showAdminWarning && (
               <p className="error-message">You must confirm that you will be the account admin.</p>
             )}
-            <div className="popup-bottom-buttons">
-              <button className="popup-button-red" onClick={handleSetupCancel}>
-                Cancel
-              </button>
-              <button
-                className="popup-button-green"
-                onClick={handleSetupConfirm}
-                disabled={
-                  !squadronName.trim() || // Squadron name must not be empty
-                  flightNames.slice(1).some((name) => name.trim() === "") || // Every flight after the staff flight needs a name
-                  !isAdmin // Admin checkbox must be checked
-                }
-              >
-                Confirm
-              </button>
-            </div>
-          </div>
-        </>
+        </Modal>
       )}
     </div>
   );

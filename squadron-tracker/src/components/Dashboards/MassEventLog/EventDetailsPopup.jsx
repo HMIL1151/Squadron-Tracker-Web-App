@@ -19,36 +19,16 @@ const EventDetailsPopup = ({ isOpen, eventData, onClose, onRemove }) => {
   if (!isOpen || !eventData) return null;
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} label="Event details" size="sm">
-        <button className="close-icon" onClick={onClose}>
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            width="24"
-            height="24"
-            fill="currentColor"
-          >
-            <line
-              x1="18"
-              y1="6"
-              x2="6"
-              y2="18"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-            />
-            <line
-              x1="6"
-              y1="6"
-              x2="18"
-              y2="18"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-            />
-          </svg>
-        </button>
-        <h2>Event Details</h2>
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title="Event Details"
+      size="sm"
+      onConfirm={() => onRemove(eventData.id)}
+      confirmLabel="Remove Event"
+      confirmTone="danger"
+      cancelLabel="Close"
+    >
         <p><strong>Name:</strong> {eventData.Name}</p>
         <p><strong>Event:</strong> {eventData.Record}</p>
         {eventData.eventCategory && (
@@ -65,9 +45,6 @@ const EventDetailsPopup = ({ isOpen, eventData, onClose, onRemove }) => {
               ) 
             : "N/A"}
         </p>
-        <button className="remove-button" onClick={() => onRemove(eventData.id)}>
-          Remove Event
-        </button>
     </Modal>
   );
 };

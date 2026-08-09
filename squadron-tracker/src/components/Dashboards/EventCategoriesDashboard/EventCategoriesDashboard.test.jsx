@@ -196,14 +196,16 @@ describe("adding a badge price", () => {
 });
 
 describe("deleting", () => {
-  const popup = () => within(document.querySelector(".add-entry-popup"));
+  // .add-entry-popup was this dialog's own wrapper; it is a Modal now, so its
+  // content carries the shared .popup-content like every other dialog.
+  const popup = () => within(document.querySelector(".popup-content"));
 
   it("removes a category's field with deleteField", async () => {
     // The call site that exposed the fake's missing deleteField.
     const result = renderDashboard();
     await result.user.click(screen.getByRole("button", { name: "Delete Category" }));
     await result.user.selectOptions(popup().getByRole("combobox"), "Wing Event");
-    await result.user.click(popup().getByRole("button", { name: "Confirm" }));
+    await result.user.click(popup().getByRole("button", { name: "Delete" }));
 
     const stored = result.store()[`${FLIGHT_POINTS}/Event Category Points`];
     expect(stored["Wing Event"]).toBeUndefined();
@@ -218,7 +220,7 @@ describe("deleting", () => {
     await openTab(result, "Badges");
     await result.user.click(screen.getByRole("button", { name: "Delete Badge" }));
     await result.user.selectOptions(popup().getByRole("combobox"), "Music");
-    await result.user.click(popup().getByRole("button", { name: "Confirm" }));
+    await result.user.click(popup().getByRole("button", { name: "Delete" }));
 
     expect(result.store()[`${FLIGHT_POINTS}/Badges`]["Badge Types"]).toEqual([
       "Radio", "First Aid", "Shooting", "Adventure Training", "Sports",
@@ -230,7 +232,7 @@ describe("deleting", () => {
     await openTab(result, "Special Awards");
     await result.user.click(screen.getByRole("button", { name: "Delete Special Award" }));
     await result.user.selectOptions(popup().getByRole("combobox"), "Most Improved Cadet");
-    await result.user.click(popup().getByRole("button", { name: "Confirm" }));
+    await result.user.click(popup().getByRole("button", { name: "Delete" }));
 
     expect(result.store()[`${FLIGHT_POINTS}/Special Awards`]["Special Awards"]).toEqual([
       "Cadet of the Year", "Commandant's Commendation",
@@ -244,7 +246,7 @@ describe("deleting", () => {
     const result = renderDashboard();
     await result.user.click(screen.getByRole("button", { name: "Delete Category" }));
     await result.user.selectOptions(popup().getByRole("combobox"), "Wing Event");
-    await result.user.click(popup().getByRole("button", { name: "Confirm" }));
+    await result.user.click(popup().getByRole("button", { name: "Delete" }));
 
     expect(result.store()["SquadronDatabases/9999/EventLog/event-9999-06"]).toMatchObject({
       eventCategory: "Wing Event", // the event still names it

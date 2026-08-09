@@ -117,8 +117,14 @@ const AddEventPopup = ({
   // The early return this component already had, above, is what keeps Modal's
   // children from being built while closed.
   return (
-    <Modal isOpen={isPopupOpen} onClose={closePopup} label="Add new record" size="md">
-        <h3>Add New Event</h3>
+    <Modal
+      isOpen={isPopupOpen}
+      onClose={closePopup}
+      title="Add New Event"
+      size="md"
+      onConfirm={onAddEventClick}
+      confirmLabel="Add Event"
+    >
         <div className="flex-container">
           <label className="popup-label" htmlFor="autocomplete-input">
             Name(s):
@@ -316,14 +322,6 @@ const AddEventPopup = ({
           )}
         </div>
         {validationError && <p className="popup-error">{validationError}</p>}
-        <div className="popup-bottom-buttons">
-          <button className="popup-button-red" onClick={closePopup}>
-            Cancel
-          </button>
-          <button className="popup-button-green" onClick={onAddEventClick}>
-            Add Event
-          </button>
-        </div>
     </Modal>
   );
 };
