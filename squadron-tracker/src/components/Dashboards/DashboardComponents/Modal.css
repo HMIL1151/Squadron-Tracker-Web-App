@@ -1,0 +1,114 @@
+/*
+ * The one definition of .popup-overlay and .popup-content.
+ *
+ * There used to be six of the first and five of the second, spread across
+ * ExamPopup.css, Popup.css, EventCategoriesDashboard.css, EventDetailsPopup
+ * .css, MassEventLog.css and WelcomePage.css. Identical selectors at identical
+ * specificity, in stylesheets that arrive as separate chunks when their
+ * dashboard is first opened -- so a popup's width was decided by which screens
+ * the user had already visited. See docs/styling-cascade.md.
+ *
+ * Collapsing them means choosing. Rather than pick one winner and quietly
+ * restyle four popups, each size below carries the values from the stylesheet
+ * that popup's own author wrote, and each call site asks for the size it was
+ * always meant to have. That turns an accident into a decision, and puts the
+ * decision at the call site where it can be read.
+ */
+
+.popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: var(--color-scrim);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  /*
+   * 1010, the highest of the six. ExamPopup needed to sit above the
+   * Classification dashboard's own layering; the others asked for 1000 and are
+   * unaffected by being raised, since nothing sits between the two values.
+   */
+  z-index: 1010;
+}
+
+.popup-content {
+  background: var(--color-surface);
+  padding: 20px;
+  border-radius: 8px;
+  width: 300px;
+  max-width: 90%;
+  text-align: center;
+  color: var(--color-text);
+  box-shadow: var(--shadow-md);
+}
+
+/* Popup.css's original: slightly rounder, and its own font stack. */
+.popup-content.popup-sm {
+  border-radius: 10px;
+  font-family: Arial, sans-serif;
+}
+
+/* MassEventLog: a tall scrolling form rather than a short prompt. */
+.popup-content.popup-md {
+  width: auto;
+  min-width: 400px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: relative;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+/* ExamPopup: a wide read-only list. */
+.popup-content.popup-lg {
+  padding: 10px;
+  width: 500px;
+  max-height: 70%;
+  line-height: 1.4;
+}
+
+.popup-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  font-size: 1.5rem;
+  cursor: pointer;
+}
+
+/*
+ * Form controls inside a dialog.
+ *
+ * Moved here from Popup.css so they have one owner. They were written as
+ * descendant rules on .popup-content, which is a single shared name -- so they
+ * applied to every dialog in the app but only once the chunk containing
+ * Popup.jsx had loaded, which is to say only after the user had opened the
+ * Cadet List or Flights. Sitting alongside the class they qualify, they now
+ * arrive whenever a dialog does.
+ */
+.popup-content select {
+  width: 100%;
+  padding: 10px;
+  margin: 10px 0;
+  font-size: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  background-color: #f9f9f9;
+}
+.popup-content input {
+  width: 92%;
+  padding: 10px;
+  margin: 10px 0;
+  font-size: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  background-color: #f9f9f9;
+}
+.popup-content input:focus,
+.popup-content select:focus {
+  outline: none;
+  border-color: #4CAF50;
+  box-shadow: 0 0 5px rgba(76, 175, 80, 0.5);
+}

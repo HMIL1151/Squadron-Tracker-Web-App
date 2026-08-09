@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useContext } from "react";
 import { examList } from "../../../utils/examList"; // Import the examList
+import Modal from "../DashboardComponents/Modal";
 import "./ExamPopup.css";
 import "../DashboardComponents/dashboardStyles.css"; // Optional: Add styles for the popup
 import { DataContext } from "../../../context/DataContext"; // Import DataContext
@@ -110,12 +111,8 @@ const ExamPopup = ({ isOpen, onClose, cadetName, classification, user }) => {
       setExamSelections([...updatedSelections, { selectedExam: "", examDate: "" }]);
     }
   };
-
-  if (!isOpen) return null;
-
   return (
-    <div className="popup-overlay">
-      <div className="popup-content">
+    <Modal isOpen={isOpen} onClose={onClose} label="Add exam" size="lg" variant="exam-popup">
         <button className="popup-close" onClick={onClose}>
           &times;
         </button>
@@ -144,7 +141,16 @@ const ExamPopup = ({ isOpen, onClose, cadetName, classification, user }) => {
               (exam) => !exams.includes(exam) && !examSelections.some((sel, selIndex) => selIndex !== index && sel.selectedExam === exam)
             );
 
-            return (
+            /*
+   * Still an early return, even though Modal takes isOpen.
+   *
+   * JSX children are built before Modal can decide not to show them, so
+   * without this the closed state evaluates markup that reads props which
+   * are only populated while open, and throws.
+   */
+  if (!isOpen) return null;
+
+  return (
               <div key={index} className="form-group-inline">
                 <select
                   className="exam-select"
@@ -183,8 +189,7 @@ const ExamPopup = ({ isOpen, onClose, cadetName, classification, user }) => {
             </button>
           </div>
         </div>
-      </div>
-    </div>
+    </Modal>
   );
 };
 

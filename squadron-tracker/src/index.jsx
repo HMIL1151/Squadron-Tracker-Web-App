@@ -1,5 +1,6 @@
 import React from "react";
 import ReactDOM from "react-dom/client"; // Import the new createRoot API
+import ReactModal from "react-modal";
 /*
  * Tokens first, and as their own module rather than an @import inside
  * index.css.
@@ -23,6 +24,12 @@ import { DataProvider } from "./context/DataContext";
 
 // Create the root element
 const rootElement = document.getElementById("root");
+
+// Tells react-modal what to hide from assistive technology while a dialog is
+// open. Set once, here, because it is global to the library rather than to any
+// one Modal. The test suite does the same in setupTests.js.
+ReactModal.setAppElement(rootElement);
+
 const root = ReactDOM.createRoot(rootElement); // Use createRoot instead of render
 
 root.render(

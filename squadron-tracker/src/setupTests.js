@@ -23,6 +23,7 @@
 
 import { beforeEach, vi } from "vitest";
 import "@testing-library/jest-dom";
+import ReactModal from "react-modal";
 
 import * as fakeFirestore from "./test/fakeFirestore";
 import * as fakeAuth from "./test/fakeAuth";
@@ -155,7 +156,36 @@ if (typeof HTMLCanvasElement !== "undefined" && !HTMLCanvasElement.prototype.get
 }
 
 // ---------------------------------------------------------------------------
-// 5. Clean state between tests
+// 5. react-modal's app element
+// ---------------------------------------------------------------------------
+
+/*
+ * Point react-modal at a dedicated element, NOT document.body.
+ *
+ * While a dialog is open react-modal sets aria-hidden on the app element, so
+ * that assistive technology sees only the dialog. react-modal also appends its
+ * portal to document.body -- so naming the body as the app element hides the
+ * dialog along with everything else, and Testing Library's role queries, which
+ * skip aria-hidden subtrees, then find nothing at all. That produced 54
+ * "unable to find an accessible element" failures.
+ *
+ * An empty stand-in keeps the library happy and hides nothing under test. The
+ * running app names its real #root in src/index.jsx, where the behaviour is
+ * wanted.
+ *
+ * Guarded on `document` for the same reason the canvas stub above is: the
+ * Firestore rules suites run with no DOM, and an unguarded appendChild here
+ * failed both files before a single test ran.
+ */
+if (typeof document !== "undefined") {
+  const modalAppElement = document.createElement("div");
+  modalAppElement.setAttribute("id", "react-modal-app-element");
+  document.body.appendChild(modalAppElement);
+  ReactModal.setAppElement(modalAppElement);
+}
+
+// ---------------------------------------------------------------------------
+// 6. Clean state between tests
 // ---------------------------------------------------------------------------
 
 // Done centrally so no test file has to remember it. State leaking between tests

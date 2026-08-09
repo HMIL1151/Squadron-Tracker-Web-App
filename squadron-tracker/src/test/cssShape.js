@@ -46,10 +46,33 @@ export const sourceFiles = () =>
 const read = (rel) => readFileSync(join(SRC, rel), "utf8");
 
 /**
- * Class names mentioned anywhere in a selector. A class inside :not() counts --
- * the file still has an opinion about it.
+ * Class names a selector DEFINES, as opposed to ones it merely reaches through.
+ *
+ * Only the last compound counts. In `.popup-content h2` the subject is the h2,
+ * and `.popup-content` is an ancestor being pointed at -- a file saying "inside
+ * a popup, headings look like this" is not a second opinion about what a popup
+ * is. Counting those as definitions made every stylesheet with a descendant
+ * rule look like a duplicate and put the target out of reach.
+ *
+ * Combinators split compounds; a comma-separated selector list is already split
+ * by postcss before this is called.
  */
-const classesIn = (selector) =>
+const classesIn = (selector) => {
+  const compounds = selector.trim().split(/\s*[\s>+~]\s*/).filter(Boolean);
+  const subject = compounds[compounds.length - 1] || "";
+  return [...subject.matchAll(/\.(-?[_a-zA-Z][\w-]*)/g)].map((m) => m[1]);
+};
+
+/**
+ * Every class a selector touches, subject or not.
+ *
+ * Kept separate from the above because the two questions want different
+ * answers. "Is this name defined twice?" should ignore ancestors. "Does this
+ * name have any styling at all?" must not: `.clickable-row` is styled only by
+ * `.custom-table tbody tr.clickable-row:hover td`, where the subject is the td,
+ * and calling that unstyled would be wrong.
+ */
+const allClassesIn = (selector) =>
   [...selector.matchAll(/\.(-?[_a-zA-Z][\w-]*)/g)].map((m) => m[1]);
 
 /**
@@ -72,6 +95,7 @@ export const analyseCss = (rel) => {
   const root = postcss.parse(read(rel), { from: rel });
 
   const classes = new Set();
+  const referenced = new Set();
   const keyframes = new Set();
   const animationRefs = new Set();
   const bareElements = new Set();
@@ -84,6 +108,7 @@ export const analyseCss = (rel) => {
 
     for (const selector of rule.selectors) {
       classesIn(selector).forEach((c) => classes.add(c));
+      allClassesIn(selector).forEach((c) => referenced.add(c));
       const element = bareElement(selector);
       if (element) bareElements.add(element);
     }
@@ -118,7 +143,7 @@ export const analyseCss = (rel) => {
     }
   });
 
-  return { file: rel, classes, keyframes, animationRefs, bareElements };
+  return { file: rel, classes, referenced, keyframes, animationRefs, bareElements };
 };
 
 /**

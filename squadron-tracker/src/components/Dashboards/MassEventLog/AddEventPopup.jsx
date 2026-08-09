@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import Modal from "../DashboardComponents/Modal";
 import "./MassEventLog.css";
 import "../DashboardComponents/dashboardStyles.css";
 import { examList, badgeLevel } from "../../../utils/examList";
@@ -113,9 +114,10 @@ const AddEventPopup = ({
     handleAddEvent(eventData);
   };
 
+  // The early return this component already had, above, is what keeps Modal's
+  // children from being built while closed.
   return (
-    <div className="popup-overlay">
-      <div className="popup-content">
+    <Modal isOpen={isPopupOpen} onClose={closePopup} label="Add new record" size="md">
         <h3>Add New Event</h3>
         <div className="flex-container">
           <label className="popup-label" htmlFor="autocomplete-input">
@@ -322,8 +324,7 @@ const AddEventPopup = ({
             Add Event
           </button>
         </div>
-      </div>
-    </div>
+    </Modal>
   );
 };
 

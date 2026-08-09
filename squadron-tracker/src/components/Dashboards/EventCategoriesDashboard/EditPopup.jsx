@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import Modal from "../DashboardComponents/Modal";
 import "../DashboardComponents/dashboardStyles.css";
 
 const EditPopup = ({ isOpen, onClose, onConfirm, data, type }) => {
@@ -19,12 +20,17 @@ const EditPopup = ({ isOpen, onClose, onConfirm, data, type }) => {
     onConfirm(formData);
     onClose();
   };
-
+  /*
+   * Still an early return, even though Modal takes isOpen.
+   *
+   * JSX children are built before Modal can decide not to show them, so
+   * without this the closed state evaluates markup that reads props which
+   * are only populated while open, and throws.
+   */
   if (!isOpen) return null;
 
   return (
-    <div className="popup-overlay">
-      <div className="popup-content">
+    <Modal isOpen={isOpen} onClose={onClose} label="Edit entry" size="sm" variant="edit-popup">
       <h3>
     {type === "eventcategories"
         ? "Edit Event Category"
@@ -74,8 +80,7 @@ const EditPopup = ({ isOpen, onClose, onConfirm, data, type }) => {
             Confirm
           </button>
         </div>
-      </div>
-    </div>
+    </Modal>
   );
 };
 

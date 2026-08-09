@@ -1,41 +1,25 @@
-import React, { useEffect } from "react";
+import React from "react";
+import Modal from "../DashboardComponents/Modal";
 import "./EventDetailsPopup.css";
 
+/*
+ * The Escape listener and the backdrop click handler that used to live here are
+ * gone: Modal provides both, and the backdrop one was the fragile
+ * `e.target.className === "popup-overlay"` string comparison that would have
+ * failed silently once these stylesheets are scoped.
+ */
 const EventDetailsPopup = ({ isOpen, eventData, onClose, onRemove }) => {
-  // Close the popup when the ESC key is pressed
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (e.key === "Escape" && isOpen) {
-        onClose();
-      }
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => {
-      window.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [isOpen, onClose]);
-
   /*
-   * Close only when the click landed on the backdrop itself, not on the dialog
-   * inside it.
+   * Still an early return, even though Modal takes isOpen.
    *
-   * This used to compare e.target.className to the string "popup-overlay".
-   * That is fragile in two ways: adding a second class to the element breaks it,
-   * and once these stylesheets are scoped the rendered name stops being the name
-   * written here -- so click-to-close would fail silently, with nothing to
-   * notice. Comparing the nodes asks the question directly.
+   * JSX children are built before Modal can decide not to show them, so
+   * without this the closed state evaluates markup that reads props which
+   * are only populated while open, and throws.
    */
-  const handleOverlayClick = (e) => {
-    if (e.target === e.currentTarget) {
-      onClose();
-    }
-  };
-
-  if (!isOpen) return null;
+  if (!isOpen || !eventData) return null;
 
   return (
-    <div className="popup-overlay" onClick={handleOverlayClick}>
-      <div className="popup-content">
+    <Modal isOpen={isOpen} onClose={onClose} label="Event details" size="sm">
         <button className="close-icon" onClick={onClose}>
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -84,8 +68,7 @@ const EventDetailsPopup = ({ isOpen, eventData, onClose, onRemove }) => {
         <button className="remove-button" onClick={() => onRemove(eventData.id)}>
           Remove Event
         </button>
-      </div>
-    </div>
+    </Modal>
   );
 };
 

@@ -28,9 +28,17 @@ const sources = sourceFiles().map(analyseSource);
  * Class names defined in more than one stylesheet.
  *
  * All of these are decided by CSS load order, and load order is decided by
- * which lazily-loaded dashboard the user opened first -- so several of these
+ * which lazily-loaded dashboard the user opened first -- so several of them
  * genuinely render differently depending on the route taken through the app.
- * The popup family is the worst: `.popup-overlay` has six definitions.
+ *
+ * The popup family, which was the worst of it at six definitions of
+ * .popup-overlay and five of .popup-content, is gone: those live once in
+ * DashboardComponents/Modal.css and every dialog is built from Modal.
+ *
+ * "Defined" here means the class is the subject of a selector. A file saying
+ * `.popup-content h2 { ... }` is describing a heading, not offering a second
+ * opinion about what a popup is, and counting those made the target
+ * unreachable. See classesIn in cssShape.js.
  */
 const KNOWN_DUPLICATE_CLASSES = [
   "active",
@@ -44,9 +52,6 @@ const KNOWN_DUPLICATE_CLASSES = [
   "loading-popup",
   "popup-actions",
   "popup-bottom-buttons",
-  "popup-close",
-  "popup-content",
-  "popup-overlay",
   "remove-button",
   "request-card",
   "selected",
@@ -122,7 +127,9 @@ describe("stylesheet shape", () => {
   });
 
   it("has a stylesheet rule for every class a component renders", () => {
-    const defined = new Set(sheets.flatMap((s) => [...s.classes]));
+    // `referenced`, not `classes`: a class styled only as an ancestor or
+    // qualifier still has styling. See classesIn/allClassesIn in cssShape.js.
+    const defined = new Set(sheets.flatMap((s) => [...s.referenced]));
     const found = sources.flatMap((src) =>
       [...src.classes].filter((c) => !defined.has(c)).map((c) => `${src.file}:${c}`)
     );
