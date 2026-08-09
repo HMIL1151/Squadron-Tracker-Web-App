@@ -15,70 +15,6 @@
   grid-template-columns: 0px auto; /* Collapse menu */
 }
 
-/*
- * DEAD -- create-react-app leftovers. Nothing renders .App-logo, .App-header,
- * .App-link or .auth-modal; verified by searching every JSX file for each.
- * Deliberately not tokenised, because giving a name to a colour no user ever
- * sees would put junk in the vocabulary. Removed in the hygiene pass, together
- * with the no-preference media query below, which guards only the dead logo
- * spin and predates the real reduced-motion rule now in index.css.
- */
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
-
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
-}
-
-.App-link {
-  color: #61dafb;
-}
-
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-.auth-modal {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background-color: white;
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  text-align: center;
-  z-index: 1000;
-}
-
-.auth-modal h2 {
-  margin-bottom: 10px;
-}
-
-.auth-modal p {
-  margin-bottom: 20px;
-}
-
 /* Header Section */
 .app-header {
   grid-area: header;
@@ -161,19 +97,12 @@
   background-color: var(--color-surface-hover);
 }
 
-.Menu {
-  grid-area: menu;
-  background-color: var(--color-surface-muted);
-  overflow-y: auto;
-  position: absolute; /* Change to absolute positioning */
-  left: 0; /* Start at the left edge */
-  top: 60px; /* Align with the header */
-  height: calc(100vh - 60px); /* Full height minus the header */
-  width: 200px; /* Default width */
-  transition: transform 0.3s ease; /* Smooth transition for movement */
-}
-
-.App.menu-collapsed .Menu {
-  transform: translateX(-200px); /* Move menu off-screen */
-  width: 200px; /* Keep the width for smooth transition */
-}
+/*
+ * The menu itself is styled in Menu/Menu.css, not here.
+ *
+ * This file used to carry a `.Menu` block and a `.App.menu-collapsed .Menu`
+ * collapse rule -- capital M, which no component has ever rendered. Menu.jsx
+ * renders `menu`, and CSS class names are case sensitive, so both were dead
+ * duplicates of the live `.menu` and `.menu.collapsed` rules. Removing them
+ * changes nothing and leaves one place to look.
+ */

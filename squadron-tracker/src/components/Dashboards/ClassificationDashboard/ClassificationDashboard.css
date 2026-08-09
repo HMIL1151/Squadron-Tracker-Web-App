@@ -1,8 +1,4 @@
-.table-dashboard-container table tr:hover td {
-    text-decoration: underline;
-    font-weight: normal;
-    cursor: pointer;
-  }
+/* Row hover now lives in Table/Table.css, keyed on .clickable-row. */
   .graph-container {
     position: relative;
   }

@@ -20,6 +20,34 @@ code {
 }
 
 /*
+ * Form controls.
+ *
+ * Global on purpose, and stated here rather than inherited by accident. This
+ * rule used to be a bare `select` selector inside CadetsDashboard.css, which
+ * meant every dropdown in the app was styled only once the user had opened the
+ * Cadet List -- and reverted to browser defaults for anyone who had not.
+ *
+ * It stays an element selector because that is what it is for. CSS Modules does
+ * not scope element selectors, so leaving it in a component stylesheet would
+ * have looked contained without being contained.
+ */
+select {
+  width: 100%;
+  padding: 10px;
+  margin-top: 10px;
+  font-size: 1rem;
+  border: 1px solid var(--color-border);
+  border-radius: 5px;
+  background-color: var(--color-surface-sunken);
+}
+
+select:focus {
+  outline: none;
+  border-color: var(--color-action);
+  box-shadow: 0 0 5px rgba(76, 175, 80, 0.5);
+}
+
+/*
  * Reduced motion.
  *
  * Transitions only, deliberately. The usual blanket rule also zeroes

@@ -8,6 +8,7 @@ import PopupManager from "./CadetsDashboardPopupManager";
 import SuccessMessage from "../DashboardComponents/SuccessMessage";
 import ErrorMessage from "../DashboardComponents/ErrorMessage";
 import "./CadetsDashboard.css";
+import "../DashboardComponents/dashboardStyles.css";
 import { useSquadron } from "../../../context/SquadronContext";
 import { addCadet, removeCadet } from "../../../firebase/cadets";
 

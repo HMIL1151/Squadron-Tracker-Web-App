@@ -15,8 +15,18 @@ const EventDetailsPopup = ({ isOpen, eventData, onClose, onRemove }) => {
     };
   }, [isOpen, onClose]);
 
+  /*
+   * Close only when the click landed on the backdrop itself, not on the dialog
+   * inside it.
+   *
+   * This used to compare e.target.className to the string "popup-overlay".
+   * That is fragile in two ways: adding a second class to the element breaks it,
+   * and once these stylesheets are scoped the rendered name stops being the name
+   * written here -- so click-to-close would fail silently, with nothing to
+   * notice. Comparing the nodes asks the question directly.
+   */
   const handleOverlayClick = (e) => {
-    if (e.target.className === "popup-overlay") {
+    if (e.target === e.currentTarget) {
       onClose();
     }
   };

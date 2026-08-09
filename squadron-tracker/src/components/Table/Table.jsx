@@ -113,12 +113,15 @@ const Table = ({ columns, data, onRowClick, onRowHover, disableHover = false, wi
               className={`${
                 hoveredCadet && hoveredCadet.includes(row.Name) ? "highlighted-row" : ""
               } ${onRowClick ? "clickable-row" : ""}`}
-              style={{
-                backgroundColor:
-                  hoveredCadet && hoveredCadet.includes(row.Name)
-                    ? "#ffff99" // Highlighted row color
-                    : getRowColor(row), // Use rowColors mapping
-              }}
+              /*
+               * The caller's colour goes in as a custom property rather than as
+               * backgroundColor. An inline background beats any class, which is
+               * why .highlighted-row in Table.css was dead and the highlight had
+               * to be re-implemented here as a hardcoded #ffff99. Handing the
+               * value to CSS instead lets the stylesheet decide precedence, so
+               * the highlight is expressed once, in the place that styles it.
+               */
+              style={{ "--row-bg": getRowColor(row) }}
             >
               {columns.map((col, colIndex) => (
                 <td key={colIndex}>

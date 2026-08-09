@@ -79,6 +79,38 @@
     pointer-events: none; /* Prevent it from interfering with mouse events */
 }
 
-.highlighted-row {
-  background-color: rgba(255, 255, 0, 0.3); /* Light yellow highlight */
+/*
+ * Row background, and the highlight that has to beat it.
+ *
+ * --row-bg carries whatever the caller passed in rowColors; unset rows fall
+ * through to transparent and show the table's own white. The highlight is a
+ * more specific selector rather than an inline style, which is what makes it
+ * win -- previously Table.jsx set backgroundColor inline, so the class here was
+ * unreachable and had drifted to a different yellow than the one that actually
+ * rendered. #ffff99 is the colour that was really being used.
+ */
+.custom-table tbody tr {
+  background-color: var(--row-bg, transparent);
+}
+
+.custom-table tbody tr.highlighted-row {
+  background-color: #ffff99;
+}
+
+/*
+ * Hover affordance for rows that do something when clicked.
+ *
+ * Driven by the class Table.jsx already applies when onRowClick is set. This
+ * replaces three copies of `.table-dashboard-container table tr:hover td` in
+ * CadetsDashboard.css, ClassificationDashboard.css and MassEventLog.css --
+ * identical selectors at identical specificity, so only one of them was ever in
+ * effect and which one depended on the order the dashboards were opened.
+ * Classification's copy asked for font-weight: normal; that variant is dropped
+ * deliberately, because it could only ever have applied to all three tables or
+ * none.
+ */
+.custom-table tbody tr.clickable-row:hover td {
+  font-weight: bold;
+  text-decoration: underline;
+  cursor: pointer;
 }

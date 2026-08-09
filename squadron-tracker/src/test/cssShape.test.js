@@ -35,7 +35,6 @@ const sources = sourceFiles().map(analyseSource);
 const KNOWN_DUPLICATE_CLASSES = [
   "active",
   "add-entry-button",
-  "button-container",
   "button-red",
   "cancel-button",
   "close-icon",
@@ -45,14 +44,12 @@ const KNOWN_DUPLICATE_CLASSES = [
   "loading-popup",
   "popup-actions",
   "popup-bottom-buttons",
-  "popup-buttons",
   "popup-close",
   "popup-content",
   "popup-overlay",
   "remove-button",
   "request-card",
   "selected",
-  "table-dashboard-container",
 ];
 
 /**
@@ -63,9 +60,7 @@ const KNOWN_DUPLICATE_CLASSES = [
  * have been opened this session. CSS Modules localises keyframes names, so this
  * stops working outright -- silently -- the moment either file is migrated.
  */
-const KNOWN_CROSS_FILE_ANIMATIONS = [
-  "components/Dashboards/DashboardComponents/dashboardStyles.css:fadeOut",
-];
+const KNOWN_CROSS_FILE_ANIMATIONS = [];
 
 /**
  * Bare element selectors outside the global stylesheets.
@@ -74,9 +69,7 @@ const KNOWN_CROSS_FILE_ANIMATIONS = [
  * `.module.css` would give the appearance of containment without the fact of
  * it. `select` here styles every dropdown in the app.
  */
-const KNOWN_BARE_ELEMENT_SELECTORS = [
-  "components/Dashboards/CadetsDashboard/CadetsDashboard.css:select",
-];
+const KNOWN_BARE_ELEMENT_SELECTORS = [];
 
 /**
  * Classes a component renders that no stylesheet defines.
@@ -98,7 +91,6 @@ const KNOWN_UNSTYLED_CLASSES = [
   "components/Dashboards/MassEventLog/AddEventPopup.jsx:date-input",
   "components/Dashboards/MassEventLog/AddEventPopup.jsx:text-input",
   "components/Dashboards/PTSTracker/PTSTracker.jsx:PTSTracker-year-filter",
-  "components/Table/Table.jsx:clickable-row",
   "components/WelcomePage/WelcomePage.jsx:error-message",
 ];
 

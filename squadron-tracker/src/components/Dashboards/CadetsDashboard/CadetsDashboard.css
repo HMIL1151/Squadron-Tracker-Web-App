@@ -5,14 +5,13 @@
     flex-direction: column;
   }
   
-  .button-container {
-    display: flex;
-    justify-content: center;
-    align-items: center; /* Ensures vertical alignment */
-    gap: 10px; /* Adds spacing between buttons */
-    margin-bottom: 10px;
-  }
-  
+  /*
+   * .button-container lives in dashboardStyles.css, which CadetsDashboard.jsx
+   * now imports. The copy here was byte-identical, so which one applied was
+   * decided by load order and never mattered -- until it would have, the first
+   * time someone edited one of them.
+   */
+
   .dashboard-table-title {
     font-size: 1.5rem;
     font-weight: bold;
@@ -54,50 +53,20 @@
     transform: scale(1.05); /* Button grow effect on hover */
   }
 
-  select {
-    width: 100%;
-    padding: 10px;
-    margin-top: 10px;
-    font-size: 1rem;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    background-color: #f9f9f9;
-  }
-  
-  select:focus {
-    outline: none;
-    border-color: #4CAF50; /* Match the green button color */
-    box-shadow: 0 0 5px rgba(76, 175, 80, 0.5);
-  }
+  /*
+   * `select`, `.success-popup` and @keyframes fadeOut have moved.
+   *
+   * The bare `select` selector styled every dropdown in the app, from a file
+   * only the Cadet List loads -- so a dropdown elsewhere looked different
+   * depending on whether you had visited this screen. It is now a deliberate
+   * global in Styles/index.css. CSS Modules would not have scoped it either
+   * way; element selectors are not localised.
+   *
+   * The toast and its keyframes are now in DashboardComponents/dashboardStyles
+   * .css, next to the component that renders them.
+   */
 
-  .success-popup {
-    position: fixed;
-    top: 80px;
-    right: 20px;
-    background-color: #4CAF50; /* Green background */
-    color: white;
-    padding: 10px 20px;
-    border-radius: 5px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    font-size: 1rem;
-    animation: fadeOut 10s ease forwards;
-  }
-  
-  @keyframes fadeOut {
-    0% {
-      opacity: 1;
-    }
-    100% {
-      opacity: 0;
-      transform: translateY(-10px);
-    }
-  }
-
-  .table-dashboard-container table tr:hover td {
-    font-weight: bold;
-    text-decoration: underline;
-    cursor: pointer;
-  }
+/* Row hover now lives in Table/Table.css, keyed on .clickable-row. */
 
   .cadet-form-container {
     display: flex;

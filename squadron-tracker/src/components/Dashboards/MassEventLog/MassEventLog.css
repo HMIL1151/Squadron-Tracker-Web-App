@@ -5,11 +5,7 @@
     margin-bottom: 20px;
   }
 
-  .table-dashboard-container table tr:hover td {
-    font-weight: bold;
-    text-decoration: underline;
-    cursor: pointer;
-  }
+/* Row hover now lives in Table/Table.css, keyed on .clickable-row. */
 
   .add-entry-button {
     padding: 10px 20px;

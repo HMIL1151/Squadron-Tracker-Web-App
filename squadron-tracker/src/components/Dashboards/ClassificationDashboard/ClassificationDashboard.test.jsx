@@ -92,8 +92,15 @@ describe("progression table", () => {
     const rows = [...container.querySelectorAll("tbody tr")];
     const amelia = rows.find((tr) => tr.textContent.includes("Amelia Hart"));
     const isla = rows.find((tr) => tr.textContent.includes("Isla Muir"));
-    expect(amelia).toHaveStyle({ backgroundColor: "#f8d7da" }); // behind
-    expect(isla).toHaveStyle({ backgroundColor: "#d4edda" }); // on track
+    /*
+     * Read from --row-bg rather than backgroundColor. Table.jsx hands the
+     * caller's colour to CSS as a custom property instead of setting the
+     * background inline, because an inline background outranks any class and
+     * left the hover highlight unable to apply. The colour this dashboard
+     * chooses per row is unchanged; only where it is applied moved.
+     */
+    expect(amelia.style.getPropertyValue("--row-bg")).toBe("#f8d7da"); // behind
+    expect(isla.style.getPropertyValue("--row-bg")).toBe("#d4edda"); // on track
   });
 });
 

@@ -64,13 +64,7 @@
   justify-content: space-between;
 }
 
-/* Form styling */
-.edit-cadet-form {
-  display: flex;
-  flex-direction: column;
-  gap: 1px; /* Reduce the gap between form groups */
-}
-
+/* Form styling. .edit-cadet-form removed -- no component renders it. */
 .form-group {
   display: flex;
   align-items: center; /* Align label and input vertically */
@@ -106,37 +100,17 @@
   margin-top: 1px; /* Reduce spacing between groups */
 }
 
-/* Button styling */
-.popup-buttons {
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-  margin-top: 20px;
-}
-
-.popup-close-button,
-.popup-confirm-button {
-  padding: 10px 15px;
-  font-size: 14px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.popup-close-button {
-  background-color: #f44336;
-  color: white;
-}
-
-.popup-confirm-button {
-  background-color: #4caf50;
-  color: white;
-}
-
-.popup-close-button:hover {
-  background-color: #d32f2f;
-}
-
-.popup-confirm-button:hover {
-  background-color: #388e3c;
-}
+/*
+ * Popup.jsx's buttons are styled in dashboardStyles.css, not here.
+ *
+ * This file used to end with .popup-buttons, .popup-close-button and
+ * .popup-confirm-button, none of which Popup.jsx renders -- it renders
+ * .popup-bottom-buttons, .popup-button-red and .popup-button-green, all defined
+ * in dashboardStyles.css. So the shared popup was correct only because both of
+ * its call sites happen to sit in dashboards that import that file, while the
+ * rules here looked like the ones doing the work.
+ *
+ * .popup-buttons is rendered by EventCategoriesDashboard/DeletePopup.jsx and
+ * defined in DeletePopup.css with different values; the copy here never won
+ * anything except by load order.
+ */

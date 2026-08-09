@@ -75,7 +75,43 @@
 }
 
 
-/* Error counterpart of .success-popup (CadetsDashboard.css). Same slot, red. */
+/*
+ * The two toasts, and the animation that dismisses them.
+ *
+ * .success-popup and @keyframes fadeOut used to live in CadetsDashboard.css,
+ * which SuccessMessage.jsx does not import -- so the toast was unstyled unless
+ * the user happened to have opened the Cadet List this session, and the error
+ * toast below animated only under the same condition. Both components sit in
+ * this folder and import this file, so the rules belong here.
+ *
+ * Keeping the keyframes in the same file as the rules that use it is not
+ * tidiness: CSS Modules localises @keyframes names, so a cross-file reference
+ * breaks outright, and silently, the moment either file is scoped.
+ */
+.success-popup {
+  position: fixed;
+  top: 80px;
+  right: 20px;
+  background-color: #4CAF50;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 5px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  font-size: 1rem;
+  animation: fadeOut 10s ease forwards;
+}
+
+@keyframes fadeOut {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+}
+
+/* Error counterpart of .success-popup. Same slot, red. */
 .error-popup {
   position: fixed;
   top: 80px;
