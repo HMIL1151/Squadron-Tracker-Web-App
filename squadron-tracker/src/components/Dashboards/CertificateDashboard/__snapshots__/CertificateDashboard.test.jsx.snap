@@ -1,5 +1,17 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
+exports[`End of Career certificate lines > lists everything on a cadet's record, oldest first 1`] = `
+Array [
+  "Blue Radio (12 Mar 2024)",
+  "First Class Cadet (01 Jun 2024)",
+  "Bronze Radio (05 Nov 2024)",
+  "Cadet of the Year (15 Dec 2024)",
+  "Leading: Airmanship Knowledge Exam (20 Feb 2025)",
+  "Silver Radio (18 Apr 2025)",
+  "Wing Athletics (10 May 2025)",
+]
+`;
+
 exports[`certificate lines > lists a cadet's achievements 1`] = `
 Array [
   "Leading: Airmanship Knowledge Exam (20 Feb 2025)",

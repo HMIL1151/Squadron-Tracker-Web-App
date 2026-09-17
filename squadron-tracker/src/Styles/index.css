@@ -119,7 +119,7 @@ select:focus {
  * page of ink. Declaring those overrides now would only be duplication with
  * nothing to override, and duplication that drifts.
  *
- * Note this is separate from the End of Year Certificates, which are drawn
+ * Note this is separate from the Certificates, which are drawn
  * through jsPDF in JavaScript rather than rendered and printed -- those never
  * follow the theme and are on the lint exemption list in tokens.css.
  */

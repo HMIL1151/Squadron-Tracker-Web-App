@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useContext } from "react";
-import { getEventsForCadet } from "../../../utils/cadets";
+import { getCareerPeriod, getCertificateLines } from "../../../utils/cadets";
 import generateCertificatePDF from "./CertificatePDF";
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
@@ -8,8 +8,24 @@ import shared from "../DashboardComponents/dashboardStyles.module.css";
 import { useSquadron } from "../../../context/SquadronContext";
 import { DataContext } from "../../../context/DataContext"; // Import DataContext
 
+/*
+ * Two certificates, one form.
+ *
+ * End of Year and End of Career differ only in which slice of a cadet's record
+ * they print: one year, or all of it. Everything else -- picking a cadet,
+ * reviewing and pruning the lines, the preview iframe, the bulk zip -- is
+ * identical, so a second dashboard would have been this file duplicated with
+ * one filter removed. The type is a dropdown; `selectedYear` is simply unused
+ * (and hidden) when the type is "career".
+ */
+const TYPES = {
+    year: { label: "End of Year", title: "Certificate of Achievement" },
+    career: { label: "End of Career", title: "Certificate of Service" },
+};
+
 const CertificateDashboard = ({user}) => {
     const [cadetNames, setCadetNames] = useState([]);
+    const [certificateType, setCertificateType] = useState("year");
     const [selectedCadet, setSelectedCadet] = useState("");
     const [selectedYear, setSelectedYear] = useState("");
     const [years, setYears] = useState([]);
@@ -25,6 +41,21 @@ const CertificateDashboard = ({user}) => {
     const { data } = useContext(DataContext); // Access data from DataContext
 
     const squadronName = user.squadronName; // Get the squadron name from the user object
+
+    const isCareer = certificateType === "career";
+
+    /** Everything downstream is keyed on this: null year means "whole career". */
+    const certificateYear = isCareer ? null : selectedYear;
+
+    /** What prints under the squadron name, and what names the file. */
+    const periodFor = (cadet) =>
+        isCareer ? getCareerPeriod(cadet, data) : selectedYear;
+
+    /** The form is complete once a cadet is chosen, and a year if one applies. */
+    const hasSelection = Boolean(selectedCadet) && (isCareer || Boolean(selectedYear));
+    const missingSelectionMessage = isCareer
+        ? "Please select a cadet."
+        : "Please select both a cadet and a year.";
 
     useEffect(() => {
         // Fetch cadet names from DataContext
@@ -45,38 +76,23 @@ const CertificateDashboard = ({user}) => {
     }, [data]);
 
     const fetchCadetEvents = async () => {
-        if (!selectedCadet || !selectedYear) {
-            setErrorMessage("Please select both a cadet and a year.");
+        if (!hasSelection) {
+            setErrorMessage(missingSelectionMessage);
             return;
         }
         setErrorMessage("");
 
         try {
-            const events = getEventsForCadet(selectedCadet, data); // Use DataContext
-            const filteredEvents = events.filter((event) => {
-                const eventYear = new Date(event.date).getFullYear();
-                return eventYear === parseInt(selectedYear, 10);
-            });
-
-            const sortedEvents = filteredEvents.sort((a, b) => new Date(a.date) - new Date(b.date));
-            const formattedEvents = sortedEvents.map((event) =>
-                `${event.event} (${formatDate(event.date)})`
-            );
-            setEventStrings(formattedEvents);
+            setEventStrings(getCertificateLines(selectedCadet, data, certificateYear));
             setIsGenerateClicked(true);
         } catch (error) {
             console.error("Error fetching cadet events:", error);
         }
     };
 
-    const formatDate = (dateString) => {
-        const options = { day: "2-digit", month: "short", year: "numeric" };
-        return new Date(dateString).toLocaleDateString("en-GB", options);
-    };
-
     const handleGeneratePDF = async () => {
-        if (!selectedCadet || !selectedYear) {
-            setErrorMessage("Please select both a cadet and a year.");
+        if (!hasSelection) {
+            setErrorMessage(missingSelectionMessage);
             return;
         }
         setErrorMessage("");
@@ -85,7 +101,15 @@ const CertificateDashboard = ({user}) => {
 
         try {
             // Generate the PDF using the updated generateCertificatePDF function
-            const pdfBlob = await generateCertificatePDF(selectedCadet, selectedYear, eventStrings, squadronNumber, data, squadronName);
+            const pdfBlob = await generateCertificatePDF(
+                selectedCadet,
+                periodFor(selectedCadet),
+                eventStrings,
+                squadronNumber,
+                data,
+                squadronName,
+                TYPES[certificateType].title
+            );
 
             // Create a Blob URL for preview
             const blobUrl = URL.createObjectURL(pdfBlob);
@@ -110,7 +134,7 @@ const CertificateDashboard = ({user}) => {
         // Trigger download of the generated PDF
         const link = document.createElement("a");
         link.href = URL.createObjectURL(generatedPdfBlob);
-        link.download = `${selectedCadet}_Certificate_${selectedYear}.pdf`;
+        link.download = `${selectedCadet}_Certificate_${isCareer ? "Career" : selectedYear}.pdf`;
         link.click();
     };
 
@@ -120,7 +144,7 @@ const CertificateDashboard = ({user}) => {
     };
 
     const handleDownloadAllCertificates = async () => {
-        if (!selectedYear) {
+        if (!isCareer && !selectedYear) {
             setErrorMessage("Please select a year.");
             return;
         }
@@ -130,24 +154,29 @@ const CertificateDashboard = ({user}) => {
         setIsLoading(true); // Show loading popup
         setProgress(0); // Reset progress
 
+        const suffix = isCareer ? "Career" : selectedYear;
+
         for (let i = 0; i < cadetNames.length; i++) {
             const cadet = cadetNames[i];
             setLoadingMessage(`Generating certificate for ${cadet}... (${i + 1}/${cadetNames.length})`);
 
             try {
-                const events = getEventsForCadet(cadet, data); // Use DataContext
-                const filteredEvents = events.filter((event) => {
-                    const eventYear = new Date(event.date).getFullYear();
-                    return eventYear === parseInt(selectedYear, 10);
-                });
-
-                const sortedEvents = filteredEvents.sort((a, b) => new Date(a.date) - new Date(b.date));
-                const formattedEvents = sortedEvents.map((event) =>
-                    `${event.event} (${formatDate(event.date)})`
+                /*
+                 * Same arguments as the single preview above. This call used to
+                 * pass `true` in the `data` slot and nothing at all for the
+                 * squadron name, so every certificate in the zip was headed
+                 * "Cadet Not Found" over "9999 (undefined) Squadron ATC".
+                 */
+                const pdfBlob = await generateCertificatePDF(
+                    cadet,
+                    periodFor(cadet),
+                    getCertificateLines(cadet, data, certificateYear),
+                    squadronNumber,
+                    data,
+                    squadronName,
+                    TYPES[certificateType].title
                 );
-
-                const pdfBlob = await generateCertificatePDF(cadet, selectedYear, formattedEvents, squadronNumber, true);
-                zip.file(`${cadet}_Certificate_${selectedYear}.pdf`, pdfBlob);
+                zip.file(`${cadet}_Certificate_${suffix}.pdf`, pdfBlob);
             } catch (error) {
                 console.error(`Error generating certificate for ${cadet}:`, error);
             }
@@ -158,18 +187,27 @@ const CertificateDashboard = ({user}) => {
 
         setLoadingMessage("Finalizing ZIP file...");
         zip.generateAsync({ type: "blob" }).then((content) => {
-            saveAs(content, `End of Year Certificates_${selectedYear}.zip`);
+            const zipName = isCareer
+                ? "End of Career Certificates.zip"
+                : `End of Year Certificates_${selectedYear}.zip`;
+            saveAs(content, zipName);
             setIsLoading(false); // Hide loading popup
             setLoadingMessage(""); // Clear loading message
             setProgress(0); // Reset progress
         });
     };
 
-    const handleCadetChange = (value) => {
-        setSelectedCadet(value);
+    /** Any change to the selection invalidates the reviewed lines and the preview. */
+    const clearGenerated = () => {
         setIsGenerateClicked(false);
         setEventStrings([]);
         setPdfBlobUrl(null); // Clear the PDF preview
+        setGeneratedPdfBlob(null);
+    };
+
+    const handleCadetChange = (value) => {
+        setSelectedCadet(value);
+        clearGenerated();
     };
 
     const containerRef = useRef(null);
@@ -179,9 +217,13 @@ const CertificateDashboard = ({user}) => {
 
     const handleYearChange = (value) => {
         setSelectedYear(value);
-        setIsGenerateClicked(false);
-        setEventStrings([]);
-        setPdfBlobUrl(null); // Clear the PDF preview
+        clearGenerated();
+    };
+
+    const handleTypeChange = (value) => {
+        setCertificateType(value);
+        setErrorMessage("");
+        clearGenerated();
     };
 
     /*
@@ -242,6 +284,19 @@ const CertificateDashboard = ({user}) => {
             <div className={styles["left-panel"]} ref={leftPanelRef}>
                 <div className={styles["certificate-dashboard"]}>
                     {errorMessage && <p className={shared["popup-error"]}>{errorMessage}</p>}
+                    <label htmlFor="type-select">Certificate Type:</label>
+                    <select
+                        id="type-select"
+                        value={certificateType}
+                        onChange={(e) => handleTypeChange(e.target.value)}
+                    >
+                        {Object.entries(TYPES).map(([value, { label }]) => (
+                            <option key={value} value={value}>
+                                {label}
+                            </option>
+                        ))}
+                    </select>
+
                     <label htmlFor="cadet-select">Select Cadet:</label>
                     <select
                         id="cadet-select"
@@ -257,21 +312,31 @@ const CertificateDashboard = ({user}) => {
                         ))}
                     </select>
 
-                    <label htmlFor="year-select">Select Year:</label>
-                    <select
-                        id="year-select"
-                        value={selectedYear}
-                        onChange={(e) => handleYearChange(e.target.value)}
-                    >
-                        <option value="">-- Select a Year --</option>
-                        {years.map((year, index) => (
-                            <option key={index} value={year}>
-                                {year}
-                            </option>
-                        ))}
-                    </select>
+                    {!isCareer && (
+                        <>
+                            <label htmlFor="year-select">Select Year:</label>
+                            <select
+                                id="year-select"
+                                value={selectedYear}
+                                onChange={(e) => handleYearChange(e.target.value)}
+                            >
+                                <option value="">-- Select a Year --</option>
+                                {years.map((year, index) => (
+                                    <option key={index} value={year}>
+                                        {year}
+                                    </option>
+                                ))}
+                            </select>
+                        </>
+                    )}
 
-                    {selectedCadet && selectedCadet !== "all" && selectedYear && (
+                    {isCareer && selectedCadet && selectedCadet !== "all" && (
+                        <p className={styles["career-period"]}>
+                            Covering {periodFor(selectedCadet)} -- every record held for this cadet.
+                        </p>
+                    )}
+
+                    {selectedCadet !== "all" && hasSelection && (
                         <button className={styles["generate-button"]} onClick={fetchCadetEvents}>
                             Generate
                         </button>
@@ -293,12 +358,16 @@ const CertificateDashboard = ({user}) => {
                                     ))}
                                 </div>
                             ) : (
-                                <p className={styles["no-events"]}>No events found for the selected cadet and year.</p>
+                                <p className={styles["no-events"]}>
+                                    {isCareer
+                                        ? "No events found for the selected cadet."
+                                        : "No events found for the selected cadet and year."}
+                                </p>
                             )}
                         </div>
                     )}
 
-                    {selectedCadet === "all" && selectedYear && (
+                    {selectedCadet === "all" && (isCareer || selectedYear) && (
                         <button className={styles["download-button"]} onClick={handleDownloadAllCertificates}>
                             Download All Certificates as .zip Folder
                         </button>

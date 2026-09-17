@@ -1,5 +1,5 @@
 //TODO: Flight Points Dashboard
-//TODO: End of Year Certificate Dashboard
+//TODO: Certificate Dashboard
 //TODO: Uniform & Attendance Dashboard
 //TODO: PTS Dashboard
 
@@ -57,7 +57,7 @@ const dashboardList = [
   },
   {
     key: "certificatedashboard",
-    title: "End of Year Certificates",
+    title: "Certificates",
     component: CertificateDashboard,
     adminOnly: false, // Accessible to all users
   },
