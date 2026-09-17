@@ -2,7 +2,7 @@
 
 A web app for tracking Air Cadet progression within the RAFAC. Squadron staff log events, badges,
 classifications and exams in one place; the app derives flight points, progression charts and
-end-of-year certificates from that log.
+certificates from that log.
 
 React 19 + Firebase (Auth, Firestore, Hosting).
 
@@ -94,7 +94,9 @@ slower, but never stale. The reverse order would be stale-by-default under one o
 - **Classification Tracker** — plots cadet classification against service length versus the
   expected progression curve.
 - **Flight Points** — per-cadet and per-flight point totals over a chosen year.
-- **End of Year Certificates** — previewable PDF per cadet, with bulk generation as a `.zip`.
+- **Certificates** — previewable PDF per cadet, with bulk generation as a `.zip`. End of Year
+  covers one year; End of Career covers a leaving cadet's whole record. The two differ only in
+  which slice of the event log they print.
 - **PTS Tracker** — badges earned across the Progressive Training Syllabus.
 - **Flights** — add and rename flights, and choose which ones compete for
   points (admins only). A squadron can have any number of flights.
@@ -141,7 +143,7 @@ will not theme. A Stylelint rule enforces this: raw colours are an error outside
 
 Some colours are deliberately exempt and must never be themed: the PTS badge levels, the
 certificate medals, and the categorical chart series, where the colour *is* the data key. The
-End of Year Certificates are drawn through jsPDF from JavaScript and never follow the theme either.
+certificates themselves are drawn through jsPDF from JavaScript and never follow the theme either.
 
 **Dark mode** is a block of token values plus a toggle in the header. The choice is stored twice, on
 purpose: `localStorage` is read by an inline script in `index.html` before first paint (a deferred

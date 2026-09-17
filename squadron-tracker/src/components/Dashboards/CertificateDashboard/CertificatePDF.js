@@ -1,8 +1,25 @@
 import jsPDF from "jspdf";
 import { getCadetRank } from "../../../utils/cadets";
 
-
-const generateCertificatePDF = async (cadetName, year, events, squadronNumber, data, squadronName) => {
+/*
+ * One certificate, two headings.
+ *
+ * `period` is a label, not a year: "2025" for an end-of-year certificate and
+ * "2021 - 2025" for an end-of-career one. Passing the span as text rather than
+ * branching in here keeps this function ignorant of which kind it is drawing --
+ * the only differences between the two documents are the two strings below, so
+ * a second generateCareerCertificatePDF would have been this file copied for
+ * the sake of a heading.
+ */
+const generateCertificatePDF = async (
+    cadetName,
+    period,
+    events,
+    squadronNumber,
+    data,
+    squadronName,
+    title = "Certificate of Achievement"
+) => {
     const doc = new jsPDF();
 
     // Fetch the cadet's rank
@@ -94,7 +111,7 @@ const generateCertificatePDF = async (cadetName, year, events, squadronNumber, d
 
     // Add certificate title
     doc.setFontSize(36);
-    doc.text("Certificate of Achievement", doc.internal.pageSize.getWidth() / 2, 45, { align: "center" });
+    doc.text(title, doc.internal.pageSize.getWidth() / 2, 45, { align: "center" });
 
     // Add squadron name
     doc.setFontSize(24);
@@ -105,9 +122,9 @@ const generateCertificatePDF = async (cadetName, year, events, squadronNumber, d
         { align: "center" }
     );
 
-    // Add year
+    // Add the period the certificate covers -- a single year, or a career span
     doc.setFontSize(16);
-    doc.text(`${year}`, doc.internal.pageSize.getWidth() / 2, 65, { align: "center" });
+    doc.text(`${period}`, doc.internal.pageSize.getWidth() / 2, 65, { align: "center" });
 
     // Add cadet's rank and name
     doc.setFontSize(26);
@@ -141,7 +158,7 @@ const generateCertificatePDF = async (cadetName, year, events, squadronNumber, d
         });
     } else {
         doc.text(
-            "No events found for the selected cadet and year.",
+            `No events found for ${cadetName} in ${period}.`,
             doc.internal.pageSize.getWidth() / 2,
             100,
             { align: "center" }

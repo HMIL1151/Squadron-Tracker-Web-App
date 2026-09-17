@@ -25,7 +25,7 @@ const DASHBOARDS = [
   "Record Categories",
   "Classification Tracker",
   "Flight Points",
-  "End of Year Certificates",
+  "Certificates",
   "PTS Tracker",
   "Flights",
   "Admin Area",

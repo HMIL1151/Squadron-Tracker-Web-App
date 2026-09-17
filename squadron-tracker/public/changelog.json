@@ -93,5 +93,10 @@
     "version": "v0.15.1",
     "date": "09/08/2026",
     "content": "Fixes to dark mode: the access request cards, the PTS Tracker buttons and totals, the certificate panels and the Flight Points table were all hard to read.\nAllocating points to a flight now works. Points were being saved and then discarded again straight away, so nothing ever appeared on the chart. If you tried this and thought you had done something wrong, you had not.\nEvery popup is now the same shape, with Cancel and the confirming button always in the same places, and the menu collapse tab no longer shows through them. Buttons are a little deeper in colour so the white text on them is properly readable."
+  },
+  {
+    "version": "v0.16.0",
+    "date": "17/09/2026",
+    "content": "End of Career certificates, for a cadet who is leaving. The End of Year Certificates screen is now just called Certificates, and a Certificate Type dropdown at the top chooses between the two. An End of Career certificate needs no year: it lists everything held for that cadet, oldest first, and is headed Certificate of Service with the years they served. Reviewing and removing lines, the preview and the download-all zip all work exactly as before.\nFixed: certificates in the download-all zip were headed \"Cadet Not Found\" over an unnamed squadron, because the cadet's rank and the squadron name were not being passed through. Certificates downloaded one at a time were always correct."
   }
 ]

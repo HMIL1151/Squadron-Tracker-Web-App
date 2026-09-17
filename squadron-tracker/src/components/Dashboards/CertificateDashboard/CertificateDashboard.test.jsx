@@ -1,10 +1,10 @@
 /**
- * CHARACTERIZATION -- End of Year Certificates.
+ * CHARACTERIZATION -- Certificates.
  *
- * A form that picks a cadet and a year, then lists the lines that will appear on
- * the certificate. PDF generation itself is not exercised: jspdf writing a real
- * document in jsdom asserts nothing useful, and the interesting behaviour is
- * which lines get selected.
+ * A form that picks a certificate type, a cadet and (for End of Year) a year,
+ * then lists the lines that will appear on the certificate. PDF generation
+ * itself is not exercised: jspdf writing a real document in jsdom asserts
+ * nothing useful, and the interesting behaviour is which lines get selected.
  */
 
 import React from "react";
@@ -19,6 +19,7 @@ const renderDashboard = (squadron = SQUADRONS.FAKETON) =>
 
 const cadetSelect = () => screen.getByLabelText(/select cadet/i);
 const yearSelect = () => screen.getByLabelText(/select year/i);
+const typeSelect = () => screen.getByLabelText(/certificate type/i);
 
 /**
  * The certificate lines currently offered for review.
@@ -53,6 +54,19 @@ describe("the form", () => {
     expect(years).toContain("2024");
   });
 
+  it("offers both kinds of certificate, defaulting to End of Year", () => {
+    renderDashboard();
+    const options = [...typeSelect().querySelectorAll("option")].map((o) => o.textContent);
+    expect(options).toEqual(["End of Year", "End of Career"]);
+    expect(typeSelect()).toHaveValue("year");
+  });
+
+  it("drops the year picker for an End of Career certificate", async () => {
+    const { user } = renderDashboard();
+    await user.selectOptions(typeSelect(), "career");
+    expect(screen.queryByLabelText(/select year/i)).toBeNull();
+  });
+
   it("hides Generate until a cadet and a year are chosen", () => {
     renderDashboard();
     expect(screen.queryByRole("button", { name: "Generate" })).toBeNull();
@@ -63,6 +77,22 @@ describe("the form", () => {
     await user.selectOptions(cadetSelect(), "Amelia Hart");
     await user.selectOptions(yearSelect(), "2025");
     expect(screen.getByRole("button", { name: "Generate" })).toBeInTheDocument();
+  });
+
+  it("needs only a cadet for an End of Career certificate", async () => {
+    const { user } = renderDashboard();
+    await user.selectOptions(typeSelect(), "career");
+    await user.selectOptions(cadetSelect(), "Amelia Hart");
+    expect(screen.getByRole("button", { name: "Generate" })).toBeInTheDocument();
+  });
+
+  it("states the span an End of Career certificate covers", async () => {
+    // Amelia joined in 2021; the clock is frozen at 2025. Service, not logs --
+    // the span runs to today even if the last logged event was earlier.
+    const { user } = renderDashboard();
+    await user.selectOptions(typeSelect(), "career");
+    await user.selectOptions(cadetSelect(), "Amelia Hart");
+    expect(screen.getByText(/Covering 2021 - 2025/)).toBeInTheDocument();
   });
 
   it("offers a zip download when all cadets are selected", async () => {
@@ -109,6 +139,52 @@ describe("certificate lines", () => {
     const before = reviewLines(container);
     await user.click(screen.getByText(before[0]));
     expect(reviewLines(container)).toHaveLength(before.length - 1);
+  });
+});
+
+describe("End of Career certificate lines", () => {
+  const generateCareerFor = async (name) => {
+    const result = renderDashboard();
+    await result.user.selectOptions(typeSelect(), "career");
+    await result.user.selectOptions(cadetSelect(), name);
+    await result.user.click(screen.getByRole("button", { name: "Generate" }));
+    return result;
+  };
+
+  it("lists everything on a cadet's record, oldest first", async () => {
+    const { container } = await generateCareerFor("Amelia Hart");
+    expect(reviewLines(container)).toMatchSnapshot();
+  });
+
+  it("is a superset of the cadet's yearly certificate", async () => {
+    // The career certificate is the same list without the year filter, so every
+    // line of the 2025 certificate has to appear on it.
+    const career = await generateCareerFor("Amelia Hart");
+    const careerLines = reviewLines(career.container);
+    career.unmount();
+
+    const yearly = renderDashboard();
+    await yearly.user.selectOptions(cadetSelect(), "Amelia Hart");
+    await yearly.user.selectOptions(yearSelect(), "2025");
+    await yearly.user.click(screen.getByRole("button", { name: "Generate" }));
+
+    const yearlyLines = reviewLines(yearly.container);
+    expect(yearlyLines.length).toBeGreaterThan(0);
+    yearlyLines.forEach((line) => expect(careerLines).toContain(line));
+    expect(careerLines.length).toBeGreaterThan(yearlyLines.length);
+  });
+
+  it("spans more than one year", async () => {
+    const { container } = await generateCareerFor("Amelia Hart");
+    const lines = reviewLines(container).join(" | ");
+    expect(lines).toContain("2024");
+    expect(lines).toContain("2025");
+  });
+
+  it("says so when a cadet has nothing at all", async () => {
+    const { container } = await generateCareerFor("Isla Muir");
+    expect(reviewLines(container)).toEqual([]);
+    expect(screen.getByText("No events found for the selected cadet.")).toBeInTheDocument();
   });
 });
 

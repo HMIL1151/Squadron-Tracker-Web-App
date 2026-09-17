@@ -1,6 +1,6 @@
 {
   "name": "squadron-tracker",
-  "version": "0.15.1",
+  "version": "0.16.0",
   "private": true,
   "dependencies": {
     "@testing-library/dom": "^10.4.0",
