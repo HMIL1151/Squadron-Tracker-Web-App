@@ -1,323 +1,71 @@
 //TODO: Mass add Events from old tracker/from CSV file
 //TODO: check that added entry is actually saved into firestore by returning the doc name for the entry then checking that the entry is in there
 
-import React, { useState, useEffect, useContext } from "react"; // Removed useCallback
-import { useSquadron } from "../../../context/SquadronContext";
-import { DataContext } from "../../../context/DataContext"; // Import DataContext
+import React from "react";
 import Table from "../../Table/Table";
 import AddEventPopup from "./AddEventPopup";
 import EventDetailsPopup from "./EventDetailsPopup"; // Import the new popup
 import LoadingPopup from "../DashboardComponents/LoadingPopup"; // Import the new LoadingPopup component
-import styles from "./MassEventLog.module.css";
 import shared from "../DashboardComponents/dashboardStyles.module.css";
 import SuccessMessage from "../DashboardComponents/SuccessMessage";
 import ErrorMessage from "../DashboardComponents/ErrorMessage";
-import { removeEvent } from "../../../firebase/events";
-import { useSaveEvent } from "../../../databaseTools/databaseTools"; // Import saveEvent function
-import { getEventDescription, getEventPoints } from "../../../utils/points";
+import useMassEventLog from "./useMassEventLog";
 import table from "../../Table/Table.module.css";
 
+/**
+ * The classic event log.
+ *
+ * All of the behaviour moved to useMassEventLog when the Muster interface
+ * needed the same thing; what is left is this screen's markup, unchanged. The
+ * snapshot is the evidence that the extraction moved nothing.
+ */
 const MassEventLog = ({ user }) => {
-  const [events, setEvents] = useState([]);
-  const [isPopupOpen, setIsPopupOpen] = useState(false);
-  const [selectedNames, setSelectedNames] = useState([]);
-  const [inputValue, setInputValue] = useState("");
-  const [filteredNames, setFilteredNames] = useState([]);
-  const [highlightedIndex, setHighlightedIndex] = useState(-1);
-  const [eventDate, setEventDate] = useState("");
-  const [selectedButton, setSelectedButton] = useState(null);
-  const [successMessage, setSuccessMessage] = useState("");
-  const [errorMessage, setErrorMessage] = useState("");
-  const [selectedEvent, setSelectedEvent] = useState(null); // State for the selected event
-  const [isEventPopupOpen, setIsEventPopupOpen] = useState(false);
-  const [loading, setLoading] = useState(true); // Add loading state
-  const { squadronNumber } = useSquadron(); // Access the squadron number from context
-  const { data, setData } = useContext(DataContext); // Access data from DataContext
-  const [names, setNames] = useState([]); // Retain names for filtering
-  const saveEvent = useSaveEvent(); // Use the saveEvent function from databaseTools
+  const log = useMassEventLog(user);
 
   const columns = ["Name", "Record", "Date", "Points"];
 
-  // Fetch data from DataContext instead of Firestore
-  useEffect(() => {
-    if (!squadronNumber) {
-      console.error("Squadron number is not set.");
-      return;
-    }
-
-    setLoading(true);
-
-    try {
-      // Extract data from DataContext
-      const cadetNames = data.cadets.map((cadet) => `${cadet.forename} ${cadet.surname}`);
-      const eventLog = data.events;
-
-      // Set state with the extracted data
-      setSelectedNames([]);
-      setFilteredNames([]);
-      setHighlightedIndex(-1);
-      setEventDate("");
-      setEvents(eventLog); // Ensure eventLog has the correct structure
-      setInputValue("");
-      setSelectedButton(null);
-
-      // Set additional data for dropdowns
-      setNames(cadetNames);
-    } catch (error) {
-      console.error("Error processing data from DataContext:", error);
-    } finally {
-      setLoading(false);
-    }
-  }, [data, squadronNumber]);
-
-  useEffect(() => {
-    if (!squadronNumber) {
-      console.error("Squadron number is not set.");
-      return;
-    }
-
-    setLoading(true);
-
-    const processEvents = async () => {
-      try {
-        const eventLog = data.events;
-        const flightPoints = data.flightPoints; // Access flight points from DataContext
-
-        // Map eventLog to the desired format
-        const mappedEvents = eventLog.map((event) => ({
-          Name: event.cadetName || "Unknown",
-          Record: getEventDescription(event),
-          Date: event.date || "N/A",
-          Points: getEventPoints(event, flightPoints),
-          AddedBy: event.addedBy || "Unknown",
-          CreatedAt: event.createdAt || "N/A",
-          id: event.id || "N/A",
-          eventCategory: event.eventCategory || "",
-        }));
-
-        // Set state with the mapped data
-        setEvents(mappedEvents);
-      } catch (error) {
-        console.error("Error processing event data:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    processEvents();
-  }, [data, squadronNumber]);
-
-  const handleInputChange = (e) => {
-    const value = e.target.value;
-    setInputValue(value);
-
-    if (value) {
-      const suggestions = names.filter((name) =>
-        name.toLowerCase().includes(value.toLowerCase())
-      );
-      setFilteredNames(suggestions);
-      setHighlightedIndex(-1);
-    } else {
-      setFilteredNames([]);
-    }
-  };
-
-  const handleDateChange = (e) => {
-    setEventDate(e.target.value); // Update the eventDate state
-  };
-
-  const handleNameSelect = (name) => {
-    if (!selectedNames.includes(name)) {
-      setSelectedNames((prev) => [...prev, name]);
-    }
-    setInputValue("");
-    setFilteredNames([]);
-    setHighlightedIndex(-1);
-  };
-
-  const handleRemoveName = (name) => {
-    setSelectedNames((prev) => prev.filter((n) => n !== name));
-  };
-
-  const handleKeyDown = (e) => {
-    if (filteredNames.length > 0) {
-      if (e.key === "ArrowDown") {
-        setHighlightedIndex((prev) => (prev + 1) % filteredNames.length);
-      } else if (e.key === "ArrowUp") {
-        setHighlightedIndex((prev) =>
-          prev === -1 ? filteredNames.length - 1 : (prev - 1 + filteredNames.length) % filteredNames.length
-        );
-      } else if (e.key === "Enter") {
-        if (highlightedIndex >= 0 && highlightedIndex < filteredNames.length) {
-          handleNameSelect(filteredNames[highlightedIndex]);
-        }
-      }
-    }
-  };
-
-  const handleButtonSelect = (buttonText) => {
-    setSelectedButton(buttonText); // Update the selectedButton state
-  };
-
-  const handleAddEvent = async (eventData) => {
-    const {
-      selectedBadgeType,
-      selectedBadgeLevel,
-      selectedExam,
-      freeText,
-      selectedEventCategory,
-      selectedSpecialAward,
-    } = eventData;
-
-    if (!selectedNames.length) {
-      setErrorMessage("Please select at least one name.");
-      return;
-    }
-
-    if (!eventDate) {
-      setErrorMessage("Please select a date.");
-      return;
-    }
-
-    try {
-      const createdAt = new Date(); // Current timestamp
-
-      const newEvent = {
-        addedBy: user.displayName,
-        createdAt,
-        cadetName: selectedNames,
-        date: eventDate,
-        badgeCategory: selectedButton === "Badge" ? selectedBadgeType : "",
-        badgeLevel: selectedButton === "Badge" ? selectedBadgeLevel : "",
-        examName: selectedButton === "Classification/Exam" ? selectedExam : "",
-        eventName: selectedButton === "Event/Other" ? freeText : "",
-        eventCategory: selectedButton === "Event/Other" ? selectedEventCategory : "",
-        specialAward: selectedButton === "Special" ? selectedSpecialAward : "",
-      };
-
-      const { saved, skippedDuplicates, error } = await saveEvent(newEvent);
-
-      if (error) {
-        setErrorMessage(error);
-        return;
-      }
-
-      // Reset the form and close the popup
-      setSelectedNames([]);
-      setInputValue("");
-      setEventDate("");
-      setSelectedButton(null);
-      setIsPopupOpen(false);
-      setErrorMessage("");
-
-      // Duplicates were previously only a console warning, so a save that
-      // silently did nothing still reported success.
-      if (skippedDuplicates.length && !saved.length) {
-        setErrorMessage(`Already recorded for ${skippedDuplicates.join(", ")}.`);
-      } else if (skippedDuplicates.length) {
-        setSuccessMessage(
-          `Event added. Already recorded for ${skippedDuplicates.join(", ")}.`
-        );
-      } else {
-        setSuccessMessage("Event added successfully!");
-      }
-    } catch (error) {
-      console.error("Error adding event:", error);
-      setErrorMessage("An error occurred while adding the event. Please try again.");
-    }
-  };
-
-  const handleRowClick = (eventData) => {
-    setSelectedEvent(eventData);
-    setIsEventPopupOpen(true);
-  };
-
-  const handleRemoveEvent = async (eventId) => {
-    try {
-      if (!eventId) {
-        console.error("Invalid event ID. Cannot remove event.");
-      }
-
-      if (!squadronNumber) {
-        console.error("Squadron number is not set. Cannot remove event.");
-      }
-
-      await removeEvent(squadronNumber, eventId);
-
-      // Remove the event from the local state
-      setEvents((prev) => {
-        const updatedEvents = prev.filter((event) => event.id !== eventId);
-        return updatedEvents;
-      });
-
-      // Remove the event from DataContext's eventLog
-      setData((prevData) => {
-
-        // Ensure prevData.events is an array
-        const updatedEventLog = (prevData.events || []).filter((event) => {
-          if (!event || typeof event !== "object") {
-            console.warn("Skipping invalid event:", event);
-            return false;
-          }
-          return event.id !== eventId;
-        });
-
-
-        return {
-          ...prevData,
-          events: updatedEventLog,
-        };
-      });
-
-      setIsEventPopupOpen(false); // Close the popup
-    } catch (error) {
-      console.error("Error removing event:", error);
-      setErrorMessage("An error occurred while removing the event. Please try again.");
-    }
-  };
-
   return (
     <div className={table["table-dashboard-container"]}>
-      {loading && <LoadingPopup />} {/* Show loading popup while loading */}
+      {log.loading && <LoadingPopup />} {/* Show loading popup while loading */}
       <div className={shared["button-container"]}>
-        <button className={shared["button-green"]} onClick={() => setIsPopupOpen(true)}>
+        <button className={shared["button-green"]} onClick={log.openPopup}>
           Add New Record
         </button>
       </div>
       <Table
         columns={columns}
-        data={events}
+        data={log.events}
         disableHover={false}
         width="80%"
-        onRowClick={handleRowClick} // Add row click handler
+        onRowClick={log.handleRowClick} // Add row click handler
       />
       <AddEventPopup
-        isPopupOpen={isPopupOpen}
-        inputValue={inputValue}
-        filteredNames={filteredNames}
-        badgeTypes={data.flightPoints.Badges?.["Badge Types"] || []}
-        eventCategories={Object.keys(data.flightPoints["Event Category Points"] || {})}
-        specialAwards={data.flightPoints["Special Awards"]?.["Special Awards"] || []}
-        highlightedIndex={highlightedIndex}
-        selectedNames={selectedNames}
-        handleInputChange={handleInputChange}
-        handleKeyDown={handleKeyDown}
-        handleNameSelect={handleNameSelect}
-        handleRemoveName={handleRemoveName}
-        handleAddEvent={handleAddEvent}
-        closePopup={() => setIsPopupOpen(false)}
-        eventDate={eventDate}
-        handleDateChange={handleDateChange}
-        onButtonSelect={handleButtonSelect}
+        isPopupOpen={log.isPopupOpen}
+        inputValue={log.inputValue}
+        filteredNames={log.filteredNames}
+        badgeTypes={log.badgeTypes}
+        eventCategories={log.eventCategories}
+        specialAwards={log.specialAwards}
+        highlightedIndex={log.highlightedIndex}
+        selectedNames={log.selectedNames}
+        handleInputChange={log.handleInputChange}
+        handleKeyDown={log.handleKeyDown}
+        handleNameSelect={log.handleNameSelect}
+        handleRemoveName={log.handleRemoveName}
+        handleAddEvent={log.handleAddEvent}
+        closePopup={log.closePopup}
+        eventDate={log.eventDate}
+        handleDateChange={log.handleDateChange}
+        onButtonSelect={log.handleButtonSelect}
       />
       <EventDetailsPopup
-        isOpen={isEventPopupOpen}
-        eventData={selectedEvent}
-        onClose={() => setIsEventPopupOpen(false)}
-        onRemove={handleRemoveEvent}
+        isOpen={log.isEventPopupOpen}
+        eventData={log.selectedEvent}
+        onClose={log.closeEventPopup}
+        onRemove={log.handleRemoveEvent}
       />
-      <SuccessMessage message={successMessage} />
-      <ErrorMessage message={errorMessage} />
+      <SuccessMessage message={log.successMessage} />
+      <ErrorMessage message={log.errorMessage} />
     </div>
   );
 };

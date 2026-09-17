@@ -1,16 +1,28 @@
 //TODO: Add a change log txt (not sure how to do this in firestore )
 
 import "./Styles/App.css";
-import { Suspense, useState, useEffect } from "react";
-import Menu from "./components/Menu/Menu"; // Import the Menu component
-import ThemeToggle from "./components/ThemeToggle/ThemeToggle";
-import UiToggle from "./components/UiToggle/UiToggle";
+import { useState, useEffect } from "react";
 import WelcomePage from "./components/WelcomePage/WelcomePage"; // Import the new WelcomePage component
 import { signOut } from "firebase/auth";
 import { auth } from "./firebase/firebase"; // Adjust the import path to your Firebase configuration
-import dashboardList from "./components/Dashboards/DashboardComponents/dashboardList";
+import dashboardList, { viewFor } from "./components/Dashboards/DashboardComponents/dashboardList";
 import { useSquadron } from "./context/SquadronContext"; // Import the custom hook
+import { useUiVersion } from "./context/UiVersionContext";
 import { isSystemAdmin } from "./firebase/users";
+import ClassicShell from "./components/Shell/ClassicShell";
+import MusterShell from "./components/Shell/MusterShell";
+
+/*
+ * The two frames the app can wear.
+ *
+ * An explicit map rather than a conditional, so adding a third is an entry
+ * here rather than another branch, and so an unrecognised interface falls back
+ * to the one that has been in production longest instead of rendering nothing.
+ */
+const SHELLS = {
+  classic: ClassicShell,
+  muster: MusterShell,
+};
 
 const App = () => {
   const [user, setUser] = useState(null);
@@ -20,6 +32,7 @@ const App = () => {
   const [version, setVersion] = useState("Loading..."); // Initialize version as "Loading..."
 
   const { setSquadron } = useSquadron(); // Access the context
+  const { uiVersion } = useUiVersion();
 
   useEffect(() => {
     const fetchVersion = async () => {
@@ -91,8 +104,15 @@ const App = () => {
     // If no active menu is set, default to the first dashboard in the list
     const activeDashboard = dashboardList.find((d) => d.key === activeMenu) || dashboardList[0];
 
-    if (activeDashboard) {
-      const DashboardComponent = activeDashboard.component;
+    /*
+     * A screen with no Muster view falls back to its classic component, which
+     * is what lets the interface ship one screen at a time. The classic view
+     * then renders inside the Muster shell -- the reason the Muster palette in
+     * tokens.css has to keep every classic component readable.
+     */
+    const DashboardComponent = viewFor(activeDashboard, uiVersion);
+
+    if (DashboardComponent) {
       return <DashboardComponent user={user} />;
     }
 
@@ -103,37 +123,21 @@ const App = () => {
     return <WelcomePage onUserChange={handleUserChange} />;
   }
 
+  const Shell = SHELLS[uiVersion] ?? SHELLS.classic;
+
   return (
-    <div className={`App ${isMenuCollapsed ? "menu-collapsed" : ""}`}>
-      <header className="app-header">
-        <div className="title">Squadron Tracker, {user.squadronNumber} ({user.squadronName}) Squadron ATC</div>
-        <div className="user-info">
-          <span>Logged in as {user.displayName}</span>
-          <UiToggle />
-          <ThemeToggle />
-          <button className="logout-button" onClick={handleLogout}>
-            Log Out
-          </button>
-        </div>
-      </header>
-      <button className="menu-toggle-button" onClick={toggleMenu}>
-        {isMenuCollapsed ? "❯" : "❮"}
-      </button>
-      <Menu
-        activeMenu={activeMenu}
-        setActiveMenu={setActiveMenu}
-        isAdmin={isAdmin}
-        user={user} // Pass the user object
-        isMenuCollapsed={isMenuCollapsed} // Pass the state to Menu
-      />
-      <main className="main-content">
-        {/* Dashboards are lazy-loaded (see dashboardList.js), so a boundary is
-            required while the chunk downloads. */}
-        <Suspense fallback={<p>Loading...</p>}>{renderMainContent()}</Suspense>
-      </main>
-      {/* Version number in the bottom-right corner */}
-      <div className="version-number">{version}</div>
-    </div>
+    <Shell
+      user={user}
+      isAdmin={isAdmin}
+      version={version}
+      activeMenu={activeMenu}
+      setActiveMenu={setActiveMenu}
+      isMenuCollapsed={isMenuCollapsed}
+      toggleMenu={toggleMenu}
+      onLogout={handleLogout}
+    >
+      {renderMainContent()}
+    </Shell>
   );
 };
 

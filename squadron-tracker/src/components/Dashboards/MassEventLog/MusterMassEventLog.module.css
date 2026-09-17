@@ -1,0 +1,51 @@
+/*
+ * Cell treatments for the Muster event log.
+ *
+ * Only the things that are specific to this table live here; the frame, the
+ * toolbar and the rules come from MusterTable.
+ */
+
+.cadet {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.cadet-name {
+  font-weight: 500;
+  color: var(--color-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/*
+ * The flight sits next to the name rather than in its own column. It is
+ * context for the name, not a value anyone reads down the page, and a column
+ * of repeated flight names is a column of noise.
+ */
+.cadet-flight {
+  flex: 0 0 auto;
+  font-size: 12.5px;
+  color: var(--color-text-muted);
+}
+
+.date {
+  font-size: 13.5px;
+  color: var(--color-text-muted);
+}
+
+.points {
+  font-weight: 600;
+}
+
+.spacer {
+  flex: 1 1 auto;
+}
+
+.count {
+  font-size: 13px;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}

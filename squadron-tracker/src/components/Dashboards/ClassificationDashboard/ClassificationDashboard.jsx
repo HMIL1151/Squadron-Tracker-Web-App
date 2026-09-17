@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState, useCallback, useRef, useContext } from "react";
 import { classificationMap } from "../../../utils/mappings"; // Import classificationMap
+import { deriveClassifications } from "../../../utils/classification";
 import {
   Chart as ChartJS,
   Title,
@@ -68,73 +69,15 @@ const ClassificationDashboard = ({user}) => {
     setHoveredCadet(cadetNames); // Update the hovered cadet state
   };
 
-  // Function to determine target classification based on service length
-  const getTargetClassification = (serviceLengthInMonths) => {
-    if (serviceLengthInMonths < 2) return 1;
-    if (serviceLengthInMonths < 6) return 2;
-    if (serviceLengthInMonths < 8) return 3;
-    if (serviceLengthInMonths < 10) return 4;
-    if (serviceLengthInMonths < 12) return 5;
-    if (serviceLengthInMonths < 16) return 6;
-    if (serviceLengthInMonths < 20) return 7;
-    if (serviceLengthInMonths < 24) return 8;
-    if (serviceLengthInMonths < 28) return 9;
-    if (serviceLengthInMonths < 32) return 10;
-    if (serviceLengthInMonths < 36) return 11;
-    return 12;
-  };
-
   // Refresh data when the page is reloaded
   useEffect(() => {
     const fetchCadetsWithClassification = () => {
-      const cadets = data.cadets || [];
-      const eventLogData = data.events || [];
-
-      const formattedCadets = cadets.map((cadet) => {
-        const { forename, surname, startDate } = cadet;
-
-        const startDateObj = new Date(startDate);
-        const today = new Date();
-        const serviceLengthInMonths =
-          (today.getFullYear() - startDateObj.getFullYear()) * 12 +
-          (today.getMonth() - startDateObj.getMonth());
-
-        const matchingEvents = eventLogData.filter(
-          (event) =>
-            event.cadetName === `${forename} ${surname}` &&
-            event.examName !== ""
-        );
-        
-
-        let classification = matchingEvents.length + 1;
-        let classificationLabel;
-
-        if (classification > 12) {
-          classification = 12; // Cap classification at 13
-          classificationLabel = classificationMap[12];
-
-        }
-
-        else{
-          classificationLabel = classificationMap[classification] || classificationMap[1];
-        }
-
-
-        const targetClassification = getTargetClassification(
-          serviceLengthInMonths
-        );
-        const targetClassificationLabel =
-          classificationMap[targetClassification] || "Junior";
-
-        return {
-          cadetName: `${forename} ${surname}`,
-          serviceLengthInMonths,
-          classification,
-          classificationLabel,
-          targetClassification,
-          targetClassificationLabel,
-        };
-      });
+      /*
+       * The derivation moved to utils/classification.js when the Muster
+       * interface needed the same numbers. Same arithmetic, same quirks --
+       * this component's snapshot is the evidence that nothing moved.
+       */
+      const formattedCadets = deriveClassifications(data.cadets || [], data.events || []);
 
       setCadetData(formattedCadets);
 

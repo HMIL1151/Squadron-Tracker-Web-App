@@ -1,0 +1,322 @@
+/*
+ * The Muster frame.
+ *
+ * Grid rather than the classic shell's absolute positioning. The classic
+ * layout pins a header, a menu and a toggle button into place with fixed
+ * offsets, which is why its menu has to know the header's height. Two grid
+ * tracks need none of that, and the rail and the content cannot disagree about
+ * where the boundary is.
+ *
+ * Height is 100dvh, not 100vh. On mobile Safari a 100vh column is taller than
+ * the visible area by the height of the browser chrome, which put the sign-out
+ * button and the rail's footer permanently below the fold.
+ */
+
+.shell {
+  display: grid;
+  grid-template-columns: 252px minmax(0, 1fr);
+  height: 100dvh;
+  background-color: var(--color-surface-sunken);
+  color: var(--color-text);
+}
+
+/* -- the rail ------------------------------------------------------------ */
+
+.rail {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background-color: var(--color-rail);
+  border-right: 1px solid var(--color-rail-border);
+}
+
+/*
+ * The squadron identity, which used to be a sentence in the top bar reading
+ * "Squadron Tracker, 9999 (Faketon) Squadron ATC". The number is what staff
+ * actually identify a squadron by, so it is the thing set large.
+ */
+.identity {
+  padding: 22px 20px 20px;
+  background-color: var(--color-identity);
+  color: var(--color-identity-text);
+}
+
+.identity-number {
+  font-size: 30px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.identity-name {
+  margin-top: 7px;
+  font-size: 13.5px;
+  font-weight: 500;
+  line-height: 1.35;
+  color: var(--color-identity-text-muted);
+}
+
+.groups {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 20px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.group-title {
+  margin: 0;
+  padding: 0 10px 7px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+
+.nav-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+/*
+ * Buttons, not links. The app has no routing -- the active dashboard is state
+ * -- so an <a href="#"> would be a lie to anyone navigating by keyboard or
+ * screen reader, and would put junk in the address bar. aria-current="page"
+ * carries the selected state instead.
+ *
+ * Two classes rather than one plus a modifier, picked through an explicit map
+ * in the component, because CSS Modules scoping does not survive a class name
+ * built by concatenation.
+ */
+.nav-link,
+.nav-link-active {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 9px 10px;
+  border: 0;
+  border-radius: 5px;
+  font: inherit;
+  font-size: 14px;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.nav-link {
+  background-color: transparent;
+  color: var(--color-text);
+  font-weight: 500;
+}
+
+.nav-link:hover {
+  background-color: var(--color-surface-hover);
+}
+
+.nav-link-active {
+  background-color: var(--color-accent);
+  color: var(--color-on-accent);
+  font-weight: 600;
+}
+
+.nav-link:focus-visible,
+.nav-link-active:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+/* -- the foot of the rail ------------------------------------------------ */
+
+.account {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 20px 10px;
+  border-top: 1px solid var(--color-border-subtle);
+}
+
+.avatar {
+  flex: 0 0 auto;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background-color: var(--color-surface-hover);
+  color: var(--color-accent);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.account-detail {
+  min-width: 0;
+}
+
+/*
+ * Google display names are arbitrary length and this column is 252px wide, so
+ * both lines truncate rather than wrapping the rail into a different shape.
+ */
+.account-name {
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.account-role {
+  font-size: 11.5px;
+  line-height: 1.3;
+  color: var(--color-text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.account-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 0 20px 16px;
+}
+
+/*
+ * Quieter than it was in the classic header, where it was a solid red button.
+ * Signing out is not an action anyone needs encouraging towards, and a red
+ * fill in the corner of every screen reads as a warning about something.
+ */
+.sign-out {
+  padding: 7px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  background-color: var(--color-surface);
+  color: var(--color-text-muted);
+  font: inherit;
+  font-size: 0.85rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.sign-out:hover {
+  background-color: var(--color-surface-hover);
+  color: var(--color-danger);
+}
+
+.sign-out:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+/*
+ * The rail's own controls inherit the app's text colour rather than the
+ * inverse one the classic header needed, so UiToggle's header styling is
+ * overridden here. It is the one place a component's own module is corrected
+ * from outside, and only because the alternative is a variant prop whose only
+ * purpose is to say "I am in the rail now".
+ */
+.account-actions button {
+  color: var(--color-text-muted);
+  border-color: var(--color-border);
+}
+
+.account-actions button:hover {
+  background-color: var(--color-surface-hover);
+  border-color: var(--color-border-strong);
+  color: var(--color-text);
+}
+
+/* -- the content --------------------------------------------------------- */
+
+.main {
+  min-width: 0;
+  min-height: 0;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.loading {
+  margin: 0;
+  padding: 32px;
+  color: var(--color-text-muted);
+}
+
+/*
+ * Below tablet width the rail stops being a column and becomes a strip across
+ * the top, because 252px of a phone screen is most of it. The nav groups scroll
+ * sideways; the identity block stays, since knowing which squadron you are
+ * looking at matters more on the device you are most likely to be using in a
+ * hurry.
+ */
+@media (max-width: 800px) {
+  .shell {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr);
+    height: 100dvh;
+  }
+
+  .rail {
+    border-right: 0;
+    border-bottom: 1px solid var(--color-rail-border);
+  }
+
+  .identity {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    padding: 12px 16px;
+  }
+
+  .identity-number {
+    font-size: 22px;
+  }
+
+  .identity-name {
+    margin-top: 0;
+    font-size: 12.5px;
+  }
+
+  .identity-name br {
+    display: none;
+  }
+
+  .groups {
+    flex-direction: row;
+    gap: 14px;
+    padding: 10px 12px;
+    overflow-x: auto;
+    overflow-y: hidden;
+  }
+
+  .group-title {
+    display: none;
+  }
+
+  .nav-list {
+    flex-direction: row;
+    gap: 6px;
+  }
+
+  .nav-link,
+  .nav-link-active {
+    white-space: nowrap;
+  }
+
+  .account {
+    padding: 10px 16px;
+  }
+
+  .account-actions {
+    padding: 0 16px 12px;
+  }
+}

@@ -1,21 +1,21 @@
 //TODO: Collapsing Menu
 
 import React from "react";
-import dashboardList from "../Dashboards/DashboardComponents/dashboardList";
+import { dashboardsFor } from "../Dashboards/DashboardComponents/dashboardList";
 import styles from "./Menu.module.css";
 
 const Menu = ({ activeMenu, setActiveMenu, isAdmin, isMenuCollapsed, user }) => {
-  const filteredDashboards = dashboardList.filter((dashboard) => {
-    if (dashboard.systemAdminOnly) {
-      const canView = isAdmin && user?.systemAdmin; // Check if the user is a system admin
-      return canView;
-    }
-    if (dashboard.adminOnly) {
-      const canView = isAdmin; // Check if the user is an admin
-      return canView;
-    }
-    return true; // Accessible to all users
-  });
+  /*
+   * The permission filter moved into dashboardList so that this menu and the
+   * Muster rail cannot drift apart on who may see what -- two copies of an
+   * access rule is one copy too many.
+   *
+   * Pinned to "classic" rather than reading the interface: this component IS
+   * the classic menu. Muster has its own navigation, and a screen that exists
+   * only there is dropped here rather than rendered as an entry that would
+   * fall back to a classic view that does not exist.
+   */
+  const filteredDashboards = dashboardsFor({ uiVersion: "classic", isAdmin, user });
 
   return (
     <nav className={[styles["menu"], isMenuCollapsed ? styles["collapsed"] : ""].filter(Boolean).join(" ")}>

@@ -1,0 +1,304 @@
+/*
+ * The small repeated parts: buttons, chips, search, summary tiles, empty
+ * states.
+ *
+ * Every interactive thing here is at least 36px tall, and the ones that are a
+ * screen's primary action are 44. This app gets used on a laptop trackpad in a
+ * squadron HQ by someone halfway through a parade night, which is closer to
+ * touch conditions than to a desk.
+ */
+
+/* -- buttons ------------------------------------------------------------- */
+
+.button-primary,
+.button-secondary,
+.button-danger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  height: 44px;
+  padding: 0 17px;
+  border-radius: 6px;
+  font: inherit;
+  font-size: 14px;
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.button-primary {
+  border: 0;
+  background-color: var(--color-accent);
+  color: var(--color-on-accent);
+  font-weight: 600;
+}
+
+.button-primary:hover:not(:disabled) {
+  background-color: var(--color-accent-hover);
+}
+
+/*
+ * White with a border rather than the filled grey classic uses. On a screen
+ * where the table is the content, a second filled button competes with the
+ * first for the eye and neither wins.
+ */
+.button-secondary {
+  border: 1px solid var(--color-border);
+  background-color: var(--color-surface);
+  color: var(--color-text);
+  font-weight: 500;
+}
+
+.button-secondary:hover:not(:disabled) {
+  background-color: var(--color-surface-hover);
+}
+
+.button-danger {
+  border: 1px solid var(--color-error-border);
+  background-color: var(--color-surface);
+  color: var(--color-danger-hover);
+  font-weight: 500;
+}
+
+.button-danger:hover:not(:disabled) {
+  background-color: var(--color-error-bg);
+}
+
+.button-primary:disabled,
+.button-secondary:disabled,
+.button-danger:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.button-primary:focus-visible,
+.button-secondary:focus-visible,
+.button-danger:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+/* -- chips --------------------------------------------------------------- */
+
+.chip,
+.chip-on {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 36px;
+  padding: 0 13px;
+  border-radius: 6px;
+  font: inherit;
+  font-size: 13.5px;
+  font-weight: 500;
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.chip {
+  border: 1px solid var(--color-border);
+  background-color: var(--color-surface);
+  color: var(--color-text);
+}
+
+.chip:hover {
+  background-color: var(--color-surface-hover);
+}
+
+.chip-on {
+  border: 1px solid var(--color-chip-active-border);
+  background-color: var(--color-chip-active);
+  color: var(--color-chip-active-text);
+  font-weight: 600;
+}
+
+.chip:focus-visible,
+.chip-on:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+/* -- search and fields --------------------------------------------------- */
+
+.search {
+  position: relative;
+  min-width: 0;
+}
+
+.search-icon {
+  position: absolute;
+  left: 11px;
+  top: 11px;
+  color: var(--color-text-faint);
+  pointer-events: none;
+}
+
+.search-input {
+  box-sizing: border-box;
+  width: 100%;
+  height: 36px;
+  padding: 0 12px 0 32px;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  background-color: var(--color-surface);
+  color: var(--color-text);
+  font: inherit;
+  font-size: 13.5px;
+}
+
+.search-input:focus-visible,
+.select:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 1px;
+}
+
+.field {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.field-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+
+.select {
+  height: 36px;
+  padding: 0 10px;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  background-color: var(--color-surface);
+  color: var(--color-text);
+  font: inherit;
+  font-size: 13.5px;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* -- flight mark --------------------------------------------------------- */
+
+.flight-mark {
+  display: inline-block;
+  flex: 0 0 auto;
+  width: 3px;
+  height: 22px;
+  border-radius: 2px;
+}
+
+/* -- summary strip ------------------------------------------------------- */
+
+/*
+ * One-pixel gaps over a border-coloured background, rather than a border on
+ * each tile. Adjacent borders would double to two pixels between tiles and
+ * stay one at the ends, which reads as a wonky grid.
+ */
+.summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1px;
+  background-color: var(--color-border);
+  border: 1px solid var(--color-border);
+  border-radius: 7px;
+  overflow: hidden;
+}
+
+.summary-tile {
+  padding: 14px 18px;
+  background-color: var(--color-surface);
+}
+
+.summary-label {
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--color-text-muted);
+}
+
+.summary-value {
+  margin-top: 4px;
+  font-size: 25px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text);
+}
+
+.summary-note {
+  margin-top: 3px;
+  font-size: 12px;
+  color: var(--color-text-muted);
+}
+
+/* -- empty state --------------------------------------------------------- */
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 48px 24px;
+  text-align: center;
+}
+
+.empty-title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.empty-body {
+  margin: 0;
+  max-width: 46ch;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--color-text-muted);
+}
+
+/* -- tag ----------------------------------------------------------------- */
+
+.tag {
+  display: inline-block;
+  padding: 3px 9px;
+  border-radius: 4px;
+  background-color: var(--color-chip);
+  color: var(--color-chip-text);
+  font-size: 12.5px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+/* -- bar ----------------------------------------------------------------- */
+
+.bar {
+  display: inline-block;
+  height: 6px;
+  border-radius: 3px;
+  background-color: var(--color-row-rule);
+  overflow: hidden;
+  vertical-align: middle;
+}
+
+.bar-fill {
+  display: block;
+  height: 100%;
+  border-radius: 3px;
+}
