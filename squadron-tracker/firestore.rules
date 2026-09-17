@@ -124,6 +124,20 @@ service cloud.firestore {
       allow read, write: if signedIn() && request.auth.uid == uid;
     }
 
+    // Application-wide settings, currently just which interface everyone gets
+    // by default. Every signed-in user must be able to READ it -- the answer
+    // decides what they are shown, and it is consulted before membership of
+    // any squadron is known. Only a system admin may change it.
+    //
+    // This is deliberately a kill switch: if the new interface goes wrong, one
+    // system admin flipping one field returns every user to the old one with
+    // no deploy. That is only true while the write rule stays this narrow, so
+    // resist adding per-squadron or per-admin writes here.
+    match /SystemConfig/{doc} {
+      allow read: if signedIn();
+      allow write: if isSystemAdmin();
+    }
+
     // New squadron applications. Anyone signed in may file their own; only
     // system admins review them.
     match /NewAccountRequests/{doc} {

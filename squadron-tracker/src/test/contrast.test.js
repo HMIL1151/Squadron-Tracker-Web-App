@@ -49,18 +49,34 @@ const stripPrintBlock = (text) => {
 const css = stripPrintBlock(raw);
 
 /**
- * Token values for one theme.
+ * Which :root blocks make up each palette, in cascade order.
  *
- * Light is everything in the plain :root blocks; dark is those overridden by
- * :root[data-theme="dark"]. The media-query copy is deliberately skipped -- it
- * carries the same values, and parsing both would only assert twice.
+ * `undefined` is the plain `:root` blocks -- the light values every palette
+ * starts from. Each named palette then layers its own attribute block on top,
+ * which is exactly what the cascade does at runtime.
+ *
+ * Muster reads the plain blocks and its own, and NOT the dark one. That is not
+ * an omission: ThemeContext pins data-theme to light while Muster is active
+ * precisely because Muster has no dark palette yet, so the two attribute
+ * blocks never apply together. Adding a dark Muster means adding a fourth
+ * entry here, and the suite will start measuring it.
+ *
+ * The media-query copy of dark is deliberately skipped -- it carries the same
+ * values, and parsing both would only assert twice. It is skipped by the
+ * regex rather than by name: `:root:not([data-theme="light"])` does not match
+ * a bare attribute selector.
  */
+const PALETTES = {
+  light: [undefined],
+  dark: [undefined, '[data-theme="dark"]'],
+  muster: [undefined, '[data-ui="muster"]'],
+};
+
 const readTokens = (theme) => {
+  const wanted = PALETTES[theme];
   const values = {};
-  for (const [, isDark, body] of css.matchAll(/:root(\[data-theme="dark"\])?\s*\{([^}]*)\}/g)) {
-    // Light reads only the plain :root blocks. Dark reads those too and then
-    // lets the dark block override, which is what the cascade does.
-    if (theme === "light" && isDark) continue;
+  for (const [, suffix, body] of css.matchAll(/:root(\[[^\]]*\])?\s*\{([^}]*)\}/g)) {
+    if (!wanted.includes(suffix)) continue;
     for (const [, name, value] of body.matchAll(/(--[\w-]+)\s*:\s*([^;]+);/g)) {
       values[name] = value.trim();
     }
@@ -125,7 +141,7 @@ const PAIRS = [
   ["--color-surface", "--color-text-faint", AA_LARGE],
 ];
 
-describe.each(["light", "dark"])("%s theme contrast", (theme) => {
+describe.each(Object.keys(PALETTES))("%s theme contrast", (theme) => {
   const values = readTokens(theme);
 
   it("resolves the tokens it is asserting on", () => {

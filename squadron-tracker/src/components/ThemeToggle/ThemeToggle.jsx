@@ -13,10 +13,18 @@ import styles from "./ThemeToggle.module.module.css";
  *
  * aria-pressed rather than a label change, so a screen reader announces the
  * state instead of relying on the icon, and the accessible name stays stable.
+ *
+ * Renders nothing at all when the active interface has no dark palette. A
+ * disabled button would be worse: it advertises a control that cannot be made
+ * to work from here, and the reason it is unavailable has nothing to do with
+ * this user or their permissions. The preference underneath is untouched, so
+ * it comes back exactly as it was when dark is available again.
  */
 const ThemeToggle = () => {
-  const { theme, toggleTheme } = useTheme();
+  const { theme, toggleTheme, canChooseTheme } = useTheme();
   const isDark = theme === "dark";
+
+  if (!canChooseTheme) return null;
 
   return (
     <button

@@ -14,26 +14,52 @@
     <meta name="theme-color" content="#16181d" media="(prefers-color-scheme: dark)" />
 
     <!--
-      Theme, applied before first paint.
+      Interface and theme, applied before first paint.
 
       Deliberately an inline, non-module, non-deferred script. A module script
       is deferred by spec and would run AFTER the first paint, which is the
       white flash this exists to prevent -- and on a dark-mode device that flash
-      is the whole screen.
+      is the whole screen. The same argument now covers the interface: without
+      this, a Muster user watches the classic shell render and then swap.
 
       localStorage is the source of truth for paint because it is the only one
       readable synchronously. Firestore holds the account-level preference and
-      reconciles once auth resolves; see ThemeContext.
+      the system-wide default, and reconciles once auth resolves; see
+      ThemeContext and UiVersionContext.
     -->
     <script>
       (function () {
+        var root = document.documentElement;
+
+        var ui = "classic";
         try {
-          var stored = localStorage.getItem("squadron-tracker:theme");
-          if (stored === "light" || stored === "dark") {
-            document.documentElement.setAttribute("data-theme", stored);
+          // `?ui=` beats the cache and is the escape hatch out of an interface
+          // that has broken badly enough to hide its own switch.
+          var fromUrl = new URLSearchParams(window.location.search).get("ui");
+          var stored = localStorage.getItem("squadron-tracker:ui");
+          var chosen = fromUrl || stored;
+          if (chosen === "classic" || chosen === "muster") ui = chosen;
+        } catch (e) {
+          // Private browsing can make localStorage throw, and very old
+          // browsers lack URLSearchParams. Classic is the right fallback.
+        }
+        root.setAttribute("data-ui", ui);
+
+        try {
+          if (ui === "muster") {
+            // Muster has no dark palette yet, so it is pinned to light. Set
+            // rather than left unset: leaving it off lets prefers-color-scheme
+            // pull in the dark tokens for a UI with no dark design. The user's
+            // stored choice is read but not written, so it survives untouched.
+            root.setAttribute("data-theme", "light");
+          } else {
+            var theme = localStorage.getItem("squadron-tracker:theme");
+            if (theme === "light" || theme === "dark") {
+              root.setAttribute("data-theme", theme);
+            }
+            // No stored choice: the prefers-color-scheme block in tokens.css
+            // handles it, so nothing to set here.
           }
-          // No stored choice: the prefers-color-scheme block in tokens.css
-          // handles it, so nothing to set here.
         } catch (e) {
           // Private browsing can make localStorage throw on read. Falling
           // through to the media query is the correct outcome, not an error.

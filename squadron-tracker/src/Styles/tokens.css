@@ -424,6 +424,196 @@
   --chart-tick: #a7aeb8;
 }
 
+/* -------------------------------------------------------------------------
+ * Muster.
+ *
+ * The second interface, selected by [data-ui="muster"] on <html>. Same
+ * vocabulary, different values -- which is the whole reason the semantic tier
+ * exists. A component that already asks for --color-surface needs no change to
+ * appear in either interface.
+ *
+ * The constraint that shapes every value here, and it is not obvious:
+ *
+ *   Muster ships one screen at a time. Until a screen has a Muster view, the
+ *   registry falls back to the CLASSIC component, rendered inside the Muster
+ *   shell. So these values are not free -- every classic component has to stay
+ *   readable under them for the whole of the rollout. That is why the neutral
+ *   button stays a filled grey rather than becoming the white-with-a-border
+ *   that Muster's own toolbars use, and why nothing here is left undefined in
+ *   the hope that no old component asks for it.
+ *
+ * Only the semantic tier is reassigned, and only above the primitives -- same
+ * discipline as dark mode. src/test/contrast.test.js measures this palette as
+ * a third theme, so a value added here is measured, not assumed.
+ *
+ * There is no dark Muster yet. ThemeContext pins data-theme to light while
+ * this interface is active and hides the toggle, so the dark block above never
+ * applies alongside these. The user's own dark preference is left untouched
+ * and starts being honoured again the day this section gains a dark twin.
+ * ---------------------------------------------------------------------- */
+
+:root[data-ui="muster"] {
+  /* The cool institutional greys the interface is built on. Ordered light to
+   * dark, and deliberately blue-cast rather than neutral: this is RAF
+   * blue-grey, not a generic dashboard grey. */
+  --muster-paper: #fff;
+  --muster-ground: #e7ebef;
+  --muster-mist: #f5f7f9;
+  --muster-wash: #edf2f6;
+  --muster-rule: #d3dae0;
+  --muster-rule-soft: #e3e8ec;
+  --muster-rule-faint: #edf0f3;
+  --muster-edge: #c6cfd7;
+  --muster-edge-strong: #a8b4bf;
+
+  /* Ink, and the two greys below it that are still AA on white. */
+  --muster-ink: #17242f;
+  --muster-ink-2: #2c3d4c;
+  --muster-ink-3: #4a5c6b;
+  --muster-ink-4: #5a6b78;
+  --muster-ink-5: #6b7b88;
+
+  /* Service blue. One accent doing the work of classic's blue AND green:
+   * Muster has a single primary action colour, so selection and confirmation
+   * stop competing for attention. */
+  --muster-service: #223a50;
+  --muster-service-deep: #17293a;
+  --muster-service-tint: #f2f6f9;
+  --muster-service-line: #b9c6d2;
+  --muster-service-pale: #c3d2de;
+
+  /* Signals. */
+  --muster-alarm: #b02b3c;
+  --muster-alarm-deep: #96222f;
+  --muster-alarm-bg: #fbeae8;
+  --muster-alarm-line: #c6a5aa;
+  --muster-good: #22664f;
+  --muster-good-bg: #e6f2ec;
+  --muster-good-line: #bcd9cc;
+  --muster-caution-bg: #faf0e2;
+  --muster-caution-line: #e6d59b;
+  --muster-mark: #fcf3cf;
+
+  /* -- the semantic tier, reassigned ---------------------------------- */
+
+  --color-surface: var(--muster-paper);
+  --color-surface-sunken: var(--muster-ground);
+  --color-surface-muted: var(--muster-mist);
+  --color-surface-hover: var(--muster-wash);
+  --color-app-bar: var(--muster-service);
+
+  --color-text: var(--muster-ink);
+  --color-text-muted: var(--muster-ink-4);
+  --color-text-faint: var(--muster-ink-5);
+  --color-text-inverse: var(--muster-paper);
+
+  --color-border: var(--muster-rule);
+  --color-border-subtle: var(--muster-rule-soft);
+  --color-border-strong: var(--muster-edge-strong);
+
+  /* Accent and action collapse onto the same blue. They stayed separate in
+   * classic because splitting them there would have been a redesign rather
+   * than a rename; here the redesign is the point. */
+  --color-accent: var(--muster-service);
+  --color-accent-hover: var(--muster-service-deep);
+  --color-action: var(--muster-service);
+  --color-action-hover: var(--muster-service-deep);
+  --color-danger: var(--muster-alarm);
+  --color-danger-hover: var(--muster-alarm-deep);
+  --color-logout: var(--muster-alarm);
+  --color-logout-hover: var(--muster-alarm-deep);
+
+  --color-on-action: var(--muster-paper);
+  --color-on-danger: var(--muster-paper);
+  --color-on-accent: var(--muster-paper);
+
+  /* Stays a filled grey. Muster's own secondary button is white with a
+   * border, but this token is what classic's tab strips reach for, and they
+   * render inside the Muster shell until their screen is converted. */
+  --color-button-neutral: var(--muster-rule-faint);
+  --color-button-neutral-hover: var(--muster-rule-soft);
+  --color-button-neutral-text: var(--muster-ink-2);
+
+  --color-divider: var(--muster-rule);
+  --color-divider-hover: var(--muster-edge-strong);
+  --color-divider-active: var(--muster-ink-5);
+
+  --color-warning-bg: var(--muster-caution-bg);
+  --color-warning-border: var(--muster-caution-line);
+  --color-success-bg: var(--muster-good-bg);
+  --color-success-border: var(--muster-good-line);
+  --color-error-bg: var(--muster-alarm-bg);
+  --color-error-border: var(--muster-alarm-line);
+  --color-highlight-row: var(--muster-mark);
+
+  --ring-action: rgba(34, 58, 80, 0.45);
+  --ring-accent: rgba(34, 58, 80, 0.45);
+
+  --shadow-sm: 0 1px 2px rgba(23, 36, 47, 0.06);
+  --shadow-soft: 0 1px 3px rgba(23, 36, 47, 0.08);
+  --shadow-md: 0 2px 6px rgba(23, 36, 47, 0.08);
+  --shadow-lg: 0 6px 16px rgba(23, 36, 47, 0.1);
+  --shadow-xl: 0 12px 32px rgba(23, 36, 47, 0.14);
+  --color-scrim: rgba(23, 36, 47, 0.45);
+
+  --chart-crosshair: rgba(23, 36, 47, 0.3);
+  --chart-crosshair-label: rgba(23, 36, 47, 0.75);
+  --chart-grid: rgba(23, 36, 47, 0.08);
+  --chart-tick: #5a6b78;
+
+  /* -- roles the classic interface never had --------------------------- */
+
+  /* The navigation rail, and the squadron identity block at the top of it.
+   * Named separately from --color-app-bar because Muster has no horizontal
+   * bar: the identity moved into the rail. */
+  --color-rail: var(--muster-paper);
+  --color-rail-border: var(--muster-rule);
+  --color-identity: var(--muster-service);
+  --color-identity-text: var(--muster-paper);
+  --color-identity-text-muted: var(--muster-service-pale);
+
+  /* Tables, which are the interface's main event rather than a component in
+   * it, so they get their own names. */
+  --color-table-head: var(--muster-mist);
+  --color-table-head-rule: var(--muster-service);
+  --color-row-rule: var(--muster-rule-faint);
+  --color-row-selected: var(--muster-service-tint);
+
+  /* Filter chips and category pills. */
+  --color-chip: var(--muster-rule-faint);
+  --color-chip-text: var(--muster-ink-3);
+  --color-chip-active: var(--muster-wash);
+  --color-chip-active-text: var(--muster-service);
+  --color-chip-active-border: var(--muster-service-line);
+
+  --color-positive: var(--muster-good);
+}
+
+/* -------------------------------------------------------------------------
+ * Flight colours.
+ *
+ * Categorical, and exempt from theming for the same reason the chart series
+ * are: the colour IS the key. A cadet's flight is read off a 3px bar at the
+ * left of their row, and a flight that changed hue between light and dark, or
+ * between interfaces, would stop being identifiable at a glance.
+ *
+ * Six, because a squadron sets its own flights and there is no fixed number.
+ * Anything past the sixth cycles -- see utils/flights.js. Chosen to stay
+ * distinguishable under the common forms of colour blindness rather than to
+ * make a pretty ramp, which is why there is no second green.
+ *
+ * These are indexes into a squadron's `flights` array, so the same warning
+ * applies as everywhere else that touches it: never reorder them.
+ * ---------------------------------------------------------------------- */
+:root {
+  --flight-1: #3e6ea8;
+  --flight-2: #b0503f;
+  --flight-3: #2f7d63;
+  --flight-4: #6b5c8a;
+  --flight-5: #a8762a;
+  --flight-6: #3f7d8c;
+}
+
 /*
  * Print always uses the light values, whatever the screen is doing. A user who
  * prints from dark mode wants a readable page, not a black one.

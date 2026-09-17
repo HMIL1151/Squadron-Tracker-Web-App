@@ -535,4 +535,45 @@ describeRules("firestore.rules", () => {
     });
   });
 
+  // -------------------------------------------------------------------------
+  // System-wide settings
+  // -------------------------------------------------------------------------
+
+  describe("system config", () => {
+    /*
+     * SystemConfig/ui is the interface kill switch: one field that moves every
+     * user back to the old interface with no deploy. That is only true while
+     * these two properties hold -- everyone can read it, and only a system
+     * admin can change it.
+     *
+     * The read has to be open to every signed-in user because the answer
+     * decides what they are shown, and it is needed before membership of any
+     * squadron is known. The write has to be closed to squadron admins: a
+     * squadron admin is trusted with their own cadets, not with what the other
+     * sixty squadrons see.
+     */
+    it("any signed-in user reads the interface setting", async () => {
+      await assertSucceeds(faketonUser.doc("SystemConfig/ui").get());
+      await assertSucceeds(stranger.doc("SystemConfig/ui").get());
+    });
+
+    it("a system admin changes it", async () => {
+      await assertSucceeds(sysAdmin.doc("SystemConfig/ui").set({ defaultVersion: "muster" }));
+    });
+
+    it("a squadron admin cannot change what every squadron sees", async () => {
+      await assertFails(faketonAdmin.doc("SystemConfig/ui").set({ defaultVersion: "muster" }));
+      await assertFails(testwoodAdmin.doc("SystemConfig/ui").set({ defaultVersion: "classic" }));
+    });
+
+    it("an ordinary user cannot change it", async () => {
+      await assertFails(faketonUser.doc("SystemConfig/ui").set({ defaultVersion: "muster" }));
+    });
+
+    it("signed-out access is refused", async () => {
+      await assertFails(anon.doc("SystemConfig/ui").get());
+      await assertFails(anon.doc("SystemConfig/ui").set({ defaultVersion: "muster" }));
+    });
+  });
+
   });
