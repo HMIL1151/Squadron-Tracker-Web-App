@@ -1,0 +1,716 @@
+/*
+ * Squadron statistics.
+ *
+ * Four sections, each headed with a question and answered in a sentence before
+ * any number appears. The sentence is the design: a page of tiles makes the
+ * reader do the interpreting, and the interpreting is the part that needs
+ * squadron knowledge rather than arithmetic.
+ */
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.head {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.question {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--color-text);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 250px minmax(0, 1fr) 300px;
+  gap: 14px;
+  align-items: stretch;
+}
+
+/*
+ * Two equal columns, for the sections that are a pair rather than the
+ * three-up .grid above. Dropping two .card-wide children into .grid puts one
+ * of them in its 250px column, which is how this was first built and is why
+ * the pair is its own class.
+ */
+.pair {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  align-items: stretch;
+  margin-bottom: 14px;
+}
+
+@media (max-width: 1000px) {
+  .pair {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.card,
+.card-wide,
+.alert {
+  padding: 16px 18px;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 7px;
+}
+
+/*
+ * The one alarm-styled thing on the page, and only because it is the only
+ * thing on it that names people to act on today. If a second panel earns this
+ * treatment, neither will keep it.
+ */
+.alert {
+  border-color: var(--color-error-border);
+  border-left: 3px solid var(--color-danger);
+}
+
+.card-title,
+.alert-title {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.alert-title {
+  color: var(--color-danger-hover);
+}
+
+.figure {
+  margin: 5px 0 0;
+  font-size: 40px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text);
+}
+
+.caption {
+  margin: 10px 0 0;
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: var(--color-text-muted);
+}
+
+.pairs {
+  margin: 14px 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.pairs > div {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.pairs dt {
+  font-size: 13px;
+  color: var(--color-text);
+}
+
+.pairs dd {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text);
+}
+
+/* -- rows (flights, funnel) ---------------------------------------------- */
+
+.rows {
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 110px minmax(0, 1fr) 46px;
+  align-items: center;
+  gap: 11px;
+}
+
+.row-name {
+  font-size: 13px;
+  color: var(--color-text);
+  text-align: right;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.row-value {
+  font-size: 13px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  color: var(--color-text);
+}
+
+.track {
+  display: block;
+  height: 20px;
+  background-color: var(--color-surface-muted);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.rung-1,
+.rung-2,
+.rung-3,
+.rung-4,
+.rung-5,
+.rung-6 {
+  display: block;
+  height: 20px;
+  border-radius: 3px;
+}
+
+.rung-1 {
+  background-color: var(--rung-1);
+}
+
+.rung-2 {
+  background-color: var(--rung-2);
+}
+
+.rung-3 {
+  background-color: var(--rung-3);
+}
+
+.rung-4 {
+  background-color: var(--rung-4);
+}
+
+.rung-5 {
+  background-color: var(--rung-5);
+}
+
+.rung-6 {
+  background-color: var(--rung-6);
+}
+
+/* -- people lists -------------------------------------------------------- */
+
+.people {
+  list-style: none;
+  margin: 10px 0 0;
+  padding: 0;
+}
+
+.person {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--color-row-rule);
+}
+
+.mark {
+  width: 3px;
+  height: 24px;
+  flex: 0 0 auto;
+  border-radius: 2px;
+}
+
+.person-text {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.person-name {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.25;
+  color: var(--color-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.person-note {
+  display: block;
+  font-size: 11.5px;
+  line-height: 1.3;
+  color: var(--color-text-muted);
+}
+
+.person-value {
+  flex: 0 0 auto;
+  font-size: 13px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-danger-hover);
+}
+
+.names {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin: 11px 0 0;
+  padding: 0;
+}
+
+.name {
+  padding: 4px 10px;
+  border: 1px solid var(--color-border-subtle);
+  border-radius: 4px;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--color-text);
+}
+
+/* -- month bars ---------------------------------------------------------- */
+
+.months {
+  display: flex;
+  align-items: flex-end;
+  gap: 7px;
+  margin-top: 14px;
+}
+
+.month {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.month-track {
+  height: 96px;
+  display: flex;
+  align-items: flex-end;
+}
+
+.month-bar {
+  width: 100%;
+  min-height: 2px;
+  background-color: var(--rung-5);
+  border-radius: 2px 2px 0 0;
+}
+
+.month-label {
+  font-size: 10.5px;
+  text-align: center;
+  color: var(--color-text-muted);
+}
+
+/* -- points histogram ---------------------------------------------------- */
+
+.histogram {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.band {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.band-count {
+  font-size: 12.5px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text);
+}
+
+.band-track {
+  width: 100%;
+  height: 100px;
+  display: flex;
+  align-items: flex-end;
+}
+
+.band-bar,
+.band-zero {
+  width: 100%;
+  min-height: 2px;
+  border-radius: 3px 3px 0 0;
+}
+
+.band-bar {
+  background-color: var(--rung-4);
+}
+
+/*
+ * The zero column is the one worth noticing, so it is the only coloured bar
+ * on the chart. Everything else is the same blue: the shape of the
+ * distribution is the message, not which band is which.
+ */
+.band-zero {
+  background-color: var(--color-danger);
+}
+
+.band-label {
+  font-size: 11px;
+  color: var(--color-text-muted);
+}
+
+.footnote {
+  margin: 4px 0 0;
+  max-width: 90ch;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--color-text-muted);
+}
+
+@media (max-width: 1200px) {
+  .grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* -- year-on-year matrices ------------------------------------------------ */
+
+/*
+ * A plain table rather than a chart.
+ *
+ * Six metrics across four years is a comparison people READ -- "284 against
+ * 210" -- not a shape they scan. A grouped bar chart of the same numbers would
+ * be prettier and would make it harder to answer the question anyone actually
+ * has, which is "what was it last year".
+ */
+.table-card {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 7px;
+  overflow-x: auto;
+}
+
+.matrix {
+  width: 100%;
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+}
+
+.matrix-head,
+.matrix-head-num,
+.matrix-head-now {
+  padding: 11px 14px;
+  background-color: var(--color-table-head);
+  border-bottom: 2px solid var(--color-table-head-rule);
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+
+.matrix-head {
+  text-align: left;
+}
+
+.matrix-head-num {
+  text-align: right;
+}
+
+/* The selected year is tinted the whole way down, so the eye can follow it. */
+.matrix-head-now {
+  text-align: right;
+  background-color: var(--color-chip-active);
+  color: var(--color-chip-active-text);
+}
+
+.matrix-row-head {
+  padding: 0 14px;
+  height: 42px;
+  text-align: left;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--color-text);
+  white-space: nowrap;
+  border-bottom: 1px solid var(--color-row-rule);
+}
+
+.matrix-cell,
+.matrix-cell-now {
+  padding: 0 14px;
+  height: 42px;
+  text-align: right;
+  font-size: 13.5px;
+  color: var(--color-text);
+  border-bottom: 1px solid var(--color-row-rule);
+  white-space: nowrap;
+}
+
+.matrix-cell-now {
+  background-color: var(--color-chip-active);
+  font-weight: 600;
+}
+
+.matrix-bar {
+  padding: 0 14px;
+  height: 42px;
+  width: 140px;
+  border-bottom: 1px solid var(--color-row-rule);
+}
+
+/*
+ * Up is not automatically good and down is not automatically bad -- a squadron
+ * that ran fewer events because it was short of staff is not failing. So these
+ * are legible rather than celebratory: a colour and a sign, no arrows, no
+ * green tick.
+ */
+.delta-up,
+.delta-down,
+.delta-flat,
+.delta-none {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.delta-up {
+  color: var(--color-positive);
+}
+
+.delta-down {
+  color: var(--color-danger-hover);
+}
+
+.delta-flat,
+.delta-none {
+  color: var(--color-text-muted);
+}
+
+.flight-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.flight-size {
+  padding: 1px 7px;
+  border-radius: 9px;
+  background-color: var(--color-chip);
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--color-chip-text);
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Sections must not be squeezed to nothing on a short window. */
+.section {
+  flex-shrink: 0;
+}
+
+/* -- tabs ----------------------------------------------------------------- */
+
+/*
+ * Five enquiries rather than one scroll.
+ *
+ * The opposite call to Record Categories, and for the opposite reason: those
+ * were four short lists read AGAINST each other, so tabs would have made you
+ * hold one in your head. These are five separate questions that are never
+ * asked in the same breath, and stacking them made a page three thousand
+ * pixels tall where the last section was never seen.
+ */
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  flex-shrink: 0;
+  padding-bottom: 4px;
+}
+
+/* -- extra pieces the new sections need ----------------------------------- */
+
+.figure-unit {
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0;
+  color: var(--color-text-muted);
+}
+
+.sub-title {
+  margin: 16px 0 0;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+
+.matrix-cell-left {
+  padding: 0 14px;
+  height: 42px;
+  text-align: left;
+  font-size: 13.5px;
+  color: var(--color-text);
+  border-bottom: 1px solid var(--color-row-rule);
+  white-space: nowrap;
+}
+
+/*
+ * A zero in a ladder is the interesting cell, not a missing one -- "nobody has
+ * ever reached Silver here" is the finding. Dimming it would hide exactly the
+ * thing worth seeing, so it stays full strength and only loses its weight.
+ */
+.matrix-cell-zero {
+  padding: 0 14px;
+  height: 42px;
+  text-align: right;
+  font-size: 13.5px;
+  font-weight: 400;
+  color: var(--color-text-faint);
+  border-bottom: 1px solid var(--color-row-rule);
+}
+
+.ceiling {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+}
+
+.dot-blue,
+.dot-bronze,
+.dot-silver,
+.dot-gold,
+.dot-none {
+  display: inline-block;
+  width: 11px;
+  height: 11px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  border: 1px solid var(--color-border);
+}
+
+.dot-blue {
+  background-color: var(--badge-blue);
+}
+
+.dot-bronze {
+  background-color: var(--badge-bronze);
+}
+
+.dot-silver {
+  background-color: var(--badge-silver);
+}
+
+.dot-gold {
+  background-color: var(--badge-gold);
+}
+
+.dot-none {
+  background-color: transparent;
+}
+
+.reach-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+}
+
+/*
+ * A category used by records but no longer in the dropdown. Usually means it
+ * was renamed or retired, and the old records still carry the old name.
+ */
+.retired {
+  padding: 2px 7px;
+  border-radius: 4px;
+  background-color: var(--color-warning-bg);
+  border: 1px solid var(--color-warning-border);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.zero {
+  color: var(--color-danger-hover);
+  font-weight: 600;
+}
+
+.muted {
+  color: var(--color-text-muted);
+}
+
+.person-value-muted {
+  flex: 0 0 auto;
+  font-size: 12.5px;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+
+/* -- data quality --------------------------------------------------------- */
+
+.issues {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  gap: 14px;
+}
+
+.issue-high,
+.issue-medium,
+.issue-low {
+  padding: 16px 18px;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 7px;
+}
+
+/*
+ * Severity is a left edge rather than a fill. These are housekeeping notes,
+ * not alarms -- a page of red panels about stray whitespace would train people
+ * to ignore the colour by the time something actually mattered.
+ */
+.issue-high {
+  border-left: 3px solid var(--color-danger);
+}
+
+.issue-medium {
+  border-left: 3px solid var(--muster-caution-line);
+}
+
+.issue-low {
+  border-left: 3px solid var(--color-border-strong);
+}
+
+.issue-title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.issue-detail {
+  margin: 6px 0 0;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--color-text-muted);
+}

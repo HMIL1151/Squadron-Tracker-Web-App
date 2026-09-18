@@ -1,36 +1,57 @@
 //TODO: Mass add Cadets from old tracker/from CSV file
 
-import React, { useState, useContext } from "react";
-import { DataContext } from "../../../context/DataContext"; // Import DataContext
+import React from "react";
 import { rankMap, classificationMap } from "../../../utils/mappings";
 import Table from "../../Table/Table";
 import PopupManager from "./CadetsDashboardPopupManager";
 import SuccessMessage from "../DashboardComponents/SuccessMessage";
 import ErrorMessage from "../DashboardComponents/ErrorMessage";
-import styles from "./CadetsDashboard.module.css";
 import shared from "../DashboardComponents/dashboardStyles.module.css";
-import { useSquadron } from "../../../context/SquadronContext";
-import { addCadet, removeCadet } from "../../../firebase/cadets";
+import useCadetList from "./useCadetList";
+/*
+ * Imported for its position in the module graph, not for a class name.
+ *
+ * This file referenced `styles` until the writes moved to useCadetList.
+ * CadetForm imports the same stylesheet, so the rules still arrive without
+ * this line -- but they arrive LATER, and several of them compete with rules
+ * in other dashboards' stylesheets, where the winner is decided by load order
+ * (docs/styling-cascade.md).
+ *
+ * Keeping the import holds the order exactly as it was rather than betting
+ * that nothing depended on it. Safe to remove once the collisions listed in
+ * src/test/cssShape.test.js are gone.
+ */
+import "./CadetsDashboard.module.css";
 import table from "../../Table/Table.module.css";
 
+/**
+ * The classic cadet list.
+ *
+ * The writes moved to useCadetList when the Muster interface needed them; what
+ * is left here is this screen's own markup and its row formatting. The
+ * snapshot is the evidence that the extraction moved nothing.
+ */
 const CadetsDashboard = ({ user }) => {
-  const [isAddPopupOpen, setIsAddPopupOpen] = useState(false);
-  const [isPopupOpen, setIsPopupOpen] = useState(false);
-  const [isConfirmationOpen, setIsConfirmationOpen] = useState(false);
-  const [isEditPopupOpen, setIsEditPopupOpen] = useState(false); // New state for edit popup
-  const [successMessage, setSuccessMessage] = useState("");
-  const [errorMessage, setErrorMessage] = useState("");
-  const [selectedCadet, setSelectedCadet] = useState("");
-  const { squadronNumber } = useSquadron(); // Get the squadron number from the utils
-  const { data, setData } = useContext(DataContext); // Access cadets and events from DataContext
-  const [newCadet, setNewCadet] = useState({
-    forename: "",
-    surname: "",
-    startDate: "",
-    classification: "",
-    flight: "",
-    rank: "",
-  });
+  const {
+    data,
+    isAddPopupOpen,
+    setIsAddPopupOpen,
+    isPopupOpen,
+    setIsPopupOpen,
+    isConfirmationOpen,
+    setIsConfirmationOpen,
+    isEditPopupOpen,
+    setIsEditPopupOpen,
+    successMessage,
+    errorMessage,
+    selectedCadet,
+    setSelectedCadet,
+    newCadet,
+    handleDischarge,
+    handleAddCadet,
+    handleInputChange,
+    handleRowClick,
+  } = useCadetList(user);
 
   const cadetListColumns = [
     "Forename",
@@ -51,138 +72,6 @@ const CadetsDashboard = ({ user }) => {
     "Start Date": "startDate",
     AddedBy: "addedBy",
     CreatedAt: "createdAt",
-  };
-
-
-
-  const handleDischarge = async () => {
-    try {
-      if (!selectedCadet) {
-        setErrorMessage("Please select a cadet to discharge.");
-        return;
-      }
-
-      await removeCadet(squadronNumber, selectedCadet);
-
-      // Update the DataContext's cadets
-      setData((prevData) => ({
-        ...prevData,
-        cadets: prevData.cadets.filter((cadet) => cadet.id !== selectedCadet),
-      }));
-
-      // Trigger the success message
-      const dischargedCadet = data.cadets.find((cadet) => cadet.id === selectedCadet);
-      setSuccessMessage(`${dischargedCadet.forename} ${dischargedCadet.surname} successfully discharged.`);
-      setTimeout(() => setSuccessMessage(""), 1000); // Automatically hide after 1 second
-
-      // Close both popups
-      setIsPopupOpen(false);
-      setIsConfirmationOpen(false);
-      setSelectedCadet("");
-    } catch (error) {
-      console.error("Error discharging cadet:", error);
-      setErrorMessage("An error occurred while discharging the cadet.");
-    }
-  };
-
-  const handleAddCadet = async () => {
-    try {
-      if (!user) {
-        setErrorMessage("User information is missing.");
-        return;
-      }
-
-      let { forename, surname, startDate, flight, rank } = newCadet;
-
-      if (!forename || !surname || !startDate || flight === "" || rank === "") {
-        setErrorMessage("Please fill in all fields.");
-        return;
-      }
-
-
-
-      // Helper function to capitalize each word in a string
-      const capitalizeWords = (str) => {
-        return str
-            .split(" ") // Split by spaces first
-            .map((word) =>
-                word
-                    .split("-") // Split by hyphens within each word
-                    .map((part) => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
-                    .join("-") // Rejoin hyphenated parts
-            )
-            .join(" "); // Rejoin the words with spaces
-      };
-
-      // Format the forename and surname
-      forename = capitalizeWords(forename.trim());
-      surname = capitalizeWords(surname.trim());
-
-      // Format the startDate to "YYYY-MM-DD"
-      const date = new Date(startDate);
-      const formattedStartDate = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-
-      const newCadetData = {
-        forename,
-        surname,
-        startDate: formattedStartDate,
-        flight: parseInt(flight, 10),
-        rank: parseInt(rank, 10),
-        addedBy: user.displayName,
-        createdAt: new Date(),
-      };
-
-      const newCadetId = await addCadet(squadronNumber, newCadetData);
-
-      // Update the DataContext's cadets
-      setData((prevData) => ({
-        ...prevData,
-        cadets: [...prevData.cadets, { id: newCadetId, ...newCadetData }],
-      }));
-
-      // Trigger the success message
-      setSuccessMessage(`${forename} ${surname} successfully added.`);
-      setTimeout(() => setSuccessMessage(""), 1000); // Automatically hide after 1 second
-
-      // Close the Add Cadet popup
-      setIsAddPopupOpen(false);
-
-      // Reset the form fields
-      setNewCadet({
-        forename: "",
-        surname: "",
-        startDate: "",
-        flight: "",
-        rank: "",
-      });
-    } catch (error) {
-      console.error("Error adding cadet:", error);
-      setErrorMessage("An error occurred while adding the cadet.");
-    }
-  };
-
-  // NOTE: a handleEditCadet lived here and was passed to PopupManager, but
-  // PopupManager never destructured that prop -- it defines and uses its own.
-  // The copy here was unreachable, so it has been removed; editing is handled
-  // in CadetsDashboardPopupManager.
-
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setNewCadet((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleRowClick = (cadetId) => {
-    const cadet = data.cadets.find((c) => c.id === cadetId); // Find the selected cadet
-
-    if (cadet) {
-      setSelectedCadet({
-        ...cadet,
-        addedBy: cadet.addedBy || "Unknown", // Ensure addedBy is set
-        createdAt: cadet.createdAt || null, // Ensure createdAt is set
-      });
-    }
-
-    setIsEditPopupOpen(true); // Open the edit popup
   };
 
   const formattedCadets = data.cadets.map((cadet) => {

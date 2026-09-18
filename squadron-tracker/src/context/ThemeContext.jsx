@@ -2,6 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useState } from "rea
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "../firebase/firebase";
 import { fetchThemePreference, saveThemePreference } from "../firebase/preferences";
+import { useUiVersionOrDefault } from "./UiVersionContext";
 
 /**
  * Which theme the app is showing, and how to change it.
@@ -80,15 +81,36 @@ export const ThemeProvider = ({ children, uid: uidProp = null, initialTheme = nu
   const [isExplicit, setIsExplicit] = useState(() => readStored() !== null);
 
   /*
+   * The Muster interface has no dark palette yet, so while it is active the
+   * app is pinned to light and the toggle is hidden.
+   *
+   * Pinned, not overwritten. `theme` below stays whatever the user actually
+   * chose and their stored preference is never rewritten -- only what gets
+   * PAINTED changes. So a dark-mode user who tries Muster, dislikes it and
+   * switches back finds dark mode exactly as they left it, and the day Muster
+   * gains a dark palette everyone's setting starts being honoured again with
+   * no migration.
+   */
+  const uiVersion = useUiVersionOrDefault();
+  const supportsDark = uiVersion !== "muster";
+  const paintedTheme = supportsDark ? theme : "light";
+
+  /*
    * The attribute is what the stylesheet keys off, so it is set here rather
    * than left to whoever changed the state. Setting it unconditionally -- even
    * when following the OS -- would defeat the prefers-color-scheme default,
    * which is why it is removed when no explicit choice exists.
+   *
+   * Under an interface without a dark palette it IS set unconditionally, and
+   * to light: leaving it off there would let prefers-color-scheme pull in the
+   * dark tokens for a UI that has no dark design.
    */
   useEffect(() => {
     if (typeof document === "undefined") return;
     const root = document.documentElement;
-    if (isExplicit) {
+    if (!supportsDark) {
+      root.setAttribute("data-theme", "light");
+    } else if (isExplicit) {
       root.setAttribute("data-theme", theme);
     } else {
       root.removeAttribute("data-theme");
@@ -97,8 +119,8 @@ export const ThemeProvider = ({ children, uid: uidProp = null, initialTheme = nu
     // The browser-chrome colour cannot follow a media query once the user has
     // overridden it, so it is updated directly.
     const meta = document.querySelector('meta[name="theme-color"]:not([media])');
-    if (meta) meta.setAttribute("content", theme === "dark" ? "#16181d" : "#282c34");
-  }, [theme, isExplicit]);
+    if (meta) meta.setAttribute("content", paintedTheme === "dark" ? "#16181d" : "#282c34");
+  }, [theme, isExplicit, supportsDark, paintedTheme]);
 
   /*
    * Reconcile with the account once a uid exists. Runs on sign-in rather than
@@ -146,7 +168,22 @@ export const ThemeProvider = ({ children, uid: uidProp = null, initialTheme = nu
   );
 
   return (
-    <ThemeContext.Provider value={{ theme, isExplicit, chooseTheme, toggleTheme }}>
+    <ThemeContext.Provider
+      value={{
+        // What is on screen, which is what a component styling itself needs.
+        theme: paintedTheme,
+        // What the user actually picked, which survives an interface that
+        // cannot honour it.
+        preferredTheme: theme,
+        isExplicit,
+        // False while the active interface has no dark palette. The toggle
+        // reads this rather than asking which interface is running, so adding
+        // a dark Muster later needs no change here.
+        canChooseTheme: supportsDark,
+        chooseTheme,
+        toggleTheme,
+      }}
+    >
       {children}
     </ThemeContext.Provider>
   );

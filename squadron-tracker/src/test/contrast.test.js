@@ -49,18 +49,34 @@ const stripPrintBlock = (text) => {
 const css = stripPrintBlock(raw);
 
 /**
- * Token values for one theme.
+ * Which :root blocks make up each palette, in cascade order.
  *
- * Light is everything in the plain :root blocks; dark is those overridden by
- * :root[data-theme="dark"]. The media-query copy is deliberately skipped -- it
- * carries the same values, and parsing both would only assert twice.
+ * `undefined` is the plain `:root` blocks -- the light values every palette
+ * starts from. Each named palette then layers its own attribute block on top,
+ * which is exactly what the cascade does at runtime.
+ *
+ * Muster reads the plain blocks and its own, and NOT the dark one. That is not
+ * an omission: ThemeContext pins data-theme to light while Muster is active
+ * precisely because Muster has no dark palette yet, so the two attribute
+ * blocks never apply together. Adding a dark Muster means adding a fourth
+ * entry here, and the suite will start measuring it.
+ *
+ * The media-query copy of dark is deliberately skipped -- it carries the same
+ * values, and parsing both would only assert twice. It is skipped by the
+ * regex rather than by name: `:root:not([data-theme="light"])` does not match
+ * a bare attribute selector.
  */
+const PALETTES = {
+  light: [undefined],
+  dark: [undefined, '[data-theme="dark"]'],
+  muster: [undefined, '[data-ui="muster"]'],
+};
+
 const readTokens = (theme) => {
+  const wanted = PALETTES[theme];
   const values = {};
-  for (const [, isDark, body] of css.matchAll(/:root(\[data-theme="dark"\])?\s*\{([^}]*)\}/g)) {
-    // Light reads only the plain :root blocks. Dark reads those too and then
-    // lets the dark block override, which is what the cascade does.
-    if (theme === "light" && isDark) continue;
+  for (const [, suffix, body] of css.matchAll(/:root(\[[^\]]*\])?\s*\{([^}]*)\}/g)) {
+    if (!wanted.includes(suffix)) continue;
     for (const [, name, value] of body.matchAll(/(--[\w-]+)\s*:\s*([^;]+);/g)) {
       values[name] = value.trim();
     }
@@ -125,7 +141,37 @@ const PAIRS = [
   ["--color-surface", "--color-text-faint", AA_LARGE],
 ];
 
-describe.each(["light", "dark"])("%s theme contrast", (theme) => {
+/**
+ * Pairs that exist in only one palette.
+ *
+ * The classification ramp is Muster's alone -- the classic screens draw that
+ * distribution as a scatter plot with no filled bands. Asserting it against
+ * the light and dark palettes would measure two undefined values and pass.
+ *
+ * Worth measuring rather than eyeballing: rung-4 was first drawn with light
+ * text and came out at 2.90:1. A single-hue ramp does not flip from dark to
+ * light text where it looks like it should.
+ */
+const PALETTE_PAIRS = {
+  muster: [
+    ["--rung-1", "--color-text-muted", AA_NORMAL],
+    ["--rung-2", "--color-text", AA_NORMAL],
+    ["--rung-3", "--color-text", AA_NORMAL],
+    ["--rung-4", "--color-text", AA_NORMAL],
+    ["--rung-5", "--color-text-inverse", AA_NORMAL],
+    ["--rung-6", "--color-text-inverse", AA_NORMAL],
+    // The rail and its identity block, which only Muster has.
+    ["--color-rail", "--color-text", AA_NORMAL],
+    ["--color-identity", "--color-identity-text", AA_NORMAL],
+    ["--color-identity", "--color-identity-text-muted", AA_NORMAL],
+    ["--color-table-head", "--color-text-muted", AA_NORMAL],
+    ["--color-row-selected", "--color-text", AA_NORMAL],
+    ["--color-chip", "--color-chip-text", AA_NORMAL],
+    ["--color-chip-active", "--color-chip-active-text", AA_NORMAL],
+  ],
+};
+
+describe.each(Object.keys(PALETTES))("%s theme contrast", (theme) => {
   const values = readTokens(theme);
 
   it("resolves the tokens it is asserting on", () => {
@@ -135,7 +181,9 @@ describe.each(["light", "dark"])("%s theme contrast", (theme) => {
     expect(resolve(values, "--color-action")).toMatch(/^#|^rgb/);
   });
 
-  it.each(PAIRS)("%s against %s meets AA", (bgToken, fgToken, minimum) => {
+  const pairs = [...PAIRS, ...(PALETTE_PAIRS[theme] || [])];
+
+  it.each(pairs)("%s against %s meets AA", (bgToken, fgToken, minimum) => {
     const bg = resolve(values, bgToken);
     const fg = resolve(values, fgToken);
     expect(bg, `${bgToken} did not resolve`).toBeTruthy();

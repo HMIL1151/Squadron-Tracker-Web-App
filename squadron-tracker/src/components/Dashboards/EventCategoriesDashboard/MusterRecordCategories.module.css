@@ -1,0 +1,68 @@
+/*
+ * Four lists, side by side rather than behind tabs.
+ *
+ * Two columns at desktop width: these are short lists read together, and a
+ * single column would put "what a badge is worth" a scroll away from "what an
+ * event is worth".
+ */
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
+  gap: 18px;
+  align-items: start;
+}
+
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+  min-width: 0;
+}
+
+.head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--color-text);
+}
+
+.note {
+  margin: 3px 0 0;
+  max-width: 52ch;
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: var(--color-text-muted);
+}
+
+.actions {
+  display: inline-flex;
+  gap: 7px;
+  justify-content: flex-end;
+}
+
+/*
+ * The action buttons come down from the usual 44px rather than sitting at it.
+ * There are two per row inside a 48px row, and a 44px pair leaves no rule
+ * visible between rows -- the table stops reading as a list.
+ */
+.actions button {
+  height: 32px;
+  padding: 0 11px;
+  font-size: 13px;
+}
+
+.warning {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--color-text-muted);
+}

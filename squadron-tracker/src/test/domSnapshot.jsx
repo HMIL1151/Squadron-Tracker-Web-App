@@ -79,10 +79,32 @@ export const toStructure = (root, depth = 0) => {
 export const tableToRows = (table) => {
   if (!table) throw new Error("tableToRows: no table given");
 
-  const headers = [...table.querySelectorAll("thead th")].map((th) => {
-    const clone = th.cloneNode(true);
-    clone.querySelectorAll("input, button").forEach((n) => n.remove());
-    return squash(clone.textContent);
+  /*
+   * Only the FIRST header row. Muster tables carry a second one holding a
+   * filter box per column; counting those as headers would give a table of
+   * five columns ten header names and shift every assertion by five.
+   */
+  const headerRow = table.querySelector("thead tr");
+
+  /*
+   * A column's name, from either interface.
+   *
+   * Classic puts the name in the cell as text, alongside a Filter input and a
+   * Sort button -- so stripping both is what leaves the name. Muster makes the
+   * name itself the sort control, so stripping buttons leaves nothing.
+   *
+   * Hence: strip the controls, and if that empties the cell, fall back to the
+   * text with buttons kept. Neither interface has to know this exists, and the
+   * classic headers come out exactly as they did before.
+   */
+  const headers = [...(headerRow ? headerRow.children : [])].map((th) => {
+    const withoutInputs = th.cloneNode(true);
+    withoutInputs.querySelectorAll("input").forEach((n) => n.remove());
+
+    const withoutControls = withoutInputs.cloneNode(true);
+    withoutControls.querySelectorAll("button").forEach((n) => n.remove());
+
+    return squash(withoutControls.textContent) || squash(withoutInputs.textContent);
   });
 
   const rows = [...table.querySelectorAll("tbody tr")].map((tr) =>

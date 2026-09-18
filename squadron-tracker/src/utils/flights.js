@@ -121,3 +121,32 @@ export const updateFlight = (flights, flightIndex, changes) =>
   normaliseFlights(flights).map((flight, index) =>
     index + 1 === Number(flightIndex) ? { ...flight, ...changes } : flight
   );
+
+/**
+ * How many distinct flight colours tokens.css defines.
+ *
+ * A squadron sets its own flights and there is no fixed number, so past this
+ * the colours repeat rather than running out. Six is already more than any
+ * squadron in the data, and adding a seventh that is distinguishable from the
+ * other six -- under the common forms of colour blindness, in both a 3px bar
+ * and a chart series -- is harder than it sounds.
+ */
+export const FLIGHT_COLOUR_COUNT = 6;
+
+/**
+ * The colour that marks a flight, as a CSS value.
+ *
+ * Takes the cadet's stored `flight` -- a 1-BASED INDEX into the squadron's
+ * flights array, not an id. Anything that is not a positive number gets the
+ * neutral border colour rather than flight 1's, because a cadet with no flight
+ * must not be shown wearing one.
+ *
+ * Cycles past FLIGHT_COLOUR_COUNT. Two flights sharing a colour is survivable;
+ * every flight past the sixth being invisible is not. The name always appears
+ * next to the mark, so the colour is never the only way to tell them apart.
+ */
+export const flightColour = (flightIndex) => {
+  const index = Number(flightIndex);
+  if (!Number.isFinite(index) || index < 1) return "var(--color-border)";
+  return `var(--flight-${((Math.floor(index) - 1) % FLIGHT_COLOUR_COUNT) + 1})`;
+};

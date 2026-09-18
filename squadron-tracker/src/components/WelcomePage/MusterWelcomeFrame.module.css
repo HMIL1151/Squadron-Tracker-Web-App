@@ -1,0 +1,208 @@
+/*
+ * The Muster sign-in screen: what the app is for on the left, signing in on
+ * the right.
+ *
+ * The left panel is the one place in the interface that carries the service
+ * blue as a full-bleed ground. Everywhere else it is a 252px rail, so this is
+ * the only screen where the colour gets to make a first impression -- which is
+ * the one screen where a first impression is the job.
+ */
+
+.page {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  min-height: 100dvh;
+  background-color: var(--color-surface);
+  color: var(--color-text);
+}
+
+.identity {
+  display: flex;
+  flex-direction: column;
+  padding: 60px 64px;
+  background-color: var(--color-identity);
+  color: var(--color-identity-text);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.brand-name {
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: -0.005em;
+}
+
+.pitch {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 40px 0;
+}
+
+/*
+ * Capped at 11ch so it breaks after "every", which keeps the three lines
+ * roughly even. A headline this size left to wrap on its own gets a widow.
+ */
+.headline {
+  margin: 0;
+  max-width: 11ch;
+  font-size: 56px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.04;
+}
+
+.lead {
+  margin: 24px 0 0;
+  max-width: 46ch;
+  font-size: 17px;
+  line-height: 1.6;
+  color: var(--color-identity-text-muted);
+}
+
+/*
+ * What the app covers, as a definition list rather than three big numbers.
+ *
+ * Adoption figures would be the obvious treatment and this has none to show --
+ * inventing "61 squadrons" for a sign-in page is the kind of thing that gets
+ * quoted back at you.
+ */
+.covers {
+  margin: 46px 0 0;
+  max-width: 46ch;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.cover {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--muster-service-deep);
+}
+
+.cover:last-child {
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+
+.cover dt {
+  flex: 0 0 128px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.cover dd {
+  flex: 1 1 auto;
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--color-identity-text-muted);
+}
+
+.disclaimer {
+  margin: 0;
+  font-size: 12.5px;
+  color: var(--muster-service-pale);
+}
+
+/* -- sign in ------------------------------------------------------------- */
+
+.panel {
+  display: flex;
+  align-items: flex-start;
+  padding: 60px 64px;
+  overflow-y: auto;
+}
+
+.inner {
+  width: 100%;
+  max-width: 460px;
+}
+
+.title {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  color: var(--color-text);
+}
+
+.blurb {
+  margin: 9px 0 0;
+  font-size: 14.5px;
+  line-height: 1.55;
+  color: var(--color-text-muted);
+}
+
+.auth {
+  margin-top: 26px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.privacy {
+  margin: 14px 0 0;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--color-text-muted);
+}
+
+.changelog {
+  margin-top: 44px;
+  padding-top: 28px;
+  border-top: 1px solid var(--color-border-subtle);
+}
+
+/*
+ * Below tablet width the identity panel stops being half the screen and
+ * becomes a band across the top. It keeps the headline but drops the covers
+ * list, which is scene-setting rather than something anyone needs on a phone
+ * they are signing in on.
+ */
+@media (max-width: 900px) {
+  .page {
+    grid-template-columns: minmax(0, 1fr);
+    min-height: 100dvh;
+  }
+
+  .identity {
+    padding: 28px 20px;
+  }
+
+  .pitch {
+    padding: 20px 0 0;
+  }
+
+  .headline {
+    font-size: 32px;
+    max-width: none;
+  }
+
+  .lead {
+    margin-top: 14px;
+    font-size: 15px;
+  }
+
+  .covers {
+    display: none;
+  }
+
+  .disclaimer {
+    margin-top: 20px;
+  }
+
+  .panel {
+    padding: 28px 20px 40px;
+  }
+}

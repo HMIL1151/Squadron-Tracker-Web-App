@@ -1,8 +1,3 @@
-//TODO: Flight Points Dashboard
-//TODO: Certificate Dashboard
-//TODO: Uniform & Attendance Dashboard
-//TODO: PTS Dashboard
-
 import { lazy } from "react";
 
 /*
@@ -12,7 +7,11 @@ import { lazy } from "react";
  * jspdf, jszip and react-pdf -- a large chunk that most users never open.
  * React.lazy plus the Suspense boundary in App.jsx keeps them out of the
  * initial download.
+ *
+ * Since the Muster rebuild each entry can carry TWO views of the same screen,
+ * and both are lazy, so nobody downloads the interface they are not using.
  */
+
 const CadetsDashboard = lazy(() => import("../CadetsDashboard/CadetsDashboard"));
 const MassEventLog = lazy(() => import("../MassEventLog/MassEventLog"));
 const EventCategoriesDashboard = lazy(() => import("../EventCategoriesDashboard/EventCategoriesDashboard"));
@@ -24,69 +23,180 @@ const PTSTracker = lazy(() => import("../PTSTracker/PTSTracker"));
 const FlightsDashboard = lazy(() => import("../FlightsDashboard/FlightsDashboard"));
 const SystemAdminDashboard = lazy(() => import("../SystemAdminDashboard/SystemAdminDashboard"));
 
+/*
+ * Muster views, added one screen at a time.
+ *
+ * A screen with no `muster` entry falls back to its classic component, which
+ * is what makes an incremental rollout possible: the interface switch works
+ * from the day it shipped, and converting a screen is an additive change
+ * rather than a step in a migration that has to complete before anyone can
+ * use anything. It also means a Muster view that turns out to be wrong can be
+ * removed without leaving a hole in the navigation.
+ */
+const MusterMassEventLog = lazy(() => import("../MassEventLog/MusterMassEventLog"));
+const MusterCadetList = lazy(() => import("../CadetsDashboard/MusterCadetList"));
+const MusterClassification = lazy(() => import("../ClassificationDashboard/MusterClassification"));
+const MusterPTSTracker = lazy(() => import("../PTSTracker/MusterPTSTracker"));
+const MusterFlightPoints = lazy(() => import("../FlightPointsDashboard/MusterFlightPoints"));
+const MusterCertificates = lazy(() => import("../CertificateDashboard/MusterCertificates"));
+const MusterStatistics = lazy(() => import("../StatisticsDashboard/MusterStatistics"));
+const MusterRecordCategories = lazy(() => import("../EventCategoriesDashboard/MusterRecordCategories"));
+const MusterFlights = lazy(() => import("../FlightsDashboard/MusterFlights"));
+const MusterAdmin = lazy(() => import("../AdminDashboard/MusterAdmin"));
+
+/*
+ * Navigation groups, used by the Muster rail.
+ *
+ * Classic renders one flat list of ten and ignores this entirely. Ten
+ * undifferentiated items is the kind of menu people learn by position rather
+ * than by reading, which is why Muster groups them by what you are trying to
+ * do: write something down, check how someone is getting on, or look at the
+ * squadron as a whole.
+ *
+ * Order here is the order they appear.
+ */
+export const DASHBOARD_GROUPS = [
+  { key: "records", title: "Records" },
+  { key: "progress", title: "Progress" },
+  { key: "squadron", title: "Squadron" },
+];
+
 const dashboardList = [
   {
     key: "masseventlog",
     title: "Mass Event Log",
-    component: MassEventLog,
+    musterTitle: "Mass Event Log",
+    group: "records",
+    views: { classic: MassEventLog, muster: MusterMassEventLog },
     adminOnly: false, // Accessible to all users
   },
   {
     key: "dashboard",
     title: "Cadet List",
-    component: CadetsDashboard,
+    musterTitle: "Cadet List",
+    group: "records",
+    views: { classic: CadetsDashboard, muster: MusterCadetList },
     adminOnly: false, // Accessible to all users
   },
   {
     key: "eventcategoriesdashboard",
     title: "Record Categories",
-    component: EventCategoriesDashboard,
+    musterTitle: "Record Categories",
+    group: "records",
+    views: { classic: EventCategoriesDashboard, muster: MusterRecordCategories },
     adminOnly: false, // Accessible to all users
   },
   {
     key: "classificationdashboard",
     title: "Classification Tracker",
-    component: ClassificationDashboard,
+    musterTitle: "Classification Tracker",
+    group: "progress",
+    views: { classic: ClassificationDashboard, muster: MusterClassification },
     adminOnly: false, // Accessible to all users
   },
   {
     key: "flightpointsdashboard",
     title: "Flight Points",
-    component: FlightPointsDashboard,
+    musterTitle: "Flight Points",
+    group: "squadron",
+    views: { classic: FlightPointsDashboard, muster: MusterFlightPoints },
     adminOnly: false, // Accessible to all users
   },
   {
     key: "certificatedashboard",
     title: "Certificates",
-    component: CertificateDashboard,
+    musterTitle: "Certificates",
+    group: "progress",
+    views: { classic: CertificateDashboard, muster: MusterCertificates },
     adminOnly: false, // Accessible to all users
   },
   {
     key: "ptstracker",
     title: "PTS Tracker",
-    component: PTSTracker,
+    musterTitle: "PTS Tracker",
+    group: "progress",
+    views: { classic: PTSTracker, muster: MusterPTSTracker },
     adminOnly: false, // Accessible to all users
+  },
+  {
+    /*
+     * Muster only, because it is a screen the classic interface never had
+     * rather than a redesign of one it did. Menu filters these out, so the
+     * classic navigation is exactly as long as it always was.
+     */
+    key: "statisticsdashboard",
+    title: "Squadron Statistics",
+    musterTitle: "Squadron Statistics",
+    group: "squadron",
+    views: { muster: MusterStatistics },
+    musterOnly: true,
+    adminOnly: false,
   },
   {
     key: "flightsdashboard",
     title: "Flights",
-    component: FlightsDashboard,
+    musterTitle: "Flights",
+    group: "squadron",
+    views: { classic: FlightsDashboard, muster: MusterFlights },
     adminOnly: true, // Changing flights affects every cadet's records
   },
   {
     key: "admin",
     title: "Admin Area",
-    component: AdminDashboard, // Temporary admin page
+    musterTitle: "Admin Area",
+    group: "squadron",
+    views: { classic: AdminDashboard, muster: MusterAdmin },
     adminOnly: true, // Accessible only to admins
   },
   {
     key: "systemadmindashboard",
     title: "System Admin Area",
-    component: SystemAdminDashboard,
+    musterTitle: "System Admin Area",
+    group: "squadron",
+    views: { classic: SystemAdminDashboard },
     adminOnly: true, // Accessible only to system admins
     systemAdminOnly: true, // Custom flag for system admins
   },
 ];
 
+/**
+ * The component to render for a dashboard in a given interface.
+ *
+ * Falls back to the classic view, which is the whole mechanism behind the
+ * incremental rollout. Returns undefined only for a Muster-only screen asked
+ * for in classic, which Menu already filters out.
+ */
+export const viewFor = (dashboard, uiVersion) =>
+  dashboard?.views?.[uiVersion] ?? dashboard?.views?.classic;
+
+/**
+ * What this dashboard is called in a given interface.
+ *
+ * Both are Title Case. Muster started in sentence case, which is the house
+ * style of most modern software and was wrong here: this is an organisation
+ * whose screens are named after things that are already proper nouns on a
+ * squadron noticeboard. "Mass Event Log" is what people call it.
+ *
+ * The field stays separate from `title` even though the two now usually
+ * match, because the two interfaces should be able to rename a screen
+ * independently -- Muster shortened "End of Year Certificates" to
+ * "Certificates" long before classic did.
+ */
+export const titleFor = (dashboard, uiVersion) =>
+  (uiVersion === "muster" && dashboard?.musterTitle) || dashboard?.title;
+
+/**
+ * The dashboards a given user may open, in a given interface.
+ *
+ * The permission filter is the one Menu has always applied; the interface
+ * filter is new and drops screens that only exist in the other one.
+ */
+export const dashboardsFor = ({ uiVersion = "classic", isAdmin = false, user = null } = {}) =>
+  dashboardList.filter((dashboard) => {
+    if (dashboard.musterOnly && uiVersion !== "muster") return false;
+    if (dashboard.systemAdminOnly) return Boolean(isAdmin && user?.systemAdmin);
+    if (dashboard.adminOnly) return Boolean(isAdmin);
+    return true;
+  });
 
 export default dashboardList;

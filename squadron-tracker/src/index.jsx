@@ -22,6 +22,7 @@ import reportWebVitals from "./misc/reportWebVitals";
 import { SquadronProvider } from "./context/SquadronContext"; // Import the provider
 import { DataProvider } from "./context/DataContext";
 import { ThemeProvider } from "./context/ThemeContext";
+import { UiVersionProvider } from "./context/UiVersionContext";
 
 // Create the root element
 const rootElement = document.getElementById("root");
@@ -33,15 +34,23 @@ ReactModal.setAppElement(rootElement);
 
 const root = ReactDOM.createRoot(rootElement); // Use createRoot instead of render
 
+/*
+ * UiVersionProvider is outermost, above ThemeProvider, because the theme
+ * depends on the interface and not the other way round: Muster has no dark
+ * palette, so ThemeProvider has to know which interface is running before it
+ * can decide whether dark mode is even on offer.
+ */
 root.render(
   <React.StrictMode>
-    <ThemeProvider>
-      <DataProvider>
-        <SquadronProvider>
-          <App />
-        </SquadronProvider>
-      </DataProvider>
-    </ThemeProvider>
+    <UiVersionProvider>
+      <ThemeProvider>
+        <DataProvider>
+          <SquadronProvider>
+            <App />
+          </SquadronProvider>
+        </DataProvider>
+      </ThemeProvider>
+    </UiVersionProvider>
   </React.StrictMode>
 );
 

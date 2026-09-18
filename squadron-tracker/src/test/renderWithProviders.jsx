@@ -15,6 +15,7 @@ import { SquadronProvider } from "../context/SquadronContext";
 import { SQUADRONS, dataContextFor, dummyData, userFor } from "./dummyData";
 import { __seed, __writes, __store } from "./fakeFirestore";
 import { ThemeProvider } from "../context/ThemeContext";
+import { UiVersionProvider } from "../context/UiVersionContext";
 
 /**
  * @param ui           element to render
@@ -38,6 +39,7 @@ export const renderWithProviders = (ui, options = {}) => {
     squadronDocId = null,
     seedFirestore = true,
     theme = "light",
+    uiVersion = "classic",
     ...renderOptions
   } = options;
 
@@ -56,7 +58,18 @@ export const renderWithProviders = (ui, options = {}) => {
    * suite whose theme depends on the machine is a suite that fails somewhere
    * else. Tests that care about dark pass `theme: "dark"`.
    */
+  /*
+   * UiVersionProvider is outermost and takes an explicit version, for the same
+   * reason ThemeProvider takes an explicit theme: the default consults
+   * localStorage and the URL, so a suite that did not pin it would render
+   * whichever interface the last test happened to leave cached. Tests that
+   * care about the new interface pass `uiVersion: "muster"`.
+   *
+   * It defaults to "classic" so that every test written before this existed
+   * keeps exercising the interface it was written against.
+   */
   const Wrapper = ({ children }) => (
+    <UiVersionProvider initialVersion={uiVersion} uid={userProp.uid || "test-uid"}>
     <ThemeProvider initialTheme={theme} uid={userProp.uid || "test-uid"}>
     <DataProvider initialData={contextData}>
       <SquadronProvider
@@ -68,6 +81,7 @@ export const renderWithProviders = (ui, options = {}) => {
       </SquadronProvider>
     </DataProvider>
     </ThemeProvider>
+    </UiVersionProvider>
   );
 
   const result = render(ui, { wrapper: Wrapper, ...renderOptions });

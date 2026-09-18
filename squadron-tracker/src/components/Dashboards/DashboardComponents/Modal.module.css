@@ -239,3 +239,46 @@
     width: 100%; /* Ensure the flexbox spans the full width of the container */
     padding: 10px 0; /* Optional: Add some vertical padding */
 }
+
+/* -------------------------------------------------------------------------
+ * Muster.
+ *
+ * These popups are shared: the Muster screens open the same Add Record and
+ * Add Cadet dialogs the classic ones do, and every screen that has no Muster
+ * view yet renders its classic component -- popups included -- inside the
+ * Muster shell. So they have to look at home in both interfaces.
+ *
+ * The COLOURS already follow, because this file uses semantic tokens and
+ * Muster reassigns them. What does not follow is shape: classic draws a 20px
+ * padded box with a 5px radius and a hard shadow, next to Muster surfaces that
+ * are 10px and soft. These rules close that gap and nothing else -- the sizes
+ * above are still the sizes each popup's author chose, which is the whole
+ * point of the block at the top of this file.
+ *
+ * Scoped with :global because the attribute lives on <html>, far outside any
+ * CSS module's scope.
+ * ---------------------------------------------------------------------- */
+
+:global([data-ui="muster"]) .popup-content {
+  padding: 22px;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  box-shadow: var(--shadow-xl);
+}
+
+/*
+ * A dialog on a phone is a sheet. Centring a 90%-wide box on a 390px screen
+ * leaves a 20px gutter that does nothing except make the box look trapped.
+ */
+@media (max-width: 600px) {
+  :global([data-ui="muster"]) .popup-overlay {
+    align-items: flex-end;
+  }
+
+  :global([data-ui="muster"]) .popup-content {
+    width: 100%;
+    max-width: none;
+    max-height: 88dvh;
+    border-radius: 12px 12px 0 0;
+  }
+}

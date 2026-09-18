@@ -2,6 +2,8 @@
 
 import React, { useState, useEffect, useContext } from "react";
 import { getAuth, signInWithPopup, GoogleAuthProvider, signOut } from "firebase/auth"; // Import Firebase Auth
+import { useUiVersion } from "../../context/UiVersionContext";
+import MusterWelcomeFrame from "./MusterWelcomeFrame";
 import { checkUserRole, createAccessRequest } from "../../firebase/users";
 import { doesSquadronExist, fetchSquadronDoc } from "../../firebase/squadron";
 import { createAccountRequest, createSquadron } from "../../firebase/accounts";
@@ -26,6 +28,7 @@ const WelcomePage = ({ onUserChange }) => {
   // with four flights simply could not be created.
   const [flightNames, setFlightNames] = useState(["", ""]);
   const [isRequestSubmitted, setIsRequestSubmitted] = useState(false); // Track if the request has been submitted
+  const { uiVersion } = useUiVersion();
   const [changelog, setChangelog] = useState([]); // State to store changelog entries
 
   const { fetchData } = useContext(DataContext); // Access fetchData from DataContext
@@ -304,74 +307,80 @@ const WelcomePage = ({ onUserChange }) => {
     setFlightNames(updatedFlightNames);
   };
 
-  return (
-    <div className={styles["welcome-page"]}>
-      <h1>Welcome to the Squadron Tracker</h1>
-      {error && <p className={"error-message"}>{error}</p>}
-
-      {user ? (
-        <div>
-          {!isRequestSubmitted && (
-            <>
-              <p>Welcome, {user.displayName}!</p>
-              {role === "First Login" || role === "System Admin" ? (
-                <div>
-                  <p>Please enter your Squadron number:</p>
-                  <input
-                    type="number"
-                    value={squadronNumber}
-                    onChange={(e) => setSquadronNumber(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" && squadronNumber) {
-                        handleSquadronSubmit();
-                      }
-                    }}
-                    placeholder="Enter Squadron Number"
-                    className={styles["squadron-input"]}
-                    autoFocus
-                  />
-                  <button
-                    className={styles["submit-squadron-button"]}
-                    onClick={handleSquadronSubmit}
-                    disabled={!squadronNumber}
-                  >
-                    Submit
-                  </button>
-                </div>
-              ) : null}
-            </>
-          )}
-          <button className={"logout-button"} onClick={handleLogout}>
-            Log Out
-          </button>
-        </div>
-      ) : (
-        <button className={styles["google-login-button"]} onClick={handleGoogleLogin}>
-          Sign in with Google
-        </button>
+  /*
+   * The two halves of this page that both interfaces need, pulled out as
+   * variables so the layout can differ without the FLOW differing. Everything
+   * conditional -- first login, the squadron-number prompt, the access request
+   * -- lives in here and is rendered identically either way.
+   */
+  const authArea = user ? (
+    <div>
+      {!isRequestSubmitted && (
+        <>
+          <p>Welcome, {user.displayName}!</p>
+          {role === "First Login" || role === "System Admin" ? (
+            <div>
+              <p>Please enter your Squadron number:</p>
+              <input
+                type="number"
+                value={squadronNumber}
+                onChange={(e) => setSquadronNumber(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && squadronNumber) {
+                    handleSquadronSubmit();
+                  }
+                }}
+                placeholder="Enter Squadron Number"
+                className={styles["squadron-input"]}
+                autoFocus
+              />
+              <button
+                className={styles["submit-squadron-button"]}
+                onClick={handleSquadronSubmit}
+                disabled={!squadronNumber}
+              >
+                Submit
+              </button>
+            </div>
+          ) : null}
+        </>
       )}
+      <button className={"logout-button"} onClick={handleLogout}>
+        Log Out
+      </button>
+    </div>
+  ) : (
+    <button className={styles["google-login-button"]} onClick={handleGoogleLogin}>
+      Sign in with Google
+    </button>
+  );
 
-      {/* Changelog Section */}
-      <div className={styles["changelog-container"]}>
-        <h2>Change Log</h2>
-        <div className={styles["changelog-box"]}>
-          {changelog.length > 0 ? (
-            changelog.map((entry) => (
-              <div key={entry.version} className={styles["changelog-entry"]}>
-                <h3>{`${entry.version} - ${entry.date}`}</h3> {/* Combine version and date */}
-                <p
-                  dangerouslySetInnerHTML={{
-                    __html: entry.content.replace(/\n/g, "<br><br>"), // Replace \n with <br>
-                  }}
-                ></p>
-              </div>
-            ))
-          ) : (
-            <p>Loading Change Log...</p>
-          )}
-        </div>
+  const changelogArea = (
+    <div className={styles["changelog-container"]}>
+      <h2>Change Log</h2>
+      <div className={styles["changelog-box"]}>
+        {changelog.length > 0 ? (
+          changelog.map((entry) => (
+            <div key={entry.version} className={styles["changelog-entry"]}>
+              <h3>{`${entry.version} - ${entry.date}`}</h3> {/* Combine version and date */}
+              <p
+                dangerouslySetInnerHTML={{
+                  __html: entry.content.replace(/\n/g, "<br><br>"), // Replace \n with <br>
+                }}
+              ></p>
+            </div>
+          ))
+        ) : (
+          <p>Loading Change Log...</p>
+        )}
       </div>
+    </div>
+  );
 
+  const errorArea = error ? <p className={"error-message"}>{error}</p> : null;
+
+  const setupPopups = (
+    <>
       {/* Setup Squadron Popup */}
       {showSetupPopup && (
         <Modal
@@ -470,6 +479,31 @@ const WelcomePage = ({ onUserChange }) => {
             )}
         </Modal>
       )}
+    </>
+  );
+
+  /*
+   * The frame is chosen here rather than by a wrapper component, because both
+   * layouts need the same three pieces and neither owns them.
+   */
+  if (uiVersion === "muster") {
+    return (
+      <>
+        <MusterWelcomeFrame error={errorArea} changelog={changelogArea}>
+          {authArea}
+        </MusterWelcomeFrame>
+        {setupPopups}
+      </>
+    );
+  }
+
+  return (
+    <div className={styles["welcome-page"]}>
+      <h1>Welcome to the Squadron Tracker</h1>
+      {errorArea}
+      {authArea}
+      {changelogArea}
+      {setupPopups}
     </div>
   );
 };

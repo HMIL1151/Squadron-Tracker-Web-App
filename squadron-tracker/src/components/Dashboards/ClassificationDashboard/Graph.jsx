@@ -11,7 +11,7 @@ import {
   CategoryScale,
 } from "chart.js";
 import { classificationMap } from "../../../utils/mappings";
-import { applyChartTheme, crosshairColours } from "./chartTheme";
+import { applyChartTheme, crosshairColours, token } from "./chartTheme";
 import { useTheme } from "../../../context/ThemeContext";
 
 // Crosshair plugin
@@ -105,7 +105,42 @@ ChartJS.register(
   crosshairPlugin
 );
 
-const Graph = ({ cadetData, longestServiceInMonths, onPointHover, hoveredCadet, onPointClick }) => {
+/**
+ * The two palettes this plot can wear.
+ *
+ * Chart.js paints to a canvas, so these cannot come from CSS the way the rest
+ * of a component's colours do -- they have to be values. Classic keeps the
+ * teal-and-pink it has always had, because its screenshot baseline is the
+ * evidence that nothing about that interface moved; Muster reads its own
+ * tokens so the plot sits in the same palette as the page around it.
+ *
+ * Resolved per render rather than at module scope: `token` reads the computed
+ * style of the document element, which is undefined before first paint and
+ * changes when the interface does.
+ */
+export const GRAPH_PALETTES = {
+  classic: () => ({
+    point: "rgba(75, 192, 192, 0.6)",
+    pointBorder: "rgba(75, 192, 192, 1)",
+    target: "rgba(255, 99, 132, 0.6)",
+    targetBorder: "rgba(255, 99, 132, 1)",
+  }),
+  muster: () => ({
+    point: token("--flight-1", "#3e6ea8"),
+    pointBorder: token("--color-accent", "#223a50"),
+    target: token("--muster-alarm", "#b02b3c"),
+    targetBorder: token("--muster-alarm", "#b02b3c"),
+  }),
+};
+
+const Graph = ({
+  cadetData,
+  longestServiceInMonths,
+  onPointHover,
+  hoveredCadet,
+  onPointClick,
+  palette = "classic",
+}) => {
   const chartRef = useRef(null);
   const { theme } = useTheme();
 
@@ -209,6 +244,8 @@ const Graph = ({ cadetData, longestServiceInMonths, onPointHover, hoveredCadet, 
    * memo lands in the same change that introduces the dependency rather than
    * being left as a follow-up nobody does.
    */
+  const colours = (GRAPH_PALETTES[palette] || GRAPH_PALETTES.classic)();
+
   const scatterData = useMemo(() => ({
     datasets: [
       {
@@ -217,8 +254,8 @@ const Graph = ({ cadetData, longestServiceInMonths, onPointHover, hoveredCadet, 
           x: cadet.serviceLengthInMonths,
           y: cadet.classification,
         })),
-        backgroundColor: "rgba(75, 192, 192, 0.6)",
-        borderColor: "rgba(75, 192, 192, 1)",
+        backgroundColor: colours.point,
+        borderColor: colours.pointBorder,
         pointRadius: 5,
         hoverRadius: 8,
       },
@@ -232,15 +269,15 @@ const Graph = ({ cadetData, longestServiceInMonths, onPointHover, hoveredCadet, 
           { x: 36, y: 12 },
           { x: longestServiceInMonths || 50, y: 12 }, // Use default value if longestServiceInMonths is not yet updated   
         ],
-        backgroundColor: "rgba(255, 99, 132, 0.6)",
-        borderColor: "rgba(255, 99, 132, 1)",
+        backgroundColor: colours.target,
+        borderColor: colours.targetBorder,
         borderWidth: 2,
         showLine: true,
         pointRadius: 0,
         hoverRadius: 0,
       },
     ],
-  }), [cadetData, longestServiceInMonths]);
+  }), [cadetData, longestServiceInMonths, colours.point, colours.pointBorder, colours.target, colours.targetBorder]);
 
   const scatterOptions = useMemo(() => ({
     responsive: true,
