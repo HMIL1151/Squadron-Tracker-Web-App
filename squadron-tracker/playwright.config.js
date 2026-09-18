@@ -61,11 +61,23 @@ export default defineConfig({
        * did not match. A tolerance that hides a whole header is not tolerance,
        * it is a blindfold.
        *
-       * At 0 the same change is 69,208 pixels, 8% of the image. Verified
-       * stable: two consecutive runs of all thirteen against an unchanged tree
-       * pass, so anti-aliasing is not producing drift on a fixed viewport and
-       * browser. Baselines carry a platform suffix, so a different OS gets its
-       * own set rather than fighting these.
+       * At 0 the same change is 69,208 pixels, 8% of the image. Baselines
+       * carry a platform suffix, so a different OS gets its own set rather
+       * than fighting these.
+       *
+       * The cost, now measured: muster-admin-area occasionally reports 6
+       * differing pixels on one card's rounded corner. Inspected pixel by
+       * pixel, the whole cluster is 16 pixels on a single border-radius arc
+       * differing by 1 to 3 units out of 255 -- the corner is in the same
+       * place, drawn one least-significant bit differently. It reproduces
+       * only in a full run, never alone, so it is GPU rasterisation rather
+       * than the page.
+       *
+       * It is NOT a reason to raise the threshold. A tolerance wide enough to
+       * swallow it is wide enough to swallow the purple header again, and
+       * these tests are run by a person reading the diff rather than by CI.
+       * Re-run the one test; if it still differs, look at the diff before
+       * assuming this comment covers it.
        */
       maxDiffPixelRatio: 0,
       threshold: 0,

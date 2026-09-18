@@ -256,6 +256,54 @@ export const buildDevSquadron = () => {
     });
   });
 
+  /*
+   * Cadets who have left, which is a thing this dataset could not previously
+   * represent at all.
+   *
+   * Discharging a cadet deletes the Cadets document and leaves the EventLog
+   * alone, so a leaver exists in the data ONLY as a name in the log with
+   * nobody on strength to match it. Generating cadets and then generating
+   * records for them can never produce that shape: it has to be records
+   * written for people who were deliberately never added.
+   *
+   * Without these the Retention panel reads zero on a squadron with four
+   * years of history, which looks like a broken panel rather than a squadron
+   * that has never lost anybody.
+   */
+  const LEAVERS = [
+    { name: "Dominic Farrow", from: 2023, to: 2024 },
+    { name: "Priya Chandra", from: 2023, to: 2025 },
+    { name: "Ewan Tait", from: 2023, to: 2023 },
+    { name: "Cerys Pritchard", from: 2024, to: 2026 },
+    { name: "Malachi Owusu", from: 2024, to: 2025 },
+    { name: "Sofia Renzi", from: 2024, to: 2024 },
+    { name: "Hector Vane", from: 2025, to: 2026 },
+    { name: "Nell Ashcombe", from: 2025, to: 2025 },
+  ];
+
+  LEAVERS.forEach((leaver) => {
+    for (let year = leaver.from; year <= leaver.to; year += 1) {
+      const lastMonth = year === YEARS.at(-1) ? 9 : 12;
+      const count = between(3, 9);
+      for (let i = 0; i < count; i += 1) {
+        const [eventName, eventCategory] = pick(SQUADRON_EVENTS);
+        add({
+          cadetName: leaver.name,
+          date: `${year}-${pad(between(1, lastMonth))}-${pad(between(1, 28))}`,
+          eventName,
+          eventCategory,
+        });
+      }
+      if (random() > 0.5) {
+        add({
+          cadetName: leaver.name,
+          date: `${year}-${pad(between(1, lastMonth))}-${pad(between(1, 28))}`,
+          examName: pick(EXAMS.slice(0, 4)),
+        });
+      }
+    }
+  });
+
   return docs;
 };
 
