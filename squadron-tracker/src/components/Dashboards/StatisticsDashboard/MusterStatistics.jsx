@@ -4,8 +4,31 @@ import { useSquadron } from "../../../context/SquadronContext";
 import { deriveClassifications, examsPassedBy } from "../../../utils/classification";
 import { getEventPoints, getEventYear } from "../../../utils/points";
 import { flightColour, getCompetingFlights } from "../../../utils/flights";
+import { rankMap } from "../../../utils/mappings";
+import { examList } from "../../../utils/examList";
+import {
+  badgeLadder,
+  categoryReach,
+  dataQuality,
+  flightAges,
+  formerCadets,
+  intake,
+  rankLadder,
+  recordingHealth,
+  timeToClassification,
+} from "../../../utils/squadronStats";
 import MusterPage from "../../Muster/MusterPage";
-import { MusterBar, MusterSelect } from "../../Muster/MusterControls";
+import { MusterBar, MusterChip, MusterSelect } from "../../Muster/MusterControls";
+import {
+  BadgeLadder,
+  CategoryReach,
+  DataQuality,
+  FlightAges,
+  RankLadder,
+  RecordingHealth,
+  Retention,
+  TimeToClassification,
+} from "./StatSections";
 import styles from "./MusterStatistics.module.css";
 
 /**
@@ -20,7 +43,13 @@ import styles from "./MusterStatistics.module.css";
  * every figure here takes. It is also what a squadron is asked for when Wing
  * comes calling.
  *
- * Three things are deliberately NOT here, and it is worth writing down why,
+ * There is too much of it for one scroll, so it is grouped into five tabs.
+ * That is the opposite of the call made on Record Categories, and for the
+ * opposite reason: those were four short lists read AGAINST each other, and
+ * these are five separate enquiries. Nobody asks "how far up the badge
+ * ladders do we get" and "is the log being kept up" in the same breath.
+ *
+ * Two things are deliberately NOT here, and it is worth writing down why,
  * because they are the first things anyone will ask for:
  *
  *   Attendance. The app has no attendance model -- it can only count
@@ -29,15 +58,16 @@ import styles from "./MusterStatistics.module.css";
  *   actually had was a thin log. A measure that is wrong in a believable
  *   direction is worse than no measure, so it was taken out.
  *
- *   Retention and strength over time. There is no discharge date -- the Admin
- *   Area deletes a cadet's record outright -- so the app cannot tell "left the
- *   squadron" from "never existed". A strength curve built from the start
- *   dates of the cadets who are still here could only ever rise.
+ *   Age profile. There is no date of birth, and cadets age out at 20, so
+ *   "how many leave in the next two years" cannot be answered here.
  *
- *   Age profile. There is no date of birth, and cadets age out at 20.
- *
- * The last two need a schema change. The first needs a decision about what
- * attendance means.
+ * Retention USED to be on that list, on the grounds that discharging deletes
+ * the cadet. That was half right: it deletes the cadet and keeps their
+ * RECORDS. In one real squadron's backup, 738 of 1,522 records belonged to
+ * people no longer on strength -- just under half the log. So leavers are
+ * counted from names in the log that are no longer on the books, and their
+ * span of activity stands in for length of service. See squadronStats.js for
+ * what that proxy can and cannot see.
  */
 
 const RUNGS = ["Junior", "Second Class", "First Class", "Leading", "Senior", "Master"];
@@ -58,6 +88,21 @@ const RUNG_CLASS = [
 ];
 
 const MONTHS = ["Sep", "Oct", "Nov", "Dec", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug"];
+
+/**
+ * The five enquiries this screen answers.
+ *
+ * Ordered by how often they are asked rather than by how interesting they
+ * are: what happened this year, then how people are getting on, then the
+ * squadron-shape questions, then the housekeeping.
+ */
+const TABS = [
+  { key: "year", label: "This Year" },
+  { key: "progress", label: "Progression" },
+  { key: "people", label: "People" },
+  { key: "flights", label: "Flights" },
+  { key: "keeping", label: "Record Keeping" },
+];
 
 /** Everything the squadron did in one training year. */
 const metricsForYear = (year, cadets, events, flightPoints) => {
@@ -105,6 +150,7 @@ const MusterStatistics = () => {
   }, [events]);
 
   const [year, setYear] = useState(() => years[0] || String(new Date().getFullYear()));
+  const [tab, setTab] = useState("year");
 
   const scoped = useMemo(
     () => events.filter((event) => getEventYear(event) === year),
@@ -319,6 +365,36 @@ const MusterStatistics = () => {
     };
   }, [cadets, scoped, flightPoints]);
 
+  /* -- 7. the wider picture, all from utils/squadronStats ---------------- */
+
+  const configuredCategories = useMemo(
+    () => Object.keys(flightPoints["Event Category Points"] || {}),
+    [flightPoints]
+  );
+
+  const ladder = useMemo(() => badgeLadder(events), [events]);
+  const reach = useMemo(
+    () => categoryReach(cadets, events, configuredCategories),
+    [cadets, events, configuredCategories]
+  );
+  const timings = useMemo(
+    () =>
+      timeToClassification(cadets, events, [
+        "Second Class Cadet",
+        "First Class Cadet",
+      ]),
+    [cadets, events]
+  );
+  const health = useMemo(() => recordingHealth(events), [events]);
+  const former = useMemo(() => formerCadets(cadets, events), [cadets, events]);
+  const intakeData = useMemo(() => intake(cadets), [cadets]);
+  const ranks = useMemo(() => rankLadder(cadets, events, rankMap), [cadets, events]);
+  const issues = useMemo(
+    () => dataQuality(cadets, events, configuredCategories),
+    [cadets, events, configuredCategories]
+  );
+  const ages = useMemo(() => flightAges(cadets, flights), [cadets, flights]);
+
   const signed = (value) => (value > 0 ? `+${value}` : String(value));
 
   const deltaClass = (value) => {
@@ -341,404 +417,449 @@ const MusterStatistics = () => {
         />
       }
     >
-      {/* 1 */}
-      <section className={styles.section}>
-        <header className={styles.head}>
-          <h2 className={styles.question}>How much is being recorded?</h2>
-          <p className={styles.answer}>
-            {current.records} records across {activity.dates}{" "}
-            {activity.dates === 1 ? "date" : "dates"} in {year}, worth {current.points} points.
-          </p>
-        </header>
-        <div className={styles.grid}>
-          <article className={styles.card}>
-            <h3 className={styles["card-title"]}>Records Logged</h3>
-            <p className={styles.figure}>{current.records}</p>
-            <dl className={styles.pairs}>
-              <div>
-                <dt>Cadets on strength</dt>
-                <dd>{cadets.length}</dd>
-              </div>
-              <div>
-                <dt>Dates with a record</dt>
-                <dd>{activity.dates}</dd>
-              </div>
-              <div>
-                <dt>Points awarded</dt>
-                <dd>{current.points}</dd>
-              </div>
-            </dl>
-          </article>
+      <nav className={styles.tabs} aria-label="Statistics sections">
+        {TABS.map((entry) => (
+          <MusterChip
+            key={entry.key}
+            active={tab === entry.key}
+            onClick={() => setTab(entry.key)}
+          >
+            {entry.label}
+          </MusterChip>
+        ))}
+      </nav>
 
-          <article className={styles["card-wide"]}>
-            <h3 className={styles["card-title"]}>When They Were Logged</h3>
-            <div className={styles.months}>
-              {MONTHS.map((month, index) => (
-                <div key={month} className={styles.month}>
-                  <div className={styles["month-track"]}>
-                    <div
-                      className={styles["month-bar"]}
-                      style={{ height: `${(activity.byMonth[index] / busiestMonth) * 100}%` }}
-                      title={`${month}: ${activity.byMonth[index]}`}
-                    />
-                  </div>
-                  <span className={styles["month-label"]}>{month}</span>
+      {tab === "year" && (
+        <>
+        {/* 1 */}
+        <section className={styles.section}>
+          <header className={styles.head}>
+            <h2 className={styles.question}>How much is being recorded?</h2>
+            <p className={styles.answer}>
+              {current.records} records across {activity.dates}{" "}
+              {activity.dates === 1 ? "date" : "dates"} in {year}, worth {current.points} points.
+            </p>
+          </header>
+          <div className={styles.grid}>
+            <article className={styles.card}>
+              <h3 className={styles["card-title"]}>Records Logged</h3>
+              <p className={styles.figure}>{current.records}</p>
+              <dl className={styles.pairs}>
+                <div>
+                  <dt>Cadets on strength</dt>
+                  <dd>{cadets.length}</dd>
                 </div>
-              ))}
-            </div>
-          </article>
-        </div>
-      </section>
+                <div>
+                  <dt>Dates with a record</dt>
+                  <dd>{activity.dates}</dd>
+                </div>
+                <div>
+                  <dt>Points awarded</dt>
+                  <dd>{current.points}</dd>
+                </div>
+              </dl>
+            </article>
 
-      {/* 2 */}
-      <section className={styles.section}>
-        <header className={styles.head}>
-          <h2 className={styles.question}>How does this year compare?</h2>
-          <p className={styles.answer}>
-            {previous
-              ? `${year} against ${previous.year}, and every year the squadron has records for.`
-              : `${year} is the first year with records, so there is nothing to compare it with yet.`}
-          </p>
-        </header>
-
-        <div className={styles["table-card"]}>
-          <table className={styles.matrix}>
-            <caption className={styles["visually-hidden"]}>
-              Squadron metrics by training year
-            </caption>
-            <thead>
-              <tr>
-                <th scope="col" className={styles["matrix-head"]}>
-                  Metric
-                </th>
-                {timeline.map((entry) => (
-                  <th
-                    key={entry.year}
-                    scope="col"
-                    className={entry.year === year ? styles["matrix-head-now"] : styles["matrix-head-num"]}
-                  >
-                    {entry.year}
-                  </th>
+            <article className={styles["card-wide"]}>
+              <h3 className={styles["card-title"]}>When They Were Logged</h3>
+              <div className={styles.months}>
+                {MONTHS.map((month, index) => (
+                  <div key={month} className={styles.month}>
+                    <div className={styles["month-track"]}>
+                      <div
+                        className={styles["month-bar"]}
+                        style={{ height: `${(activity.byMonth[index] / busiestMonth) * 100}%` }}
+                        title={`${month}: ${activity.byMonth[index]}`}
+                      />
+                    </div>
+                    <span className={styles["month-label"]}>{month}</span>
+                  </div>
                 ))}
-                <th scope="col" className={styles["matrix-head-num"]}>
-                  Change
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {METRICS.map((metric) => {
-                const delta = previous ? deltaOf(current[metric.key], previous[metric.key]) : null;
-                return (
-                  <tr key={metric.key}>
-                    <th scope="row" className={styles["matrix-row-head"]}>
-                      {metric.label}
+              </div>
+            </article>
+          </div>
+        </section>
+
+        {/* 2 */}
+        <section className={styles.section}>
+          <header className={styles.head}>
+            <h2 className={styles.question}>How does this year compare?</h2>
+            <p className={styles.answer}>
+              {previous
+                ? `${year} against ${previous.year}, and every year the squadron has records for.`
+                : `${year} is the first year with records, so there is nothing to compare it with yet.`}
+            </p>
+          </header>
+
+          <div className={styles["table-card"]}>
+            <table className={styles.matrix}>
+              <caption className={styles["visually-hidden"]}>
+                Squadron metrics by training year
+              </caption>
+              <thead>
+                <tr>
+                  <th scope="col" className={styles["matrix-head"]}>
+                    Metric
+                  </th>
+                  {timeline.map((entry) => (
+                    <th
+                      key={entry.year}
+                      scope="col"
+                      className={entry.year === year ? styles["matrix-head-now"] : styles["matrix-head-num"]}
+                    >
+                      {entry.year}
                     </th>
-                    {timeline.map((entry) => (
+                  ))}
+                  <th scope="col" className={styles["matrix-head-num"]}>
+                    Change
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {METRICS.map((metric) => {
+                  const delta = previous ? deltaOf(current[metric.key], previous[metric.key]) : null;
+                  return (
+                    <tr key={metric.key}>
+                      <th scope="row" className={styles["matrix-row-head"]}>
+                        {metric.label}
+                      </th>
+                      {timeline.map((entry) => (
+                        <td
+                          key={entry.year}
+                          className={entry.year === year ? styles["matrix-cell-now"] : styles["matrix-cell"]}
+                        >
+                          {entry[metric.key]}
+                        </td>
+                      ))}
+                      <td className={styles["matrix-cell"]}>
+                        <span className={deltaClass(delta)}>
+                          {delta === null ? "—" : signed(delta)}
+                        </span>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        </>
+      )}
+
+      {tab === "progress" && (
+        <>
+        {/* 4 */}
+        <section className={styles.section}>
+          <header className={styles.head}>
+            <h2 className={styles.question}>Is everyone progressing?</h2>
+            <p className={styles.answer}>
+              {current.exams} exams passed in {year}
+              {previous ? ` against ${previous.exams} in ${previous.year}` : ""}.{" "}
+              {progression.behind === 0
+                ? "Everybody is at or ahead of the target for their service length."
+                : `${progression.behind} ${
+                    progression.behind === 1 ? "cadet is" : "cadets are"
+                  } behind the target for their service length.`}
+            </p>
+          </header>
+          <div className={styles.grid}>
+            <article className={styles.card}>
+              <h3 className={styles["card-title"]}>Exams Passed</h3>
+              <p className={styles.figure}>{current.exams}</p>
+              <dl className={styles.pairs}>
+                <div>
+                  <dt>Behind target</dt>
+                  <dd>{progression.behind}</dd>
+                </div>
+                <div>
+                  <dt>No exam in six months</dt>
+                  <dd>{progression.stalled.length}</dd>
+                </div>
+              </dl>
+            </article>
+
+            <article className={styles["card-wide"]}>
+              <h3 className={styles["card-title"]}>Where the Squadron Sits</h3>
+              <ul className={styles.rows}>
+                {progression.funnel.map((band) => (
+                  <li key={band.rung} className={styles.row}>
+                    <span className={styles["row-name"]}>{band.rung}</span>
+                    <span className={styles.track}>
+                      <span className={band.tone} style={{ width: band.width }} />
+                    </span>
+                    <span className={styles["row-value"]}>{band.count}</span>
+                  </li>
+                ))}
+              </ul>
+            </article>
+
+            <article className={styles.card}>
+              <h3 className={styles["card-title"]}>Active, Not Progressing</h3>
+              {progression.stalled.length === 0 ? (
+                <p className={styles.caption}>Everybody active has passed something recently.</p>
+              ) : (
+                <ul className={styles.people}>
+                  {progression.stalled.slice(0, 5).map((cadet) => (
+                    <li key={cadet.id} className={styles.person}>
+                      <span
+                        className={styles.mark}
+                        style={{ backgroundColor: flightColour(cadet.flight) }}
+                        aria-hidden="true"
+                      />
+                      <span className={styles["person-text"]}>
+                        <span className={styles["person-name"]}>{cadet.name}</span>
+                        <span className={styles["person-note"]}>
+                          {cadet.label}
+                          {cadet.isBehind ? ` · target ${cadet.target}` : ""}
+                        </span>
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </article>
+          </div>
+        </section>
+
+          <TimeToClassification timings={timings} flightMap={flightMap} />
+          <BadgeLadder ladder={ladder} />
+        </>
+      )}
+
+      {tab === "people" && (
+        <>
+        {/* 5 */}
+        <section className={styles.section}>
+          <header className={styles.head}>
+            <h2 className={styles.question}>Is recognition reaching everyone?</h2>
+            <p className={styles.answer}>
+              The top five hold {Math.round(recognition.share * 100)}% of this year&rsquo;s points
+              {recognition.invisible.length > 0
+                ? `, and ${recognition.invisible.length} ${
+                    recognition.invisible.length === 1 ? "cadet has" : "cadets have"
+                  } nothing recorded at all.`
+                : ", and everybody has something recorded."}
+            </p>
+          </header>
+          <div className={styles.grid}>
+            <article className={styles.card}>
+              <h3 className={styles["card-title"]}>Held by the Top Five</h3>
+              <p className={styles.figure}>{Math.round(recognition.share * 100)}%</p>
+              <MusterBar value={recognition.share} max={1} />
+              <p className={styles.caption}>
+                Not wrong in itself &mdash; keen cadets earn more. It only matters next to the panel
+                on the right.
+              </p>
+            </article>
+
+            <article className={styles["card-wide"]}>
+              <h3 className={styles["card-title"]}>How Points Are Spread</h3>
+              <div className={styles.histogram}>
+                {recognition.bands.map((band) => (
+                  <div key={band.label} className={styles.band}>
+                    <span className={styles["band-count"]}>{band.count}</span>
+                    <div className={styles["band-track"]}>
+                      <div
+                        className={band.isZero ? styles["band-zero"] : styles["band-bar"]}
+                        style={{ height: band.height }}
+                      />
+                    </div>
+                    <span className={styles["band-label"]}>{band.label}</span>
+                  </div>
+                ))}
+              </div>
+            </article>
+
+            {recognition.invisible.length > 0 ? (
+              <article className={styles.alert}>
+                <h3 className={styles["alert-title"]}>
+                  {recognition.invisible.length}{" "}
+                  {recognition.invisible.length === 1 ? "cadet has" : "cadets have"} no record this
+                  year
+                </h3>
+                <p className={styles.caption}>
+                  They are on the books. Nothing has been logged against them.
+                </p>
+                <ul className={styles.names}>
+                  {recognition.invisible.map((cadet) => (
+                    <li key={cadet.id} className={styles.name}>
+                      {cadet.name}
+                    </li>
+                  ))}
+                </ul>
+              </article>
+            ) : (
+              <article className={styles.card}>
+                <h3 className={styles["card-title"]}>Everyone Has Something</h3>
+                <p className={styles.caption}>
+                  Every cadet on the books has at least one record this year.
+                </p>
+              </article>
+            )}
+          </div>
+        </section>
+
+          <Retention former={former} intakeData={intakeData} />
+          <CategoryReach reach={reach} cadetCount={cadets.length} />
+          <RankLadder ladder={ranks} flightMap={flightMap} />
+        </>
+      )}
+
+      {tab === "flights" && (
+        <>
+        {/* 3 */}
+        <section className={styles.section}>
+          <header className={styles.head}>
+            <h2 className={styles.question}>How do the flights compare?</h2>
+            <p className={styles.answer}>
+              Competing flights only, and points per cadet as well as the total &mdash; flights
+              are rarely the same size, and the staff flight does not compete.
+            </p>
+          </header>
+
+          <div className={styles["table-card"]}>
+            <table className={styles.matrix}>
+              <caption className={styles["visually-hidden"]}>Flight points by training year</caption>
+              <thead>
+                <tr>
+                  <th scope="col" className={styles["matrix-head"]}>
+                    Flight
+                  </th>
+                  {timeline.map((entry) => (
+                    <th
+                      key={entry.year}
+                      scope="col"
+                      className={entry.year === year ? styles["matrix-head-now"] : styles["matrix-head-num"]}
+                    >
+                      {entry.year}
+                    </th>
+                  ))}
+                  <th scope="col" className={styles["matrix-head-num"]}>
+                    Change
+                  </th>
+                  <th scope="col" className={styles["matrix-head-num"]}>
+                    Per Cadet
+                  </th>
+                  <th scope="col" className={styles["matrix-head"]}>
+                    {year}
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {flightTimeline.map((flight) => (
+                  <tr key={flight.index}>
+                    <th scope="row" className={styles["matrix-row-head"]}>
+                      <span className={styles["flight-name"]}>
+                        <span
+                          className={styles.mark}
+                          style={{ backgroundColor: flight.colour }}
+                          aria-hidden="true"
+                        />
+                        {flight.name}
+                        <span className={styles["flight-size"]}>{flight.size}</span>
+                      </span>
+                    </th>
+                    {flight.perYear.map((entry) => (
                       <td
                         key={entry.year}
                         className={entry.year === year ? styles["matrix-cell-now"] : styles["matrix-cell"]}
                       >
-                        {entry[metric.key]}
+                        {entry.total}
                       </td>
                     ))}
                     <td className={styles["matrix-cell"]}>
-                      <span className={deltaClass(delta)}>
-                        {delta === null ? "—" : signed(delta)}
+                      <span className={deltaClass(flight.delta)}>
+                        {flight.delta === null ? "—" : signed(flight.delta)}
                       </span>
+                    </td>
+                    <td className={styles["matrix-cell"]}>{flight.perCadet}</td>
+                    <td className={styles["matrix-bar"]}>
+                      <MusterBar value={flight.now} max={bestFlightYear} colour={flight.colour} />
                     </td>
                   </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-      </section>
-
-      {/* 3 */}
-      <section className={styles.section}>
-        <header className={styles.head}>
-          <h2 className={styles.question}>How do the flights compare?</h2>
-          <p className={styles.answer}>
-            Competing flights only, and points per cadet as well as the total &mdash; flights
-            are rarely the same size, and the staff flight does not compete.
-          </p>
-        </header>
-
-        <div className={styles["table-card"]}>
-          <table className={styles.matrix}>
-            <caption className={styles["visually-hidden"]}>Flight points by training year</caption>
-            <thead>
-              <tr>
-                <th scope="col" className={styles["matrix-head"]}>
-                  Flight
-                </th>
-                {timeline.map((entry) => (
-                  <th
-                    key={entry.year}
-                    scope="col"
-                    className={entry.year === year ? styles["matrix-head-now"] : styles["matrix-head-num"]}
-                  >
-                    {entry.year}
-                  </th>
                 ))}
-                <th scope="col" className={styles["matrix-head-num"]}>
-                  Change
-                </th>
-                <th scope="col" className={styles["matrix-head-num"]}>
-                  Per Cadet
-                </th>
-                <th scope="col" className={styles["matrix-head"]}>
-                  {year}
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {flightTimeline.map((flight) => (
-                <tr key={flight.index}>
-                  <th scope="row" className={styles["matrix-row-head"]}>
-                    <span className={styles["flight-name"]}>
-                      <span
-                        className={styles.mark}
-                        style={{ backgroundColor: flight.colour }}
-                        aria-hidden="true"
-                      />
-                      {flight.name}
-                      <span className={styles["flight-size"]}>{flight.size}</span>
-                    </span>
-                  </th>
-                  {flight.perYear.map((entry) => (
-                    <td
-                      key={entry.year}
-                      className={entry.year === year ? styles["matrix-cell-now"] : styles["matrix-cell"]}
-                    >
-                      {entry.total}
-                    </td>
-                  ))}
-                  <td className={styles["matrix-cell"]}>
-                    <span className={deltaClass(flight.delta)}>
-                      {flight.delta === null ? "—" : signed(flight.delta)}
-                    </span>
-                  </td>
-                  <td className={styles["matrix-cell"]}>{flight.perCadet}</td>
-                  <td className={styles["matrix-bar"]}>
-                    <MusterBar value={flight.now} max={bestFlightYear} colour={flight.colour} />
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-        {movers.length > 0 && (
-          <div className={styles.grid}>
-            <article className={styles["card-wide"]}>
-              <h3 className={styles["card-title"]}>Most Improved on {previous.year}</h3>
-              <ul className={styles.people}>
-                {movers
-                  .filter((cadet) => cadet.change > 0)
-                  .slice(0, 5)
-                  .map((cadet) => (
-                    <li key={cadet.id} className={styles.person}>
-                      <span
-                        className={styles.mark}
-                        style={{ backgroundColor: flightColour(cadet.flight) }}
-                        aria-hidden="true"
-                      />
-                      <span className={styles["person-text"]}>
-                        <span className={styles["person-name"]}>{cadet.name}</span>
-                        <span className={styles["person-note"]}>
-                          {cadet.flightName} &middot; {cadet.before} &rarr; {cadet.now}
-                        </span>
-                      </span>
-                      <span className={styles["delta-up"]}>{signed(cadet.change)}</span>
-                    </li>
-                  ))}
-              </ul>
-            </article>
-
-            <article className={styles["card-wide"]}>
-              <h3 className={styles["card-title"]}>Doing Less Than on {previous.year}</h3>
-              <p className={styles.caption}>
-                Usually a cadet who has got busy elsewhere rather than one who has lost interest,
-                but worth a word either way.
-              </p>
-              <ul className={styles.people}>
-                {movers
-                  .filter((cadet) => cadet.change < 0)
-                  .slice(-5)
-                  .reverse()
-                  .map((cadet) => (
-                    <li key={cadet.id} className={styles.person}>
-                      <span
-                        className={styles.mark}
-                        style={{ backgroundColor: flightColour(cadet.flight) }}
-                        aria-hidden="true"
-                      />
-                      <span className={styles["person-text"]}>
-                        <span className={styles["person-name"]}>{cadet.name}</span>
-                        <span className={styles["person-note"]}>
-                          {cadet.flightName} &middot; {cadet.before} &rarr; {cadet.now}
-                        </span>
-                      </span>
-                      <span className={styles["delta-down"]}>{signed(cadet.change)}</span>
-                    </li>
-                  ))}
-              </ul>
-            </article>
+              </tbody>
+            </table>
           </div>
-        )}
-      </section>
 
-      {/* 4 */}
-      <section className={styles.section}>
-        <header className={styles.head}>
-          <h2 className={styles.question}>Is everyone progressing?</h2>
-          <p className={styles.answer}>
-            {current.exams} exams passed in {year}
-            {previous ? ` against ${previous.exams} in ${previous.year}` : ""}.{" "}
-            {progression.behind === 0
-              ? "Everybody is at or ahead of the target for their service length."
-              : `${progression.behind} ${
-                  progression.behind === 1 ? "cadet is" : "cadets are"
-                } behind the target for their service length.`}
-          </p>
-        </header>
-        <div className={styles.grid}>
-          <article className={styles.card}>
-            <h3 className={styles["card-title"]}>Exams Passed</h3>
-            <p className={styles.figure}>{current.exams}</p>
-            <dl className={styles.pairs}>
-              <div>
-                <dt>Behind target</dt>
-                <dd>{progression.behind}</dd>
-              </div>
-              <div>
-                <dt>No exam in six months</dt>
-                <dd>{progression.stalled.length}</dd>
-              </div>
-            </dl>
-          </article>
+          {movers.length > 0 && (
+            <div className={styles.grid}>
+              <article className={styles["card-wide"]}>
+                <h3 className={styles["card-title"]}>Most Improved on {previous.year}</h3>
+                <ul className={styles.people}>
+                  {movers
+                    .filter((cadet) => cadet.change > 0)
+                    .slice(0, 5)
+                    .map((cadet) => (
+                      <li key={cadet.id} className={styles.person}>
+                        <span
+                          className={styles.mark}
+                          style={{ backgroundColor: flightColour(cadet.flight) }}
+                          aria-hidden="true"
+                        />
+                        <span className={styles["person-text"]}>
+                          <span className={styles["person-name"]}>{cadet.name}</span>
+                          <span className={styles["person-note"]}>
+                            {cadet.flightName} &middot; {cadet.before} &rarr; {cadet.now}
+                          </span>
+                        </span>
+                        <span className={styles["delta-up"]}>{signed(cadet.change)}</span>
+                      </li>
+                    ))}
+                </ul>
+              </article>
 
-          <article className={styles["card-wide"]}>
-            <h3 className={styles["card-title"]}>Where the Squadron Sits</h3>
-            <ul className={styles.rows}>
-              {progression.funnel.map((band) => (
-                <li key={band.rung} className={styles.row}>
-                  <span className={styles["row-name"]}>{band.rung}</span>
-                  <span className={styles.track}>
-                    <span className={band.tone} style={{ width: band.width }} />
-                  </span>
-                  <span className={styles["row-value"]}>{band.count}</span>
-                </li>
-              ))}
-            </ul>
-          </article>
-
-          <article className={styles.card}>
-            <h3 className={styles["card-title"]}>Active, Not Progressing</h3>
-            {progression.stalled.length === 0 ? (
-              <p className={styles.caption}>Everybody active has passed something recently.</p>
-            ) : (
-              <ul className={styles.people}>
-                {progression.stalled.slice(0, 5).map((cadet) => (
-                  <li key={cadet.id} className={styles.person}>
-                    <span
-                      className={styles.mark}
-                      style={{ backgroundColor: flightColour(cadet.flight) }}
-                      aria-hidden="true"
-                    />
-                    <span className={styles["person-text"]}>
-                      <span className={styles["person-name"]}>{cadet.name}</span>
-                      <span className={styles["person-note"]}>
-                        {cadet.label}
-                        {cadet.isBehind ? ` · target ${cadet.target}` : ""}
-                      </span>
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </article>
-        </div>
-      </section>
-
-      {/* 5 */}
-      <section className={styles.section}>
-        <header className={styles.head}>
-          <h2 className={styles.question}>Is recognition reaching everyone?</h2>
-          <p className={styles.answer}>
-            The top five hold {Math.round(recognition.share * 100)}% of this year&rsquo;s points
-            {recognition.invisible.length > 0
-              ? `, and ${recognition.invisible.length} ${
-                  recognition.invisible.length === 1 ? "cadet has" : "cadets have"
-                } nothing recorded at all.`
-              : ", and everybody has something recorded."}
-          </p>
-        </header>
-        <div className={styles.grid}>
-          <article className={styles.card}>
-            <h3 className={styles["card-title"]}>Held by the Top Five</h3>
-            <p className={styles.figure}>{Math.round(recognition.share * 100)}%</p>
-            <MusterBar value={recognition.share} max={1} />
-            <p className={styles.caption}>
-              Not wrong in itself &mdash; keen cadets earn more. It only matters next to the panel
-              on the right.
-            </p>
-          </article>
-
-          <article className={styles["card-wide"]}>
-            <h3 className={styles["card-title"]}>How Points Are Spread</h3>
-            <div className={styles.histogram}>
-              {recognition.bands.map((band) => (
-                <div key={band.label} className={styles.band}>
-                  <span className={styles["band-count"]}>{band.count}</span>
-                  <div className={styles["band-track"]}>
-                    <div
-                      className={band.isZero ? styles["band-zero"] : styles["band-bar"]}
-                      style={{ height: band.height }}
-                    />
-                  </div>
-                  <span className={styles["band-label"]}>{band.label}</span>
-                </div>
-              ))}
+              <article className={styles["card-wide"]}>
+                <h3 className={styles["card-title"]}>Doing Less Than on {previous.year}</h3>
+                <p className={styles.caption}>
+                  Usually a cadet who has got busy elsewhere rather than one who has lost interest,
+                  but worth a word either way.
+                </p>
+                <ul className={styles.people}>
+                  {movers
+                    .filter((cadet) => cadet.change < 0)
+                    .slice(-5)
+                    .reverse()
+                    .map((cadet) => (
+                      <li key={cadet.id} className={styles.person}>
+                        <span
+                          className={styles.mark}
+                          style={{ backgroundColor: flightColour(cadet.flight) }}
+                          aria-hidden="true"
+                        />
+                        <span className={styles["person-text"]}>
+                          <span className={styles["person-name"]}>{cadet.name}</span>
+                          <span className={styles["person-note"]}>
+                            {cadet.flightName} &middot; {cadet.before} &rarr; {cadet.now}
+                          </span>
+                        </span>
+                        <span className={styles["delta-down"]}>{signed(cadet.change)}</span>
+                      </li>
+                    ))}
+                </ul>
+              </article>
             </div>
-          </article>
-
-          {recognition.invisible.length > 0 ? (
-            <article className={styles.alert}>
-              <h3 className={styles["alert-title"]}>
-                {recognition.invisible.length}{" "}
-                {recognition.invisible.length === 1 ? "cadet has" : "cadets have"} no record this
-                year
-              </h3>
-              <p className={styles.caption}>
-                They are on the books. Nothing has been logged against them.
-              </p>
-              <ul className={styles.names}>
-                {recognition.invisible.map((cadet) => (
-                  <li key={cadet.id} className={styles.name}>
-                    {cadet.name}
-                  </li>
-                ))}
-              </ul>
-            </article>
-          ) : (
-            <article className={styles.card}>
-              <h3 className={styles["card-title"]}>Everyone Has Something</h3>
-              <p className={styles.caption}>
-                Every cadet on the books has at least one record this year.
-              </p>
-            </article>
           )}
-        </div>
-      </section>
+        </section>
+
+          <FlightAges ages={ages} />
+        </>
+      )}
+
+      {tab === "keeping" && (
+        <>
+          <RecordingHealth health={health} />
+          <DataQuality issues={issues} />
+        </>
+      )}
 
       <p className={styles.footnote}>
         Attendance is not here: the app has no attendance model, only parade-night records, which
         are written when someone remembers to write them &mdash; so it measures the log rather than
-        the squadron. Retention and age profile are not here either, because there is no discharge
-        date and no date of birth. Those two need a schema change; attendance needs a decision
-        about what it should mean.
+        the squadron. Age profile is not here either, because there is no date of birth. Retention
+        is worked out from the records left behind by cadets no longer on strength, so it is a
+        floor rather than a measurement: it cannot see anyone who left with nothing logged.
       </p>
     </MusterPage>
   );

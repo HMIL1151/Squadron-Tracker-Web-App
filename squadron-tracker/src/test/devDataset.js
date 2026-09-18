@@ -153,9 +153,45 @@ export const buildDevSquadron = () => {
   }
 
   let eventId = 0;
+
+  /*
+   * Records are entered after the thing happened, and the gap is the point.
+   *
+   * Every generated event used to carry the same createdAt, which made the
+   * Record Keeping statistics report a typical lag of MINUS 23 days -- one
+   * entry stamp sitting before most of the dates it was meant to follow. The
+   * real squadron backup this screen was written against had a median of 44
+   * days with a long tail, so that is the shape generated here: most things
+   * written up within a few weeks, a minority caught up on months later.
+   */
+  const lag = () => {
+    const roll = random();
+    if (roll < 0.55) return between(0, 21);
+    if (roll < 0.85) return between(22, 120);
+    return between(121, 500);
+  };
+
+  const enteredAfter = (date, days) => {
+    const entered = new Date(`${date}T19:30:00Z`);
+    entered.setUTCDate(entered.getUTCDate() + days);
+    return timestamp(entered.toISOString());
+  };
+
+  /*
+   * One person enters 86% of the log in the real squadron. That concentration
+   * is the finding, so it is generated rather than smoothed away -- but not as
+   * 100%, or the "who enters records" panel has nothing to compare against.
+   */
+  const OTHER_STAFF = ["Flt Lt Reed", "Sgt Okafor", "CI Mwangi"];
+
   const add = (over) => {
     eventId += 1;
-    docs[`${base}/EventLog/dev-event-${String(eventId).padStart(4, "0")}`] = event(over);
+    const defaults = { addedBy: random() < 0.86 ? "Admin User" : pick(OTHER_STAFF) };
+    if (over.date) defaults.createdAt = enteredAfter(over.date, lag());
+    docs[`${base}/EventLog/dev-event-${String(eventId).padStart(4, "0")}`] = event({
+      ...defaults,
+      ...over,
+    });
   };
 
   cadets.forEach((cadet) => {

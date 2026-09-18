@@ -517,3 +517,188 @@
 .section {
   flex-shrink: 0;
 }
+
+/* -- tabs ----------------------------------------------------------------- */
+
+/*
+ * Five enquiries rather than one scroll.
+ *
+ * The opposite call to Record Categories, and for the opposite reason: those
+ * were four short lists read AGAINST each other, so tabs would have made you
+ * hold one in your head. These are five separate questions that are never
+ * asked in the same breath, and stacking them made a page three thousand
+ * pixels tall where the last section was never seen.
+ */
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  flex-shrink: 0;
+  padding-bottom: 4px;
+}
+
+/* -- extra pieces the new sections need ----------------------------------- */
+
+.figure-unit {
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0;
+  color: var(--color-text-muted);
+}
+
+.sub-title {
+  margin: 16px 0 0;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+
+.matrix-cell-left {
+  padding: 0 14px;
+  height: 42px;
+  text-align: left;
+  font-size: 13.5px;
+  color: var(--color-text);
+  border-bottom: 1px solid var(--color-row-rule);
+  white-space: nowrap;
+}
+
+/*
+ * A zero in a ladder is the interesting cell, not a missing one -- "nobody has
+ * ever reached Silver here" is the finding. Dimming it would hide exactly the
+ * thing worth seeing, so it stays full strength and only loses its weight.
+ */
+.matrix-cell-zero {
+  padding: 0 14px;
+  height: 42px;
+  text-align: right;
+  font-size: 13.5px;
+  font-weight: 400;
+  color: var(--color-text-faint);
+  border-bottom: 1px solid var(--color-row-rule);
+}
+
+.ceiling {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+}
+
+.dot-blue,
+.dot-bronze,
+.dot-silver,
+.dot-gold,
+.dot-none {
+  display: inline-block;
+  width: 11px;
+  height: 11px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  border: 1px solid var(--color-border);
+}
+
+.dot-blue {
+  background-color: var(--badge-blue);
+}
+
+.dot-bronze {
+  background-color: var(--badge-bronze);
+}
+
+.dot-silver {
+  background-color: var(--badge-silver);
+}
+
+.dot-gold {
+  background-color: var(--badge-gold);
+}
+
+.dot-none {
+  background-color: transparent;
+}
+
+.reach-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+}
+
+/*
+ * A category used by records but no longer in the dropdown. Usually means it
+ * was renamed or retired, and the old records still carry the old name.
+ */
+.retired {
+  padding: 2px 7px;
+  border-radius: 4px;
+  background-color: var(--color-warning-bg);
+  border: 1px solid var(--color-warning-border);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.zero {
+  color: var(--color-danger-hover);
+  font-weight: 600;
+}
+
+.muted {
+  color: var(--color-text-muted);
+}
+
+.person-value-muted {
+  flex: 0 0 auto;
+  font-size: 12.5px;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+
+/* -- data quality --------------------------------------------------------- */
+
+.issues {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  gap: 14px;
+}
+
+.issue-high,
+.issue-medium,
+.issue-low {
+  padding: 16px 18px;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 7px;
+}
+
+/*
+ * Severity is a left edge rather than a fill. These are housekeeping notes,
+ * not alarms -- a page of red panels about stray whitespace would train people
+ * to ignore the colour by the time something actually mattered.
+ */
+.issue-high {
+  border-left: 3px solid var(--color-danger);
+}
+
+.issue-medium {
+  border-left: 3px solid var(--muster-caution-line);
+}
+
+.issue-low {
+  border-left: 3px solid var(--color-border-strong);
+}
+
+.issue-title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.issue-detail {
+  margin: 6px 0 0;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--color-text-muted);
+}
