@@ -37,8 +37,32 @@ const DASHBOARDS = [
  * Offline mode has no popup and no real account -- devAuth returns a fixture
  * user as soon as the button is clicked. Default is 9999 Faketon, admin.
  */
-const signIn = async (page) => {
-  await page.goto("/");
+/**
+ * The same instant src/setupTests.js freezes the unit suite to.
+ *
+ * Without this the Cadet List screenshots drift by one pixel-row of digits
+ * every day: its Service Length column is computed from `new Date()`, so
+ * "5 Yrs, 0 Mos, 12 Days" becomes 13 tomorrow and the baseline fails for
+ * everyone, on every branch, until it is recaptured. Measured at 668 differing
+ * pixels against an unmodified component -- a broken clock, not a regression.
+ *
+ * Both suites now freeze to the same instant, so a figure in a screenshot and
+ * the same figure in a snapshot mean the same thing.
+ */
+const FROZEN_NOW = new Date("2025-06-15T12:00:00Z");
+
+const signIn = async (page, ui = "classic") => {
+  await page.clock.setFixedTime(FROZEN_NOW);
+  /*
+   * The interface is pinned through the URL rather than left to the default.
+   *
+   * A fresh browser context has no cached choice, so these used to land on
+   * classic by accident -- which would silently become "photograph whatever
+   * the system default is" the day a system admin moves it. `?ui=` is the one
+   * layer that beats both the account and the cache, so it is exactly the
+   * right tool for saying which interface a screenshot is OF.
+   */
+  await page.goto(`/?ui=${ui}`);
   await page.getByRole("button", { name: /sign in with google/i }).click();
   await expect(page.getByRole("navigation")).toBeVisible();
 };
@@ -61,6 +85,56 @@ test.describe("dashboards", () => {
       await expect(page).toHaveScreenshot(`dashboard-${slug}.png`, { fullPage: true });
     });
   }
+});
+
+/**
+ * The same dashboards in the Muster interface.
+ *
+ * Their own baselines, and the classic ones above are untouched -- which is
+ * the point. As long as both sets are green, the new interface has not reached
+ * into the old one.
+ *
+ * Navigation differs: classic renders list items, Muster renders buttons in a
+ * rail, because the app has no routing to link to. The titles differ too,
+ * since Muster uses sentence case.
+ */
+const MUSTER_SCREENS = [
+  "Mass event log",
+  "Cadet list",
+  "Record categories",
+  "Classification tracker",
+  "Flight points",
+  "Certificates",
+  "PTS tracker",
+  "Squadron statistics",
+  "Flights",
+  "Admin area",
+];
+
+const openMuster = async (page, title) => {
+  await page.getByRole("button", { name: title, exact: true }).click();
+  // Lazily loaded, so wait for Suspense to resolve before photographing.
+  await expect(page.getByText("Loading…")).toHaveCount(0, { timeout: 15_000 });
+  await page.waitForLoadState("networkidle");
+};
+
+test.describe("muster dashboards", () => {
+  for (const title of MUSTER_SCREENS) {
+    const slug = title.toLowerCase().replace(/\s+/g, "-");
+
+    test(`${title} renders in Muster`, async ({ page }) => {
+      await signIn(page, "muster");
+      await openMuster(page, title);
+      await expect(page).toHaveScreenshot(`muster-${slug}.png`, { fullPage: true });
+    });
+  }
+
+  test("the sign-in screen renders in Muster", async ({ page }) => {
+    await page.clock.setFixedTime(FROZEN_NOW);
+    await page.goto("/?ui=muster");
+    await expect(page.getByRole("button", { name: /sign in with google/i })).toBeVisible();
+    await expect(page).toHaveScreenshot("muster-sign-in.png", { fullPage: true });
+  });
 });
 
 test.describe("cascade collisions", () => {

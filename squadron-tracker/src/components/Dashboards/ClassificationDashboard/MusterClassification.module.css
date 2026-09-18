@@ -1,0 +1,286 @@
+/*
+ * The classification exam board.
+ *
+ * The six classification tones are a deliberate single-hue ramp rather than
+ * six different colours. This is an ordered scale -- Junior through Master is
+ * a sequence, not a set of categories -- and using distinct hues for it would
+ * say the opposite. Flight colour is the categorical scale on this screen and
+ * has to stay the only one, or the two start competing.
+ */
+
+.distribution {
+  padding: 16px 18px;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 7px;
+}
+
+.distribution-head {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 13px;
+}
+
+.distribution-title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.distribution-note {
+  margin: 0;
+  font-size: 13px;
+  color: var(--color-text-muted);
+}
+
+.bands {
+  display: flex;
+  height: 30px;
+  border: 1px solid var(--color-border-subtle);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.band-1,
+.band-2,
+.band-3,
+.band-4,
+.band-5,
+.band-6 {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  font-size: 12px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.band-1 {
+  background-color: var(--rung-1);
+  color: var(--color-text-muted);
+}
+
+.band-2 {
+  background-color: var(--rung-2);
+  color: var(--color-text);
+}
+
+.band-3 {
+  background-color: var(--rung-3);
+  color: var(--color-text);
+}
+
+.band-4 {
+  background-color: var(--rung-4);
+  color: var(--color-text);
+}
+
+.band-5 {
+  background-color: var(--rung-5);
+  color: var(--color-text-inverse);
+}
+
+.band-6 {
+  background-color: var(--rung-6);
+  color: var(--color-text-inverse);
+}
+
+.band-count {
+  padding: 0 4px;
+}
+
+.legend {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin: 10px 0 0;
+  padding: 0;
+  font-size: 12px;
+  color: var(--color-text-muted);
+}
+
+.legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/*
+ * The legend swatch reuses the band classes, so it needs a size. Without this
+ * the flex child collapses to nothing and the legend reads as text only.
+ */
+.legend-item > span:first-child {
+  width: 12px;
+  height: 12px;
+  flex: 0 0 auto;
+  border-radius: 2px;
+}
+
+.legend-count {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text);
+}
+
+/* -- the board ----------------------------------------------------------- */
+
+.cadet {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.cadet-text {
+  min-width: 0;
+}
+
+.cadet-name {
+  display: block;
+  font-weight: 500;
+  line-height: 1.25;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cadet-flight {
+  display: block;
+  font-size: 12px;
+  line-height: 1.3;
+  color: var(--color-text-muted);
+}
+
+.tone-1,
+.tone-2,
+.tone-3,
+.tone-4,
+.tone-5,
+.tone-6 {
+  display: inline-block;
+  padding: 3px 9px;
+  border-radius: 4px;
+  font-size: 12.5px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.tone-1 {
+  background-color: var(--rung-1);
+  color: var(--color-text-muted);
+}
+
+.tone-2 {
+  background-color: var(--rung-2);
+  color: var(--color-text);
+}
+
+.tone-3 {
+  background-color: var(--rung-3);
+  color: var(--color-text);
+}
+
+.tone-4 {
+  background-color: var(--rung-4);
+  color: var(--color-text);
+}
+
+.tone-5 {
+  background-color: var(--rung-5);
+  color: var(--color-text-inverse);
+}
+
+.tone-6 {
+  background-color: var(--rung-6);
+  color: var(--color-text-inverse);
+}
+
+/*
+ * A tick in a filled square, and an empty outlined one. Both carry a visually
+ * hidden word, because a board read by screen reader as a row of blanks is a
+ * board that tells you nothing.
+ */
+.passed,
+.pending {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
+.passed {
+  background-color: var(--color-accent);
+  border: 1px solid var(--color-accent);
+  color: var(--color-on-accent);
+}
+
+.pending {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+}
+
+.senior {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.senior-count {
+  font-size: 12.5px;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+
+.next {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13.5px;
+}
+
+.nearly {
+  padding: 2px 7px;
+  border-radius: 4px;
+  background-color: var(--color-success-bg);
+  border: 1px solid var(--color-success-border);
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--color-text);
+  white-space: nowrap;
+}
+
+.done {
+  font-size: 13.5px;
+  color: var(--color-text-muted);
+}
+
+.spacer {
+  flex: 1 1 auto;
+}
+
+.count {
+  font-size: 13px;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}

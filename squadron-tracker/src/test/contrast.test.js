@@ -141,6 +141,36 @@ const PAIRS = [
   ["--color-surface", "--color-text-faint", AA_LARGE],
 ];
 
+/**
+ * Pairs that exist in only one palette.
+ *
+ * The classification ramp is Muster's alone -- the classic screens draw that
+ * distribution as a scatter plot with no filled bands. Asserting it against
+ * the light and dark palettes would measure two undefined values and pass.
+ *
+ * Worth measuring rather than eyeballing: rung-4 was first drawn with light
+ * text and came out at 2.90:1. A single-hue ramp does not flip from dark to
+ * light text where it looks like it should.
+ */
+const PALETTE_PAIRS = {
+  muster: [
+    ["--rung-1", "--color-text-muted", AA_NORMAL],
+    ["--rung-2", "--color-text", AA_NORMAL],
+    ["--rung-3", "--color-text", AA_NORMAL],
+    ["--rung-4", "--color-text", AA_NORMAL],
+    ["--rung-5", "--color-text-inverse", AA_NORMAL],
+    ["--rung-6", "--color-text-inverse", AA_NORMAL],
+    // The rail and its identity block, which only Muster has.
+    ["--color-rail", "--color-text", AA_NORMAL],
+    ["--color-identity", "--color-identity-text", AA_NORMAL],
+    ["--color-identity", "--color-identity-text-muted", AA_NORMAL],
+    ["--color-table-head", "--color-text-muted", AA_NORMAL],
+    ["--color-row-selected", "--color-text", AA_NORMAL],
+    ["--color-chip", "--color-chip-text", AA_NORMAL],
+    ["--color-chip-active", "--color-chip-active-text", AA_NORMAL],
+  ],
+};
+
 describe.each(Object.keys(PALETTES))("%s theme contrast", (theme) => {
   const values = readTokens(theme);
 
@@ -151,7 +181,9 @@ describe.each(Object.keys(PALETTES))("%s theme contrast", (theme) => {
     expect(resolve(values, "--color-action")).toMatch(/^#|^rgb/);
   });
 
-  it.each(PAIRS)("%s against %s meets AA", (bgToken, fgToken, minimum) => {
+  const pairs = [...PAIRS, ...(PALETTE_PAIRS[theme] || [])];
+
+  it.each(pairs)("%s against %s meets AA", (bgToken, fgToken, minimum) => {
     const bg = resolve(values, bgToken);
     const fg = resolve(values, fgToken);
     expect(bg, `${bgToken} did not resolve`).toBeTruthy();

@@ -1,0 +1,260 @@
+/*
+ * The cadet detail panel, docked to the right of the list.
+ *
+ * Fixed width rather than a fraction, so the table beside it does not reflow
+ * as it opens and close. A table whose columns jump when a panel appears is a
+ * table people stop trusting they clicked the right row in.
+ */
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  width: 380px;
+  flex: 0 0 380px;
+  min-height: 0;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 7px;
+  overflow: hidden;
+}
+
+.header {
+  padding: 18px 20px 16px;
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+
+.identity {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+/*
+ * Tinted with the cadet's flight colour. It is the one place the flight is
+ * shown large enough to be read as a colour rather than a 3px mark, which
+ * helps when the panel is open and the row behind it is not visible.
+ */
+.avatar {
+  flex: 0 0 auto;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  color: var(--color-text-inverse);
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.names {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.name {
+  margin: 0;
+  font-size: 19px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+  color: var(--color-text);
+}
+
+.meta {
+  margin: 3px 0 0;
+  font-size: 13px;
+  color: var(--color-text-muted);
+}
+
+.close {
+  flex: 0 0 auto;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 0;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--color-text-muted);
+  cursor: pointer;
+}
+
+.close:hover {
+  background-color: var(--color-surface-hover);
+  color: var(--color-text);
+}
+
+.close:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+.body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1px;
+  margin: 0;
+  background-color: var(--color-border-subtle);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.stat {
+  padding: 11px 12px;
+  background-color: var(--color-surface);
+}
+
+.stat dt {
+  font-size: 11.5px;
+  color: var(--color-text-muted);
+}
+
+.stat dd {
+  margin: 2px 0 0;
+  font-size: 20px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text);
+}
+
+/* Service reads as words rather than a figure, so it needs less room. */
+.stat-small {
+  font-size: 14px !important;
+  font-weight: 600 !important;
+}
+
+.section-title {
+  margin: 0 0 10px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+
+.card {
+  padding: 13px 14px;
+  border: 1px solid var(--color-border-subtle);
+  border-radius: 6px;
+}
+
+.card-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 15px;
+  color: var(--color-text);
+}
+
+.card-note {
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--color-text-muted);
+}
+
+.card-body {
+  margin: 9px 0 0;
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: var(--color-text-muted);
+}
+
+/*
+ * Named badge-list rather than the obvious .badges.
+ *
+ * cssShape.test.js checks that every class a component renders has a rule
+ * SOMEWHERE, pooling the names across all stylesheets. EventCategoriesDashboard
+ * renders a `badges` class that has no rule and is on that test's list of known
+ * defects -- so defining .badges here, in an unrelated module, made that defect
+ * look fixed when nothing about it had changed. Scoping keeps the styles apart;
+ * it does not keep the NAMES apart.
+ */
+.badge-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.badge-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  border: 1px solid var(--color-border-subtle);
+  border-radius: 5px;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--color-text);
+}
+
+.dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+}
+
+.recent {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.recent-row {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--color-row-rule);
+}
+
+.recent-name {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: 13.5px;
+  color: var(--color-text);
+}
+
+.recent-date {
+  flex: 0 0 auto;
+  font-size: 12.5px;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-muted);
+}
+
+.nothing {
+  margin: 0;
+  font-size: 13px;
+  color: var(--color-text-muted);
+}
+
+.footer {
+  padding: 14px 20px;
+  border-top: 1px solid var(--color-border-subtle);
+}
+
+/*
+ * Below tablet width the panel stops being a column and stacks under the
+ * list, because 380px beside a table is more than a phone has to give.
+ */
+@media (max-width: 1100px) {
+  .panel {
+    width: auto;
+    flex: 1 1 auto;
+  }
+}

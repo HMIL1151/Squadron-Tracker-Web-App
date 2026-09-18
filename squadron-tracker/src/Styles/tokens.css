@@ -587,6 +587,54 @@
   --color-chip-active-border: var(--muster-service-line);
 
   --color-positive: var(--muster-good);
+
+  /*
+   * The classification ramp.
+   *
+   * Junior through Master is a SEQUENCE, so it gets one hue getting darker
+   * rather than six different colours. Six categorical hues would say these
+   * are unrelated kinds of thing, and would also fight the flight colours,
+   * which are the one genuinely categorical scale on these screens.
+   *
+   * Used by the classification board's distribution strip and its "Now"
+   * chips, and by the statistics page's progression funnel.
+   *
+   * The first FOUR carry dark text and the last two light. rung-4 was drawn
+   * with light text to begin with and measured 2.9:1, which is where the
+   * contrast pairs at the bottom of this comment's test file earn their keep:
+   * a ramp that looks like it should flip in the middle does not necessarily
+   * flip where it looks like it does.
+   */
+  --rung-1: var(--muster-mist);
+  --rung-2: var(--muster-rule);
+  --rung-3: var(--muster-service-line);
+  --rung-4: #7d9bb6;
+  --rung-5: #456b8c;
+  --rung-6: var(--muster-service);
+
+  /*
+   * Badge chips.
+   *
+   * The DOT keeps the badge's own colour -- --badge-blue and friends, which
+   * are in the exempt block below because the colour IS the level. These are
+   * the tinted backgrounds and darkened text the chip needs so the label is
+   * readable, which the badge colours themselves are not: white on
+   * --badge-gold is 1.6:1 and dark on --badge-blue is little better.
+   *
+   * So the dot carries the meaning and the chip carries the legibility.
+   */
+  --badge-blue-bg: #e7edf5;
+  --badge-blue-line: #c3d2e6;
+  --badge-blue-text: #234876;
+  --badge-bronze-bg: #f6ede3;
+  --badge-bronze-line: #e3cdb4;
+  --badge-bronze-text: #7a4a18;
+  --badge-silver-bg: #eff1f3;
+  --badge-silver-line: #d3d9de;
+  --badge-silver-text: #4a545e;
+  --badge-gold-bg: #f9f2dc;
+  --badge-gold-line: #e6d59b;
+  --badge-gold-text: #7a6210;
 }
 
 /* -------------------------------------------------------------------------

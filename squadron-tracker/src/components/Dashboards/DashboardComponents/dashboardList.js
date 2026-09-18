@@ -34,6 +34,12 @@ const SystemAdminDashboard = lazy(() => import("../SystemAdminDashboard/SystemAd
  * removed without leaving a hole in the navigation.
  */
 const MusterMassEventLog = lazy(() => import("../MassEventLog/MusterMassEventLog"));
+const MusterCadetList = lazy(() => import("../CadetsDashboard/MusterCadetList"));
+const MusterClassification = lazy(() => import("../ClassificationDashboard/MusterClassification"));
+const MusterPTSTracker = lazy(() => import("../PTSTracker/MusterPTSTracker"));
+const MusterFlightPoints = lazy(() => import("../FlightPointsDashboard/MusterFlightPoints"));
+const MusterCertificates = lazy(() => import("../CertificateDashboard/MusterCertificates"));
+const MusterStatistics = lazy(() => import("../StatisticsDashboard/MusterStatistics"));
 
 /*
  * Navigation groups, used by the Muster rail.
@@ -66,7 +72,7 @@ const dashboardList = [
     title: "Cadet List",
     musterTitle: "Cadet list",
     group: "records",
-    views: { classic: CadetsDashboard },
+    views: { classic: CadetsDashboard, muster: MusterCadetList },
     adminOnly: false, // Accessible to all users
   },
   {
@@ -82,7 +88,7 @@ const dashboardList = [
     title: "Classification Tracker",
     musterTitle: "Classification tracker",
     group: "progress",
-    views: { classic: ClassificationDashboard },
+    views: { classic: ClassificationDashboard, muster: MusterClassification },
     adminOnly: false, // Accessible to all users
   },
   {
@@ -90,7 +96,7 @@ const dashboardList = [
     title: "Flight Points",
     musterTitle: "Flight points",
     group: "squadron",
-    views: { classic: FlightPointsDashboard },
+    views: { classic: FlightPointsDashboard, muster: MusterFlightPoints },
     adminOnly: false, // Accessible to all users
   },
   {
@@ -98,7 +104,7 @@ const dashboardList = [
     title: "Certificates",
     musterTitle: "Certificates",
     group: "progress",
-    views: { classic: CertificateDashboard },
+    views: { classic: CertificateDashboard, muster: MusterCertificates },
     adminOnly: false, // Accessible to all users
   },
   {
@@ -106,7 +112,7 @@ const dashboardList = [
     title: "PTS Tracker",
     musterTitle: "PTS tracker",
     group: "progress",
-    views: { classic: PTSTracker },
+    views: { classic: PTSTracker, muster: MusterPTSTracker },
     adminOnly: false, // Accessible to all users
   },
   {
@@ -119,7 +125,7 @@ const dashboardList = [
     title: "Squadron Statistics",
     musterTitle: "Squadron statistics",
     group: "squadron",
-    views: {},
+    views: { muster: MusterStatistics },
     musterOnly: true,
     adminOnly: false,
   },

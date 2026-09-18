@@ -76,6 +76,34 @@ squadron-tracker/
 Adding a dashboard = new component folder + one entry in `dashboardList.js` (`adminOnly` /
 `systemAdminOnly` control menu visibility). Dashboards are `React.lazy`-loaded.
 
+## Two interfaces
+
+The app ships **classic** (the original) and **muster** (the 2026 rebuild), chosen by
+`data-ui` on `<html>`. Both are maintained; the switch is a kill switch, not a migration.
+
+Which one a user gets, highest priority first:
+
+1. `?ui=muster` / `?ui=classic` — session only, beats everything. The escape hatch, and how
+   the Playwright suite pins a version.
+2. `UserPreferences/{uid}.uiVersion` — their own choice. **null is not "classic"**: a user
+   who picked classic must survive the default moving.
+3. `SystemConfig/ui.defaultVersion` — system admins only, via the System Admin dashboard.
+
+Adding a Muster screen is one entry in `dashboardList.js` (`views: { classic, muster }`).
+A screen with no `muster` view falls back to its classic component **rendered inside the
+Muster shell** — which is why the `[data-ui="muster"]` block in `tokens.css` must keep every
+classic component readable.
+
+- Muster is **light only**. `ThemeContext` pins `data-theme="light"` and hides the toggle
+  while it is active, without rewriting the user's stored theme. Adding a dark Muster means
+  a fourth entry in `PALETTES` in `contrast.test.js`.
+- Behaviour shared by both interfaces lives in a hook (`useMassEventLog`, `useCadetList`) or
+  in `utils/` (`classification.js`), never duplicated. This is what stops the two drifting.
+- **The classic suite passing with no snapshot updates is the proof the old UI is untouched.**
+  If a classic `.snap` needs updating, something leaked — find out what before running `-u`.
+- `cssShape.test.js` pools class NAMES across all stylesheets, module or not. A generic class
+  name in a new module can accidentally "fix" a listed defect in an unrelated component.
+
 ## Architecture decisions worth knowing
 
 - **Offline mode is a resolve-time alias, not a runtime branch.** With `REACT_APP_USE_FAKE_DB`,
