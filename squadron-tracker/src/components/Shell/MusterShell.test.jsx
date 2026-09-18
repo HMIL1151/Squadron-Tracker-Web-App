@@ -83,7 +83,7 @@ describe("the rail", () => {
 
   it("marks the screen you are on for a screen reader, not just visually", () => {
     renderShell(MusterShell);
-    const current = within(nav()).getByRole("button", { name: "Mass event log" });
+    const current = within(nav()).getByRole("button", { name: "Mass Event Log" });
     expect(current).toHaveAttribute("aria-current", "page");
   });
 
@@ -91,7 +91,7 @@ describe("the rail", () => {
     const setActiveMenu = jest.fn();
     renderShell(MusterShell, { setActiveMenu });
 
-    await userEvent.click(within(nav()).getByRole("button", { name: "Cadet list" }));
+    await userEvent.click(within(nav()).getByRole("button", { name: "Cadet List" }));
     expect(setActiveMenu).toHaveBeenCalledWith("dashboard");
   });
 
@@ -105,21 +105,21 @@ describe("who sees what", () => {
   it("hides admin screens from ordinary staff", () => {
     renderShell(MusterShell);
     expect(within(nav()).queryByRole("button", { name: "Flights" })).not.toBeInTheDocument();
-    expect(within(nav()).queryByRole("button", { name: "Admin area" })).not.toBeInTheDocument();
+    expect(within(nav()).queryByRole("button", { name: "Admin Area" })).not.toBeInTheDocument();
   });
 
   it("shows them to an admin", () => {
     renderShell(MusterShell, { isAdmin: true });
     expect(within(nav()).getByRole("button", { name: "Flights" })).toBeInTheDocument();
-    expect(within(nav()).getByRole("button", { name: "Admin area" })).toBeInTheDocument();
+    expect(within(nav()).getByRole("button", { name: "Admin Area" })).toBeInTheDocument();
   });
 
   it("keeps the system admin area for system admins only", () => {
     renderShell(MusterShell, { isAdmin: true });
-    expect(within(nav()).queryByRole("button", { name: "System admin area" })).not.toBeInTheDocument();
+    expect(within(nav()).queryByRole("button", { name: "System Admin Area" })).not.toBeInTheDocument();
 
     renderShell(MusterShell, { isAdmin: true, user: { ...USER, systemAdmin: true } });
-    expect(screen.getAllByRole("button", { name: "System admin area" }).length).toBeGreaterThan(0);
+    expect(screen.getAllByRole("button", { name: "System Admin Area" }).length).toBeGreaterThan(0);
   });
 
   /*
@@ -128,7 +128,7 @@ describe("who sees what", () => {
    */
   it("offers the statistics screen, which classic does not have", () => {
     renderShell(MusterShell);
-    expect(within(nav()).getByRole("button", { name: "Squadron statistics" })).toBeInTheDocument();
+    expect(within(nav()).getByRole("button", { name: "Squadron Statistics" })).toBeInTheDocument();
 
     renderShell(ClassicShell);
     const classicMenu = screen.getAllByRole("navigation").at(-1);

@@ -69,7 +69,7 @@ const MusterWelcomeFrame = ({ error, children, changelog }) => (
 
     <section className={styles.panel}>
       <div className={styles.inner}>
-        <h2 className={styles.title}>Sign in</h2>
+        <h2 className={styles.title}>Sign In</h2>
         <p className={styles.blurb}>
           Use the Google account your squadron staff list holds. If your squadron is not set up
           yet, you can create it after signing in.

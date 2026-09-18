@@ -62,7 +62,14 @@ const signIn = async (page, ui = "classic") => {
    * layer that beats both the account and the cache, so it is exactly the
    * right tool for saying which interface a screenshot is OF.
    */
-  await page.goto(`/?ui=${ui}`);
+  /*
+   * `data=fixture` pins the seed to the small test fixture. The dev server
+   * otherwise seeds a full-size squadron, which is right for a person opening
+   * it and wrong for a golden master -- a forty-cadet full-page screenshot is
+   * enormous, and every baseline would move the next time the generator was
+   * touched.
+   */
+  await page.goto(`/?ui=${ui}&data=fixture`);
   await page.getByRole("button", { name: /sign in with google/i }).click();
   await expect(page.getByRole("navigation")).toBeVisible();
 };
@@ -99,16 +106,16 @@ test.describe("dashboards", () => {
  * since Muster uses sentence case.
  */
 const MUSTER_SCREENS = [
-  "Mass event log",
-  "Cadet list",
-  "Record categories",
-  "Classification tracker",
-  "Flight points",
+  "Mass Event Log",
+  "Cadet List",
+  "Record Categories",
+  "Classification Tracker",
+  "Flight Points",
   "Certificates",
-  "PTS tracker",
-  "Squadron statistics",
+  "PTS Tracker",
+  "Squadron Statistics",
   "Flights",
-  "Admin area",
+  "Admin Area",
 ];
 
 const openMuster = async (page, title) => {
@@ -131,7 +138,7 @@ test.describe("muster dashboards", () => {
 
   test("the sign-in screen renders in Muster", async ({ page }) => {
     await page.clock.setFixedTime(FROZEN_NOW);
-    await page.goto("/?ui=muster");
+    await page.goto("/?ui=muster&data=fixture");
     await expect(page.getByRole("button", { name: /sign in with google/i })).toBeVisible();
     await expect(page).toHaveScreenshot("muster-sign-in.png", { fullPage: true });
   });

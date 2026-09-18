@@ -41,13 +41,42 @@ const offline = !import.meta.env.PROD && import.meta.env.REACT_APP_USE_FAKE_DB =
 
 if (offline && typeof sdk.__seed === "function") {
   const { dummyData } = await import("../test/dummyData");
-  sdk.__seed(dummyData);
+  /*
+   * The dev squadron is the test fixture plus a realistic bulk of cadets and
+   * several years of records. Layered rather than merged into dummyData,
+   * because that file is the test fixture and nearly every value in it is
+   * load-bearing -- but ten cadets and one year of history is not enough to
+   * judge a table, a year filter or a year-on-year comparison on.
+   */
+  /*
+   * `?data=fixture` pins the seed to the small, deliberate test fixture.
+   *
+   * The screenshot suite uses it. Those baselines have to photograph a dataset
+   * that does not move, and a full-page shot of forty cadets and a thousand
+   * records is both enormous and invalidated by any tweak to the generator --
+   * so the visual tests get the ten cadets whose every value means something,
+   * and a person opening the dev server gets a squadron that looks like one.
+   */
+  let useFixtureOnly = false;
+  try {
+    useFixtureOnly = new URLSearchParams(window.location.search).get("data") === "fixture";
+  } catch {
+    // No URLSearchParams, or no window. The full dev squadron is the default.
+  }
+
+  if (useFixtureOnly) {
+    sdk.__seed(dummyData);
+  } else {
+    const { buildDevSquadron } = await import("../test/devDataset");
+    sdk.__seed({ ...dummyData, ...buildDevSquadron() });
+  }
   // eslint-disable-next-line no-console
   console.info(
     "%c OFFLINE MODE ",
     "background:#d9534f;color:white;font-weight:bold",
     "Firestore is in-memory and seeded with dummy squadrons 9998/9999. " +
-      "Nothing is saved; reloading resets everything."
+      "9999 carries a full-size squadron for dev; nothing is saved, and " +
+      "reloading resets everything."
   );
 }
 

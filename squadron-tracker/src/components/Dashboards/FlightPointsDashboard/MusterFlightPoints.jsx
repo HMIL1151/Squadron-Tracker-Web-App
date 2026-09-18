@@ -103,6 +103,8 @@ const MusterFlightPoints = () => {
    * grid -- reaching for a charting library here would mean pushing theme
    * colours into its defaults just to draw lines that CSS variables can colour
    * directly.
+   *
+   * The viewBox ratio is honoured rather than stretched; see the stylesheet.
    */
   const series = useMemo(() => {
     const events = (data.events || []).filter((event) => getEventYear(event) === year);
@@ -149,6 +151,8 @@ const MusterFlightPoints = () => {
     {
       key: "cadet",
       header: "Cadet",
+      sortValue: (row) => row.name,
+      filterValue: (row) => row.name + " " + row.flightName,
       render: (row) => (
         <span className={styles.cadet}>
           <FlightMark flight={row.flight} />
@@ -172,13 +176,14 @@ const MusterFlightPoints = () => {
       header: "Points",
       align: "right",
       width: "90px",
+      sortValue: (row) => row.points,
       render: (row) => <strong>{row.points}</strong>,
     },
   ];
 
   return (
     <MusterPage
-      title="Flight points"
+      title="Flight Points"
       description={
         leader && runnerUp
           ? `${leader.name} leads ${runnerUp.name} by ${leader.total - runnerUp.total}.`
@@ -193,7 +198,7 @@ const MusterFlightPoints = () => {
         />
       }
     >
-      <section className={styles.standings} aria-label="Flight standings">
+      <section className={styles.standings} aria-label="Flight Standings">
         {standings.map((flight) => (
           <article key={flight.index} className={styles.flight} style={{ borderTopColor: flight.colour }}>
             <header className={styles["flight-head"]}>
@@ -215,9 +220,9 @@ const MusterFlightPoints = () => {
         ))}
       </section>
 
-      <section className={styles.chart} aria-label="Points through the year">
+      <section className={styles.chart} aria-label="Points Through the Year">
         <header className={styles["chart-head"]}>
-          <h2 className={styles["chart-title"]}>Points through the year</h2>
+          <h2 className={styles["chart-title"]}>Points Through the Year</h2>
           <ul className={styles.legend}>
             {series.map((flight) => (
               <li key={flight.index} className={styles["legend-item"]}>
@@ -231,7 +236,6 @@ const MusterFlightPoints = () => {
         <svg
           className={styles.svg}
           viewBox="0 0 760 240"
-          preserveAspectRatio="none"
           role="img"
           aria-label={series
             .map((flight) => `${flight.name} finished on ${flight.peak} points`)
@@ -282,6 +286,7 @@ const MusterFlightPoints = () => {
         columns={columns}
         rows={contributors}
         getRowKey={(row) => row.id}
+        defaultSort={{ key: "points", direction: "desc" }}
         caption="Who is carrying each flight. Useful before the standings are read out on parade."
         empty={
           <MusterEmpty title={`Nothing scored in ${year}`}>

@@ -136,6 +136,8 @@ const MusterMassEventLog = ({ user }) => {
       key: "cadet",
       header: "Cadet",
       width: "260px",
+      sortValue: (row) => row.Name,
+      filterValue: (row) => row.Name + " " + row.flightName,
       render: (row) => (
         <span className={styles.cadet}>
           <FlightMark flight={row.flight} />
@@ -147,18 +149,25 @@ const MusterMassEventLog = ({ user }) => {
     {
       key: "record",
       header: "Record",
+      sortValue: (row) => row.Record,
+      filterValue: (row) => row.Record,
       render: (row) => row.Record,
     },
     {
       key: "category",
       header: "Category",
       width: "180px",
+      sortValue: (row) => row.eventCategory,
+      filterValue: (row) => row.eventCategory,
       render: (row) => (row.eventCategory ? <MusterTag>{row.eventCategory}</MusterTag> : null),
     },
     {
       key: "date",
       header: "Date",
       width: "130px",
+      // Stored "YYYY-MM-DD", so string order is date order.
+      sortValue: (row) => row.Date,
+      filterValue: (row) => row.Date,
       render: (row) => <span className={styles.date}>{row.Date}</span>,
     },
     {
@@ -166,13 +175,14 @@ const MusterMassEventLog = ({ user }) => {
       header: "Points",
       align: "right",
       width: "92px",
+      sortValue: (row) => row.Points,
       render: (row) => <strong className={styles.points}>{row.Points}</strong>,
     },
   ];
 
   return (
     <MusterPage
-      title="Mass event log"
+      title="Mass Event Log"
       description="Everything recorded against a cadet, newest first."
       actions={
         <MusterButton
@@ -184,7 +194,7 @@ const MusterMassEventLog = ({ user }) => {
             </svg>
           }
         >
-          Add record
+          Add Record
         </MusterButton>
       }
     >
@@ -197,6 +207,7 @@ const MusterMassEventLog = ({ user }) => {
         rows={rows}
         getRowKey={(row) => row.id}
         onRowClick={log.handleRowClick}
+        defaultSort={{ key: "date", direction: "desc" }}
         toolbar={
           <>
             <MusterSearch
@@ -226,7 +237,7 @@ const MusterMassEventLog = ({ user }) => {
             />
             {filtersActive && (
               <MusterChip active onClick={clearFilters}>
-                Clear filters
+                Clear Filters
               </MusterChip>
             )}
             <span className={styles.spacer} />
@@ -239,7 +250,7 @@ const MusterMassEventLog = ({ user }) => {
         }
         empty={
           <MusterEmpty
-            title={filtersActive ? "Nothing matches those filters" : "No records yet"}
+            title={filtersActive ? "Nothing Matches Those Filters" : "No Records Yet"}
             action={
               filtersActive ? (
                 /*
@@ -248,10 +259,10 @@ const MusterMassEventLog = ({ user }) => {
                  * with the same label two inches apart read as a mistake even
                  * though they do the same thing.
                  */
-                <MusterButton onClick={clearFilters}>Show all records</MusterButton>
+                <MusterButton onClick={clearFilters}>Show All Records</MusterButton>
               ) : (
                 <MusterButton kind="primary" onClick={log.openPopup}>
-                  Add the first record
+                  Add the First Record
                 </MusterButton>
               )
             }

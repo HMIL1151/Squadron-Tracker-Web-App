@@ -55,17 +55,17 @@ beforeEach(() => {
 describe("switching interface", () => {
   it("offers the new interface to someone on classic", () => {
     renderHeader({ uiVersion: "classic" });
-    expect(screen.getByRole("button", { name: "Try new view" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Try New View" })).toBeInTheDocument();
   });
 
   it("offers the way back to someone on Muster", () => {
     renderHeader({ uiVersion: "muster" });
-    expect(screen.getByRole("button", { name: "Use classic view" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Use Classic View" })).toBeInTheDocument();
   });
 
   it("records the choice against the account", async () => {
     renderHeader({ uiVersion: "classic" });
-    await userEvent.click(screen.getByRole("button", { name: "Try new view" }));
+    await userEvent.click(screen.getByRole("button", { name: "Try New View" }));
 
     await waitFor(() =>
       expect(__store()[`UserPreferences/${UID}`]).toMatchObject({ uiVersion: "muster" })
@@ -127,7 +127,7 @@ describe("dark mode across the two interfaces", () => {
     });
     expect(document.documentElement.getAttribute("data-theme")).toBe("light");
 
-    await userEvent.click(screen.getByRole("button", { name: "Use classic view" }));
+    await userEvent.click(screen.getByRole("button", { name: "Use Classic View" }));
 
     await waitFor(() =>
       expect(document.documentElement.getAttribute("data-theme")).toBe("dark")

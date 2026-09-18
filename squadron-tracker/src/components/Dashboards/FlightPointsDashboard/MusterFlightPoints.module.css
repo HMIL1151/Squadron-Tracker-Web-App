@@ -122,15 +122,21 @@
 }
 
 /*
- * A fixed height with preserveAspectRatio="none" on the SVG, so the chart
- * stretches horizontally with the window but never changes how tall it is.
- * A line chart that grows taller as the window widens reads as the data
- * having changed.
+ * The chart keeps its aspect ratio.
+ *
+ * It used to be preserveAspectRatio="none" over a fixed 240px height, which
+ * held the height steady but stretched the DRAWING horizontally -- so a 2.4px
+ * stroke came out about 2.4px tall and five or six wide, and the whole thing
+ * looked smeared. Non-uniform scaling distorts strokes and text as well as
+ * geometry, which is exactly what you do not want on a line chart.
+ *
+ * Now the viewBox ratio is honoured and the container caps the height, so the
+ * lines stay the weight they were drawn at whatever the window is doing.
  */
 .svg {
   display: block;
   width: 100%;
-  height: 240px;
+  max-height: 260px;
 }
 
 .grid {

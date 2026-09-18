@@ -37,7 +37,7 @@ const UiToggle = () => {
           : "Try the rebuilt interface. You can switch back at any time."
       }
     >
-      {isMuster ? "Use classic view" : "Try new view"}
+      {isMuster ? "Use Classic View" : "Try New View"}
     </button>
   );
 };

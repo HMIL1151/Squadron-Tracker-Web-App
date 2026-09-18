@@ -1,0 +1,75 @@
+/* The Muster flights screen. */
+
+.flight {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.name {
+  font-weight: 500;
+  color: var(--color-text);
+}
+
+/*
+ * An archived flight is dimmed rather than struck through. It is still a real
+ * flight with real cadets and real history; struck-through would read as
+ * deleted, which is precisely the thing that must never happen here.
+ */
+.name-archived {
+  font-weight: 500;
+  color: var(--color-text-muted);
+}
+
+.muted {
+  color: var(--color-text-muted);
+}
+
+.active,
+.archived {
+  display: inline-block;
+  padding: 3px 9px;
+  border-radius: 4px;
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+.active {
+  background-color: var(--color-success-bg);
+  border: 1px solid var(--color-success-border);
+  color: var(--color-text);
+}
+
+.archived {
+  background-color: var(--color-surface-muted);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-muted);
+}
+
+/* A checkbox whose label carries an explanation under it. */
+.check {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 13.5px;
+  line-height: 1.4;
+  color: var(--color-text);
+  cursor: pointer;
+}
+
+.check input {
+  margin: 2px 0 0;
+  width: 16px;
+  height: 16px;
+  flex: 0 0 auto;
+  accent-color: var(--color-accent);
+}
+
+.check-hint {
+  display: block;
+  margin-top: 3px;
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: var(--color-text-muted);
+}

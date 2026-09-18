@@ -1,20 +1,16 @@
 /**
  * Squadron statistics.
  *
- * A new screen, so everything here is new behaviour. Three things are worth
- * pinning down:
+ * Most of this screen is year-on-year, so most of what is worth testing is
+ * that a figure and its comparison come from the same place. "284 records"
+ * next to a change of "+74" is only useful if both were counted the same way.
  *
- * The page answers questions rather than listing tiles, and each answer is a
- * sentence derived from the same data as the numbers under it. A sentence that
- * disagreed with its own section would be worse than no sentence.
- *
- * Attendance is inferred from parade-night records, which is the only evidence
- * the app holds. A squadron that does not log them must see an honest "cannot
- * be worked out" rather than 0%.
- *
- * The cadets with nothing recorded are named. That panel is the only thing on
- * the page anyone can act on today, and it is the one most likely to be
- * quietly dropped in a future edit.
+ * The other thing held still here is what the page REFUSES to show. Attendance
+ * was on this page and was taken off, because the app has no attendance model
+ * -- only parade-night records, written when someone remembers. It reported
+ * 10% for a squadron whose cadets all turned up, which is worse than silence.
+ * The footnote saying so is tested, because the obvious "improvement" someone
+ * makes later is to put a number back.
  */
 
 import React from "react";
@@ -31,55 +27,97 @@ const renderView = (options = {}) =>
     ...options,
   });
 
-describe("the four questions", () => {
-  it("asks all four", () => {
+/** The metric table's row for a given label, as text per cell. */
+const metricRow = (label) => {
+  const cell = screen.getByText(label);
+  return [...cell.closest("tr").cells].map((c) => c.textContent.trim());
+};
+
+describe("the questions it asks", () => {
+  it("leads each section with a question and answers it in a sentence", () => {
     renderView();
     expect(screen.getByRole("heading", { name: "How much is being recorded?" })).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "Who is turning up?" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "How does this year compare?" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "How do the flights compare?" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Is everyone progressing?" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Is recognition reaching everyone?" })).toBeInTheDocument();
   });
+});
 
-  it("answers each one in a sentence before showing any number", () => {
+describe("what it refuses to measure", () => {
+  /*
+   * The regression guard. Attendance looked plausible and was wrong, and the
+   * tempting fix is to put it back rather than to build an attendance model.
+   */
+  it("does not report attendance anywhere", () => {
     renderView();
-    expect(screen.getByText(/records across .* dates in/)).toBeInTheDocument();
-    expect(screen.getByText(/top five hold \d+%/)).toBeInTheDocument();
+    expect(screen.queryByText(/average attendance/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/parade nights logged/i)).not.toBeInTheDocument();
+  });
+
+  it("says why attendance, retention and age profile are absent", () => {
+    renderView();
+    const note = screen.getByText(/no attendance model/i);
+    expect(note.textContent).toMatch(/no discharge date and no date of birth/i);
+    expect(note.textContent).toMatch(/schema change/i);
   });
 });
 
-describe("what it refuses to guess", () => {
-  /*
-   * Retention needs a discharge date the app does not store, and the Admin
-   * Area deletes cadets outright. Saying so is more useful than a chart built
-   * on the start dates of the survivors, which could only ever rise.
-   */
-  it("says why retention and age profile are absent", () => {
-    renderView();
-    const note = screen.getByText(/no discharge date and no date of birth/i);
-    expect(note).toBeInTheDocument();
-    expect(note.textContent).toMatch(/schema change/i);
+describe("year on year", () => {
+  it("gives every year with records a column", () => {
+    const { data } = renderView();
+    const logged = new Set(data.events.map((event) => event.date.slice(0, 4)));
+    logged.forEach((year) => {
+      expect(screen.getAllByText(year).length).toBeGreaterThan(0);
+    });
   });
 
-  it("does not report an attendance rate when no parade nights are logged", () => {
-    renderView({
-      data: { cadets: [{ id: "c1", forename: "Test", surname: "Cadet", flight: 2, startDate: "2024-01-01" }], events: [], flightPoints: {} },
-    });
-    expect(screen.getByText(/No parade nights have been logged/i)).toBeInTheDocument();
+  it("compares the same metric it reports", () => {
+    renderView();
+    const row = metricRow("Records logged");
+    // [label, ...one cell per year, change]
+    expect(row.length).toBeGreaterThanOrEqual(3);
+    expect(row[0]).toBe("Records logged");
+  });
+
+  it("shows a dash rather than a change for the earliest year", async () => {
+    const { user } = renderView();
+    const years = [...screen.getByLabelText("Year").options].map((o) => o.value);
+    await user.selectOptions(screen.getByLabelText("Year"), years.at(-1));
+
+    expect(metricRow("Records logged").at(-1)).toBe("—");
+  });
+
+  it("counts records for the chosen year, not for all time", async () => {
+    const { user, data } = renderView();
+    const years = [...screen.getByLabelText("Year").options].map((o) => o.value);
+    const chosen = years[0];
+
+    await user.selectOptions(screen.getByLabelText("Year"), chosen);
+
+    const expected = data.events.filter((event) => event.date.startsWith(chosen)).length;
+    expect(metricRow("Records logged")).toContain(String(expected));
+  });
+});
+
+describe("flights", () => {
+  it("reports points per cadet as well as the total", () => {
+    renderView();
+    expect(screen.getByRole("columnheader", { name: "Per Cadet" })).toBeInTheDocument();
+  });
+
+  it("shows how big each flight is, since the totals depend on it", () => {
+    const { data } = renderView();
+    const alpha = screen.getByText("Alpha").closest("th");
+    const size = data.cadets.filter((cadet) => Number(cadet.flight) === 2).length;
+    expect(alpha.textContent).toContain(String(size));
   });
 });
 
 describe("progression", () => {
-  it("shows every rung of the classification ladder", () => {
-    renderView();
-    const funnel = screen.getByText("Where the squadron sits").closest("article");
-    ["Junior", "Second Class", "First Class", "Leading", "Senior", "Master"].forEach((rung) => {
-      expect(within(funnel).getByText(rung)).toBeInTheDocument();
-    });
-  });
-
-  it("accounts for every cadet in the funnel", () => {
+  it("accounts for every cadet across the six rungs", () => {
     const { data } = renderView();
-    const funnel = screen.getByText("Where the squadron sits").closest("article");
+    const funnel = screen.getByText("Where the Squadron Sits").closest("article");
     const counts = [...funnel.querySelectorAll("li")].map((row) =>
       Number(row.lastElementChild.textContent)
     );
@@ -100,19 +138,8 @@ describe("cadets with nothing recorded", () => {
 
   it("explains that they are on the books, not missing", () => {
     renderView();
-    expect(screen.getByText(/on the books. Nothing has been logged against them/i)).toBeInTheDocument();
-  });
-
-  it("says so plainly when everybody has something", () => {
-    renderView({
-      data: {
-        cadets: [{ id: "c1", forename: "Test", surname: "Cadet", flight: 2, startDate: "2024-01-01" }],
-        events: [
-          { id: "e1", cadetName: "Test Cadet", date: "2025-03-01", eventName: "Weekly Parade", eventCategory: "Parade Night", examName: "", badgeLevel: "", badgeCategory: "", specialAward: "" },
-        ],
-        flightPoints: {},
-      },
-    });
-    expect(screen.getByText("Everyone has something")).toBeInTheDocument();
+    expect(
+      screen.getByText(/on the books. Nothing has been logged against them/i)
+    ).toBeInTheDocument();
   });
 });

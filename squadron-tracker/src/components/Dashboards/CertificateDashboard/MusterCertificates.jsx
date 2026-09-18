@@ -207,7 +207,7 @@ const MusterCertificates = ({ user }) => {
                     {!isCareer && (
                         <div className={styles.field}>
                             <MusterSelect
-                                label="Training year"
+                                label="Training Year"
                                 value={selectedYear}
                                 onChange={setSelectedYear}
                                 options={years.map((year) => ({ value: year, label: year }))}
@@ -243,11 +243,11 @@ const MusterCertificates = ({ user }) => {
                     </ul>
                 </section>
 
-                <section className={styles.preview} aria-label="What the certificate will say">
-                    <h2 className={styles.heading}>What it will say</h2>
+                <section className={styles.preview} aria-label="What the Certificate Will Say">
+                    <h2 className={styles.heading}>What It Will Say</h2>
 
                     {allLines.length === 0 ? (
-                        <MusterEmpty title="Nothing to print">
+                        <MusterEmpty title="Nothing to Print">
                             {isCareer
                                 ? `${selectedCadet || "This cadet"} has no records at all yet.`
                                 : `${selectedCadet || "This cadet"} has no records in ${selectedYear}. Try another year, or an End of Career certificate.`}
@@ -274,7 +274,7 @@ const MusterCertificates = ({ user }) => {
 
                             <div className={styles.review}>
                                 <h3 className={styles["review-title"]}>
-                                    {lines.length} of {allLines.length} lines included
+                                    {lines.length} of {allLines.length} Lines Included
                                 </h3>
                                 <ul className={styles["review-list"]}>
                                     {allLines.map((line, index) => {

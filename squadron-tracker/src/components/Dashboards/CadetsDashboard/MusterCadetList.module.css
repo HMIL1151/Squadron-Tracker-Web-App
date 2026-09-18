@@ -119,3 +119,8 @@
     align-items: stretch;
   }
 }
+
+.service {
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-muted);
+}

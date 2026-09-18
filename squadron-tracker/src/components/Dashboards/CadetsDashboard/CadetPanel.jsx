@@ -145,7 +145,7 @@ const CadetPanel = ({ row, events, onClose, onEdit }) => {
         </section>
 
         <section className={styles.section}>
-          <h3 className={styles["section-title"]}>Badges held</h3>
+          <h3 className={styles["section-title"]}>Badges Held</h3>
           {badges.length === 0 ? (
             <p className={styles.nothing}>None recorded yet.</p>
           ) : (
@@ -161,7 +161,7 @@ const CadetPanel = ({ row, events, onClose, onEdit }) => {
         </section>
 
         <section className={styles.section}>
-          <h3 className={styles["section-title"]}>Recent records</h3>
+          <h3 className={styles["section-title"]}>Recent Records</h3>
           {recent.length === 0 ? (
             <p className={styles.nothing}>Nothing logged yet.</p>
           ) : (
@@ -178,7 +178,7 @@ const CadetPanel = ({ row, events, onClose, onEdit }) => {
       </div>
 
       <footer className={styles.footer}>
-        <MusterButton onClick={onEdit}>Edit details</MusterButton>
+        <MusterButton onClick={onEdit}>Edit Details</MusterButton>
       </footer>
     </aside>
   );

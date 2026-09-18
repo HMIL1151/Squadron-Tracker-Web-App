@@ -40,6 +40,21 @@ import styles from "./MusterCadetList.module.css";
 
 const ALL = "all";
 
+/**
+ * Service length, rounded.
+ *
+ * The classic list prints "3 Yrs, 1 Mos, 12 Days", which is a precision
+ * nobody needs from a list and three numbers to read where one would do.
+ * The exact start date is on the cadet record for anyone who needs it.
+ */
+const serviceLabel = (months) => {
+  if (!months || months < 1) return "< 1 mo";
+  const years = Math.floor(months / 12);
+  const rest = months % 12;
+  if (years === 0) return `${rest} mo`;
+  return rest === 0 ? `${years} yr` : `${years} yr ${rest} mo`;
+};
+
 const MusterCadetList = ({ user }) => {
   const list = useCadetList(user);
   const { data } = list;
@@ -107,6 +122,8 @@ const MusterCadetList = ({ user }) => {
       key: "cadet",
       header: "Cadet",
       width: "240px",
+      sortValue: (row) => row.name,
+      filterValue: (row) => row.name + " " + row.rank,
       render: (row) => (
         <span className={styles.cadet}>
           <FlightMark flight={row.flight} />
@@ -121,11 +138,17 @@ const MusterCadetList = ({ user }) => {
       key: "flight",
       header: "Flight",
       width: "120px",
+      sortValue: (row) => row.flightName,
+      filterValue: (row) => row.flightName,
       render: (row) => row.flightName,
     },
     {
       key: "classification",
       header: "Classification",
+      // The stored index, not the label: sorting on the label puts
+      // "First Class" before "Junior" alphabetically, which is backwards.
+      sortValue: (row) => row.classificationIndex,
+      filterValue: (row) => row.classification,
       render: (row) => (
         <span className={styles.classification}>
           <span className={styles.pips} aria-hidden="true">
@@ -154,10 +177,22 @@ const MusterCadetList = ({ user }) => {
       ),
     },
     {
+      key: "service",
+      header: "Service",
+      align: "right",
+      width: "104px",
+      sortValue: (row) => row.serviceMonths,
+      filterValue: (row) => serviceLabel(row.serviceMonths),
+      render: (row) => (
+        <span className={styles.service}>{serviceLabel(row.serviceMonths)}</span>
+      ),
+    },
+    {
       key: "badges",
       header: "Badges",
       align: "right",
       width: "96px",
+      sortValue: (row) => row.badges,
       render: (row) => (row.badges === 0 ? <span className={styles.none}>—</span> : row.badges),
     },
     {
@@ -165,18 +200,19 @@ const MusterCadetList = ({ user }) => {
       header: `Points ${currentYear}`,
       align: "right",
       width: "120px",
+      sortValue: (row) => row.points,
       render: (row) => <strong>{row.points}</strong>,
     },
   ];
 
   return (
     <MusterPage
-      title="Cadet list"
+      title="Cadet List"
       description={`${rows.length} on strength. Classification is worked out from exams passed, so it is never out of date.`}
       actions={
         <>
           <MusterButton kind="danger" onClick={() => list.setIsPopupOpen(true)}>
-            Discharge cadet
+            Discharge Cadet
           </MusterButton>
           <MusterButton
             kind="primary"
@@ -187,7 +223,7 @@ const MusterCadetList = ({ user }) => {
               </svg>
             }
           >
-            Add cadet
+            Add Cadet
           </MusterButton>
         </>
       }
@@ -200,6 +236,7 @@ const MusterCadetList = ({ user }) => {
             getRowKey={(row) => row.id}
             selectedKey={selectedId}
             onRowClick={(row) => setSelectedId(row.id)}
+            defaultSort={{ key: "cadet", direction: "asc" }}
             toolbar={
               <>
                 <MusterSearch
@@ -231,13 +268,13 @@ const MusterCadetList = ({ user }) => {
             }
             empty={
               <MusterEmpty
-                title={filtersActive ? "No cadets match" : "No cadets yet"}
+                title={filtersActive ? "No Cadets Match" : "No Cadets Yet"}
                 action={
                   filtersActive ? (
-                    <MusterButton onClick={clearFilters}>Show all cadets</MusterButton>
+                    <MusterButton onClick={clearFilters}>Show All Cadets</MusterButton>
                   ) : (
                     <MusterButton kind="primary" onClick={() => list.setIsAddPopupOpen(true)}>
-                      Add the first cadet
+                      Add the First Cadet
                     </MusterButton>
                   )
                 }

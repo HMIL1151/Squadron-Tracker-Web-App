@@ -78,9 +78,9 @@ describe("filtering", () => {
 
     await user.type(screen.getByLabelText("Search records"), "nobody by this name");
     expect(rows(container)).toHaveLength(0);
-    expect(screen.getByText("Nothing matches those filters")).toBeInTheDocument();
+    expect(screen.getByText("Nothing Matches Those Filters")).toBeInTheDocument();
 
-    await user.click(screen.getByRole("button", { name: "Show all records" }));
+    await user.click(screen.getByRole("button", { name: "Show All Records" }));
     expect(rows(container).length).toBeGreaterThan(0);
   });
 });
@@ -113,7 +113,7 @@ describe("the totals above the table", () => {
 describe("adding a record", () => {
   it("opens the same popup the classic screen uses", async () => {
     const { user } = renderView();
-    await user.click(screen.getByRole("button", { name: "Add record" }));
+    await user.click(screen.getByRole("button", { name: "Add Record" }));
     expect(screen.getByText(/add.*record/i)).toBeInTheDocument();
   });
 });

@@ -1,0 +1,54 @@
+/* A labelled field inside a Muster dialog. */
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.hint {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--color-text-muted);
+}
+
+/*
+ * The control is passed in by the caller, so it is styled here by element
+ * rather than by class. Scoped to this module, so it cannot reach any input
+ * outside a Muster field.
+ */
+.field input,
+.field select,
+.field textarea {
+  box-sizing: border-box;
+  width: 100%;
+  height: 40px;
+  padding: 0 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  background-color: var(--color-surface);
+  color: var(--color-text);
+  font: inherit;
+  font-size: 14px;
+}
+
+.field textarea {
+  height: auto;
+  min-height: 80px;
+  padding: 10px 12px;
+  resize: vertical;
+}
+
+.field input:focus-visible,
+.field select:focus-visible,
+.field textarea:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 1px;
+}

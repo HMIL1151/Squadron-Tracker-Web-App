@@ -21,7 +21,7 @@ const renderView = (squadron = SQUADRONS.FAKETON) =>
     uiVersion: "muster",
   });
 
-const cards = () => [...screen.getByLabelText("Flight standings").querySelectorAll("article")];
+const cards = () => [...screen.getByLabelText("Flight Standings").querySelectorAll("article")];
 
 describe("standings", () => {
   it("shows only the flights that compete", () => {

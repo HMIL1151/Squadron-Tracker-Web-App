@@ -124,9 +124,15 @@
 
 /* -- search and fields --------------------------------------------------- */
 
+/*
+ * Every toolbar control is exactly 36px and box-sized, so they line up whether
+ * or not they carry a label. They did not before: the select's own padding
+ * pushed its wrapper to 46px next to a 36px search box.
+ */
 .search {
   position: relative;
   min-width: 0;
+  height: 36px;
 }
 
 .search-icon {
@@ -161,6 +167,7 @@
   align-items: center;
   gap: 8px;
   min-width: 0;
+  height: 36px;
 }
 
 .field-label {
@@ -171,6 +178,7 @@
 }
 
 .select {
+  box-sizing: border-box;
   height: 36px;
   padding: 0 10px;
   border: 1px solid var(--color-border);
@@ -210,7 +218,17 @@
  * each tile. Adjacent borders would double to two pixels between tiles and
  * stay one at the ends, which reads as a wonky grid.
  */
+/*
+ * flex-shrink: 0 is load-bearing.
+ *
+ * This strip sits in a flex column that is capped to the viewport height. With
+ * the default shrink factor, a short window squeezed it until clientHeight was
+ * 0 while its content was still 154px -- the labels and figures were rendered,
+ * correct, and completely invisible. Nothing else on the page looked wrong,
+ * which is what made it hard to see.
+ */
 .summary {
+  flex-shrink: 0;
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   gap: 1px;

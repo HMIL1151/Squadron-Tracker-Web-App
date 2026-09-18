@@ -115,16 +115,54 @@
   color: var(--color-text-muted);
 }
 
+/*
+ * The cell carries the date, tinted by level. The tint is the level; the text
+ * is the answer to "when", which a chip reading "Silver" never was.
+ */
 .level-blue,
 .level-bronze,
 .level-silver,
 .level-gold {
   display: inline-block;
-  min-width: 54px;
+  min-width: 86px;
   padding: 4px 8px;
   border-radius: 4px;
   font-size: 12px;
   font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/*
+ * An empty cell is a button: awarding a badge from here is the point of the
+ * board. Quiet until hovered, because forty rows of plus signs across seven
+ * columns would be louder than the data.
+ */
+.add {
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border: 1px dashed var(--color-border);
+  border-radius: 4px;
+  background-color: transparent;
+  color: var(--color-text-faint);
+  font: inherit;
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+  transition: border-color 0.12s ease, color 0.12s ease, background-color 0.12s ease;
+}
+
+.add:hover {
+  border-style: solid;
+  border-color: var(--color-accent);
+  background-color: var(--color-chip-active);
+  color: var(--color-accent);
+}
+
+.add:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 1px;
 }
 
 .level-blue {

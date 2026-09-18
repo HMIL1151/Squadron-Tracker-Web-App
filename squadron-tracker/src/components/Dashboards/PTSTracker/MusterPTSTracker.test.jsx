@@ -15,10 +15,11 @@ import MusterPTSTracker from "./MusterPTSTracker";
 import { renderWithProviders } from "../../../test/renderWithProviders";
 import { SQUADRONS, userFor } from "../../../test/dummyData";
 
-const renderView = (squadron = SQUADRONS.FAKETON) =>
-  renderWithProviders(<MusterPTSTracker user={userFor(squadron)} />, {
-    squadron,
+const renderView = (options = {}) =>
+  renderWithProviders(<MusterPTSTracker user={userFor(SQUADRONS.FAKETON)} />, {
+    squadron: SQUADRONS.FAKETON,
     uiVersion: "muster",
+    ...options,
   });
 
 const headers = (container) =>
@@ -42,14 +43,34 @@ describe("the board", () => {
   it("shows only the highest badge held in an area", () => {
     const { container } = renderView();
     const amelia = rowFor(container, "Amelia Hart");
-    expect(within(amelia).getByText("Silver")).toBeInTheDocument();
-    expect(within(amelia).queryByText("Bronze")).not.toBeInTheDocument();
+    // Silver Radio was awarded 2025-04-18; Blue and Bronze are older.
+    expect(amelia.textContent).toContain("18 Apr 2025");
+    expect(amelia.textContent).not.toContain("12 Mar 2024");
   });
 
-  it("marks an area with nothing recorded, for a screen reader too", () => {
+  /*
+   * The date, not the level name. A chip reading "Silver" repeats what its
+   * colour already says; the date answers "when", which is what staff open
+   * this board for. The level stays available to a screen reader.
+   */
+  it("shows when the badge was awarded rather than repeating its level", () => {
+    const { container } = renderView();
+    const amelia = rowFor(container, "Amelia Hart");
+    const cell = within(amelia).getByTitle("Silver Radio");
+    expect(cell.textContent).toContain("18 Apr 2025");
+    expect(cell.textContent).toContain("Silver");
+  });
+
+  /*
+   * An empty cell is how you award a badge from this screen, which is the
+   * behaviour the classic tracker had and the first Muster version lost.
+   */
+  it("offers an empty cell as a way to award that badge", () => {
     const { container } = renderView();
     const isla = rowFor(container, "Isla Muir");
-    expect(within(isla).getAllByText("No badge").length).toBeGreaterThan(0);
+    expect(
+      within(isla).getAllByRole("button", { name: /^Award a .* badge to Isla Muir$/ }).length
+    ).toBeGreaterThan(0);
   });
 
   it("counts how many areas each cadet holds something in", () => {
@@ -70,7 +91,7 @@ describe("the board", () => {
 describe("awards by level", () => {
   it("counts every badge in the log by its level", () => {
     const { data } = renderView();
-    const strip = screen.getByLabelText("Badges awarded");
+    const strip = screen.getByLabelText("Badges Awarded");
     const gold = data.events.filter((event) => event.badgeLevel === "Gold").length;
     expect(within(strip).getByText("Gold").closest("div").parentElement.textContent).toContain(
       String(gold)
@@ -81,18 +102,46 @@ describe("awards by level", () => {
    * The point of the strip. A subject the squadron has never run does not
    * appear anywhere else on the screen.
    */
+  /*
+   * The point of the strip. A subject the squadron has never run does not
+   * appear anywhere else on the screen -- an empty column looks the same as a
+   * column nobody has got round to.
+   *
+   * The shared fixture happens to cover every area, so the gap case needs its
+   * own dataset rather than a lucky fixture.
+   */
   it("names syllabus areas nobody holds a badge in", () => {
-    const { container } = renderView();
-    const strip = screen.getByLabelText("Badges awarded");
-    const configured = headers(container).slice(1, -1);
-    const untouched = configured.filter((area) => {
-      const rows = [...container.querySelectorAll("tbody tr")];
-      const index = headers(container).indexOf(area);
-      return rows.every((row) => row.cells[index].textContent.includes("No badge"));
+    renderView({
+      data: {
+        cadets: [
+          { id: "c1", forename: "Test", surname: "Cadet", flight: 2, startDate: "2024-01-01" },
+        ],
+        events: [
+          {
+            id: "e1",
+            cadetName: "Test Cadet",
+            date: "2025-03-01",
+            badgeCategory: "Radio",
+            badgeLevel: "Blue",
+            examName: "",
+            eventName: "",
+            eventCategory: "",
+            specialAward: "",
+          },
+        ],
+        flightPoints: { Badges: { "Badge Types": ["Radio", "Music", "Cyber"] } },
+      },
     });
 
-    untouched.forEach((area) => {
-      expect(within(strip).getByText(area)).toBeInTheDocument();
-    });
+    const strip = screen.getByLabelText("Badges Awarded");
+    expect(within(strip).getByText("Music")).toBeInTheDocument();
+    expect(within(strip).getByText("Cyber")).toBeInTheDocument();
+    expect(within(strip).queryByText("Radio")).not.toBeInTheDocument();
+  });
+
+  it("says so plainly when every area is covered", () => {
+    renderView();
+    // The shared fixture has at least one badge in every configured area.
+    expect(screen.getByText("Every Area Covered")).toBeInTheDocument();
   });
 });

@@ -112,7 +112,7 @@ const MusterShell = ({
         <div className={styles["account-actions"]}>
           <UiToggle />
           <button type="button" className={styles["sign-out"]} onClick={onLogout}>
-            Sign out
+            Sign Out
           </button>
         </div>
       </nav>

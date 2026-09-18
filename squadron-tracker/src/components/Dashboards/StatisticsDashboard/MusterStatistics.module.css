@@ -374,3 +374,146 @@
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+/* -- year-on-year matrices ------------------------------------------------ */
+
+/*
+ * A plain table rather than a chart.
+ *
+ * Six metrics across four years is a comparison people READ -- "284 against
+ * 210" -- not a shape they scan. A grouped bar chart of the same numbers would
+ * be prettier and would make it harder to answer the question anyone actually
+ * has, which is "what was it last year".
+ */
+.table-card {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 7px;
+  overflow-x: auto;
+}
+
+.matrix {
+  width: 100%;
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+}
+
+.matrix-head,
+.matrix-head-num,
+.matrix-head-now {
+  padding: 11px 14px;
+  background-color: var(--color-table-head);
+  border-bottom: 2px solid var(--color-table-head-rule);
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+
+.matrix-head {
+  text-align: left;
+}
+
+.matrix-head-num {
+  text-align: right;
+}
+
+/* The selected year is tinted the whole way down, so the eye can follow it. */
+.matrix-head-now {
+  text-align: right;
+  background-color: var(--color-chip-active);
+  color: var(--color-chip-active-text);
+}
+
+.matrix-row-head {
+  padding: 0 14px;
+  height: 42px;
+  text-align: left;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--color-text);
+  white-space: nowrap;
+  border-bottom: 1px solid var(--color-row-rule);
+}
+
+.matrix-cell,
+.matrix-cell-now {
+  padding: 0 14px;
+  height: 42px;
+  text-align: right;
+  font-size: 13.5px;
+  color: var(--color-text);
+  border-bottom: 1px solid var(--color-row-rule);
+  white-space: nowrap;
+}
+
+.matrix-cell-now {
+  background-color: var(--color-chip-active);
+  font-weight: 600;
+}
+
+.matrix-bar {
+  padding: 0 14px;
+  height: 42px;
+  width: 140px;
+  border-bottom: 1px solid var(--color-row-rule);
+}
+
+/*
+ * Up is not automatically good and down is not automatically bad -- a squadron
+ * that ran fewer events because it was short of staff is not failing. So these
+ * are legible rather than celebratory: a colour and a sign, no arrows, no
+ * green tick.
+ */
+.delta-up,
+.delta-down,
+.delta-flat,
+.delta-none {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.delta-up {
+  color: var(--color-positive);
+}
+
+.delta-down {
+  color: var(--color-danger-hover);
+}
+
+.delta-flat,
+.delta-none {
+  color: var(--color-text-muted);
+}
+
+.flight-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.flight-size {
+  padding: 1px 7px;
+  border-radius: 9px;
+  background-color: var(--color-chip);
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--color-chip-text);
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Sections must not be squeezed to nothing on a short window. */
+.section {
+  flex-shrink: 0;
+}

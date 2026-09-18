@@ -40,6 +40,9 @@ const MusterPTSTracker = lazy(() => import("../PTSTracker/MusterPTSTracker"));
 const MusterFlightPoints = lazy(() => import("../FlightPointsDashboard/MusterFlightPoints"));
 const MusterCertificates = lazy(() => import("../CertificateDashboard/MusterCertificates"));
 const MusterStatistics = lazy(() => import("../StatisticsDashboard/MusterStatistics"));
+const MusterRecordCategories = lazy(() => import("../EventCategoriesDashboard/MusterRecordCategories"));
+const MusterFlights = lazy(() => import("../FlightsDashboard/MusterFlights"));
+const MusterAdmin = lazy(() => import("../AdminDashboard/MusterAdmin"));
 
 /*
  * Navigation groups, used by the Muster rail.
@@ -62,7 +65,7 @@ const dashboardList = [
   {
     key: "masseventlog",
     title: "Mass Event Log",
-    musterTitle: "Mass event log",
+    musterTitle: "Mass Event Log",
     group: "records",
     views: { classic: MassEventLog, muster: MusterMassEventLog },
     adminOnly: false, // Accessible to all users
@@ -70,7 +73,7 @@ const dashboardList = [
   {
     key: "dashboard",
     title: "Cadet List",
-    musterTitle: "Cadet list",
+    musterTitle: "Cadet List",
     group: "records",
     views: { classic: CadetsDashboard, muster: MusterCadetList },
     adminOnly: false, // Accessible to all users
@@ -78,15 +81,15 @@ const dashboardList = [
   {
     key: "eventcategoriesdashboard",
     title: "Record Categories",
-    musterTitle: "Record categories",
+    musterTitle: "Record Categories",
     group: "records",
-    views: { classic: EventCategoriesDashboard },
+    views: { classic: EventCategoriesDashboard, muster: MusterRecordCategories },
     adminOnly: false, // Accessible to all users
   },
   {
     key: "classificationdashboard",
     title: "Classification Tracker",
-    musterTitle: "Classification tracker",
+    musterTitle: "Classification Tracker",
     group: "progress",
     views: { classic: ClassificationDashboard, muster: MusterClassification },
     adminOnly: false, // Accessible to all users
@@ -94,7 +97,7 @@ const dashboardList = [
   {
     key: "flightpointsdashboard",
     title: "Flight Points",
-    musterTitle: "Flight points",
+    musterTitle: "Flight Points",
     group: "squadron",
     views: { classic: FlightPointsDashboard, muster: MusterFlightPoints },
     adminOnly: false, // Accessible to all users
@@ -110,7 +113,7 @@ const dashboardList = [
   {
     key: "ptstracker",
     title: "PTS Tracker",
-    musterTitle: "PTS tracker",
+    musterTitle: "PTS Tracker",
     group: "progress",
     views: { classic: PTSTracker, muster: MusterPTSTracker },
     adminOnly: false, // Accessible to all users
@@ -123,7 +126,7 @@ const dashboardList = [
      */
     key: "statisticsdashboard",
     title: "Squadron Statistics",
-    musterTitle: "Squadron statistics",
+    musterTitle: "Squadron Statistics",
     group: "squadron",
     views: { muster: MusterStatistics },
     musterOnly: true,
@@ -134,21 +137,21 @@ const dashboardList = [
     title: "Flights",
     musterTitle: "Flights",
     group: "squadron",
-    views: { classic: FlightsDashboard },
+    views: { classic: FlightsDashboard, muster: MusterFlights },
     adminOnly: true, // Changing flights affects every cadet's records
   },
   {
     key: "admin",
     title: "Admin Area",
-    musterTitle: "Admin area",
+    musterTitle: "Admin Area",
     group: "squadron",
-    views: { classic: AdminDashboard }, // Temporary admin page
+    views: { classic: AdminDashboard, muster: MusterAdmin },
     adminOnly: true, // Accessible only to admins
   },
   {
     key: "systemadmindashboard",
     title: "System Admin Area",
-    musterTitle: "System admin area",
+    musterTitle: "System Admin Area",
     group: "squadron",
     views: { classic: SystemAdminDashboard },
     adminOnly: true, // Accessible only to system admins
@@ -166,7 +169,19 @@ const dashboardList = [
 export const viewFor = (dashboard, uiVersion) =>
   dashboard?.views?.[uiVersion] ?? dashboard?.views?.classic;
 
-/** What this dashboard is called in a given interface. */
+/**
+ * What this dashboard is called in a given interface.
+ *
+ * Both are Title Case. Muster started in sentence case, which is the house
+ * style of most modern software and was wrong here: this is an organisation
+ * whose screens are named after things that are already proper nouns on a
+ * squadron noticeboard. "Mass Event Log" is what people call it.
+ *
+ * The field stays separate from `title` even though the two now usually
+ * match, because the two interfaces should be able to rename a screen
+ * independently -- Muster shortened "End of Year Certificates" to
+ * "Certificates" long before classic did.
+ */
 export const titleFor = (dashboard, uiVersion) =>
   (uiVersion === "muster" && dashboard?.musterTitle) || dashboard?.title;
 

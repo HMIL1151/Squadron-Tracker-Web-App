@@ -46,30 +46,54 @@ describe("the exam board", () => {
     expect(headers.every((header) => header.length < 25)).toBe(true);
   });
 
-  it("marks passed and unpassed exams so a screen reader gets both", () => {
+  /*
+   * The cell carries the DATE, not a tick. A tick only repeats the column
+   * heading; the date is what staff are actually after.
+   */
+  it("shows when each exam was passed rather than only that it was", () => {
     const { container } = renderView();
     const amelia = rowFor(container, "Amelia Hart");
-    expect(within(amelia).getAllByText("Passed").length).toBeGreaterThan(0);
-    expect(within(amelia).getAllByText("Not yet").length).toBeGreaterThan(0);
+    // Amelia passed Leading: Airmanship Knowledge on 2025-02-20 in the fixture.
+    expect(amelia.textContent).toContain("20 Feb 2025");
   });
 
-  it("collapses the eleven Senior papers into a count", () => {
+  it("offers an empty cell as a way to record that exam", () => {
     const { container } = renderView();
-    expect(rowFor(container, "Amelia Hart").textContent).toContain("of 11");
+    const amelia = rowFor(container, "Amelia Hart");
+    expect(
+      within(amelia).getAllByRole("button", { name: /^Record .* for Amelia Hart$/ }).length
+    ).toBeGreaterThan(0);
   });
 
-  it("names the next exam each cadet needs", () => {
+  /*
+   * Six, not eleven. Eleven Senior/Master papers exist and a cadet needs SIX
+   * of them -- which six is up to them. Counting against eleven tells a cadet
+   * they are further off than they are, and tells a training officer to plan
+   * five exams nobody has to sit.
+   */
+  it("counts Senior and Master against the six a cadet actually needs", () => {
     const { container } = renderView();
-    // Amelia has no Second Class record in the fixture, so that is what is
-    // outstanding -- back-filling counts as the next thing needed.
-    expect(rowFor(container, "Amelia Hart").textContent).toContain("Second Class");
+    expect(rowFor(container, "Amelia Hart").textContent).toContain("of 6");
+    expect(rowFor(container, "Amelia Hart").textContent).not.toContain("of 11");
+  });
+
+  /*
+   * There is no "next exam due" column, and there should not be. The app
+   * cannot know which exam a cadet will sit next: the Senior/Master papers are
+   * a pick of six from eleven, and an earlier gap may be a back-fill or may be
+   * a record nobody entered. Naming one would be a guess printed as a fact.
+   */
+  it("does not claim to know which exam comes next", () => {
+    const { container } = renderView();
+    const headers = [...container.querySelectorAll("thead th")].map((th) => th.textContent);
+    expect(headers.some((header) => /next exam/i.test(header))).toBe(false);
   });
 });
 
 describe("the distribution strip", () => {
   it("accounts for every cadet across the six rungs", () => {
     const { data } = renderView();
-    const strip = screen.getByLabelText("Where the squadron sits");
+    const strip = screen.getByLabelText("Where the Squadron Sits");
     const counts = [...strip.querySelectorAll("li")].map((item) =>
       Number(item.textContent.replace(/[^0-9]/g, ""))
     );
@@ -78,11 +102,11 @@ describe("the distribution strip", () => {
 });
 
 describe("filtering", () => {
-  it("narrows to cadets one exam from promotion", async () => {
+  it("narrows to cadets one exam from the next classification", async () => {
     const { container, user } = renderView();
     const before = bodyRows(container).length;
 
-    await user.click(screen.getByRole("button", { name: "One exam from promotion" }));
+    await user.click(screen.getByRole("button", { name: "One Exam From Next Classification" }));
 
     expect(bodyRows(container).length).toBeLessThanOrEqual(before);
   });

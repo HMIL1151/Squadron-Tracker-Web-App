@@ -1,0 +1,125 @@
+/*
+ * The Muster dialog.
+ *
+ * A panel that sits above a scrim, capped so a long form scrolls inside it
+ * rather than pushing the page. The classic popups size to their content and
+ * run off the bottom of a laptop screen when the form is long.
+ */
+
+.scrim {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-modal);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background-color: var(--color-scrim);
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 460px;
+  max-height: calc(100dvh - 48px);
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  box-shadow: var(--shadow-xl);
+  overflow: hidden;
+}
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 20px 22px 16px;
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+
+.title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.25;
+  color: var(--color-text);
+}
+
+.description {
+  margin: 5px 0 0;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--color-text-muted);
+}
+
+.close {
+  flex: 0 0 auto;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 0;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--color-text-muted);
+  cursor: pointer;
+}
+
+.close:hover {
+  background-color: var(--color-surface-hover);
+  color: var(--color-text);
+}
+
+.close:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 18px 22px 20px;
+}
+
+.error {
+  margin: 0;
+  padding: 10px 12px;
+  background-color: var(--color-error-bg);
+  border: 1px solid var(--color-error-border);
+  border-radius: 6px;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--color-text);
+}
+
+/*
+ * Confirming action on the right, always. It is the one thing about a dialog
+ * people learn by muscle memory, and the classic popups put it wherever the
+ * form happened to end.
+ */
+.footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 9px;
+  padding-top: 4px;
+}
+
+@media (max-width: 600px) {
+  .scrim {
+    padding: 0;
+    align-items: flex-end;
+  }
+
+  .panel {
+    max-width: none;
+    max-height: 88dvh;
+    border-radius: 12px 12px 0 0;
+  }
+}

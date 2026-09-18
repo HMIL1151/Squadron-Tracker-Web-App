@@ -25,7 +25,7 @@ const renderView = (squadron = SQUADRONS.FAKETON) =>
     uiVersion: "muster",
   });
 
-const sheet = () => screen.getByLabelText("What the certificate will say");
+const sheet = () => screen.getByLabelText("What the Certificate Will Say");
 
 describe("choosing what to print", () => {
   it("offers both certificate types and explains the difference", () => {
@@ -43,31 +43,31 @@ describe("choosing what to print", () => {
   it("offers only years that have records", () => {
     const { data } = renderView();
     const logged = new Set(data.events.map((event) => event.date.slice(0, 4)));
-    const options = [...screen.getByLabelText("Training year").options].map((o) => o.value);
+    const options = [...screen.getByLabelText("Training Year").options].map((o) => o.value);
     expect(new Set(options)).toEqual(logged);
   });
 
   it("hides the year for an End of Career certificate, which does not need one", async () => {
     const { user } = renderView();
     await user.click(screen.getByText("End of Career"));
-    expect(screen.queryByLabelText("Training year")).not.toBeInTheDocument();
+    expect(screen.queryByLabelText("Training Year")).not.toBeInTheDocument();
   });
 });
 
 describe("the review step", () => {
   it("shows the lines without anything being pressed first", () => {
     renderView();
-    expect(within(sheet()).getByText(/lines included/)).toBeInTheDocument();
+    expect(within(sheet()).getByText(/Lines Included/)).toBeInTheDocument();
   });
 
   it("takes a line off the certificate when it is unticked", async () => {
     const { user } = renderView();
-    const before = within(sheet()).getByText(/(\d+) of (\d+) lines included/).textContent;
+    const before = within(sheet()).getByText(/(\d+) of (\d+) Lines Included/).textContent;
 
     const boxes = within(sheet()).getAllByRole("checkbox");
     await user.click(boxes[0]);
 
-    const after = within(sheet()).getByText(/(\d+) of (\d+) lines included/).textContent;
+    const after = within(sheet()).getByText(/(\d+) of (\d+) Lines Included/).textContent;
     expect(after).not.toBe(before);
   });
 
@@ -102,6 +102,6 @@ describe("a cadet with nothing to print", () => {
     const { user } = renderView();
     // Isla has no records at all in the fixture.
     await user.click(screen.getByRole("button", { name: "Isla Muir" }));
-    expect(screen.getByText("Nothing to print")).toBeInTheDocument();
+    expect(screen.getByText("Nothing to Print")).toBeInTheDocument();
   });
 });
