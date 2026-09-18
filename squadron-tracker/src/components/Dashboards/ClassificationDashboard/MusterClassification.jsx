@@ -82,8 +82,9 @@ const rungOf = (label) => RUNGS.find((rung) => String(label).startsWith(rung)) |
  */
 const SHORT_NAME = {
   // "Flight" alone would sit two columns from the Alpha/Bravo flight and
-  // mean something completely different.
-  "Leading: Principles of Flight Exam": "Principles",
+  // mean something completely different. PoF is what people write on a
+  // training programme anyway.
+  "Leading: Principles of Flight Exam": "PoF",
   "Leading: Airmanship Knowledge Exam": "Airmanship",
   "Leading: Basic Navigation using a Map and Compass Exam": "Navigation",
 };
@@ -306,7 +307,8 @@ const MusterClassification = ({ user }) => {
       title="Classification Tracker"
       description="Classification is counted from exams passed, so this is the exam board rather than a field to edit. Click an empty cell to record a pass."
     >
-      <div className={styles.top}>
+      <div className={styles.layout}>
+        <div className={styles.side}>
         <section className={styles.plot} aria-label="Classification against service length">
           <h2 className={styles["plot-title"]}>Classification Against Service Length</h2>
           <div className={styles["plot-frame"]}>
@@ -316,6 +318,7 @@ const MusterClassification = ({ user }) => {
               onPointHover={() => {}}
               hoveredCadet={[]}
               onPointClick={() => {}}
+              palette="muster"
             />
           </div>
         </section>
@@ -352,8 +355,9 @@ const MusterClassification = ({ user }) => {
             ))}
           </ul>
         </section>
-      </div>
+        </div>
 
+        <div className={styles.board}>
       <MusterTable
         columns={columns}
         rows={visible}
@@ -402,6 +406,8 @@ const MusterClassification = ({ user }) => {
           </MusterEmpty>
         }
       />
+        </div>
+      </div>
 
       <MusterDialog
         open={Boolean(pending)}

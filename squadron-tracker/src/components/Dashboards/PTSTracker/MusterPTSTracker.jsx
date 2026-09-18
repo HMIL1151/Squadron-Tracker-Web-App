@@ -11,6 +11,7 @@ import MusterField from "../../Muster/MusterField";
 import {
   FlightMark,
   MusterButton,
+  MusterChip,
   MusterEmpty,
   MusterSearch,
   MusterSelect,
@@ -77,6 +78,24 @@ const shortDate = (iso) => {
   return date.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
 };
 
+/**
+ * The two ways to read the board.
+ *
+ * "Highest Held" is one cell per syllabus area showing the top badge and
+ * when it was awarded -- the summary a training officer wants most of the
+ * time. "Every Level" is the classic layout: four columns per area, one per
+ * level, which is what you need when checking a specific badge or awarding
+ * one that sits below a level already held.
+ *
+ * The summary cannot express that second case at all: a cadet holding Silver
+ * Radio has one cell, so there is nowhere to click to record the Bronze they
+ * were awarded late.
+ */
+const VIEWS = {
+  summary: "Highest Held",
+  levels: "Every Level",
+};
+
 const MusterPTSTracker = ({ user }) => {
   const { data } = useContext(DataContext);
   const { flightMap, flights } = useSquadron();
@@ -84,6 +103,7 @@ const MusterPTSTracker = ({ user }) => {
 
   const [search, setSearch] = useState("");
   const [flightFilter, setFlightFilter] = useState(ALL);
+  const [view, setView] = useState("summary");
   const [pending, setPending] = useState(null);
   const [pendingLevel, setPendingLevel] = useState(badgeLevel[0]);
   const [pendingDate, setPendingDate] = useState("");
@@ -119,11 +139,18 @@ const MusterPTSTracker = ({ user }) => {
        * other two are history the event log already has.
        */
       const highest = {};
+      /*
+       * Every level held, keyed "Radio:Silver", for the expanded view. The
+       * summary only needs the top one, but deriving both here means the
+       * two views cannot disagree about what a cadet holds.
+       */
+      const byLevel = {};
       own.forEach((event) => {
         const current = highest[event.badgeCategory];
         if (!current || rankOf(event.badgeLevel) > rankOf(current.level)) {
           highest[event.badgeCategory] = { level: event.badgeLevel, date: event.date };
         }
+        byLevel[event.badgeCategory + ":" + event.badgeLevel] = event.date;
       });
 
       return {
@@ -132,6 +159,7 @@ const MusterPTSTracker = ({ user }) => {
         flight: cadet.flight,
         flightName: flightMap[cadet.flight] || "Unassigned",
         highest,
+        byLevel,
         held: Object.keys(highest).length,
       };
     });
@@ -171,9 +199,9 @@ const MusterPTSTracker = ({ user }) => {
     setFlightFilter(ALL);
   };
 
-  const openAward = (row, category) => {
-    setPending({ cadetName: row.name, category });
-    setPendingLevel(badgeLevel[0]);
+  const openAward = (row, category, level = null) => {
+    setPending({ cadetName: row.name, category, level });
+    setPendingLevel(level || badgeLevel[0]);
     setPendingDate("");
     setDialogError(null);
   };
@@ -213,6 +241,44 @@ const MusterPTSTracker = ({ user }) => {
     }
   };
 
+  /*
+   * Four columns per area in the expanded view, grouped under the area name
+   * so it is written once rather than prefixed onto all four headings.
+   */
+  const levelColumns = categories.flatMap((category) =>
+    badgeLevel.map((level) => ({
+      key: category + ":" + level,
+      header: level,
+      group: category,
+      align: "center",
+      width: "104px",
+      sortValue: (row) => row.byLevel[category + ":" + level] || "",
+      render: (row) => {
+        const date = row.byLevel[category + ":" + level];
+        if (!date) {
+          return (
+            <button
+              type="button"
+              className={styles.add}
+              onClick={(clickEvent) => {
+                clickEvent.stopPropagation();
+                openAward(row, category, level);
+              }}
+            >
+              <span aria-hidden="true">+</span>
+              <span className={styles["visually-hidden"]}>
+                Award {level} {category} to {row.name}
+              </span>
+            </button>
+          );
+        }
+        return (
+          <span className={LEVEL_CLASS[level] || styles["level-blue"]}>{shortDate(date)}</span>
+        );
+      },
+    }))
+  );
+
   const columns = [
     {
       key: "cadet",
@@ -230,7 +296,7 @@ const MusterPTSTracker = ({ user }) => {
         </span>
       ),
     },
-    ...categories.map((category) => ({
+    ...(view === "levels" ? levelColumns : categories.map((category) => ({
       key: category,
       header: category,
       align: "center",
@@ -264,7 +330,7 @@ const MusterPTSTracker = ({ user }) => {
           </span>
         );
       },
-    })),
+    }))),
     {
       key: "held",
       header: "Held",
@@ -344,6 +410,11 @@ const MusterPTSTracker = ({ user }) => {
               ]}
             />
             <span className={styles.spacer} />
+            {Object.entries(VIEWS).map(([key, label]) => (
+              <MusterChip key={key} active={view === key} onClick={() => setView(key)}>
+                {label}
+              </MusterChip>
+            ))}
             <ul className={styles.legend}>
               {badgeLevel.map((level) => (
                 <li key={level} className={styles["legend-item"]}>
@@ -373,7 +444,10 @@ const MusterPTSTracker = ({ user }) => {
         confirmLabel="Award Badge"
         error={dialogError}
       >
-        <MusterField label="Level">
+        <MusterField
+          label="Level"
+          hint={pending?.level ? "Taken from the column you clicked." : undefined}
+        >
           {(id) => (
             <select
               id={id}

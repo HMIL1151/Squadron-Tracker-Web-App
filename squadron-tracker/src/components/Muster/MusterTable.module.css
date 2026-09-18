@@ -141,6 +141,35 @@
   opacity: 1;
 }
 
+/*
+ * The grouping row, when a table has one. Sits above the column names and is
+ * separated from its neighbours by a vertical rule -- the one place a column
+ * rule earns its keep, because the whole job of this row is to say where one
+ * group ends and the next begins.
+ */
+.group-row th {
+  top: 0;
+  padding: 8px 16px 6px;
+  border-bottom: 1px solid var(--color-border-subtle);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-text);
+  text-align: center;
+}
+
+.group-head {
+  border-left: 1px solid var(--color-border);
+}
+
+.group-blank {
+  background-color: var(--color-table-head);
+}
+
+/* With a group row above them, the column names are no longer at the top. */
+.group-row ~ tr th {
+  top: 33px;
+}
+
 /* The second header row: one filter box per filterable column. */
 .filter-row th {
   top: 38px;

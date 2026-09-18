@@ -134,6 +134,10 @@ const MusterFlightPoints = () => {
 
   const chartMax = Math.max(1, ...series.map((flight) => flight.peak));
 
+  /*
+   * Who is carrying each flight: the handful at the top, which is the
+   * question you have before the standings are read out.
+   */
   const contributors = useMemo(
     () =>
       [...cadetTotals]
@@ -143,9 +147,50 @@ const MusterFlightPoints = () => {
     [cadetTotals]
   );
 
+  /*
+   * Every cadet, including the ones on nothing.
+   *
+   * Duplicates a column of the cadet list on purpose. This is the screen
+   * someone has open when they are working out who to chase, and sending
+   * them to another screen to find out who scored nothing is how a question
+   * with an answer right here turns into two screens and a note.
+   */
+  const everyone = useMemo(() => [...cadetTotals], [cadetTotals]);
+
   const topPoints = contributors[0]?.points || 1;
   const leader = standings[0];
   const runnerUp = standings[1];
+
+  const rollColumns = [
+    {
+      key: "cadet",
+      header: "Cadet",
+      sortValue: (row) => row.name,
+      filterValue: (row) => row.name + " " + row.flightName,
+      render: (row) => (
+        <span className={styles.cadet}>
+          <FlightMark flight={row.flight} />
+          <span className={styles["cadet-text"]}>
+            <span className={styles["cadet-name"]}>{row.name}</span>
+            <span className={styles["cadet-flight"]}>{row.flightName}</span>
+          </span>
+        </span>
+      ),
+    },
+    {
+      key: "points",
+      header: "Points",
+      align: "right",
+      width: "90px",
+      sortValue: (row) => row.points,
+      render: (row) =>
+        row.points === 0 ? (
+          <span className={styles.none}>0</span>
+        ) : (
+          <strong>{row.points}</strong>
+        ),
+    },
+  ];
 
   const columns = [
     {
@@ -220,6 +265,13 @@ const MusterFlightPoints = () => {
         ))}
       </section>
 
+      {/*
+        * The stem of the T. The year line and who is carrying each flight
+        * both explain the standings above them, so they sit under it; the
+        * roll on the right is the per-cadet detail you reach for next.
+        */}
+      <div className={styles.stem}>
+        <div className={styles.explain}>
       <section className={styles.chart} aria-label="Points Through the Year">
         <header className={styles["chart-head"]}>
           <h2 className={styles["chart-title"]}>Points Through the Year</h2>
@@ -294,6 +346,28 @@ const MusterFlightPoints = () => {
           </MusterEmpty>
         }
       />
+        </div>
+
+        <div className={styles.roll}>
+          <MusterTable
+            columns={rollColumns}
+            rows={everyone}
+            getRowKey={(row) => row.id}
+            defaultSort={{ key: "points", direction: "desc" }}
+            caption={`Every cadet, and what they have earned in ${year}.`}
+            toolbar={
+              <>
+                <span className={styles["roll-title"]}>Every Cadet</span>
+                <span className={styles.spacer} />
+                <span className={styles.count}>
+                  {everyone.filter((cadet) => cadet.points === 0).length} on nothing
+                </span>
+              </>
+            }
+            empty={<MusterEmpty title="No Cadets">Add cadets to see their points here.</MusterEmpty>}
+          />
+        </div>
+      </div>
     </MusterPage>
   );
 };

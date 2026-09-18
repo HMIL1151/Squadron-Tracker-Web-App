@@ -94,6 +94,30 @@ const MusterTable = ({
   const filterable = columns.filter((column) => column.filterValue);
   const hasFilters = filterable.length > 0;
 
+  /*
+   * Optional grouping row.
+   *
+   * The PTS board in its expanded state is six syllabus areas of four levels
+   * each -- twenty-four columns whose headings would otherwise have to read
+   * "Radio Blue", "Radio Bronze" and so on, repeating the area five times per
+   * area. A spanning row says it once.
+   *
+   * Runs of the SAME group are merged; a column with no group spans one cell,
+   * so a grouped table can still carry an ungrouped Cadet column at the front.
+   */
+  const groups = useMemo(() => {
+    if (!columns.some((column) => column.group)) return null;
+    return columns.reduce((acc, column) => {
+      const last = acc[acc.length - 1];
+      if (last && last.label === (column.group || null)) {
+        last.span += 1;
+        return acc;
+      }
+      acc.push({ label: column.group || null, span: 1, key: column.key });
+      return acc;
+    }, []);
+  }, [columns]);
+
   const toggleSort = (column) => {
     setSort((current) =>
       current && current.key === column.key
@@ -146,6 +170,20 @@ const MusterTable = ({
             </caption>
           )}
           <thead>
+            {groups && (
+              <tr className={styles["group-row"]}>
+                {groups.map((group) => (
+                  <th
+                    key={group.key}
+                    scope={group.label ? "colgroup" : undefined}
+                    colSpan={group.span}
+                    className={group.label ? styles["group-head"] : styles["group-blank"]}
+                  >
+                    {group.label}
+                  </th>
+                ))}
+              </tr>
+            )}
             <tr>
               {columns.map((column) => {
                 const isSorted = sort?.key === column.key;

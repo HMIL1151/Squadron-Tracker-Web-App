@@ -88,6 +88,50 @@ describe("the board", () => {
   });
 });
 
+describe("the two views", () => {
+  it("starts on the summary, one column per syllabus area", () => {
+    const { container } = renderView();
+    const heads = headers(container);
+    expect(heads).toEqual(expect.arrayContaining(["Radio", "Shooting"]));
+    expect(heads.filter((h) => h === "Blue")).toHaveLength(0);
+  });
+
+  /*
+   * The expanded view is not decoration. The summary shows one cell per area,
+   * so a cadet holding Silver Radio has nowhere to click to record the Bronze
+   * they were awarded late -- the classic layout is the only one that can
+   * express a badge below a level already held.
+   */
+  it("expands to four levels per area", async () => {
+    const { container, user } = renderView();
+    await user.click(screen.getByRole("button", { name: "Every Level" }));
+
+    const heads = headers(container);
+    expect(heads.filter((h) => h === "Blue").length).toBeGreaterThan(1);
+    expect(heads.filter((h) => h === "Gold").length).toBeGreaterThan(1);
+  });
+
+  it("names each area once, over its four columns", async () => {
+    const { container, user } = renderView();
+    await user.click(screen.getByRole("button", { name: "Every Level" }));
+
+    const groupRow = container.querySelector("thead tr");
+    const radio = [...groupRow.children].find((cell) => cell.textContent === "Radio");
+    expect(radio).toBeDefined();
+    expect(radio.getAttribute("colspan")).toBe("4");
+  });
+
+  it("takes the level from the column when awarding from the expanded view", async () => {
+    const { container, user } = renderView();
+    await user.click(screen.getByRole("button", { name: "Every Level" }));
+
+    const add = container.querySelector("tbody button");
+    await user.click(add);
+
+    expect(screen.getByText(/Taken from the column you clicked/i)).toBeInTheDocument();
+  });
+});
+
 describe("awards by level", () => {
   it("counts every badge in the log by its level", () => {
     const { data } = renderView();

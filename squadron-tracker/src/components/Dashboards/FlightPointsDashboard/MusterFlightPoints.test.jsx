@@ -73,12 +73,23 @@ describe("the year line", () => {
   });
 });
 
+/*
+ * Two tables now: the short "who is carrying each flight" list under the
+ * chart, and the full roll beside it. Scoped by caption rather than by
+ * position, so reordering the page does not silently test the other one.
+ */
+const tableWithCaption = (container, pattern) =>
+  [...container.querySelectorAll("table")].find((table) =>
+    pattern.test(table.querySelector("caption")?.textContent || "")
+  );
+
+const pointsColumn = (table) =>
+  [...table.querySelectorAll("tbody tr")].map((row) => Number(row.lastElementChild.textContent));
+
 describe("contributors", () => {
   it("lists the biggest scorers, highest first", () => {
     const { container } = renderView();
-    const points = [...container.querySelectorAll("tbody tr")].map((row) =>
-      Number(row.lastElementChild.textContent)
-    );
+    const points = pointsColumn(tableWithCaption(container, /carrying each flight/i));
     expect(points.length).toBeGreaterThan(0);
     expect(points).toEqual([...points].sort((a, b) => b - a));
   });
@@ -86,5 +97,29 @@ describe("contributors", () => {
   it("says why the list is there", () => {
     renderView();
     expect(screen.getByText(/before the standings are read out/i)).toBeInTheDocument();
+  });
+});
+
+describe("the full roll", () => {
+  /*
+   * Duplicates a column of the cadet list on purpose. This is the screen open
+   * when someone is working out who to chase, and sending them elsewhere to
+   * find out who scored nothing turns one question into two screens.
+   */
+  it("lists every cadet, including the ones on nothing", () => {
+    const { container, data } = renderView();
+    const roll = tableWithCaption(container, /every cadet/i);
+    expect(roll.querySelectorAll("tbody tr")).toHaveLength(data.cadets.length);
+  });
+
+  it("counts how many have scored nothing", () => {
+    renderView();
+    expect(screen.getByText(/\d+ on nothing/)).toBeInTheDocument();
+  });
+
+  it("is sorted by points, so the bottom of the list is the useful end", () => {
+    const { container } = renderView();
+    const points = pointsColumn(tableWithCaption(container, /every cadet/i));
+    expect(points).toEqual([...points].sort((a, b) => b - a));
   });
 });

@@ -13,11 +13,42 @@
  * answers "is the squadron keeping up", the strip answers "where is everyone".
  * Both are squadron-level, so they belong together above the per-cadet board.
  */
-.top {
+/*
+ * Two columns: the squadron-level views on the left, the per-cadet board on
+ * the right.
+ *
+ * The plot answers "is the squadron keeping up" and the strip answers "where
+ * is everyone" -- both are about the whole squadron, and both are read BEFORE
+ * you go looking for a particular cadet. Stacking them above a full-width
+ * board pushed the board below the fold on a laptop; beside it, the summary
+ * stays visible while you scroll the names.
+ */
+.layout {
   display: grid;
-  grid-template-columns: minmax(0, 1.4fr) minmax(320px, 1fr);
+  grid-template-columns: minmax(330px, 0.85fr) minmax(0, 1.6fr);
   gap: 18px;
-  flex-shrink: 0;
+  align-items: start;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.side {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  min-width: 0;
+}
+
+.board {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  /*
+   * Capped so the board scrolls in its own frame rather than making the page
+   * as long as the squadron, which would strand the plot at the top.
+   */
+  max-height: 720px;
 }
 
 .plot {
@@ -345,8 +376,12 @@
 }
 
 
-@media (max-width: 1100px) {
-  .top {
+@media (max-width: 1200px) {
+  .layout {
     grid-template-columns: minmax(0, 1fr);
+  }
+
+  .board {
+    max-height: none;
   }
 }
