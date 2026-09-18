@@ -35,7 +35,6 @@
 
 import { classificationMap } from "./mappings";
 import { getEventYear } from "./points";
-import { normaliseFlights } from "./flights";
 
 /** The badge ladder, low to high. Index is the rung. */
 export const BADGE_ORDER = ["Blue", "Bronze", "Silver", "Gold"];
@@ -374,49 +373,80 @@ export const intake = (cadets = []) => {
 };
 
 /**
- * Rank against exams passed, and who is qualified but not promoted.
+ * The cadets who keep turning up, and who do the widest range of things.
  *
- * Promotion is a judgement, not an arithmetic result, so this does not
- * recommend anybody. It shows the shape -- in the real squadron, Sergeants had
- * a median of eleven exams and Cadets two -- and then names the cadets who are
- * at or above the median of the rank ABOVE them, which is the succession
- * conversation rather than the answer to it.
+ * Deliberately NOT a promotion list. Rank is a judgement made on things this
+ * database does not hold -- bearing, reliability, how somebody is with the
+ * junior cadets -- and an app that ranks cadets for promotion will be believed
+ * over the staff who know them. An earlier version of this sorted cadets by
+ * exams passed and called it a succession plan, which is exactly that mistake.
+ *
+ * So it measures what the log can actually see, and reports the components
+ * separately rather than blending them into one score:
+ *
+ *   consistency -- distinct months with at least one record, over two years.
+ *   One cadet with a record in nineteen of twenty-four months is a different
+ *   proposition from one with thirty records in a fortnight.
+ *
+ *   breadth -- how many different categories, badge subjects and exams they
+ *   have touched. A cadet who only ever appears on parade nights and a cadet
+ *   who shoots, flies and plays in the band both have "lots of records".
+ *
+ * Both are floors: they see what was written down, not what was done.
  */
-export const rankLadder = (cadets = [], events = [], rankMap = {}) => {
+export const standoutCadets = (cadets = [], events = [], today = new Date()) => {
   const byCadet = groupByCadet(events);
-  const examsFor = (name) => (byCadet.get(name) || []).filter((event) => event.examName).length;
 
-  const rows = cadets.map((cadet) => ({
-    id: cadet.id,
-    name: fullName(cadet),
-    flight: cadet.flight,
-    rank: Number(cadet.rank) || 1,
-    rankName: rankMap[cadet.rank] || "Cadet",
-    exams: examsFor(fullName(cadet)),
-  }));
+  /* The first day of the month 23 months back, so the window is 24 months. */
+  const from = new Date(
+    Date.UTC(today.getUTCFullYear(), today.getUTCMonth() - 23, 1)
+  );
 
-  const ranks = [...new Set(rows.map((row) => row.rank))].sort((a, b) => a - b);
-  const byRank = ranks.map((rank) => {
-    const members = rows.filter((row) => row.rank === rank);
-    const exams = members.map((member) => member.exams).sort((a, b) => a - b);
-    return {
-      rank,
-      rankName: rankMap[rank] || `Rank ${rank}`,
-      count: members.length,
-      median: exams.length ? exams[Math.floor(exams.length / 2)] : 0,
-    };
-  });
+  return cadets
+    .map((cadet) => {
+      const own = byCadet.get(fullName(cadet)) || [];
+      const months = new Set();
+      const categories = new Set();
+      const subjects = new Set();
+      const exams = new Set();
+      let awards = 0;
+      let badges = 0;
+      let last = null;
 
-  const medianOf = (rank) => byRank.find((entry) => entry.rank === rank)?.median ?? null;
+      own.forEach((event) => {
+        const date = parseDate(event.date);
+        if (date && date >= from && date <= today) months.add(event.date.slice(0, 7));
+        if (date && (!last || date > last)) last = date;
+        if (event.eventCategory) categories.add(event.eventCategory);
+        if (event.badgeCategory && event.badgeLevel) {
+          subjects.add(event.badgeCategory);
+          badges += 1;
+        }
+        if (event.examName) exams.add(event.examName);
+        if (event.specialAward) awards += 1;
+      });
 
-  const ready = rows
-    .filter((row) => {
-      const next = medianOf(row.rank + 1);
-      return next !== null && row.exams >= next;
+      return {
+        id: cadet.id,
+        name: fullName(cadet),
+        flight: cadet.flight,
+        records: own.length,
+        activeMonths: months.size,
+        categories: categories.size,
+        subjects: subjects.size,
+        badges,
+        exams: exams.size,
+        awards,
+        breadth: categories.size + subjects.size + exams.size + awards,
+        last: last ? last.toISOString().slice(0, 10) : null,
+      };
     })
-    .sort((a, b) => b.exams - a.exams);
-
-  return { byRank, ready, rows };
+    .sort(
+      (a, b) =>
+        b.activeMonths - a.activeMonths ||
+        b.breadth - a.breadth ||
+        a.name.localeCompare(b.name)
+    );
 };
 
 /**
@@ -512,30 +542,6 @@ export const dataQuality = (cadets = [], events = [], configured = [], today = n
   return issues;
 };
 
-/**
- * Each flight's age, from the earliest start date among its cadets.
- *
- * A flight three months old looks catastrophic next to one four years old, and
- * the comparison is meaningless without saying so. The real squadron this was
- * written against had a flight of ten cadets who had all joined that year.
- */
-export const flightAges = (cadets = [], flights = []) =>
-  normaliseFlights(flights)
-    .map((flight, index) => {
-      const members = cadets.filter((cadet) => Number(cadet.flight) === index + 1);
-      const starts = members.map((cadet) => parseDate(cadet.startDate)).filter(Boolean).sort((a, b) => a - b);
-      return {
-        index: index + 1,
-        name: flight.name,
-        competing: flight.competing,
-        archived: flight.archived,
-        size: members.length,
-        oldest: starts.length ? starts[0].toISOString().slice(0, 10) : null,
-        months: starts.length ? monthsBetween(starts[0], new Date()) : null,
-      };
-    })
-    .filter((flight) => !flight.archived);
-
 /** Where every cadet sits on the classification ladder, as named rungs. */
 export const classificationSpread = (derived = []) => {
   const RUNGS = ["Junior", "Second Class", "First Class", "Leading", "Senior", "Master"];
@@ -570,9 +576,8 @@ export default {
   recordingHealth,
   formerCadets,
   intake,
-  rankLadder,
+  standoutCadets,
   dataQuality,
-  flightAges,
   classificationSpread,
   examsUsed,
 };

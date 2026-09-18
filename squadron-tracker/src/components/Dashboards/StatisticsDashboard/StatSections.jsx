@@ -43,10 +43,6 @@ export const BadgeLadder = ({ ladder }) => {
     <section className={styles.section}>
       <header className={styles.head}>
         <h2 className={styles.question}>How far up each badge ladder do cadets get?</h2>
-        <p className={styles.answer}>
-          Awards at each level, and the highest anyone has ever reached. A subject that stops at
-          Bronze usually means nobody can take it further, not that cadets stopped trying.
-        </p>
       </header>
 
       {ladder.length === 0 ? (
@@ -155,18 +151,10 @@ export const CategoryReach = ({ reach, cadetCount }) => {
     },
   ];
 
-  const never = reach.filter((row) => row.records === 0);
-
   return (
     <section className={styles.section}>
       <header className={styles.head}>
         <h2 className={styles.question}>Who is getting the opportunities?</h2>
-        <p className={styles.answer}>
-          How many cadets have <em>ever</em> had a record in each category, least first.
-          {never.length > 0
-            ? ` ${never.length} ${never.length === 1 ? "category has" : "categories have"} never been used at all.`
-            : " Every category has been used at least once."}
-        </p>
       </header>
 
       <MusterTable
@@ -184,10 +172,6 @@ export const TimeToClassification = ({ timings, flightMap }) => (
   <section className={styles.section}>
     <header className={styles.head}>
       <h2 className={styles.question}>How long does a classification take here?</h2>
-      <p className={styles.answer}>
-        Months from joining to passing, for the cadets who have. The ones who have not are listed
-        beside it, longest-serving first.
-      </p>
     </header>
 
     <div className={styles.grid}>
@@ -251,36 +235,10 @@ export const TimeToClassification = ({ timings, flightMap }) => (
  * predictor of whether a record exists at all, and no other screen can show it
  * because every other screen only shows what IS recorded.
  */
-/**
- * A negative lag is not a rounding error, so it does not get rendered as one.
- *
- * The lag is entry date minus event date, and it goes negative when something
- * is written up before it happens -- a camp entered when the place is booked,
- * a parade night logged in advance. "Typically -23 days" reads as a bug; the
- * squadron reading it needs to be told which way round the gap runs.
- */
-const lagSentence = (median) => {
-  if (median === null) {
-    return "Nothing carries a creation time, so the lag cannot be worked out.";
-  }
-  if (median < 0) {
-    return `Records are typically entered ${Math.abs(median)} ${
-      median === -1 ? "day" : "days"
-    } before the date they carry, so most are being logged ahead of the event.`;
-  }
-  if (median === 0) {
-    return "Records are typically entered on the day the thing happened.";
-  }
-  return `Typically ${median} ${
-    median === 1 ? "day" : "days"
-  } between something happening and it being entered.`;
-};
-
 export const RecordingHealth = ({ health }) => (
   <section className={styles.section}>
     <header className={styles.head}>
       <h2 className={styles.question}>Is the log being kept up?</h2>
-      <p className={styles.answer}>{lagSentence(health.median)}</p>
     </header>
 
     <div className={styles.grid}>
@@ -316,10 +274,6 @@ export const RecordingHealth = ({ health }) => (
 
       <article className={styles["card-wide"]}>
         <h3 className={styles["card-title"]}>Who Enters Records</h3>
-        <p className={styles.caption}>
-          Not a data problem when it is concentrated &mdash; a succession one. If one person stops,
-          the log stops.
-        </p>
         <ul className={styles.rows}>
           {health.contributors.slice(0, 6).map((person) => (
             <li key={person.name} className={styles.row}>
@@ -336,12 +290,11 @@ export const RecordingHealth = ({ health }) => (
       <article className={styles.card}>
         <h3 className={styles["card-title"]}>Entry Sessions</h3>
         <p className={styles.figure}>{health.entryDays}</p>
-        <p className={styles.caption}>
-          Days on which anything was entered at all.
-          {health.busiestDay
-            ? ` The busiest was ${health.busiestDay[0]}, with ${health.busiestDay[1]} records — usually a backfill rather than a parade night.`
-            : ""}
-        </p>
+        {health.busiestDay && (
+          <p className={styles.caption}>
+            Busiest: {health.busiestDay[0]}, {health.busiestDay[1]} records
+          </p>
+        )}
       </article>
     </div>
   </section>
@@ -356,11 +309,6 @@ export const Retention = ({ former, intakeData }) => {
     <section className={styles.section}>
       <header className={styles.head}>
         <h2 className={styles.question}>Who joins, and who stays?</h2>
-        <p className={styles.answer}>
-          {former.count === 0
-            ? "No former cadets are traceable in the log yet."
-            : `${former.count} former cadets are still traceable from the ${former.records} records they left behind.`}
-        </p>
       </header>
 
       <div className={styles.grid}>
@@ -377,24 +325,10 @@ export const Retention = ({ former, intakeData }) => {
               <dd>{former.underAYear}</dd>
             </div>
           </dl>
-          {/*
-            * Stated plainly rather than footnoted. This is a floor, not a
-            * measurement, and a number people quote needs its caveat attached
-            * to it rather than at the bottom of the page.
-            */}
-          <p className={styles.caption}>
-            Measured from their first record to their last, because there is no discharge date.
-            It cannot see service before the first record or after the last, and it cannot see a
-            cadet who left with nothing logged &mdash; so treat it as a floor.
-          </p>
         </article>
 
         <article className={styles["card-wide"]}>
           <h3 className={styles["card-title"]}>When Cadets Join</h3>
-          <p className={styles.caption}>
-            Intake is usually seasonal, and a syllabus planned for a steady trickle does not fit a
-            squadron that recruits in waves.
-          </p>
           <div className={styles.months}>
             {intakeData.byMonth.map((count, index) => (
               <div key={MONTH_NAMES[index]} className={styles.month}>
@@ -439,84 +373,178 @@ export const Retention = ({ former, intakeData }) => {
   );
 };
 
-/** Rank against exams passed, and who is qualified but not promoted. */
-export const RankLadder = ({ ladder, flightMap }) => (
-  <section className={styles.section}>
-    <header className={styles.head}>
-      <h2 className={styles.question}>Where is the next NCO coming from?</h2>
-      <p className={styles.answer}>
-        Promotion is a judgement, not an arithmetic result. This shows the shape, and names the
-        cadets already at the level the rank above them typically holds.
-      </p>
-    </header>
+/**
+ * The cadets who keep turning up, and who do the widest range of things.
+ *
+ * Two lists rather than one ranking, because they are two different kinds of
+ * good and blending them into a score would hide which one a cadet has. The
+ * table underneath carries everyone, sortable on any column.
+ *
+ * There is no "ready for promotion" column here on purpose; see the note on
+ * standoutCadets in utils/squadronStats.js.
+ */
+export const Standouts = ({ standouts, flightMap, windowMonths = 24 }) => {
+  const consistent = standouts.filter((row) => row.activeMonths > 0).slice(0, 6);
+  const varied = [...standouts]
+    .sort((a, b) => b.breadth - a.breadth || a.name.localeCompare(b.name))
+    .filter((row) => row.breadth > 0)
+    .slice(0, 6);
 
-    <div className={styles.grid}>
-      <article className={styles["card-wide"]}>
-        <h3 className={styles["card-title"]}>Exams Passed, by Rank</h3>
-        <ul className={styles.rows}>
-          {ladder.byRank.map((entry) => (
-            <li key={entry.rank} className={styles.row}>
-              <span className={styles["row-name"]}>{entry.rankName}</span>
-              <span className={styles.track}>
-                <span
-                  className={styles["rung-5"]}
-                  style={{
-                    width: `${
-                      (entry.median / Math.max(1, ...ladder.byRank.map((r) => r.median))) * 100
-                    }%`,
-                  }}
-                />
-              </span>
-              <span className={styles["row-value"]}>{entry.median}</span>
-            </li>
-          ))}
-        </ul>
-        <p className={styles.caption}>
-          Median exams passed at each rank. Counts: {ladder.byRank.map((r) => `${r.rankName} ${r.count}`).join(", ")}.
-        </p>
-      </article>
+  const columns = [
+    {
+      key: "name",
+      header: "Cadet",
+      width: "230px",
+      sortValue: (row) => row.name,
+      filterValue: (row) => row.name,
+      render: (row) => (
+        <span className={styles["reach-name"]}>
+          <span
+            className={styles.mark}
+            style={{ backgroundColor: flightColour(row.flight) }}
+            aria-hidden="true"
+          />
+          {row.name}
+        </span>
+      ),
+    },
+    {
+      key: "flight",
+      header: "Flight",
+      width: "120px",
+      sortValue: (row) => flightMap[row.flight] || "",
+      filterValue: (row) => flightMap[row.flight] || "Unassigned",
+      render: (row) => <span className={styles.muted}>{flightMap[row.flight] || "Unassigned"}</span>,
+    },
+    {
+      key: "activeMonths",
+      header: "Active Months",
+      align: "right",
+      width: "140px",
+      sortValue: (row) => row.activeMonths,
+      render: (row) => (
+        <span className={row.activeMonths === 0 ? styles.zero : undefined}>
+          {row.activeMonths} / {windowMonths}
+        </span>
+      ),
+    },
+    {
+      key: "categories",
+      header: "Categories",
+      align: "right",
+      width: "90px",
+      sortValue: (row) => row.categories,
+      render: (row) => row.categories,
+    },
+    {
+      key: "badges",
+      header: "Badges",
+      align: "right",
+      width: "90px",
+      sortValue: (row) => row.badges,
+      render: (row) => row.badges,
+    },
+    {
+      key: "exams",
+      header: "Exams",
+      align: "right",
+      width: "90px",
+      sortValue: (row) => row.exams,
+      render: (row) => row.exams,
+    },
+    {
+      key: "awards",
+      header: "Awards",
+      align: "right",
+      width: "90px",
+      sortValue: (row) => row.awards,
+      render: (row) => row.awards,
+    },
+    {
+      key: "last",
+      header: "Last Record",
+      width: "140px",
+      sortValue: (row) => row.last || "",
+      render: (row) => <span className={styles.muted}>{row.last || "—"}</span>,
+    },
+  ];
 
-      <article className={styles["card-wide"]}>
-        <h3 className={styles["card-title"]}>Qualified for the Next Rank</h3>
-        {ladder.ready.length === 0 ? (
-          <p className={styles.caption}>
-            Nobody is currently at or above the typical level of the rank above them.
-          </p>
-        ) : (
-          <ul className={styles.people}>
-            {ladder.ready.slice(0, 8).map((cadet) => (
-              <li key={cadet.id} className={styles.person}>
-                <span
-                  className={styles.mark}
-                  style={{ backgroundColor: flightColour(cadet.flight) }}
-                  aria-hidden="true"
-                />
-                <span className={styles["person-text"]}>
-                  <span className={styles["person-name"]}>{cadet.name}</span>
-                  <span className={styles["person-note"]}>
-                    {cadet.rankName} &middot; {flightMap[cadet.flight] || "Unassigned"}
+  return (
+    <section className={styles.section}>
+      <header className={styles.head}>
+        <h2 className={styles.question}>Who has been consistently impressive?</h2>
+      </header>
+
+      <div className={styles.pair}>
+        <article className={styles["card-wide"]}>
+          <h3 className={styles["card-title"]}>
+            Most Consistent &middot; months with a record, of the last {windowMonths}
+          </h3>
+          {consistent.length === 0 ? (
+            <p className={styles.caption}>Nothing recorded in the last two years.</p>
+          ) : (
+            <ul className={styles.rows}>
+              {consistent.map((row) => (
+                <li key={row.id} className={styles.row}>
+                  <span className={styles["row-name"]}>{row.name}</span>
+                  <span className={styles.track}>
+                    <span
+                      className={styles["rung-5"]}
+                      style={{ width: `${(row.activeMonths / windowMonths) * 100}%` }}
+                    />
                   </span>
-                </span>
-                <span className={styles["person-value-muted"]}>{cadet.exams} exams</span>
-              </li>
-            ))}
-          </ul>
-        )}
-      </article>
-    </div>
-  </section>
-);
+                  <span className={styles["row-value"]}>{row.activeMonths}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </article>
+
+        <article className={styles["card-wide"]}>
+          <h3 className={styles["card-title"]}>
+            Widest Range &middot; categories, badge subjects, exams and awards
+          </h3>
+          {varied.length === 0 ? (
+            <p className={styles.caption}>Nothing recorded yet.</p>
+          ) : (
+            <ul className={styles.people}>
+              {varied.map((row) => (
+                <li key={row.id} className={styles.person}>
+                  <span
+                    className={styles.mark}
+                    style={{ backgroundColor: flightColour(row.flight) }}
+                    aria-hidden="true"
+                  />
+                  <span className={styles["person-text"]}>
+                    <span className={styles["person-name"]}>{row.name}</span>
+                    <span className={styles["person-note"]}>
+                      {row.categories} categories &middot; {row.badges} badges &middot; {row.exams} exams
+                      {row.awards > 0 ? ` · ${row.awards} awards` : ""}
+                    </span>
+                  </span>
+                  <span className={styles["person-value-muted"]}>{row.breadth}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </article>
+      </div>
+
+      <MusterTable
+        columns={columns}
+        rows={standouts}
+        getRowKey={(row) => row.id}
+        defaultSort={{ key: "activeMonths", direction: "desc" }}
+      />
+    </section>
+  );
+};
 
 /** Things in the data that are almost certainly mistakes. */
 export const DataQuality = ({ issues }) => (
   <section className={styles.section}>
     <header className={styles.head}>
       <h2 className={styles.question}>Is anything wrong with the data?</h2>
-      <p className={styles.answer}>
-        {issues.length === 0
-          ? "Nothing obviously wrong. Dates parse, names match, and every record scores something."
-          : `${issues.length} ${issues.length === 1 ? "thing" : "things"} worth a look. None of these show up as an error anywhere else — they just quietly drop out of totals.`}
-      </p>
     </header>
 
     {issues.length === 0 ? (
@@ -546,59 +574,5 @@ export const DataQuality = ({ issues }) => (
         ))}
       </div>
     )}
-  </section>
-);
-
-/** Each flight's age, so a new flight is not read as a failing one. */
-export const FlightAges = ({ ages }) => (
-  <section className={styles.section}>
-    <header className={styles.head}>
-      <h2 className={styles.question}>How old is each flight?</h2>
-      <p className={styles.answer}>
-        A flight three months old will lose every comparison on this page, and that is not a fact
-        about the flight.
-      </p>
-    </header>
-
-    <div className={styles["table-card"]}>
-      <table className={styles.matrix}>
-        <caption className={styles["visually-hidden"]}>Flight size and age</caption>
-        <thead>
-          <tr>
-            <th scope="col" className={styles["matrix-head"]}>Flight</th>
-            <th scope="col" className={styles["matrix-head-num"]}>Cadets</th>
-            <th scope="col" className={styles["matrix-head-num"]}>Age</th>
-            <th scope="col" className={styles["matrix-head"]}>Longest-serving joined</th>
-            <th scope="col" className={styles["matrix-head"]}>Competes</th>
-          </tr>
-        </thead>
-        <tbody>
-          {ages.map((flight) => (
-            <tr key={flight.index}>
-              <th scope="row" className={styles["matrix-row-head"]}>
-                <span className={styles["flight-name"]}>
-                  <span
-                    className={styles.mark}
-                    style={{ backgroundColor: flightColour(flight.index) }}
-                    aria-hidden="true"
-                  />
-                  {flight.name}
-                </span>
-              </th>
-              <td className={styles["matrix-cell"]}>{flight.size}</td>
-              <td className={styles["matrix-cell"]}>
-                {flight.months === null ? "—" : `${flight.months} mo`}
-              </td>
-              <td className={styles["matrix-cell-left"]}>
-                <span className={styles.muted}>{flight.oldest || "no start dates"}</span>
-              </td>
-              <td className={styles["matrix-cell-left"]}>
-                <span className={styles.muted}>{flight.competing ? "Yes" : "No"}</span>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
   </section>
 );

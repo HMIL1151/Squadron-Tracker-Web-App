@@ -28,19 +28,31 @@
   color: var(--color-text);
 }
 
-.answer {
-  margin: 0;
-  max-width: 80ch;
-  font-size: 13.5px;
-  line-height: 1.45;
-  color: var(--color-text-muted);
-}
-
 .grid {
   display: grid;
   grid-template-columns: 250px minmax(0, 1fr) 300px;
   gap: 14px;
   align-items: stretch;
+}
+
+/*
+ * Two equal columns, for the sections that are a pair rather than the
+ * three-up .grid above. Dropping two .card-wide children into .grid puts one
+ * of them in its 250px column, which is how this was first built and is why
+ * the pair is its own class.
+ */
+.pair {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  align-items: stretch;
+  margin-bottom: 14px;
+}
+
+@media (max-width: 1000px) {
+  .pair {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 
 .card,

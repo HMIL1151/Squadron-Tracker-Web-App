@@ -20,14 +20,13 @@ import {
   classificationSpread,
   dataQuality,
   examsUsed,
-  flightAges,
   formerCadets,
   intake,
   labelForClassification,
   parseDate,
   percent,
-  rankLadder,
   recordingHealth,
+  standoutCadets,
   timeToClassification,
 } from "./squadronStats";
 
@@ -326,38 +325,83 @@ describe("intake", () => {
   });
 });
 
-describe("rankLadder", () => {
-  const rankMap = { 1: "Cadet", 2: "Corporal", 3: "Sergeant" };
+describe("standoutCadets", () => {
+  const today = new Date("2025-06-15T12:00:00Z");
   const cadets = [
-    cadet({ id: "c1", rank: 1 }),
-    cadet({ id: "c2", forename: "Sam", surname: "Reed", rank: 1 }),
-    cadet({ id: "c3", forename: "Nia", surname: "Bell", rank: 2 }),
+    cadet({ id: "c1" }),
+    cadet({ id: "c2", forename: "Sam", surname: "Reed" }),
+    cadet({ id: "c3", forename: "Nia", surname: "Bell" }),
   ];
   const events = [
-    record({ cadetName: "Alex Doe", examName: "A" }),
-    record({ cadetName: "Alex Doe", examName: "B" }),
-    record({ cadetName: "Alex Doe", examName: "C" }),
-    record({ cadetName: "Nia Bell", examName: "A" }),
-    record({ cadetName: "Nia Bell", examName: "B" }),
-    record({ cadetName: "Alex Doe", eventCategory: "Parade Night" }),
+    // Alex: four records in four different months, two categories.
+    record({ cadetName: "Alex Doe", date: "2025-01-06", eventCategory: "Parade Night" }),
+    record({ cadetName: "Alex Doe", date: "2025-02-06", eventCategory: "Parade Night" }),
+    record({ cadetName: "Alex Doe", date: "2025-03-06", eventCategory: "Shooting" }),
+    record({ cadetName: "Alex Doe", date: "2025-04-06", eventCategory: "Parade Night" }),
+    // Sam: four records in ONE month, but across four different kinds of thing.
+    record({ cadetName: "Sam Reed", date: "2025-05-01", eventCategory: "Flying/Gliding" }),
+    record({ cadetName: "Sam Reed", date: "2025-05-02", badgeCategory: "Radio", badgeLevel: "Blue" }),
+    record({ cadetName: "Sam Reed", date: "2025-05-03", examName: "Second Class Cadet" }),
+    record({ cadetName: "Sam Reed", date: "2025-05-04", specialAward: "Cadet of the Year" }),
   ];
 
-  const ladder = rankLadder(cadets, events, rankMap);
+  const rows = standoutCadets(cadets, events, today);
+  const of = (name) => rows.find((row) => row.name === name);
 
-  it("counts exams passed per rank", () => {
-    expect(ladder.byRank).toEqual([
-      { rank: 1, rankName: "Cadet", count: 2, median: 3 },
-      { rank: 2, rankName: "Corporal", count: 1, median: 2 },
-    ]);
+  it("counts months with a record, not records", () => {
+    /*
+     * The whole point. Four records in four months and four records in one
+     * week are not the same cadet, and a count of records cannot tell them
+     * apart.
+     */
+    expect(of("Alex Doe").activeMonths).toBe(4);
+    expect(of("Sam Reed").activeMonths).toBe(1);
+    expect(of("Alex Doe").records).toBe(4);
+    expect(of("Sam Reed").records).toBe(4);
   });
 
-  it("names cadets already at the median of the rank above", () => {
-    // A conversation-starter, not a recommendation: promotion is a judgement.
-    expect(ladder.ready.map((r) => r.name)).toEqual(["Alex Doe"]);
+  it("counts breadth across categories, badge subjects, exams and awards", () => {
+    expect(of("Sam Reed")).toMatchObject({
+      categories: 1,
+      subjects: 1,
+      badges: 1,
+      exams: 1,
+      awards: 1,
+      breadth: 4,
+    });
+    expect(of("Alex Doe").breadth).toBe(2);
   });
 
-  it("says nothing about the top rank, which has nothing above it", () => {
-    expect(ladder.ready.some((r) => r.rank === 2)).toBe(false);
+  it("orders by consistency first, then by breadth", () => {
+    expect(rows.map((row) => row.name)).toEqual(["Alex Doe", "Sam Reed", "Nia Bell"]);
+  });
+
+  it("includes a cadet with nothing recorded rather than dropping them", () => {
+    expect(of("Nia Bell")).toMatchObject({ activeMonths: 0, breadth: 0, last: null });
+  });
+
+  it("only counts the last two years towards consistency", () => {
+    const old = standoutCadets(
+      [cadet()],
+      [
+        record({ cadetName: "Alex Doe", date: "2022-01-06", eventCategory: "Parade Night" }),
+        record({ cadetName: "Alex Doe", date: "2025-01-06", eventCategory: "Parade Night" }),
+      ],
+      today
+    );
+    expect(old[0].activeMonths).toBe(1);
+    // The older record still counts as history: it is the last-seen date that moves.
+    expect(old[0].records).toBe(2);
+  });
+
+  it("reports when each cadet was last seen", () => {
+    expect(of("Alex Doe").last).toBe("2025-04-06");
+  });
+
+  it("says nothing about promotion", () => {
+    // Rank is a judgement made on things this database does not hold.
+    expect(Object.keys(rows[0])).not.toContain("rank");
+    expect(Object.keys(rows[0])).not.toContain("ready");
   });
 });
 
@@ -396,37 +440,6 @@ describe("dataQuality", () => {
   it("carries examples, so the issue can be acted on", () => {
     const [issue] = dataQuality([cadet()], [record({ date: "20222-11-22" })], [], today);
     expect(issue.examples[0]).toContain("20222-11-22");
-  });
-});
-
-describe("flightAges", () => {
-  const flights = [
-    { name: "Staff Team", competing: false, archived: false },
-    { name: "Alpha", competing: true, archived: false },
-    { name: "Retired", competing: true, archived: true },
-  ];
-  const cadets = [
-    cadet({ id: "c1", flight: 2, startDate: "2022-09-01" }),
-    cadet({ id: "c2", flight: 2, startDate: "2024-09-01" }),
-    cadet({ id: "c3", flight: 1, startDate: "2020-01-01" }),
-  ];
-
-  it("ages a flight from its longest-serving member", () => {
-    const alpha = flightAges(cadets, flights).find((f) => f.name === "Alpha");
-    expect(alpha).toMatchObject({ index: 2, size: 2, oldest: "2022-09-01", months: 33 });
-  });
-
-  it("leaves archived flights out", () => {
-    expect(flightAges(cadets, flights).map((f) => f.name)).toEqual(["Staff Team", "Alpha"]);
-  });
-
-  it("reports an empty flight as ageless rather than new", () => {
-    const empty = flightAges([], flights).find((f) => f.name === "Alpha");
-    expect(empty).toMatchObject({ size: 0, oldest: null, months: null });
-  });
-
-  it("accepts the legacy string[] flight shape", () => {
-    expect(flightAges(cadets, ["Staff Team", "Alpha"]).map((f) => f.name)).toEqual(["Staff Team", "Alpha"]);
   });
 });
 

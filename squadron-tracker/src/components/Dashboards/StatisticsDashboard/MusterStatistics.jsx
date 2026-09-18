@@ -4,17 +4,15 @@ import { useSquadron } from "../../../context/SquadronContext";
 import { deriveClassifications, examsPassedBy } from "../../../utils/classification";
 import { getEventPoints, getEventYear } from "../../../utils/points";
 import { flightColour, getCompetingFlights } from "../../../utils/flights";
-import { rankMap } from "../../../utils/mappings";
 import { examList } from "../../../utils/examList";
 import {
   badgeLadder,
   categoryReach,
   dataQuality,
-  flightAges,
   formerCadets,
   intake,
-  rankLadder,
   recordingHealth,
+  standoutCadets,
   timeToClassification,
 } from "../../../utils/squadronStats";
 import MusterPage from "../../Muster/MusterPage";
@@ -23,10 +21,9 @@ import {
   BadgeLadder,
   CategoryReach,
   DataQuality,
-  FlightAges,
-  RankLadder,
   RecordingHealth,
   Retention,
+  Standouts,
   TimeToClassification,
 } from "./StatSections";
 import styles from "./MusterStatistics.module.css";
@@ -388,12 +385,11 @@ const MusterStatistics = () => {
   const health = useMemo(() => recordingHealth(events), [events]);
   const former = useMemo(() => formerCadets(cadets, events), [cadets, events]);
   const intakeData = useMemo(() => intake(cadets), [cadets]);
-  const ranks = useMemo(() => rankLadder(cadets, events, rankMap), [cadets, events]);
+  const standouts = useMemo(() => standoutCadets(cadets, events), [cadets, events]);
   const issues = useMemo(
     () => dataQuality(cadets, events, configuredCategories),
     [cadets, events, configuredCategories]
   );
-  const ages = useMemo(() => flightAges(cadets, flights), [cadets, flights]);
 
   const signed = (value) => (value > 0 ? `+${value}` : String(value));
 
@@ -435,10 +431,6 @@ const MusterStatistics = () => {
         <section className={styles.section}>
           <header className={styles.head}>
             <h2 className={styles.question}>How much is being recorded?</h2>
-            <p className={styles.answer}>
-              {current.records} records across {activity.dates}{" "}
-              {activity.dates === 1 ? "date" : "dates"} in {year}, worth {current.points} points.
-            </p>
           </header>
           <div className={styles.grid}>
             <article className={styles.card}>
@@ -484,11 +476,6 @@ const MusterStatistics = () => {
         <section className={styles.section}>
           <header className={styles.head}>
             <h2 className={styles.question}>How does this year compare?</h2>
-            <p className={styles.answer}>
-              {previous
-                ? `${year} against ${previous.year}, and every year the squadron has records for.`
-                : `${year} is the first year with records, so there is nothing to compare it with yet.`}
-            </p>
           </header>
 
           <div className={styles["table-card"]}>
@@ -553,15 +540,6 @@ const MusterStatistics = () => {
         <section className={styles.section}>
           <header className={styles.head}>
             <h2 className={styles.question}>Is everyone progressing?</h2>
-            <p className={styles.answer}>
-              {current.exams} exams passed in {year}
-              {previous ? ` against ${previous.exams} in ${previous.year}` : ""}.{" "}
-              {progression.behind === 0
-                ? "Everybody is at or ahead of the target for their service length."
-                : `${progression.behind} ${
-                    progression.behind === 1 ? "cadet is" : "cadets are"
-                  } behind the target for their service length.`}
-            </p>
           </header>
           <div className={styles.grid}>
             <article className={styles.card}>
@@ -633,24 +611,12 @@ const MusterStatistics = () => {
         <section className={styles.section}>
           <header className={styles.head}>
             <h2 className={styles.question}>Is recognition reaching everyone?</h2>
-            <p className={styles.answer}>
-              The top five hold {Math.round(recognition.share * 100)}% of this year&rsquo;s points
-              {recognition.invisible.length > 0
-                ? `, and ${recognition.invisible.length} ${
-                    recognition.invisible.length === 1 ? "cadet has" : "cadets have"
-                  } nothing recorded at all.`
-                : ", and everybody has something recorded."}
-            </p>
           </header>
           <div className={styles.grid}>
             <article className={styles.card}>
               <h3 className={styles["card-title"]}>Held by the Top Five</h3>
               <p className={styles.figure}>{Math.round(recognition.share * 100)}%</p>
               <MusterBar value={recognition.share} max={1} />
-              <p className={styles.caption}>
-                Not wrong in itself &mdash; keen cadets earn more. It only matters next to the panel
-                on the right.
-              </p>
             </article>
 
             <article className={styles["card-wide"]}>
@@ -678,9 +644,6 @@ const MusterStatistics = () => {
                   {recognition.invisible.length === 1 ? "cadet has" : "cadets have"} no record this
                   year
                 </h3>
-                <p className={styles.caption}>
-                  They are on the books. Nothing has been logged against them.
-                </p>
                 <ul className={styles.names}>
                   {recognition.invisible.map((cadet) => (
                     <li key={cadet.id} className={styles.name}>
@@ -702,7 +665,7 @@ const MusterStatistics = () => {
 
           <Retention former={former} intakeData={intakeData} />
           <CategoryReach reach={reach} cadetCount={cadets.length} />
-          <RankLadder ladder={ranks} flightMap={flightMap} />
+          <Standouts standouts={standouts} flightMap={flightMap} />
         </>
       )}
 
@@ -712,10 +675,6 @@ const MusterStatistics = () => {
         <section className={styles.section}>
           <header className={styles.head}>
             <h2 className={styles.question}>How do the flights compare?</h2>
-            <p className={styles.answer}>
-              Competing flights only, and points per cadet as well as the total &mdash; flights
-              are rarely the same size, and the staff flight does not compete.
-            </p>
           </header>
 
           <div className={styles["table-card"]}>
@@ -812,10 +771,6 @@ const MusterStatistics = () => {
 
               <article className={styles["card-wide"]}>
                 <h3 className={styles["card-title"]}>Doing Less Than on {previous.year}</h3>
-                <p className={styles.caption}>
-                  Usually a cadet who has got busy elsewhere rather than one who has lost interest,
-                  but worth a word either way.
-                </p>
                 <ul className={styles.people}>
                   {movers
                     .filter((cadet) => cadet.change < 0)
@@ -843,7 +798,6 @@ const MusterStatistics = () => {
           )}
         </section>
 
-          <FlightAges ages={ages} />
         </>
       )}
 
@@ -854,12 +808,15 @@ const MusterStatistics = () => {
         </>
       )}
 
+      {/*
+        * The one line of prose left on the page, and it earns its place: it is
+        * the guard against somebody adding an attendance figure back. The app
+        * has no attendance model and no date of birth, so both measures would
+        * be invented. Everything else that used to be explained here is now
+        * just shown.
+        */}
       <p className={styles.footnote}>
-        Attendance is not here: the app has no attendance model, only parade-night records, which
-        are written when someone remembers to write them &mdash; so it measures the log rather than
-        the squadron. Age profile is not here either, because there is no date of birth. Retention
-        is worked out from the records left behind by cadets no longer on strength, so it is a
-        floor rather than a measurement: it cannot see anyone who left with nothing logged.
+        Attendance and age profile are not measured: the app records neither.
       </p>
     </MusterPage>
   );

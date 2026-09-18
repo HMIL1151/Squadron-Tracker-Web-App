@@ -62,9 +62,9 @@ describe("the questions it asks", () => {
         "Is recognition reaching everyone?",
         "Who joins, and who stays?",
         "Who is getting the opportunities?",
-        "Where is the next NCO coming from?",
+        "Who has been consistently impressive?",
       ],
-      Flights: ["How do the flights compare?", "How old is each flight?"],
+      Flights: ["How do the flights compare?"],
       "Record Keeping": ["Is the log being kept up?", "Is anything wrong with the data?"],
     };
 
@@ -101,22 +101,16 @@ describe("what it refuses to measure", () => {
     }
   });
 
-  it("says why attendance and age profile are absent, on every tab", () => {
-    renderView();
-    const note = screen.getByText(/no attendance model/i);
-    expect(note.textContent).toMatch(/no date of birth/i);
-  });
-
-  it("says that retention is a floor rather than a measurement", () => {
+  it("says plainly that attendance and age profile are not measured", () => {
     /*
-     * Retention used to be in the "cannot do" list and now has a panel, on the
-     * grounds that discharging keeps the records. The caveat has to survive
-     * with it: it cannot see a cadet who left with nothing logged.
+     * One line, and the only prose left on the page. It is the guard: the
+     * tempting "improvement" is to put an attendance figure back, and the app
+     * has nothing to compute one from.
      */
     renderView();
-    expect(screen.getByText(/no attendance model/i).textContent).toMatch(
-      /floor rather than a measurement/i
-    );
+    expect(
+      screen.getByText(/Attendance and age profile are not measured/i)
+    ).toBeInTheDocument();
   });
 });
 
@@ -182,27 +176,6 @@ describe("flights", () => {
     expect(alpha.textContent).toContain(String(size));
   });
 
-  it("ages each flight, because a new flight is not a failing one", async () => {
-    /*
-     * A flight three months old looks catastrophic beside one four years old.
-     * The age is what stops the comparison being read as a league table.
-     */
-    const { user } = renderView();
-    await showTab(user, "Flights");
-    const ages = screen.getByRole("heading", { name: "How old is each flight?" }).closest("section");
-    expect(within(ages).getByRole("columnheader", { name: "Age" })).toBeInTheDocument();
-    expect(
-      within(ages).getByRole("columnheader", { name: "Longest-serving joined" })
-    ).toBeInTheDocument();
-  });
-
-  it("leaves archived flights out of the age table", async () => {
-    const { user } = renderView();
-    await showTab(user, "Flights");
-    const ages = screen.getByRole("heading", { name: "How old is each flight?" }).closest("section");
-    // Charlie is archived in the fixture.
-    expect(within(ages).queryByText("Charlie")).not.toBeInTheDocument();
-  });
 });
 
 describe("progression", () => {
@@ -253,12 +226,10 @@ describe("cadets with nothing recorded", () => {
     expect(within(alert).getByText("Isla Muir")).toBeInTheDocument();
   });
 
-  it("explains that they are on the books, not missing", async () => {
+  it("heads the panel with how many there are", async () => {
     const { user } = renderView();
     await showTab(user, "People");
-    expect(
-      screen.getByText(/on the books. Nothing has been logged against them/i)
-    ).toBeInTheDocument();
+    expect(screen.getByText(/no record this year/i).textContent).toMatch(/^\d+ cadets? h/);
   });
 });
 
@@ -278,13 +249,24 @@ describe("people", () => {
     expect(within(reach).getAllByRole("columnheader", { name: /Records/ })[0]).toBeInTheDocument();
   });
 
-  it("shows rank against exams passed without recommending anybody", async () => {
+  it("measures standouts by months active and by range, not by rank", async () => {
+    /*
+     * This section replaced one that sorted cadets by exams passed and called
+     * it a promotion pipeline. Promotion is a judgement made on things this
+     * database does not hold, and an app that ranks cadets for it will be
+     * believed over the staff who know them.
+     */
     const { user } = renderView();
     await showTab(user, "People");
-    const ranks = screen
-      .getByRole("heading", { name: "Where is the next NCO coming from?" })
+    const section = screen
+      .getByRole("heading", { name: "Who has been consistently impressive?" })
       .closest("section");
-    expect(within(ranks).getByText(/judgement/i)).toBeInTheDocument();
+
+    expect(within(section).getByText(/Most Consistent/)).toBeInTheDocument();
+    expect(within(section).getByText(/Widest Range/)).toBeInTheDocument();
+    expect(within(section).getByRole("columnheader", { name: /Active Months/ })).toBeInTheDocument();
+    expect(within(section).queryByText(/promot/i)).not.toBeInTheDocument();
+    expect(within(section).queryByRole("columnheader", { name: /Rank/ })).not.toBeInTheDocument();
   });
 });
 
@@ -295,11 +277,12 @@ describe("record keeping", () => {
     expect(screen.getByText("Typical Lag")).toBeInTheDocument();
   });
 
-  it("names who enters the records, because that is a succession risk", async () => {
+  it("names who enters the records, and their share of the log", async () => {
+    // Concentration is a succession risk, so it is shown rather than summarised.
     const { user } = renderView();
     await showTab(user, "Record Keeping");
     const who = screen.getByText("Who Enters Records").closest("article");
-    expect(within(who).getByText(/the log stops/i)).toBeInTheDocument();
+    expect(within(who).getAllByText(/%$/).length).toBeGreaterThan(0);
   });
 
   it("lists data problems that are invisible on every other screen", async () => {
