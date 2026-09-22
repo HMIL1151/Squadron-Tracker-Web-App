@@ -1,10 +1,18 @@
 /* -- the board ----------------------------------------------------------- */
 
+/*
+ * A floor on the name, not just a width hint.
+ *
+ * The column width passed to MusterTable is a hint, and in the Every Level
+ * view -- twenty-four columns wide -- the browser was handing the names
+ * 158px and truncating anyone called Blythe-Jones. The name is the one
+ * column you cannot lose.
+ */
 .cadet {
   display: flex;
   align-items: baseline;
   gap: 8px;
-  min-width: 0;
+  min-width: 172px;
 }
 
 .cadet-name {
@@ -12,12 +20,6 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-.cadet-flight {
-  flex-shrink: 0;
-  font-size: 12px;
-  color: var(--color-text-muted);
 }
 
 /*

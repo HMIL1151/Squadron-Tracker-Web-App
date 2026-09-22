@@ -15,6 +15,15 @@
   display: flex;
   flex-direction: column;
   /*
+   * Grow into whatever the page has left.
+   *
+   * Without this a short table stops at its content height and the page ends
+   * in a band of empty ground -- 432px of it on Flights, 381px on the Admin
+   * Area. The card taking the space instead means the scroll area inside it
+   * is the full height, so adding rows never reflows the page around it.
+   */
+  flex: 1 1 auto;
+  /*
    * A floor, not just min-height: 0. In a flex column constrained to the
    * viewport, a table with no minimum will happily shrink to nothing on a
    * short window -- and so will everything above it.
@@ -36,6 +45,7 @@
 .frame-dense {
   display: flex;
   flex-direction: column;
+  flex: 1 1 auto;
   min-height: 260px;
   background-color: var(--color-surface);
   border: 1px solid var(--color-border);

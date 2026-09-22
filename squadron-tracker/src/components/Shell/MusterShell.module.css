@@ -20,14 +20,98 @@
   color: var(--color-text);
 }
 
+/*
+ * Collapsed: 64px, wide enough for an icon and its focus ring.
+ *
+ * Two classes rather than a modifier for the same reason as .nav-link -- a
+ * scoped name cannot be assembled in the JSX -- so the shared declarations
+ * are repeated. Keep the two in step.
+ */
+.shell-shut {
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr);
+  height: 100dvh;
+  background-color: var(--color-surface-sunken);
+  color: var(--color-text);
+}
+
 /* -- the rail ------------------------------------------------------------ */
 
-.rail {
+.rail,
+.rail-shut {
   display: flex;
   flex-direction: column;
   min-height: 0;
   background-color: var(--color-rail);
   border-right: 1px solid var(--color-rail-border);
+}
+
+/*
+ * Collapsed, the rail's own padding has to go with it: 20px either side of a
+ * 64px column leaves 24px for a 16px icon, which crops the focus ring.
+ */
+.rail-shut .identity {
+  padding: 16px 0;
+  text-align: center;
+}
+
+.rail-shut .identity-number {
+  font-size: 17px;
+}
+
+.rail-shut .groups {
+  padding: 12px 8px;
+  gap: 10px;
+  align-items: center;
+}
+
+.rail-shut .nav-list {
+  width: 100%;
+}
+
+.rail-shut .nav-link,
+.rail-shut .nav-link-active {
+  justify-content: center;
+  padding: 10px 0;
+}
+
+.rail-shut .account {
+  justify-content: center;
+  padding: 0 0 10px;
+}
+
+/* -- the collapse control ------------------------------------------------ */
+
+.rail-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  margin: 10px 12px 0;
+  padding: 7px 9px;
+  border: 1px solid transparent;
+  border-radius: 5px;
+  background-color: transparent;
+  color: var(--color-text-muted);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.rail-shut .rail-toggle {
+  margin: 10px 8px 0;
+  padding: 7px 0;
+}
+
+.rail-toggle:hover {
+  background-color: var(--color-surface-hover);
+  color: var(--color-text);
+}
+
+.rail-toggle:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
 }
 
 /*
@@ -233,6 +317,50 @@
   background-color: var(--color-surface-hover);
   border-color: var(--color-border-strong);
   color: var(--color-text);
+}
+
+/* The sign-out, collapsed: the same quiet treatment, icon only. */
+.account-actions-shut {
+  display: flex;
+  justify-content: center;
+  padding: 0 0 16px;
+}
+
+.sign-out-shut {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  background-color: var(--color-surface);
+  color: var(--color-text-muted);
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.sign-out-shut:hover {
+  background-color: var(--color-surface-hover);
+  color: var(--color-danger);
+}
+
+.sign-out-shut:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 /* -- the content --------------------------------------------------------- */

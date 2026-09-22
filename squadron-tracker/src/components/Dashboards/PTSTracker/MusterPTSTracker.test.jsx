@@ -34,6 +34,13 @@ const headers = (container) =>
 const rowFor = (container, name) =>
   [...container.querySelectorAll("tbody tr")].find((row) => row.textContent.includes(name));
 
+/*
+ * The board opens on Every Level, so anything about the one-cell-per-area
+ * view has to ask for it. Worth the extra line in each test: which view is
+ * being described is then written down rather than inherited.
+ */
+const showSummary = (user) => user.click(screen.getByRole("button", { name: "Highest Held" }));
+
 describe("the board", () => {
   it("gives every syllabus area a column", () => {
     const { container } = renderView();
@@ -47,8 +54,9 @@ describe("the board", () => {
    * three is three times the ink for one fact; the fact is how far up the
    * ladder she is.
    */
-  it("shows only the highest badge held in an area", () => {
-    const { container } = renderView();
+  it("shows only the highest badge held in an area", async () => {
+    const { container, user } = renderView();
+    await showSummary(user);
     const amelia = rowFor(container, "Amelia Hart");
     // Silver Radio was awarded 2025-04-18; Blue and Bronze are older.
     expect(amelia.textContent).toContain("18 Apr 2025");
@@ -60,8 +68,9 @@ describe("the board", () => {
    * colour already says; the date answers "when", which is what staff open
    * this board for. The level stays available to a screen reader.
    */
-  it("shows when the badge was awarded rather than repeating its level", () => {
-    const { container } = renderView();
+  it("shows when the badge was awarded rather than repeating its level", async () => {
+    const { container, user } = renderView();
+    await showSummary(user);
     const amelia = rowFor(container, "Amelia Hart");
     const cell = within(amelia).getByTitle("Silver Radio");
     expect(cell.textContent).toContain("18 Apr 2025");
@@ -72,8 +81,9 @@ describe("the board", () => {
    * An empty cell is how you award a badge from this screen, which is the
    * behaviour the classic tracker had and the first Muster version lost.
    */
-  it("offers an empty cell as a way to award that badge", () => {
-    const { container } = renderView();
+  it("offers an empty cell as a way to award that badge", async () => {
+    const { container, user } = renderView();
+    await showSummary(user);
     const isla = rowFor(container, "Isla Muir");
     expect(
       within(isla).getAllByRole("button", { name: /^Award a .* badge to Isla Muir$/ }).length
@@ -96,11 +106,28 @@ describe("the board", () => {
 });
 
 describe("the two views", () => {
-  it("starts on the summary, one column per syllabus area", () => {
+  it("opens on Every Level, the way the classic tracker did", () => {
+    /*
+     * "Highest held" is the tidier board and was the original default. The
+     * question people bring to this screen is which badges a cadet has, not
+     * how far up one ladder they got.
+     */
     const { container } = renderView();
     const heads = headers(container);
+    expect(heads.filter((head) => head === "Blue").length).toBeGreaterThan(1);
+    expect(screen.getByRole("button", { name: "Every Level" })).toHaveAttribute(
+      "aria-pressed",
+      "true"
+    );
+  });
+
+  it("folds down to one column per syllabus area", async () => {
+    const { container, user } = renderView();
+    await showSummary(user);
+
+    const heads = headers(container);
     expect(heads).toEqual(expect.arrayContaining(["Radio", "Shooting"]));
-    expect(heads.filter((h) => h === "Blue")).toHaveLength(0);
+    expect(heads.filter((head) => head === "Blue")).toHaveLength(0);
   });
 
   /*
@@ -111,6 +138,7 @@ describe("the two views", () => {
    */
   it("expands to four levels per area", async () => {
     const { container, user } = renderView();
+    await showSummary(user);
     await user.click(screen.getByRole("button", { name: "Every Level" }));
 
     const heads = headers(container);
@@ -382,6 +410,7 @@ describe("a badge the filter is hiding", () => {
    */
   it("shows a dash rather than offering to award it again", async () => {
     const { user, container } = renderView();
+    await showSummary(user);
     await user.click(chipFor("Gold"));
 
     const harry = rowFor(container, "Harry Blythe-Jones");
@@ -393,6 +422,7 @@ describe("a badge the filter is hiding", () => {
 
   it("still offers an award where the cadet holds nothing at all", async () => {
     const { user, container } = renderView();
+    await showSummary(user);
     await user.click(chipFor("Gold"));
 
     // Harry has never held a Radio badge, filter or no filter.

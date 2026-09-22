@@ -120,9 +120,17 @@ const shortDate = (iso) => {
  * Radio has one cell, so there is nowhere to click to record the Bronze they
  * were awarded late.
  */
+/*
+ * Every Level opens by default.
+ *
+ * "Highest held" is the tidier board and was the original default, but the
+ * question people bring to this screen is which badges a cadet has, not how
+ * far up one ladder they got -- and the full board is what the classic
+ * tracker showed. Highest Held stays one click away.
+ */
 const VIEWS = {
-  summary: "Highest Held",
   levels: "Every Level",
+  summary: "Highest Held",
 };
 
 const MusterPTSTracker = ({ user }) => {
@@ -132,7 +140,7 @@ const MusterPTSTracker = ({ user }) => {
 
   const [search, setSearch] = useState("");
   const [flightFilter, setFlightFilter] = useState(ALL);
-  const [view, setView] = useState("summary");
+  const [view, setView] = useState("levels");
   const [levels, setLevels] = useState(badgeLevel);
   /*
    * null means "all of them", rather than a copy of the list.
@@ -439,18 +447,26 @@ const MusterPTSTracker = ({ user }) => {
       header: "Cadet",
       width: "260px",
       sortValue: (row) => row.name,
-      filterValue: (row) => row.name + " " + row.flightName,
       /*
-       * Name and flight on ONE line, which is what lets a row be 36px rather
-       * than 48px -- twelve cadets visible against eighteen. The flight stays
-       * written out beside the colour mark: a flight identified by hue alone
-       * is a flight some of your staff cannot read.
+       * No filterValue, and so no column-filter row at all on this board.
+       * The toolbar already has a cadet search next to the flight filter, and
+       * two boxes that filter cadets by name -- one of them costing a whole
+       * row of header -- is one box too many.
+       */
+      /*
+       * Just the name, with the flight as a colour mark beside it.
+       *
+       * The flight was written out here and is now only the mark, which buys
+       * the name the whole column. It is NOT colour-only: the flight is in
+       * the mark's title and in text only a screen reader reads, because a
+       * flight identified by hue alone is a flight some of your staff cannot
+       * read. The Flight filter above the board is the way to work by flight.
        */
       render: (row) => (
-        <span className={styles.cadet}>
+        <span className={styles.cadet} title={`${row.name} — ${row.flightName}`}>
           <FlightMark flight={row.flight} />
           <span className={styles["cadet-name"]}>{row.name}</span>
-          <span className={styles["cadet-flight"]}>{row.flightName}</span>
+          <span className={styles["visually-hidden"]}>{row.flightName}</span>
         </span>
       ),
     },
