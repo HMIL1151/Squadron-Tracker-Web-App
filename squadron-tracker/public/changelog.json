@@ -108,5 +108,10 @@
     "version": "v0.17.1",
     "date": "22/09/2026",
     "content": "The PTS Tracker gets its filters back. You can narrow the board by badge level, by syllabus area and by the date a badge was awarded, the same three the old tracker had. To look at one subject on its own, press None beside Subjects and then the one you want. The count beside each level stays true when you switch it off, so “Blue 54” is still how many Blues the squadron has awarded, not how many are on screen.\nThe board itself has more room. The counts moved onto the filters, which got rid of the tiles above the table, and the rows are tighter — about half as many cadets on screen again without the dates getting any smaller. The cadet name stays put when you scroll sideways through the badge columns, and the board now opens showing every level rather than only the highest one held.\nThe menu on the left collapses. Press the arrow under the squadron number and it shrinks to a strip of icons, giving the page about 190 more pixels of width; press it again to bring the labels back. The app remembers which you chose on that device.\nFixed: several screens ended in a wide band of empty space below the table — the Flights and Admin Area screens worst of all. The table now fills the page."
+  },
+  {
+    "version": "v0.17.2",
+    "date": "22/09/2026",
+    "content": "Fixed: you could scroll the page sideways and downwards into a large empty area, most obviously on the PTS Tracker. A wide table was pushing the page out past the edge of the window even though the table had its own scrollbar. Every screen now ends where the window does."
   }
 ]
