@@ -55,6 +55,11 @@
   text-align: center;
 }
 
+.rail-shut .identity-name,
+.rail-shut .account-detail {
+  display: none;
+}
+
 .rail-shut .identity-number {
   font-size: 17px;
 }
@@ -62,17 +67,28 @@
 .rail-shut .groups {
   padding: 12px 8px;
   gap: 10px;
-  align-items: center;
 }
 
 .rail-shut .nav-list {
-  width: 100%;
+  gap: 4px;
 }
 
+/*
+ * A square target, sized rather than padded.
+ *
+ * `align-items: center` on the collapsed groups used to shrink the list to
+ * the width of an icon, so the button's width: 100% resolved to 16px and the
+ * selected item was a 16x36 sliver standing on end. An icon button wants its
+ * own dimensions, not the leftovers of its parent's.
+ */
 .rail-shut .nav-link,
 .rail-shut .nav-link-active {
   justify-content: center;
-  padding: 10px 0;
+  width: 40px;
+  height: 40px;
+  margin: 0 auto;
+  padding: 0;
+  border-radius: 8px;
 }
 
 .rail-shut .account {
@@ -386,16 +402,60 @@
  * looking at matters more on the device you are most likely to be using in a
  * hurry.
  */
+/*
+ * Narrow: the rail stops being a rail and becomes a bar across the top.
+ *
+ * The collapsed state has to be dragged in here with it. It was not, and the
+ * result was the worst of both: .shell-shut kept its 64px column while
+ * .groups took the row direction from this block, so nine of the ten icons
+ * scrolled sideways out of a column one icon wide. Collapsing is meaningless
+ * in a bar that is already compact, so the control goes away entirely and
+ * both states render identically.
+ */
 @media (max-width: 800px) {
-  .shell {
+  .shell,
+  .shell-shut {
     grid-template-columns: minmax(0, 1fr);
     grid-template-rows: auto minmax(0, 1fr);
     height: 100dvh;
   }
 
-  .rail {
+  .rail,
+  .rail-shut {
     border-right: 0;
     border-bottom: 1px solid var(--color-rail-border);
+  }
+
+  .rail-toggle {
+    display: none;
+  }
+
+  .rail-shut .identity {
+    padding: 12px 16px;
+    text-align: left;
+  }
+
+  .rail-shut .identity-name,
+  .rail-shut .account-detail {
+    display: block;
+  }
+
+  .rail-shut .identity-number {
+    font-size: 22px;
+  }
+
+  .rail-shut .groups {
+    padding: 10px 12px;
+  }
+
+  .rail-shut .account {
+    justify-content: flex-start;
+    padding: 10px 16px;
+  }
+
+  .account-actions-shut {
+    justify-content: flex-start;
+    padding: 0 16px 12px;
   }
 
   .identity {

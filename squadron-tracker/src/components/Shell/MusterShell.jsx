@@ -111,13 +111,17 @@ const MusterShell = ({
       >
         <div className={styles.identity}>
           <div className={styles["identity-number"]}>{user.squadronNumber}</div>
-          {!collapsed && (
-            <div className={styles["identity-name"]}>
-              {user.squadronName} Squadron
-              <br />
-              Air Training Corps
-            </div>
-          )}
+          {/*
+            * Hidden by CSS when the rail is shut rather than dropped from the
+            * DOM. Below 800px the rail is a bar across the top and collapsing
+            * means nothing, so the narrow layout puts this back -- which it
+            * cannot do for something JavaScript declined to render.
+            */}
+          <div className={styles["identity-name"]}>
+            {user.squadronName} Squadron
+            <br />
+            Air Training Corps
+          </div>
         </div>
 
         <button
@@ -196,14 +200,12 @@ const MusterShell = ({
 
         <div className={styles.account} title={collapsed ? user.displayName : undefined}>
           <div className={styles.avatar} aria-hidden="true">{initialsOf(user.displayName)}</div>
-          {!collapsed && (
-            <div className={styles["account-detail"]}>
-              <div className={styles["account-name"]}>{user.displayName}</div>
-              <div className={styles["account-role"]}>
-                {isAdmin ? "Squadron admin" : "Squadron staff"} &middot; {version}
-              </div>
+          <div className={styles["account-detail"]}>
+            <div className={styles["account-name"]}>{user.displayName}</div>
+            <div className={styles["account-role"]}>
+              {isAdmin ? "Squadron admin" : "Squadron staff"} &middot; {version}
             </div>
-          )}
+          </div>
         </div>
         {!collapsed && (
           <div className={styles["account-actions"]}>
