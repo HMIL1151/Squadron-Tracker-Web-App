@@ -40,18 +40,24 @@ import styles from "./MusterPTSTracker.module.css";
  * recolouring a gold badge to suit a background would destroy the thing it is
  * communicating.
  *
- * The strip along the top counts awards by level, and names any syllabus area
- * nobody holds anything in. That second one is the useful part: an empty
- * column is a subject the squadron has never run, and it is invisible on a
- * screen that only shows what people have.
+ * The board is the screen, so it gets the room.
  *
- * Both of the classic tracker's filters are here: the four level toggles and
- * the date range. They are the reason this screen gets opened -- "who got a
- * Bronze this year" is a question about a slice of the log, not about all of
- * it -- and the first version of this screen shipped without them.
+ * An earlier version led with five tall tiles counting awards by level, and
+ * on a 900px-high window that left eleven of forty cadets visible. The counts
+ * now ride on the level filters themselves -- "Blue 54" is a chip you can
+ * click -- which costs nothing and buys back a third of the rows. What is
+ * left above the table is the one fact the board genuinely cannot show: the
+ * syllabus areas nobody holds anything in, which are invisible on a screen
+ * that only displays what people have.
  *
- * Every count on the page obeys them, the strip along the top included. A
- * total that ignores the filter sitting above it is a total nobody can use.
+ * All three of the classic tracker's filters are here -- level, syllabus area
+ * and date range -- because they are why the screen gets opened. "Who has
+ * their DofE" and "who got a Bronze this year" are questions about a slice of
+ * the log, not about all of it, and the first version of this screen shipped
+ * with none of them.
+ *
+ * Every count obeys every filter. A total that ignores the control sitting
+ * above it is a total nobody can use.
  */
 
 const ALL = "all";
@@ -128,6 +134,14 @@ const MusterPTSTracker = ({ user }) => {
   const [flightFilter, setFlightFilter] = useState(ALL);
   const [view, setView] = useState("summary");
   const [levels, setLevels] = useState(badgeLevel);
+  /*
+   * null means "all of them", rather than a copy of the list.
+   *
+   * The syllabus areas are derived from the squadron's data, so seeding state
+   * with them means a subject configured later is silently filtered OUT by a
+   * selection made before it existed. null cannot go stale.
+   */
+  const [subjects, setSubjects] = useState(null);
   const [period, setPeriod] = useState(ALL);
   const [startMonth, setStartMonth] = useState("01");
   const [endMonth, setEndMonth] = useState("12");
@@ -187,7 +201,13 @@ const MusterPTSTracker = ({ user }) => {
     return value >= fromYear + startMonth + "01" && value <= toYear + endMonth + "31";
   };
 
-  const counts = (event) => levels.includes(event.badgeLevel) && inPeriod(event.date);
+  const counts = (event) =>
+    levels.includes(event.badgeLevel) &&
+    (subjects === null || subjects.includes(event.badgeCategory)) &&
+    inPeriod(event.date);
+
+  const showSubject = (category) => subjects === null || subjects.includes(category);
+  const visibleCategories = categories.filter(showSubject);
 
   const rows = useMemo(() => {
     const events = data.events || [];
@@ -242,7 +262,18 @@ const MusterPTSTracker = ({ user }) => {
       };
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [data.cadets, data.events, flightMap, levels, period, startMonth, endMonth, fromYear, toYear]);
+  }, [
+    data.cadets,
+    data.events,
+    flightMap,
+    levels,
+    subjects,
+    period,
+    startMonth,
+    endMonth,
+    fromYear,
+    toYear,
+  ]);
 
   const visible = useMemo(() => {
     const needle = search.trim().toLowerCase();
@@ -257,43 +288,70 @@ const MusterPTSTracker = ({ user }) => {
   }, [rows, search, flightFilter]);
 
   /**
-   * Awards by level across the squadron, and the subjects nobody holds.
+   * The number beside each level, and the areas nobody holds anything in.
    *
-   * Counted within the chosen date range but NOT within the level selection:
-   * a Blue tile reading 0 because Blue is switched off would be a lie about
-   * the squadron. The tile dims instead, which says "excluded" rather than
-   * "none".
+   * Counted within the date range and the chosen subjects, but NOT within the
+   * level selection: a chip reading "Blue 0" because Blue is switched off
+   * would be a lie about the squadron. The chip goes pale instead, which says
+   * "excluded" rather than "none".
    */
   const summary = useMemo(() => {
     const events = (data.events || []).filter(
-      (event) => event.badgeLevel && event.badgeCategory && inPeriod(event.date)
+      (event) =>
+        event.badgeLevel &&
+        event.badgeCategory &&
+        showSubject(event.badgeCategory) &&
+        inPeriod(event.date)
     );
-    const tally = badgeLevel.map((level) => ({
-      level,
-      count: events.filter((event) => event.badgeLevel === level).length,
-      on: levels.includes(level),
-    }));
-    const untouched = categories.filter(
+    const byLevel = {};
+    badgeLevel.forEach((level) => {
+      byLevel[level] = events.filter((event) => event.badgeLevel === level).length;
+    });
+    const untouched = visibleCategories.filter(
       (category) => !events.some((event) => event.badgeCategory === category)
     );
-    return { counts: tally, untouched };
+    return { byLevel, untouched, total: events.length };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [data.events, categories, levels, period, startMonth, endMonth, fromYear, toYear]);
+  }, [data.events, categories, subjects, period, startMonth, endMonth, fromYear, toYear]);
 
   const filtersActive =
-    search !== "" || flightFilter !== ALL || period !== ALL || levels.length !== badgeLevel.length;
+    search !== "" ||
+    flightFilter !== ALL ||
+    period !== ALL ||
+    levels.length !== badgeLevel.length ||
+    subjects !== null;
 
   const clearFilters = () => {
     setSearch("");
     setFlightFilter(ALL);
     setPeriod(ALL);
     setLevels(badgeLevel);
+    setSubjects(null);
   };
 
   const toggleLevel = (level) =>
     setLevels((current) =>
       current.includes(level) ? current.filter((entry) => entry !== level) : [...current, level]
     );
+
+  /*
+   * A plain toggle, and deliberately so.
+   *
+   * The first version made a click from the everything state mean "just this
+   * one", to get "show me DofE" down to a single click. It made the opposite
+   * job -- hide the one subject you do not care about -- both impossible and
+   * surprising: you clicked Sports to lose it and lost the other fourteen
+   * instead. "Only DofE" is None then DofE, two clicks, exactly as it is in
+   * the classic tracker, and every click now does the one thing it looks
+   * like it does.
+   */
+  const toggleSubject = (category) => {
+    const current = subjects === null ? categories : subjects;
+    const next = current.includes(category)
+      ? current.filter((entry) => entry !== category)
+      : [...current, category];
+    setSubjects(next.length === categories.length ? null : next);
+  };
 
   const openAward = (row, category, level = null) => {
     setPending({ cadetName: row.name, category, level });
@@ -341,7 +399,7 @@ const MusterPTSTracker = ({ user }) => {
    * Four columns per area in the expanded view, grouped under the area name
    * so it is written once rather than prefixed onto all four headings.
    */
-  const levelColumns = categories.flatMap((category) =>
+  const levelColumns = visibleCategories.flatMap((category) =>
     badgeLevel.filter((level) => levels.includes(level)).map((level) => ({
       key: category + ":" + level,
       header: level,
@@ -379,20 +437,24 @@ const MusterPTSTracker = ({ user }) => {
     {
       key: "cadet",
       header: "Cadet",
-      width: "230px",
+      width: "260px",
       sortValue: (row) => row.name,
       filterValue: (row) => row.name + " " + row.flightName,
+      /*
+       * Name and flight on ONE line, which is what lets a row be 36px rather
+       * than 48px -- twelve cadets visible against eighteen. The flight stays
+       * written out beside the colour mark: a flight identified by hue alone
+       * is a flight some of your staff cannot read.
+       */
       render: (row) => (
         <span className={styles.cadet}>
           <FlightMark flight={row.flight} />
-          <span className={styles["cadet-text"]}>
-            <span className={styles["cadet-name"]}>{row.name}</span>
-            <span className={styles["cadet-flight"]}>{row.flightName}</span>
-          </span>
+          <span className={styles["cadet-name"]}>{row.name}</span>
+          <span className={styles["cadet-flight"]}>{row.flightName}</span>
         </span>
       ),
     },
-    ...(view === "levels" ? levelColumns : categories.map((category) => ({
+    ...(view === "levels" ? levelColumns : visibleCategories.map((category) => ({
       key: category,
       header: category,
       align: "center",
@@ -450,51 +512,26 @@ const MusterPTSTracker = ({ user }) => {
       title="PTS Tracker"
       description="The highest badge held in each syllabus area. A dash means nothing recorded yet."
     >
-      <section className={styles.levels} aria-label="Badges Awarded">
-        {summary.counts.map((entry) => (
-          <div
-            key={entry.level}
-            className={entry.on ? styles["level-tile"] : styles["level-tile-off"]}
-          >
-            <div className={styles["level-head"]}>
-              <span className={LEVEL_DOT[entry.level]} aria-hidden="true" />
-              <span className={styles["level-name"]}>{entry.level}</span>
-            </div>
-            <div className={styles["level-count"]}>{entry.count}</div>
-          </div>
-        ))}
-
-        <div className={styles["gap-tile"]}>
-          <div className={styles["gap-title"]}>
-            {summary.untouched.length === 0 ? "Every Area Covered" : "Nobody Holds a Badge In"}
-          </div>
-          {summary.untouched.length === 0 ? (
-            <p className={styles["gap-body"]}>
-              At least one cadet holds a badge in every syllabus area the squadron runs.
-            </p>
-          ) : (
-            <>
-              <ul className={styles["gap-list"]}>
-                {summary.untouched.map((category) => (
-                  <li key={category} className={styles["gap-item"]}>
-                    {category}
-                  </li>
-                ))}
-              </ul>
-              <p className={styles["gap-body"]}>
-                {summary.untouched.length === 1 ? "A subject" : "Subjects"} the squadron has never
-                run, or never recorded.
-              </p>
-            </>
-          )}
-        </div>
-      </section>
+      {summary.untouched.length > 0 && (
+        <section className={styles.gaps} aria-label="Syllabus Gaps">
+          <span className={styles["gaps-label"]}>Nobody holds a badge in</span>
+          <ul className={styles["gaps-list"]}>
+            {summary.untouched.map((category) => (
+              <li key={category} className={styles["gaps-item"]}>
+                {category}
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       <MusterTable
         columns={columns}
         rows={visible}
         getRowKey={(row) => row.id}
         defaultSort={{ key: "held", direction: "desc" }}
+        stickyFirstColumn
+        dense
         toolbar={
           <>
             <MusterSearch
@@ -564,32 +601,58 @@ const MusterPTSTracker = ({ user }) => {
             ))}
 
             {/*
-              * The legend IS the filter. It was a static key, and a row of
-              * four coloured labels that cannot be clicked sitting next to a
-              * row of chips that can is a worse lie than no key at all.
+              * The legend IS the filter, and it carries the count.
+              *
+              * It was a static key. A row of four coloured labels that cannot
+              * be clicked, sitting beside a row of chips that can, is a worse
+              * lie than no key at all -- and the counts it now holds used to
+              * be five tiles deep enough to cost a third of the visible rows.
               */}
-            <fieldset className={styles.legend}>
+            <fieldset className={styles.filters}>
               <legend className={styles["visually-hidden"]}>Badge levels to show</legend>
+              <span className={styles["filters-label"]}>Levels</span>
               {badgeLevel.map((level) => (
                 <button
                   key={level}
                   type="button"
-                  className={
-                    levels.includes(level) ? styles["legend-on"] : styles["legend-off"]
-                  }
+                  className={levels.includes(level) ? styles["chip-on"] : styles["chip-off"]}
                   aria-pressed={levels.includes(level)}
                   onClick={() => toggleLevel(level)}
                 >
                   <span className={LEVEL_DOT[level]} aria-hidden="true" />
                   {level}
+                  <span className={styles["chip-count"]}>{summary.byLevel[level]}</span>
                 </button>
               ))}
               <button
                 type="button"
-                className={styles["legend-all"]}
+                className={styles["chip-all"]}
                 onClick={() => setLevels(levels.length === badgeLevel.length ? [] : badgeLevel)}
               >
                 {levels.length === badgeLevel.length ? "None" : "All"}
+              </button>
+            </fieldset>
+
+            <fieldset className={styles.filters}>
+              <legend className={styles["visually-hidden"]}>Syllabus areas to show</legend>
+              <span className={styles["filters-label"]}>Subjects</span>
+              {categories.map((category) => (
+                <button
+                  key={category}
+                  type="button"
+                  className={showSubject(category) ? styles["chip-on"] : styles["chip-off"]}
+                  aria-pressed={showSubject(category)}
+                  onClick={() => toggleSubject(category)}
+                >
+                  {category}
+                </button>
+              ))}
+              <button
+                type="button"
+                className={styles["chip-all"]}
+                onClick={() => setSubjects(subjects === null ? [] : null)}
+              >
+                {subjects === null ? "None" : "All"}
               </button>
             </fieldset>
           </>

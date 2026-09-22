@@ -65,6 +65,31 @@ const compare = (a, b) => {
   return String(a).localeCompare(String(b), "en-GB", { numeric: true });
 };
 
+/*
+ * Sticky variants of the two cell maps. Separate entries rather than a
+ * composed class string: scoped names do not survive concatenation.
+ */
+/*
+ * Frame states, the same explicit-map idiom as ROW_STATE: a scoped class name
+ * cannot be assembled from parts, so each state names its own.
+ */
+const FRAME_STATE = {
+  plain: styles.frame,
+  dense: styles["frame-dense"],
+};
+
+const STICKY_CELL = {
+  left: styles["cell-left-sticky"],
+  right: styles["cell-right-sticky"],
+  center: styles["cell-center-sticky"],
+};
+
+const STICKY_HEAD = {
+  left: styles["head-left-sticky"],
+  right: styles["head-right-sticky"],
+  center: styles["head-center-sticky"],
+};
+
 const MusterTable = ({
   columns,
   rows,
@@ -83,6 +108,26 @@ const MusterTable = ({
    * than a default of "first column ascending".
    */
   defaultSort = null,
+  /**
+   * Freeze the first column while the rest scrolls sideways.
+   *
+   * Opt-in, because it only earns its keep on a table too wide to fit -- the
+   * PTS board, where the expanded view is four columns per syllabus area and
+   * the name you are reading along scrolls off to the left within seconds.
+   * On a table that fits, a frozen column is a shadow and a stacking context
+   * for nothing.
+   */
+  stickyFirstColumn = false,
+  /**
+   * Tighter rows, for a board rather than a list.
+   *
+   * 48px rows are right for a table you read a few lines of at a time. On the
+   * PTS board -- forty cadets against every syllabus area -- they cost you
+   * two thirds of the squadron, and the classic tracker it replaced fitted
+   * the whole lot on one screen at 30px. Comfort that makes you scroll to
+   * answer "who has their DofE" is not comfort.
+   */
+  dense = false,
 }) => {
   const captionId = useId();
   const filterId = useId();
@@ -159,7 +204,7 @@ const MusterTable = ({
   const setFilter = (key, value) => setFilters((current) => ({ ...current, [key]: value }));
 
   return (
-    <div className={styles.frame}>
+    <div className={dense ? FRAME_STATE.dense : FRAME_STATE.plain}>
       {toolbar && <div className={styles.toolbar}>{toolbar}</div>}
 
       <div className={styles.scroll}>
@@ -172,12 +217,18 @@ const MusterTable = ({
           <thead>
             {groups && (
               <tr className={styles["group-row"]}>
-                {groups.map((group) => (
+                {groups.map((group, index) => (
                   <th
                     key={group.key}
                     scope={group.label ? "colgroup" : undefined}
                     colSpan={group.span}
-                    className={group.label ? styles["group-head"] : styles["group-blank"]}
+                    className={
+                      stickyFirstColumn && index === 0
+                        ? styles["group-blank-sticky"]
+                        : group.label
+                        ? styles["group-head"]
+                        : styles["group-blank"]
+                    }
                   >
                     {group.label}
                   </th>
@@ -185,14 +236,18 @@ const MusterTable = ({
               </tr>
             )}
             <tr>
-              {columns.map((column) => {
+              {columns.map((column, index) => {
                 const isSorted = sort?.key === column.key;
                 const direction = isSorted ? sort.direction : null;
                 return (
                   <th
                     key={column.key}
                     scope="col"
-                    className={HEAD_ALIGN[column.align] || HEAD_ALIGN.left}
+                    className={
+                      stickyFirstColumn && index === 0
+                        ? STICKY_HEAD[column.align] || STICKY_HEAD.left
+                        : HEAD_ALIGN[column.align] || HEAD_ALIGN.left
+                    }
                     style={column.width ? { width: column.width } : undefined}
                     /*
                      * aria-sort on the header, so a screen reader announces the
@@ -232,8 +287,16 @@ const MusterTable = ({
 
             {hasFilters && (
               <tr className={styles["filter-row"]}>
-                {columns.map((column) => (
-                  <th key={column.key} scope="col" className={styles["filter-cell"]}>
+                {columns.map((column, index) => (
+                  <th
+                    key={column.key}
+                    scope="col"
+                    className={
+                      stickyFirstColumn && index === 0
+                        ? styles["filter-cell-sticky"]
+                        : styles["filter-cell"]
+                    }
+                  >
                     {column.filterValue && (
                       <>
                         <label htmlFor={`${filterId}-${column.key}`} className={styles["visually-hidden"]}>
@@ -269,8 +332,15 @@ const MusterTable = ({
                    */
                   onClick={isInteractive ? () => onRowClick(row) : undefined}
                 >
-                  {columns.map((column) => (
-                    <td key={column.key} className={CELL_ALIGN[column.align] || CELL_ALIGN.left}>
+                  {columns.map((column, index) => (
+                    <td
+                      key={column.key}
+                      className={
+                        stickyFirstColumn && index === 0
+                          ? STICKY_CELL[column.align] || STICKY_CELL.left
+                          : CELL_ALIGN[column.align] || CELL_ALIGN.left
+                      }
+                    >
                       {column.render(row)}
                     </td>
                   ))}
