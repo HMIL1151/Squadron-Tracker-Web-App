@@ -85,10 +85,26 @@
   border-bottom: 1px solid var(--color-border-subtle);
 }
 
+/*
+ * The table's own scroller -- and `contain: paint` is doing real work here,
+ * not tidying up.
+ *
+ * `overflow: auto` clips what you SEE, but the PTS board in its Every Level
+ * view is 3,525px wide by 1,544px tall inside a 1,092px box, and that size
+ * was still reaching the document's scrollable area: the window scrolled to
+ * (2000, 800) onto bands of empty ground to the right of and below the app,
+ * while every box on the page measured exactly the width of the viewport.
+ * `overflow: hidden` on any ancestor made no difference to it; paint
+ * containment ends the escape at the element that owns the overflow.
+ *
+ * Sticky headers and the sticky first column still work, because they are
+ * positioned against this scroller rather than against the page.
+ */
 .scroll {
   flex: 1 1 auto;
   min-height: 0;
   overflow: auto;
+  contain: paint;
 }
 
 .table {
