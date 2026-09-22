@@ -136,6 +136,20 @@ test.describe("muster dashboards", () => {
     });
   }
 
+  /*
+   * The collapsed rail has layout no unit test can reach: jsdom has no layout
+   * engine, so "is the selected item square" is only answerable from a
+   * screenshot. It was a 16x36 sliver standing on end -- the width collapsed
+   * to the icon's -- and nothing but a picture would have caught it.
+   */
+  test("the rail collapses to a strip of icons", async ({ page }) => {
+    await signIn(page, "muster");
+    await openMuster(page, "Cadet List");
+    await page.getByRole("button", { name: "Collapse the menu" }).click();
+    await expect(page.getByRole("button", { name: "Expand the menu" })).toBeVisible();
+    await expect(page).toHaveScreenshot("muster-rail-collapsed.png", { fullPage: true });
+  });
+
   test("the sign-in screen renders in Muster", async ({ page }) => {
     await page.clock.setFixedTime(FROZEN_NOW);
     await page.goto("/?ui=muster&data=fixture");

@@ -15,6 +15,15 @@
   display: flex;
   flex-direction: column;
   /*
+   * Grow into whatever the page has left.
+   *
+   * Without this a short table stops at its content height and the page ends
+   * in a band of empty ground -- 432px of it on Flights, 381px on the Admin
+   * Area. The card taking the space instead means the scroll area inside it
+   * is the full height, so adding rows never reflows the page around it.
+   */
+  flex: 1 1 auto;
+  /*
    * A floor, not just min-height: 0. In a flex column constrained to the
    * viewport, a table with no minimum will happily shrink to nothing on a
    * short window -- and so will everything above it.
@@ -24,6 +33,39 @@
   border: 1px solid var(--color-border);
   border-radius: 7px;
   overflow: hidden;
+}
+
+/*
+ * The dense frame: same box, tighter rows.
+ *
+ * The declarations are repeated rather than composed because a CSS module
+ * class name cannot be built from parts in the JSX, so the two states have to
+ * be two real classes. Keep them in step.
+ */
+.frame-dense {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 260px;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 7px;
+  overflow: hidden;
+}
+
+.frame-dense .cell-left,
+.frame-dense .cell-right,
+.frame-dense .cell-center,
+.frame-dense .cell-left-sticky,
+.frame-dense .cell-right-sticky,
+.frame-dense .cell-center-sticky {
+  height: 36px;
+  padding-inline: 12px;
+}
+
+.frame-dense .table thead th {
+  padding-block: 7px;
+  padding-inline: 12px;
 }
 
 /*
@@ -256,6 +298,72 @@
 }
 
 .cell-center {
+  text-align: center;
+}
+
+/*
+ * The frozen first column, for tables wider than the screen.
+ *
+ * Every sticky cell needs its own opaque background -- the rows it holds
+ * still pass underneath it -- which is why the hover rule has to be repeated
+ * here. Without that repeat the name cell stays pale while the rest of its
+ * row highlights, and the row you are tracking is exactly the one that looks
+ * wrong.
+ */
+.cell-left-sticky,
+.cell-right-sticky,
+.cell-center-sticky {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  padding: 0 16px;
+  height: 48px;
+  background-color: var(--color-surface);
+  box-shadow: inset -1px 0 0 var(--color-border-subtle);
+  font-size: 14px;
+  color: var(--color-text);
+}
+
+.cell-left-sticky {
+  text-align: left;
+}
+
+.cell-right-sticky {
+  text-align: right;
+}
+
+.cell-center-sticky {
+  text-align: center;
+}
+
+.table tbody tr:hover .cell-left-sticky,
+.table tbody tr:hover .cell-right-sticky,
+.table tbody tr:hover .cell-center-sticky {
+  background-color: var(--color-surface-muted);
+}
+
+/* The corner: sticky in both directions, so it sits above both neighbours. */
+.head-left-sticky,
+.head-right-sticky,
+.head-center-sticky,
+.group-blank-sticky,
+.filter-cell-sticky {
+  position: sticky;
+  left: 0;
+  z-index: 3;
+  background-color: var(--color-table-head);
+  box-shadow: inset -1px 0 0 var(--color-table-head-rule);
+}
+
+.head-left-sticky {
+  text-align: left;
+}
+
+.head-right-sticky {
+  text-align: right;
+}
+
+.head-center-sticky {
   text-align: center;
 }
 

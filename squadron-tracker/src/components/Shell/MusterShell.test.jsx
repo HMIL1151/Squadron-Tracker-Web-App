@@ -11,6 +11,11 @@
  *
  * Navigation is buttons, not links. The app has no routing, so an <a href="#">
  * would put junk in the address bar and lie to anyone using a screen reader.
+ *
+ * Collapsing is the fourth. The thing worth holding still is that it hides
+ * LABELS, not navigation: every screen stays reachable and every button keeps
+ * its accessible name, so a collapsed rail is a narrower rail rather than a
+ * worse one.
  */
 
 import React from "react";
@@ -133,5 +138,107 @@ describe("who sees what", () => {
     renderShell(ClassicShell);
     const classicMenu = screen.getAllByRole("navigation").at(-1);
     expect(within(classicMenu).queryByText("Squadron Statistics")).not.toBeInTheDocument();
+  });
+});
+
+describe("collapsing the rail", () => {
+  const toggle = () => screen.getByRole("button", { name: /the menu/i });
+
+  it("starts open", () => {
+    renderShell(MusterShell);
+    expect(toggle()).toHaveAttribute("aria-expanded", "true");
+  });
+
+  it("collapses and expands again", async () => {
+    const user = userEvent.setup();
+    renderShell(MusterShell);
+
+    await user.click(toggle());
+    expect(toggle()).toHaveAttribute("aria-expanded", "false");
+
+    await user.click(toggle());
+    expect(toggle()).toHaveAttribute("aria-expanded", "true");
+  });
+
+  it("keeps every screen reachable by name when collapsed", async () => {
+    /*
+     * The point of collapsing to icons rather than to nothing. The label is
+     * hidden from the eye, not removed from the button, so the accessible
+     * name never depends on how wide the rail happens to be.
+     */
+    const user = userEvent.setup();
+    renderShell(MusterShell);
+    const before = within(nav())
+      .getAllByRole("button")
+      .map((button) => button.textContent.trim())
+      .filter(Boolean);
+
+    await user.click(toggle());
+
+    const after = within(nav())
+      .getAllByRole("button")
+      .map((button) => button.textContent.trim())
+      .filter(Boolean);
+    ["Cadet List", "Mass Event Log", "PTS Tracker"].forEach((screenName) => {
+      expect(after.some((label) => label.includes(screenName))).toBe(true);
+    });
+    expect(after.length).toBeGreaterThanOrEqual(before.length - 1);
+  });
+
+  it("still switches screen when collapsed", async () => {
+    const user = userEvent.setup();
+    const setActiveMenu = vi.fn();
+    renderShell(MusterShell, { setActiveMenu });
+
+    await user.click(toggle());
+    await user.click(within(nav()).getByRole("button", { name: /Cadet List/ }));
+
+    // The Cadet List's key is "dashboard", from before the screens were named.
+    expect(setActiveMenu).toHaveBeenCalledWith("dashboard");
+  });
+
+  it("keeps the squadron number on the rail when collapsed", async () => {
+    // A rail you cannot see is a rail you have to remember.
+    const user = userEvent.setup();
+    renderShell(MusterShell);
+    await user.click(toggle());
+
+    expect(within(nav()).getByText("9999")).toBeInTheDocument();
+  });
+
+  it("leaves a way to sign out when collapsed", async () => {
+    const user = userEvent.setup();
+    const onLogout = vi.fn();
+    renderShell(MusterShell, { onLogout });
+
+    await user.click(toggle());
+    await user.click(within(nav()).getByRole("button", { name: "Sign Out" }));
+
+    expect(onLogout).toHaveBeenCalled();
+  });
+
+  it("remembers the choice", async () => {
+    const user = userEvent.setup();
+    const first = renderShell(MusterShell);
+    await user.click(toggle());
+    first.unmount();
+
+    renderShell(MusterShell);
+    expect(toggle()).toHaveAttribute("aria-expanded", "false");
+  });
+
+  it("opens the rail rather than breaking when storage is unreadable", () => {
+    /*
+     * A private window can throw on getItem. The rail is a convenience, so it
+     * falls back to open; it must never take the shell down with it.
+     */
+    const getItem = vi.spyOn(Storage.prototype, "getItem").mockImplementation(() => {
+      throw new Error("blocked");
+    });
+
+    renderShell(MusterShell);
+    expect(toggle()).toHaveAttribute("aria-expanded", "true");
+
+    getItem.mockRestore();
   });
 });
