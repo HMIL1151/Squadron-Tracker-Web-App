@@ -6,6 +6,12 @@
  * column is called out by name. The second is the more useful one -- a
  * syllabus area nobody holds anything in is invisible on a board that only
  * shows what people have.
+ *
+ * The filters have the most tests here, because this screen shipped without
+ * them and they are the reason it gets opened: "who got a Bronze this year"
+ * is a question about a slice of the log. The one that matters most is the
+ * combination -- "highest held" has to mean "highest of the levels still
+ * switched on", or the board quietly contradicts the filter above it.
  */
 
 import React from "react";
@@ -187,5 +193,176 @@ describe("awards by level", () => {
     renderView();
     // The shared fixture has at least one badge in every configured area.
     expect(screen.getByText("Every Area Covered")).toBeInTheDocument();
+  });
+});
+
+/*
+ * Fixture facts these tests lean on, all from dummyData:
+ *   Amelia Hart    Radio Blue 2024-03-12, Bronze 2024-11-05, Silver 2025-04-18
+ *   Grace O'Neill  Radio Blue 2024-10-08
+ *   Harry B-J      Shooting Gold 2024-04-02  (his only badge)
+ *   Jack Petrov    First Aid Bronze 2024-12-03, Silver 2025-06-01
+ *   Eve Nakamura   Adventure Training Silver 2024-08-19, Gold 2025-01-30
+ */
+
+/** A level toggle in the toolbar, on or off. */
+const chipFor = (level) =>
+  screen.getAllByRole("button").find(
+    (button) => button.textContent.trim() === level && button.hasAttribute("aria-pressed")
+  );
+
+/** The count on one of the tiles along the top. */
+const tileFor = (level) =>
+  within(screen.getByLabelText("Badges Awarded")).getByText(level).closest("div").parentElement;
+
+describe("filtering by badge level", () => {
+  it("starts with every level showing", () => {
+    renderView();
+    ["Blue", "Bronze", "Silver", "Gold"].forEach((level) => {
+      expect(chipFor(level)).toHaveAttribute("aria-pressed", "true");
+    });
+  });
+
+  it("falls back to the highest level still switched on", async () => {
+    /*
+     * The one that would break quietly. Amelia holds Blue, Bronze AND Silver
+     * Radio; with Silver switched off her cell is Bronze -- not Silver, and
+     * not empty.
+     */
+    const { user, container } = renderView();
+    await user.click(chipFor("Silver"));
+
+    const amelia = rowFor(container, "Amelia Hart");
+    expect(amelia.textContent).toContain("05 Nov 2024");
+    expect(amelia.textContent).not.toContain("18 Apr 2025");
+  });
+
+  it("hides that level's columns in the expanded view", async () => {
+    const { user, container } = renderView();
+    await user.click(screen.getByRole("button", { name: "Every Level" }));
+    expect(headers(container).filter((header) => header === "Gold").length).toBeGreaterThan(0);
+
+    await user.click(chipFor("Gold"));
+    expect(headers(container).filter((header) => header === "Gold")).toEqual([]);
+  });
+
+  it("counts only the levels still showing", async () => {
+    const { user, container } = renderView();
+    const held = (name) => Number([...rowFor(container, name).cells].at(-1).textContent);
+    expect(held("Amelia Hart")).toBe(1);
+
+    await user.click(chipFor("Silver"));
+    await user.click(chipFor("Bronze"));
+    await user.click(chipFor("Blue"));
+    expect(held("Amelia Hart")).toBe(0);
+  });
+
+  it("turns them all off and all back on", async () => {
+    const { user } = renderView();
+    await user.click(screen.getByRole("button", { name: "None" }));
+    ["Blue", "Bronze", "Silver", "Gold"].forEach((level) => {
+      expect(chipFor(level)).toHaveAttribute("aria-pressed", "false");
+    });
+
+    await user.click(screen.getByRole("button", { name: "All" }));
+    ["Blue", "Bronze", "Silver", "Gold"].forEach((level) => {
+      expect(chipFor(level)).toHaveAttribute("aria-pressed", "true");
+    });
+  });
+
+  it("keeps the strip's totals honest when a level is excluded", async () => {
+    /*
+     * A Blue tile reading 0 because Blue is switched off would be a lie about
+     * the squadron. The tile dims instead; the number stays true.
+     */
+    const { user } = renderView();
+    const before = tileFor("Blue").textContent;
+
+    await user.click(chipFor("Blue"));
+    expect(tileFor("Blue").textContent).toBe(before);
+  });
+});
+
+describe("filtering by when the badge was awarded", () => {
+  const useRange = async (user, fromYear, toYear) => {
+    await user.selectOptions(screen.getByLabelText("Awarded"), "range");
+    const years = screen.getAllByLabelText("Year");
+    await user.selectOptions(screen.getByLabelText("From"), "01");
+    await user.selectOptions(years[0], fromYear);
+    await user.selectOptions(screen.getByLabelText("To"), "12");
+    await user.selectOptions(years[1], toYear);
+  };
+
+  it("shows the range controls only once a range is chosen", async () => {
+    const { user } = renderView();
+    expect(screen.queryByLabelText("From")).not.toBeInTheDocument();
+
+    await user.selectOptions(screen.getByLabelText("Awarded"), "range");
+    expect(screen.getByLabelText("From")).toBeInTheDocument();
+    expect(screen.getAllByLabelText("Year")).toHaveLength(2);
+  });
+
+  it("offers every year a badge was actually awarded in", async () => {
+    const { user } = renderView();
+    await user.selectOptions(screen.getByLabelText("Awarded"), "range");
+    const years = [...screen.getAllByLabelText("Year")[0].options].map((option) => option.value);
+    expect(years).toEqual(["2024", "2025"]);
+  });
+
+  it("drops awards from outside the window", async () => {
+    const { user, container } = renderView();
+    await useRange(user, "2025", "2025");
+
+    // Grace's only Radio badge is from October 2024.
+    expect(rowFor(container, "Grace O'Neill").textContent).not.toContain("08 Oct 2024");
+    // Amelia's Silver is April 2025, and survives.
+    expect(rowFor(container, "Amelia Hart").textContent).toContain("18 Apr 2025");
+  });
+
+  it("falls back to the highest award inside the window", async () => {
+    // Jack holds Bronze (Dec 2024) and Silver (Jun 2025) First Aid.
+    const { user, container } = renderView();
+    await useRange(user, "2024", "2024");
+
+    expect(rowFor(container, "Jack Petrov").textContent).toContain("03 Dec 2024");
+    expect(rowFor(container, "Jack Petrov").textContent).not.toContain("01 Jun 2025");
+  });
+
+  it("counts the strip's totals within the window too", async () => {
+    const { user } = renderView();
+    // Harry's Shooting Gold (Apr 2024) and Eve's Adventure Training Gold (Jan 2025).
+    expect(tileFor("Gold").textContent).toContain("2");
+
+    await useRange(user, "2025", "2025");
+    expect(tileFor("Gold").textContent).toContain("1");
+  });
+});
+
+describe("a badge the filter is hiding", () => {
+  /*
+   * The duplicate-award guard, and the whole reason `everHeld` exists.
+   *
+   * An empty summary cell is a button that awards that badge. If a cadet's
+   * only badge in an area is filtered out and the cell falls back to that
+   * button, the obvious next click awards a badge they already hold.
+   */
+  it("shows a dash rather than offering to award it again", async () => {
+    const { user, container } = renderView();
+    await user.click(chipFor("Gold"));
+
+    const harry = rowFor(container, "Harry Blythe-Jones");
+    expect(
+      within(harry).queryByRole("button", { name: /Award a Shooting badge/ })
+    ).not.toBeInTheDocument();
+    expect(within(harry).getByTitle("Held, but outside the current filter")).toBeInTheDocument();
+  });
+
+  it("still offers an award where the cadet holds nothing at all", async () => {
+    const { user, container } = renderView();
+    await user.click(chipFor("Gold"));
+
+    // Harry has never held a Radio badge, filter or no filter.
+    const harry = rowFor(container, "Harry Blythe-Jones");
+    expect(within(harry).getByRole("button", { name: /Award a Radio badge/ })).toBeInTheDocument();
   });
 });

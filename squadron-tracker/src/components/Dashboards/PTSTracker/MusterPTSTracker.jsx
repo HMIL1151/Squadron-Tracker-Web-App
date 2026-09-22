@@ -44,9 +44,32 @@ import styles from "./MusterPTSTracker.module.css";
  * nobody holds anything in. That second one is the useful part: an empty
  * column is a subject the squadron has never run, and it is invisible on a
  * screen that only shows what people have.
+ *
+ * Both of the classic tracker's filters are here: the four level toggles and
+ * the date range. They are the reason this screen gets opened -- "who got a
+ * Bronze this year" is a question about a slice of the log, not about all of
+ * it -- and the first version of this screen shipped without them.
+ *
+ * Every count on the page obeys them, the strip along the top included. A
+ * total that ignores the filter sitting above it is a total nobody can use.
  */
 
 const ALL = "all";
+
+const MONTHS = [
+  { value: "01", label: "Jan" },
+  { value: "02", label: "Feb" },
+  { value: "03", label: "Mar" },
+  { value: "04", label: "Apr" },
+  { value: "05", label: "May" },
+  { value: "06", label: "Jun" },
+  { value: "07", label: "Jul" },
+  { value: "08", label: "Aug" },
+  { value: "09", label: "Sep" },
+  { value: "10", label: "Oct" },
+  { value: "11", label: "Nov" },
+  { value: "12", label: "Dec" },
+];
 
 /*
  * Explicit map rather than `styles["level-" + level]`. Scoped class names do
@@ -104,6 +127,12 @@ const MusterPTSTracker = ({ user }) => {
   const [search, setSearch] = useState("");
   const [flightFilter, setFlightFilter] = useState(ALL);
   const [view, setView] = useState("summary");
+  const [levels, setLevels] = useState(badgeLevel);
+  const [period, setPeriod] = useState(ALL);
+  const [startMonth, setStartMonth] = useState("01");
+  const [endMonth, setEndMonth] = useState("12");
+  const [startYear, setStartYear] = useState("");
+  const [endYear, setEndYear] = useState("");
   const [pending, setPending] = useState(null);
   const [pendingLevel, setPendingLevel] = useState(badgeLevel[0]);
   const [pendingDate, setPendingDate] = useState("");
@@ -124,6 +153,42 @@ const MusterPTSTracker = ({ user }) => {
     return [...seen].sort((a, b) => a.localeCompare(b));
   }, [data.flightPoints, data.events]);
 
+  /** Every year a badge was awarded in, newest first, for the range selects. */
+  const badgeYears = useMemo(() => {
+    const seen = new Set();
+    (data.events || []).forEach((event) => {
+      if (event.badgeLevel && event.badgeCategory && event.date) {
+        seen.add(event.date.slice(0, 4));
+      }
+    });
+    return [...seen].sort((a, b) => b.localeCompare(a));
+  }, [data.events]);
+
+  /*
+   * The range defaults to everything, and is derived rather than seeded into
+   * state by an effect: a cadet awarded a badge in a new year would otherwise
+   * be outside a range that was fixed when the screen first rendered.
+   */
+  const fromYear = startYear || badgeYears.at(-1) || "";
+  const toYear = endYear || badgeYears[0] || "";
+
+  /**
+   * Whether an award falls inside the chosen window.
+   *
+   * String comparison on YYYYMMDD, and the end bound is day 31 so that
+   * choosing a month means the whole of it. Same rule as the classic tracker,
+   * deliberately -- the two screens must not disagree about what "March to
+   * June" contains.
+   */
+  const inPeriod = (date) => {
+    if (period === ALL) return true;
+    if (!date || !fromYear || !toYear) return false;
+    const value = date.replace(/-/g, "");
+    return value >= fromYear + startMonth + "01" && value <= toYear + endMonth + "31";
+  };
+
+  const counts = (event) => levels.includes(event.badgeLevel) && inPeriod(event.date);
+
   const rows = useMemo(() => {
     const events = data.events || [];
 
@@ -132,6 +197,18 @@ const MusterPTSTracker = ({ user }) => {
       const own = events.filter(
         (event) => event.cadetName === name && event.badgeLevel && event.badgeCategory
       );
+      const counted = own.filter(counts);
+
+      /*
+       * Areas the cadet holds SOMETHING in, whatever the filters say.
+       *
+       * The summary cell is a button that awards a badge when it is empty, so
+       * "holds nothing here" and "holds something the filter is hiding" cannot
+       * render the same way: offering to award a Radio badge to a cadet who
+       * already has a Gold one, because Gold is switched off, is how you get
+       * a duplicate award. The first shows a +, the second a dash.
+       */
+      const everHeld = new Set(own.map((event) => event.badgeCategory));
 
       /*
        * The highest level held in each area, and the date it was awarded.
@@ -145,7 +222,7 @@ const MusterPTSTracker = ({ user }) => {
        * two views cannot disagree about what a cadet holds.
        */
       const byLevel = {};
-      own.forEach((event) => {
+      counted.forEach((event) => {
         const current = highest[event.badgeCategory];
         if (!current || rankOf(event.badgeLevel) > rankOf(current.level)) {
           highest[event.badgeCategory] = { level: event.badgeLevel, date: event.date };
@@ -160,10 +237,12 @@ const MusterPTSTracker = ({ user }) => {
         flightName: flightMap[cadet.flight] || "Unassigned",
         highest,
         byLevel,
+        everHeld,
         held: Object.keys(highest).length,
       };
     });
-  }, [data.cadets, data.events, flightMap]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data.cadets, data.events, flightMap, levels, period, startMonth, endMonth, fromYear, toYear]);
 
   const visible = useMemo(() => {
     const needle = search.trim().toLowerCase();
@@ -177,27 +256,44 @@ const MusterPTSTracker = ({ user }) => {
       .sort((a, b) => b.held - a.held || a.name.localeCompare(b.name));
   }, [rows, search, flightFilter]);
 
-  /** Awards by level across the whole squadron, and the subjects nobody holds. */
+  /**
+   * Awards by level across the squadron, and the subjects nobody holds.
+   *
+   * Counted within the chosen date range but NOT within the level selection:
+   * a Blue tile reading 0 because Blue is switched off would be a lie about
+   * the squadron. The tile dims instead, which says "excluded" rather than
+   * "none".
+   */
   const summary = useMemo(() => {
     const events = (data.events || []).filter(
-      (event) => event.badgeLevel && event.badgeCategory
+      (event) => event.badgeLevel && event.badgeCategory && inPeriod(event.date)
     );
-    const counts = badgeLevel.map((level) => ({
+    const tally = badgeLevel.map((level) => ({
       level,
       count: events.filter((event) => event.badgeLevel === level).length,
+      on: levels.includes(level),
     }));
     const untouched = categories.filter(
       (category) => !events.some((event) => event.badgeCategory === category)
     );
-    return { counts, untouched };
-  }, [data.events, categories]);
+    return { counts: tally, untouched };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data.events, categories, levels, period, startMonth, endMonth, fromYear, toYear]);
 
-  const filtersActive = search !== "" || flightFilter !== ALL;
+  const filtersActive =
+    search !== "" || flightFilter !== ALL || period !== ALL || levels.length !== badgeLevel.length;
 
   const clearFilters = () => {
     setSearch("");
     setFlightFilter(ALL);
+    setPeriod(ALL);
+    setLevels(badgeLevel);
   };
+
+  const toggleLevel = (level) =>
+    setLevels((current) =>
+      current.includes(level) ? current.filter((entry) => entry !== level) : [...current, level]
+    );
 
   const openAward = (row, category, level = null) => {
     setPending({ cadetName: row.name, category, level });
@@ -246,7 +342,7 @@ const MusterPTSTracker = ({ user }) => {
    * so it is written once rather than prefixed onto all four headings.
    */
   const levelColumns = categories.flatMap((category) =>
-    badgeLevel.map((level) => ({
+    badgeLevel.filter((level) => levels.includes(level)).map((level) => ({
       key: category + ":" + level,
       header: level,
       group: category,
@@ -304,6 +400,14 @@ const MusterPTSTracker = ({ user }) => {
       render: (row) => {
         const held = row.highest[category];
         if (!held) {
+          /* Held, but outside the filter: a dash, never an offer to award it again. */
+          if (row.everHeld.has(category)) {
+            return (
+              <span className={styles.filtered} title="Held, but outside the current filter">
+                &mdash;
+              </span>
+            );
+          }
           return (
             <button
               type="button"
@@ -348,7 +452,10 @@ const MusterPTSTracker = ({ user }) => {
     >
       <section className={styles.levels} aria-label="Badges Awarded">
         {summary.counts.map((entry) => (
-          <div key={entry.level} className={styles["level-tile"]}>
+          <div
+            key={entry.level}
+            className={entry.on ? styles["level-tile"] : styles["level-tile-off"]}
+          >
             <div className={styles["level-head"]}>
               <span className={LEVEL_DOT[entry.level]} aria-hidden="true" />
               <span className={styles["level-name"]}>{entry.level}</span>
@@ -409,28 +516,92 @@ const MusterPTSTracker = ({ user }) => {
                 })),
               ]}
             />
+            <MusterSelect
+              label="Awarded"
+              value={period}
+              onChange={setPeriod}
+              options={[
+                { value: ALL, label: "All time" },
+                { value: "range", label: "Date range" },
+              ]}
+            />
+
+            {period === "range" && (
+              <span className={styles.range}>
+                <MusterSelect
+                  label="From"
+                  value={startMonth}
+                  onChange={setStartMonth}
+                  options={MONTHS}
+                />
+                <MusterSelect
+                  label="Year"
+                  value={fromYear}
+                  onChange={setStartYear}
+                  options={[...badgeYears].reverse().map((year) => ({ value: year, label: year }))}
+                />
+                <MusterSelect
+                  label="To"
+                  value={endMonth}
+                  onChange={setEndMonth}
+                  options={MONTHS}
+                />
+                <MusterSelect
+                  label="Year"
+                  value={toYear}
+                  onChange={setEndYear}
+                  options={badgeYears.map((year) => ({ value: year, label: year }))}
+                />
+              </span>
+            )}
+
             <span className={styles.spacer} />
+
             {Object.entries(VIEWS).map(([key, label]) => (
               <MusterChip key={key} active={view === key} onClick={() => setView(key)}>
                 {label}
               </MusterChip>
             ))}
-            <ul className={styles.legend}>
+
+            {/*
+              * The legend IS the filter. It was a static key, and a row of
+              * four coloured labels that cannot be clicked sitting next to a
+              * row of chips that can is a worse lie than no key at all.
+              */}
+            <fieldset className={styles.legend}>
+              <legend className={styles["visually-hidden"]}>Badge levels to show</legend>
               {badgeLevel.map((level) => (
-                <li key={level} className={styles["legend-item"]}>
+                <button
+                  key={level}
+                  type="button"
+                  className={
+                    levels.includes(level) ? styles["legend-on"] : styles["legend-off"]
+                  }
+                  aria-pressed={levels.includes(level)}
+                  onClick={() => toggleLevel(level)}
+                >
                   <span className={LEVEL_DOT[level]} aria-hidden="true" />
                   {level}
-                </li>
+                </button>
               ))}
-            </ul>
+              <button
+                type="button"
+                className={styles["legend-all"]}
+                onClick={() => setLevels(levels.length === badgeLevel.length ? [] : badgeLevel)}
+              >
+                {levels.length === badgeLevel.length ? "None" : "All"}
+              </button>
+            </fieldset>
           </>
         }
         empty={
           <MusterEmpty
             title="No Cadets Match"
-            action={filtersActive ? <MusterButton onClick={clearFilters}>Show All Cadets</MusterButton> : null}
+            action={
+              filtersActive ? <MusterButton onClick={clearFilters}>Clear Filters</MusterButton> : null
+            }
           >
-            Try another flight, or clear the filters.
+            Try another flight, a wider date range, or another badge level.
           </MusterEmpty>
         }
       />
