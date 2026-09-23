@@ -427,7 +427,7 @@
 /* -------------------------------------------------------------------------
  * Muster.
  *
- * The second interface, selected by [data-ui="muster"] on <html>. Same
+ * The second interface, selected by [data-ui="muster"]. Same
  * vocabulary, different values -- which is the whole reason the semantic tier
  * exists. A component that already asks for --color-surface needs no change to
  * appear in either interface.
@@ -450,9 +450,18 @@
  * this interface is active and hides the toggle, so the dark block above never
  * applies alongside these. The user's own dark preference is left untouched
  * and starts being honoured again the day this section gains a dark twin.
+ *
+ * The selector is the attribute alone rather than :root[data-ui="muster"],
+ * so a SUBTREE can carry this palette while the document carries another.
+ * That exists for one screen: the sign-in page shows the Muster layout to
+ * everyone who has expressed no preference, and at that point nobody has
+ * signed in, so the document is still on whatever the last resolved interface
+ * was. Muster layout under classic tokens put muted text on white at about
+ * 2:1. Custom properties set on a closer element win for its subtree whatever
+ * the document says, which is exactly the behaviour that screen needs.
  * ---------------------------------------------------------------------- */
 
-:root[data-ui="muster"] {
+[data-ui="muster"] {
   /* The cool institutional greys the interface is built on. Ordered light to
    * dark, and deliberately blue-cast rather than neutral: this is RAF
    * blue-grey, not a generic dashboard grey. */

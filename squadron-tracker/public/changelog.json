@@ -113,5 +113,10 @@
     "version": "v0.17.2",
     "date": "22/09/2026",
     "content": "Fixed: you could scroll the page sideways and downwards into a large empty area, most obviously on the PTS Tracker. A wide table was pushing the page out past the edge of the window even though the table had its own scrollbar. Every screen now ends where the window does."
+  },
+  {
+    "version": "v0.18.0",
+    "date": "23/09/2026",
+    "content": "A new sign-in page. It is the first thing anyone sees of the app and it was still the old dark screen with a release-notes box scrolling in the middle of it, so it now matches the rest of Muster: what the app is for on the left, signing in on the right, and the release notes underneath the button where you can read them if you want to. The newest release is open and everything older folds away.\nIf you have chosen the classic look for yourself, or you are using the ?ui=classic link, you still get the old sign-in page. Nothing about signing in has changed — the same Google account, the same squadron number box, the same setup if your squadron is new."
   }
 ]

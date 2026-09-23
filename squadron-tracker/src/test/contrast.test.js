@@ -64,7 +64,12 @@ const css = stripPrintBlock(raw);
  * The media-query copy of dark is deliberately skipped -- it carries the same
  * values, and parsing both would only assert twice. It is skipped by the
  * regex rather than by name: `:root:not([data-theme="light"])` does not match
- * a bare attribute selector.
+ * either shape below.
+ *
+ * Two shapes, because the Muster block is written as a bare attribute
+ * selector rather than `:root[data-ui="muster"]` -- it has to be able to
+ * apply to a subtree, for the sign-in page. Anchoring at the start of a line
+ * keeps this from matching rules nested inside a media query.
  */
 const PALETTES = {
   light: [undefined],
@@ -75,7 +80,9 @@ const PALETTES = {
 const readTokens = (theme) => {
   const wanted = PALETTES[theme];
   const values = {};
-  for (const [, suffix, body] of css.matchAll(/:root(\[[^\]]*\])?\s*\{([^}]*)\}/g)) {
+  const BLOCK = /^(?::root(\[[^\]]*\])?|(\[[^\]]*\]))\s*\{([^}]*)\}/gm;
+  for (const [, rooted, bare, body] of css.matchAll(BLOCK)) {
+    const suffix = rooted ?? bare;
     if (!wanted.includes(suffix)) continue;
     for (const [, name, value] of body.matchAll(/(--[\w-]+)\s*:\s*([^;]+);/g)) {
       values[name] = value.trim();

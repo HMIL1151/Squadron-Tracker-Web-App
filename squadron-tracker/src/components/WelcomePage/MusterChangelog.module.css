@@ -1,0 +1,129 @@
+/*
+ * Release notes, built the way the tables in the app are: hairline rules and
+ * space, no boxes. The classic version is a grey card containing a white card
+ * with its own scrollbar, which is three containers to say one thing.
+ */
+
+.changelog {
+  border-top: 1px solid var(--color-border-subtle);
+  padding-top: 26px;
+}
+
+.title {
+  margin: 0 0 16px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: var(--color-text-muted);
+}
+
+.release + .release {
+  margin-top: 22px;
+  padding-top: 22px;
+  border-top: 1px solid var(--color-border-subtle);
+}
+
+/*
+ * The version and its date on one line, the version carrying the weight. The
+ * figures are tabular so a column of releases lines up down the disclosure.
+ */
+.release-head {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin: 0 0 8px;
+  font-size: 15px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.version {
+  color: var(--color-text);
+}
+
+.date {
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--color-text-faint);
+}
+
+.note {
+  margin: 0 0 8px;
+  max-width: 62ch;
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: var(--color-text-muted);
+}
+
+.note:last-child {
+  margin-bottom: 0;
+}
+
+.empty {
+  margin: 0;
+  font-size: 13.5px;
+  color: var(--color-text-faint);
+}
+
+/* -- everything older ---------------------------------------------------- */
+
+.earlier {
+  margin-top: 20px;
+}
+
+.summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 2px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-accent);
+  cursor: pointer;
+  list-style: none;
+}
+
+/* Safari keeps its own marker unless both of these are set. */
+.summary::-webkit-details-marker {
+  display: none;
+}
+
+.summary::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-right: 1.5px solid currentcolor;
+  border-bottom: 1.5px solid currentcolor;
+  transform: rotate(-45deg);
+  transition: transform 0.15s ease;
+}
+
+.earlier[open] .summary::before {
+  transform: rotate(45deg);
+}
+
+.summary:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 3px;
+  border-radius: 3px;
+}
+
+.count {
+  padding: 1px 7px;
+  border-radius: 999px;
+  background-color: var(--color-surface-muted);
+  color: var(--color-text-muted);
+  font-size: 11.5px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.earlier-list {
+  margin-top: 18px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .summary::before {
+    transition: none;
+  }
+}
