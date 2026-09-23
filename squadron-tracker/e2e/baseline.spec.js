@@ -156,6 +156,32 @@ test.describe("muster dashboards", () => {
     await expect(page.getByRole("button", { name: /sign in with google/i })).toBeVisible();
     await expect(page).toHaveScreenshot("muster-sign-in.png", { fullPage: true });
   });
+
+  /*
+   * Opening the earlier releases used to take the page to 5,487px. The left
+   * column centres its content vertically, so it went with it: you were left
+   * looking at an empty navy field with the writing somewhere around 2,500px
+   * down. The release notes have to scroll inside their own column.
+   *
+   * The height assertion is the real check and the screenshot is the witness
+   * -- a full-page shot of a regressed page is 5,487px tall, so it fails
+   * whichever way you read it.
+   */
+  test("the sign-in screen scrolls its release notes, not the page", async ({ page }) => {
+    await page.clock.setFixedTime(FROZEN_NOW);
+    await page.goto("/?ui=muster&data=fixture");
+    await page.getByText(/Earlier releases/).click();
+
+    await expect(page.getByRole("heading", { name: "One record of every cadet." })).toBeVisible();
+
+    const grew = await page.evaluate(() => {
+      const doc = document.documentElement;
+      return doc.scrollHeight > doc.clientHeight || doc.scrollWidth > doc.clientWidth;
+    });
+    expect(grew).toBe(false);
+
+    await expect(page).toHaveScreenshot("muster-sign-in-releases.png", { fullPage: true });
+  });
 });
 
 test.describe("cascade collisions", () => {

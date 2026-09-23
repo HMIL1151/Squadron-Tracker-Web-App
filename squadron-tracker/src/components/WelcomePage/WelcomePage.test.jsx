@@ -8,10 +8,16 @@
  * The new-squadron setup form is pinned here in its current three-flight
  * hardcoded shape -- Phase 9 makes it dynamic, and these tests are what make
  * that change visible.
+ *
+ * The page renders the Muster layout by default. Not because the account says
+ * so -- nobody has signed in, so the account cannot be asked -- but because
+ * the classic sign-in screen is what every first-ever visit used to get. The
+ * tests below pin both halves of that rule: the default, and the explicit
+ * choice that still overrides it.
  */
 
 import React from "react";
-import { screen, waitFor } from "@testing-library/react";
+import { screen, waitFor, within } from "@testing-library/react";
 
 import WelcomePage from "./WelcomePage";
 import { renderWithProviders } from "../../test/renderWithProviders";
@@ -64,11 +70,95 @@ describe("logged out", () => {
     // WelcomePage one: numeric-aware, so v0.10.0 outranks v0.9.2.
     renderPage();
     const headings = await screen.findAllByRole("heading", { level: 3 });
-    expect(headings.map((h) => h.textContent)).toEqual([
-      "v0.10.0 - 01/05/2025",
-      "v0.9.2 - 10/04/2025",
-      "v0.9.1 - 09/04/2025",
+    expect(headings.map((h) => h.firstChild.textContent)).toEqual([
+      "v0.10.0",
+      "v0.9.2",
+      "v0.9.1",
     ]);
+  });
+
+  it("opens the newest release and folds the rest away", async () => {
+    /*
+     * The classic page gives the release notes a fixed-height box with its own
+     * scrollbar in the middle of the screen, which makes them the main event
+     * on a page whose job is a sign-in button. Newest open, the rest behind a
+     * disclosure, is the whole of the change.
+     */
+    renderPage();
+    await screen.findByText("Newest entry");
+
+    const details = screen.getByText(/Earlier releases/).closest("details");
+    expect(details).not.toHaveAttribute("open");
+    expect(within(details).getByText("Second entry")).toBeInTheDocument();
+    expect(within(details).getByText("First entry")).toBeInTheDocument();
+  });
+
+  it("renders the release notes as text, not as markup", async () => {
+    /*
+     * The classic page pushes changelog.json through dangerouslySetInnerHTML
+     * to turn newlines into <br>. A file fetched at runtime should not be able
+     * to put markup on the sign-in page.
+     */
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      json: async () => [
+        { version: "v1.0.0", date: "01/01/2026", content: "Line one\n<img src=x onerror=alert(1)>" },
+      ],
+    });
+
+    const { container } = renderPage();
+    await screen.findByText("Line one");
+    expect(container.querySelector("img")).toBeNull();
+    expect(screen.getByText(/<img src=x/)).toBeInTheDocument();
+  });
+});
+
+describe("which sign-in screen you get", () => {
+  const musterFrame = () => screen.queryByText("One record of every cadet.");
+
+  it("shows the Muster layout when nobody has chosen an interface", () => {
+    renderPage();
+    expect(musterFrame()).toBeInTheDocument();
+  });
+
+  it("keeps the Muster palette even while the document is still on classic", () => {
+    /*
+     * The interface cannot be resolved before sign-in, so the document is
+     * usually still on classic -- which follows the device's dark preference.
+     * Muster layout drawing on classic dark tokens put the muted text on the
+     * white panel at about 2:1, so the frame carries its own palette.
+     */
+    renderPage();
+    expect(musterFrame().closest("[data-ui]")).toHaveAttribute("data-ui", "muster");
+  });
+
+  it("gives the classic page to anyone who pinned classic in the URL", () => {
+    // ?ui=classic is the kill switch and has to work from the sign-in screen up.
+    window.history.replaceState({}, "", "/?ui=classic");
+    renderPage();
+
+    expect(musterFrame()).not.toBeInTheDocument();
+    expect(screen.getByText("Welcome to the Squadron Tracker")).toBeInTheDocument();
+  });
+
+  it("gives the classic page to anyone who chose classic for themselves", () => {
+    // A stored choice is a choice, and it applies here as well as in the app.
+    localStorage.setItem("squadron-tracker:ui", "classic");
+    renderPage();
+
+    expect(musterFrame()).not.toBeInTheDocument();
+  });
+
+  it("still shows Muster to someone who chose Muster", () => {
+    localStorage.setItem("squadron-tracker:ui", "muster");
+    renderWithProviders(<WelcomePage onUserChange={jest.fn()} />, { uiVersion: "muster" });
+
+    expect(musterFrame()).toBeInTheDocument();
+  });
+
+  afterEach(() => {
+    window.history.replaceState({}, "", "/");
+    localStorage.clear();
   });
 });
 

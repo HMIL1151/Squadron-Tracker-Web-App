@@ -28,7 +28,7 @@ const WelcomePage = ({ onUserChange }) => {
   // with four flights simply could not be created.
   const [flightNames, setFlightNames] = useState(["", ""]);
   const [isRequestSubmitted, setIsRequestSubmitted] = useState(false); // Track if the request has been submitted
-  const { uiVersion } = useUiVersion();
+  const { uiVersion, isPinnedByUrl, hasPreference } = useUiVersion();
   const [changelog, setChangelog] = useState([]); // State to store changelog entries
 
   const { fetchData } = useContext(DataContext); // Access fetchData from DataContext
@@ -484,12 +484,26 @@ const WelcomePage = ({ onUserChange }) => {
 
   /*
    * The frame is chosen here rather than by a wrapper component, because both
-   * layouts need the same three pieces and neither owns them.
+   * layouts need the same pieces and neither owns them.
+   *
+   * Muster is the default, and this is the one screen where it is the default
+   * whatever SystemConfig says. The interface cannot be resolved from the
+   * account before anyone has signed in -- reading SystemConfig needs a signed
+   * in user -- so the old rule handed every first-ever visit the classic page:
+   * a dark screen, a title, and a changelog box with its own scrollbar. That
+   * was the first thing anybody saw of the app.
+   *
+   * An explicit choice still wins. `?ui=classic` is the kill switch and has to
+   * work from the sign-in screen up, and someone who has picked classic for
+   * themselves keeps it here too. What changes is the default for everyone who
+   * has expressed no preference at all.
    */
-  if (uiVersion === "muster") {
+  const choseClassic = uiVersion === "classic" && (isPinnedByUrl || hasPreference);
+
+  if (!choseClassic) {
     return (
       <>
-        <MusterWelcomeFrame error={errorArea} changelog={changelogArea}>
+        <MusterWelcomeFrame error={errorArea} changelog={changelog}>
           {authArea}
         </MusterWelcomeFrame>
         {setupPopups}

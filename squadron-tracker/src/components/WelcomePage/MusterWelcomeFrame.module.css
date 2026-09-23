@@ -8,10 +8,25 @@
  * the one screen where a first impression is the job.
  */
 
+/*
+ * A screen, not a document: `height`, not `min-height`.
+ *
+ * With min-height the grid row is auto-sized, so it grows with whichever
+ * column is taller and the panel's `overflow-y: auto` never has a height to
+ * scroll within. Opening the earlier releases took the page to 5,487px, and
+ * because the left column centres its content vertically, the headline went
+ * with it -- you were left looking at an empty navy field with the writing
+ * somewhere around 2,500px down. A definite height puts the scrolling back
+ * inside the column that has more to say.
+ *
+ * The narrow layout below undoes this: stacked, the page is a document again
+ * and scrolling it whole is the right behaviour.
+ */
 .page {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  min-height: 100dvh;
+  height: 100dvh;
+  overflow: hidden;
   background-color: var(--color-surface);
   color: var(--color-text);
 }
@@ -19,6 +34,8 @@
 .identity {
   display: flex;
   flex-direction: column;
+  min-height: 0;
+  overflow-y: auto;
   padding: 60px 64px;
   background-color: var(--color-identity);
   color: var(--color-identity-text);
@@ -115,16 +132,23 @@
 
 /* -- sign in ------------------------------------------------------------- */
 
+/*
+ * `margin: auto` on the child rather than `align-items: center`, which is the
+ * centring that survives overflow: a centred flex item taller than its
+ * container has its top cut off and cannot be scrolled back to. Open the
+ * earlier releases on a short window and that is exactly what happens.
+ */
 .panel {
   display: flex;
-  align-items: flex-start;
-  padding: 60px 64px;
+  min-height: 0;
+  padding: 56px 64px;
   overflow-y: auto;
 }
 
 .inner {
   width: 100%;
-  max-width: 460px;
+  max-width: 440px;
+  margin: auto;
 }
 
 .title {
@@ -144,11 +168,76 @@
 }
 
 .auth {
-  margin-top: 26px;
+  margin-top: 24px;
   display: flex;
   flex-direction: column;
   gap: 12px;
-  align-items: flex-start;
+  align-items: stretch;
+}
+
+/*
+ * The sign-in controls, dressed from outside. See the note in the component.
+ *
+ * The Google button arrives in its own blue, which is the one colour on the
+ * page belonging to no part of this palette, and it sat at the left edge of a
+ * column with nothing else in it. Full width and the app's own accent makes
+ * it the thing the page is for.
+ */
+.auth button {
+  width: 100%;
+  min-height: 44px;
+  padding: 0 18px;
+  border: 1px solid var(--color-accent);
+  border-radius: 6px;
+  background-color: var(--color-accent);
+  color: var(--color-on-accent);
+  font: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.auth button:hover {
+  background-color: var(--color-accent-hover);
+  border-color: var(--color-accent-hover);
+}
+
+.auth button:disabled {
+  background-color: var(--color-surface-muted);
+  border-color: var(--color-border);
+  color: var(--color-text-faint);
+  cursor: not-allowed;
+}
+
+.auth button:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+.auth input {
+  width: 100%;
+  min-height: 44px;
+  padding: 0 14px;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  background-color: var(--color-surface);
+  color: var(--color-text);
+  font: inherit;
+  font-size: 15px;
+}
+
+.auth input:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 1px;
+}
+
+/* The flow writes "Welcome, Name!" and a prompt above the squadron box. */
+.auth p {
+  margin: 0;
+  font-size: 14.5px;
+  line-height: 1.5;
+  color: var(--color-text-muted);
 }
 
 .privacy {
@@ -158,10 +247,12 @@
   color: var(--color-text-muted);
 }
 
-.changelog {
-  margin-top: 44px;
-  padding-top: 28px;
-  border-top: 1px solid var(--color-border-subtle);
+/*
+ * The gap between signing in and the release notes. Large enough that the
+ * notes read as a footnote to the page rather than a second offer.
+ */
+.inner > section {
+  margin-top: 40px;
 }
 
 /*
@@ -173,10 +264,13 @@
 @media (max-width: 900px) {
   .page {
     grid-template-columns: minmax(0, 1fr);
+    height: auto;
     min-height: 100dvh;
+    overflow: visible;
   }
 
   .identity {
+    overflow-y: visible;
     padding: 28px 20px;
   }
 
@@ -203,6 +297,7 @@
   }
 
   .panel {
+    overflow-y: visible;
     padding: 28px 20px 40px;
   }
 }

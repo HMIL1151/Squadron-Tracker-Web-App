@@ -1,3 +1,4 @@
+import MusterChangelog from "./MusterChangelog";
 import styles from "./MusterWelcomeFrame.module.css";
 
 /**
@@ -18,12 +19,29 @@ import styles from "./MusterWelcomeFrame.module.css";
  * right is signing in, and the changelog sits under the sign-in button where
  * someone can read it if they want to.
  *
+ * The sign-in side takes its furniture from WelcomePage, which builds those
+ * controls for the classic page, so this module dresses them from the outside
+ * -- `.auth button`, `.auth input`. That is the second place in the interface
+ * where a component's styling is corrected by its container rather than by a
+ * prop (MusterShell does it to UiToggle), and it is the same bargain: the
+ * alternative is a variant prop threaded through a sign-in flow whose only
+ * purpose is to say "I am on the Muster page now".
+ *
  * Note the interface cannot be resolved from the account yet -- SystemConfig
  * needs a signed-in user to read -- so a first-ever visit on a new device gets
  * the classic page whatever the system default says. See UiVersionContext.
  */
-const MusterWelcomeFrame = ({ error, children, changelog }) => (
-  <div className={styles.page}>
+const MusterWelcomeFrame = ({ error, children, changelog = [] }) => (
+  /*
+   * data-ui on the frame itself, not just on <html>.
+   *
+   * Nobody has signed in here, so the document is still carrying whichever
+   * interface was last resolved -- usually classic, and classic follows the
+   * device's dark preference. Muster layout drawing on classic dark tokens
+   * put the muted text on this white panel at about 2:1. The attribute makes
+   * this subtree carry the Muster palette whatever the document is doing.
+   */
+  <div className={styles.page} data-ui="muster">
     <section className={styles.identity}>
       <div className={styles.brand}>
         {/*
@@ -83,7 +101,7 @@ const MusterWelcomeFrame = ({ error, children, changelog }) => (
           Cadet data stays inside your squadron. Staff at other squadrons cannot see it.
         </p>
 
-        <div className={styles.changelog}>{changelog}</div>
+        <MusterChangelog entries={changelog} />
       </div>
     </section>
   </div>
