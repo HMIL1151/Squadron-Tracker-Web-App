@@ -78,6 +78,12 @@ const FRAME_STATE = {
   dense: styles["frame-dense"],
 };
 
+const TOTALS_ALIGN = {
+  left: styles["totals-cell-left"],
+  right: styles["totals-cell-right"],
+  center: styles["totals-cell-center"],
+};
+
 const STICKY_CELL = {
   left: styles["cell-left-sticky"],
   right: styles["cell-right-sticky"],
@@ -128,6 +134,16 @@ const MusterTable = ({
    * answer "who has their DofE" is not comfort.
    */
   dense = false,
+  /**
+   * Show a totals row under the body.
+   *
+   * Opt-in, and driven by the columns: a column with a `total(rows)` function
+   * gets a figure, the rest get nothing. The PTS board is why it exists --
+   * the classic tracker counts, under each badge column, how many cadets hold
+   * it, which is the question "how many have their Blue First Aid" and cannot
+   * be answered from a squadron-wide count of Blues.
+   */
+  showTotals = false,
 }) => {
   const captionId = useId();
   const filterId = useId();
@@ -348,6 +364,25 @@ const MusterTable = ({
               );
             })}
           </tbody>
+
+          {showTotals && visible.length > 0 && columns.some((column) => column.total) && (
+            <tfoot>
+              <tr className={styles["totals-row"]}>
+                {columns.map((column, index) => (
+                  <td
+                    key={column.key}
+                    className={
+                      stickyFirstColumn && index === 0
+                        ? styles["totals-cell-sticky"]
+                        : TOTALS_ALIGN[column.align] || TOTALS_ALIGN.left
+                    }
+                  >
+                    {column.total ? column.total(visible) : index === 0 ? "Total" : null}
+                  </td>
+                ))}
+              </tr>
+            </tfoot>
+          )}
         </table>
 
         {visible.length === 0 && empty}

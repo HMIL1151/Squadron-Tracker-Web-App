@@ -126,6 +126,13 @@ const MusterClassification = ({ user }) => {
    * button to find.
    */
   const [entries, setEntries] = useState([{ exam: "", date: "" }]);
+  /*
+   * Which cadet the pointer is over on the plot. The classic screen highlights
+   * that cadet's row in the table, which is most of what the plot is for --
+   * a dot at 30 months and Second Class is only useful once you know who it
+   * is. The plot here was wired to two empty functions.
+   */
+  const [hovered, setHovered] = useState(null);
   const [dialogError, setDialogError] = useState(null);
 
   const derived = useMemo(
@@ -201,6 +208,16 @@ const MusterClassification = ({ user }) => {
   }, [derived]);
 
   const nearlyCount = rows.filter((row) => row.nearlyThere).length;
+
+  /*
+   * How many are keeping up with the classification their service length
+   * expects. The classic screen prints this over the plot as "72.4% On
+   * Track"; here it was computed into every row as `isBehind` and then thrown
+   * away, so the screen showed the shape of the squadron without the one
+   * number a training officer is asked for.
+   */
+  const onTrack = rows.filter((row) => !row.isBehind).length;
+  const onTrackPercent = rows.length ? Math.round((onTrack / rows.length) * 100) : null;
   const filtersActive = search !== "" || flightFilter !== ALL || nearlyOnly;
 
   const clearFilters = () => {
@@ -389,9 +406,17 @@ const MusterClassification = ({ user }) => {
             <Graph
               cadetData={derived}
               longestServiceInMonths={longestService}
-              onPointHover={() => {}}
-              hoveredCadet={[]}
-              onPointClick={() => {}}
+              /*
+               * Both handlers do what they do on the classic screen: hovering
+               * a point highlights that cadet's row, clicking one opens the
+               * dialog to add exams for them.
+               */
+              onPointHover={(names) => setHovered(names?.length ? names[0] : null)}
+              hoveredCadet={hovered ? [hovered] : []}
+              onPointClick={(cadetName) => {
+                const row = rows.find((entry) => entry.name === cadetName);
+                if (row) openRecord(row);
+              }}
               palette="muster"
             />
           </div>
@@ -400,6 +425,13 @@ const MusterClassification = ({ user }) => {
         <section className={styles.distribution} aria-label="Where the Squadron Sits">
           <div className={styles["distribution-head"]}>
             <h2 className={styles["distribution-title"]}>Where the Squadron Sits</h2>
+            {onTrackPercent !== null && (
+              <p className={styles["on-track"]}>
+                <strong className={styles["on-track-figure"]}>{onTrackPercent}%</strong>
+                on track for their service length
+                {rows.length - onTrack > 0 ? ` \u00b7 ${rows.length - onTrack} behind` : ""}
+              </p>
+            )}
             <p className={styles["distribution-note"]}>
               {rows.length} cadets.{" "}
               {nearlyCount > 0
@@ -436,6 +468,8 @@ const MusterClassification = ({ user }) => {
         columns={columns}
         rows={visible}
         getRowKey={(row) => row.id}
+        /* The row the pointer is over on the plot, so the two read together. */
+        selectedKey={hovered ? rows.find((row) => row.name === hovered)?.id ?? null : null}
         defaultSort={{ key: "now", direction: "desc" }}
         toolbar={
           <>

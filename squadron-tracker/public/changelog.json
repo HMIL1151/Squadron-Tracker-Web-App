@@ -123,5 +123,10 @@
     "version": "v0.18.1",
     "date": "28/09/2026",
     "content": "Fixed: the Classification Tracker could not record a Senior or Master paper at all. The board only has columns up to Leading, so those six had nowhere to be clicked. Click a cadet's name and you get every exam, several at a time, with what they already hold listed beside it.\nFixed, and worth knowing about: flight points allocated to a flight by staff — for a tug of war, a tidy hangar — were missing from the totals on the new Flight Points screen. A flight given 25 points showed 25 fewer there than on the old screen, with nothing to say a number was missing. The standings now include them, and you can allocate points again from that screen.\nEvery other screen in the new interface was checked against the old one for the same kind of gap. Those two were the only ones."
+  },
+  {
+    "version": "v0.18.2",
+    "date": "28/09/2026",
+    "content": "Four things the new interface had lost, found by comparing it with the old one screen by screen rather than by waiting for them to be noticed.\nOn the Classification Tracker the graph works again: hover a point to pick out that cadet's row, click one to add exams for them. The same screen now says what share of the squadron is on track for their service length, which the old one prints over its graph.\nThe PTS Tracker has its totals back — the count under each badge column of how many cadets hold it. The count beside each colour answers a different question: it counts Blues of every subject.\nThe Cadet List shows the date a cadet joined again, in the panel that opens when you select them. The list itself still shows length of service, which is the more useful form of it day to day."
   }
 ]
