@@ -118,5 +118,10 @@
     "version": "v0.18.0",
     "date": "23/09/2026",
     "content": "A new sign-in page. It is the first thing anyone sees of the app and it was still the old dark screen with a release-notes box scrolling in the middle of it, so it now matches the rest of Muster: what the app is for on the left, signing in on the right, and the release notes underneath the button where you can read them if you want to. The newest release is open and everything older folds away.\nIf you have chosen the classic look for yourself, or you are using the ?ui=classic link, you still get the old sign-in page. Nothing about signing in has changed — the same Google account, the same squadron number box, the same setup if your squadron is new."
+  },
+  {
+    "version": "v0.18.1",
+    "date": "28/09/2026",
+    "content": "Fixed: the Classification Tracker could not record a Senior or Master paper at all. The board only has columns up to Leading, so those six had nowhere to be clicked. Click a cadet's name and you get every exam, several at a time, with what they already hold listed beside it.\nFixed, and worth knowing about: flight points allocated to a flight by staff — for a tug of war, a tidy hangar — were missing from the totals on the new Flight Points screen. A flight given 25 points showed 25 fewer there than on the old screen, with nothing to say a number was missing. The standings now include them, and you can allocate points again from that screen.\nEvery other screen in the new interface was checked against the old one for the same kind of gap. Those two were the only ones."
   }
 ]

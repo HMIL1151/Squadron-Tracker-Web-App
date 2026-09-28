@@ -117,3 +117,126 @@ describe("filtering", () => {
     expect(bodyRows(container)).toHaveLength(1);
   });
 });
+
+describe("recording a pass", () => {
+  /*
+   * Dates sit before the frozen 2025-06-15 clock on purpose: saveEvent
+   * refuses anything more than a week in the future, and a test that quietly
+   * hits that validation looks exactly like a test where nothing saved.
+   */
+  /*
+   * The board only has columns up to Leading, so for a while the six Senior
+   * and Master papers -- most of the work between Leading and Master -- had
+   * nowhere on this screen to be entered. The classic tracker could record
+   * any exam, several at a time. These are that capability, pinned.
+   */
+  const openFor = async (user, container, name) =>
+    user.click(within(rowFor(container, name)).getByRole("button", { name: /Add exams for/ }));
+
+  /* Scoped: the toolbar has a flight select and date inputs of its own. */
+  const dialog = () => within(screen.getByRole("dialog"));
+
+  it("opens the dialog from the cadet, not only from a cell", async () => {
+    const { user, container } = renderView();
+    await openFor(user, container, "Amelia Hart");
+
+    expect(screen.getByRole("dialog")).toBeInTheDocument();
+    expect(screen.getByText(/Add Exams/)).toBeInTheDocument();
+  });
+
+  it("offers the Senior and Master papers, which have no column", async () => {
+    const { user, container } = renderView();
+    await openFor(user, container, "Amelia Hart");
+
+    const choices = [...dialog().getAllByRole("combobox")[0].options].map((o) => o.value);
+    expect(choices).toEqual(
+      expect.arrayContaining([
+        "Senior/Master: Air Power Exam",
+        "Senior/Master: Airframes Exam",
+      ])
+    );
+  });
+
+  it("records a Senior paper against the cadet", async () => {
+    const { user, container, writes } = renderView();
+    await openFor(user, container, "Amelia Hart");
+
+    await user.selectOptions(dialog().getAllByRole("combobox")[0], "Senior/Master: Air Power Exam");
+    await user.type(dialog().getAllByLabelText(/Date passed/)[0], "2025-03-04");
+    await user.click(dialog().getByRole("button", { name: "Record Pass" }));
+
+    const saved = writes().filter((write) => write.data?.examName);
+    expect(saved).toHaveLength(1);
+    expect(saved[0].data).toMatchObject({
+      examName: "Senior/Master: Air Power Exam",
+      date: "2025-03-04",
+      cadetName: "Amelia Hart",
+    });
+  });
+
+  it("records several exams in one go", async () => {
+    // A cadet back from a weekend of papers has three or four to enter.
+    const { user, container, writes } = renderView();
+    await openFor(user, container, "Amelia Hart");
+
+    await user.selectOptions(dialog().getAllByRole("combobox")[0], "Senior/Master: Air Power Exam");
+    await user.type(dialog().getAllByLabelText(/Date passed/)[0], "2025-03-04");
+
+    await user.selectOptions(dialog().getAllByRole("combobox")[1], "Senior/Master: Airframes Exam");
+    await user.type(dialog().getAllByLabelText(/Date passed/)[1], "2025-03-05");
+
+    await user.click(dialog().getByRole("button", { name: "Record Passes" }));
+
+    const saved = writes().filter((write) => write.data?.examName);
+    expect(saved.map((write) => write.data.examName)).toEqual([
+      "Senior/Master: Air Power Exam",
+      "Senior/Master: Airframes Exam",
+    ]);
+  });
+
+  it("refuses a row with an exam and no date", async () => {
+    const { user, container, writes } = renderView();
+    await openFor(user, container, "Amelia Hart");
+
+    await user.selectOptions(dialog().getAllByRole("combobox")[0], "Senior/Master: Air Power Exam");
+    await user.click(dialog().getByRole("button", { name: "Record Pass" }));
+
+    expect(dialog().getByText(/Give every exam a date/)).toBeInTheDocument();
+    expect(writes().filter((write) => write.data?.examName)).toHaveLength(0);
+  });
+
+  it("leaves out the exams the cadet already has", async () => {
+    /*
+     * Amelia has passed First Class in the fixture. Offering it again is how
+     * you get two First Class passes against one cadet.
+     */
+    const { user, container } = renderView();
+    await openFor(user, container, "Amelia Hart");
+
+    const choices = [...dialog().getAllByRole("combobox")[0].options].map((o) => o.value);
+    expect(choices).not.toContain("First Class Cadet");
+  });
+
+  it("shows what the cadet already holds", async () => {
+    const { user, container } = renderView();
+    await openFor(user, container, "Amelia Hart");
+
+    const held = dialog().getByText("Already recorded").closest("div");
+    expect(within(held).getByText("First Class Cadet")).toBeInTheDocument();
+  });
+
+  it("still records from an empty cell, with that exam chosen", async () => {
+    const { user, container, writes } = renderView();
+    const amelia = rowFor(container, "Amelia Hart");
+    const cell = within(amelia).getAllByRole("button", { name: /^Record .* for Amelia Hart$/ })[0];
+    const exam = cell.textContent.replace(/^\+/, "").replace(/ for Amelia Hart$/, "").replace(/^Record /, "");
+
+    await user.click(cell);
+    await user.type(dialog().getAllByLabelText(/Date passed/)[0], "2025-02-02");
+    await user.click(dialog().getByRole("button", { name: "Record Pass" }));
+
+    const saved = writes().filter((write) => write.data?.examName);
+    expect(saved).toHaveLength(1);
+    expect(saved[0].data.examName).toBe(exam);
+  });
+});
