@@ -195,11 +195,122 @@
 
 /* -- the board ----------------------------------------------------------- */
 
+/*
+ * The cadet's name is a button now -- it opens the exam dialog -- so it needs
+ * the usual resets. It stays looking like a name: the whole row is already
+ * full of controls, and a tenth button-shaped thing would be noise.
+ */
 .cadet {
   display: flex;
   align-items: center;
   gap: 10px;
+  width: 100%;
   min-width: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.cadet:hover .cadet-name {
+  color: var(--color-accent);
+}
+
+.cadet:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+/* -- the exam dialog ----------------------------------------------------- */
+
+.entry-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.entry {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 170px 32px;
+  gap: 10px;
+  align-items: end;
+}
+
+.entry-remove {
+  height: 38px;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  background-color: var(--color-surface);
+  color: var(--color-text-muted);
+  font: inherit;
+  font-size: 15px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.entry-remove:hover:not(:disabled) {
+  border-color: var(--color-danger);
+  color: var(--color-danger);
+}
+
+.entry-remove:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.entry-hint {
+  margin: 10px 0 0;
+  font-size: 12.5px;
+  color: var(--color-text-muted);
+}
+
+/*
+ * What the cadet already holds, beside the form rather than above it: you are
+ * choosing which exams to add while needing to see which are already there.
+ * The classic dialog put this in a pane for the same reason.
+ */
+.held {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid var(--color-border-subtle);
+}
+
+.held-title {
+  margin: 0 0 10px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+
+.held-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  max-height: 168px;
+  overflow-y: auto;
+}
+
+.held-item {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 13px;
+  color: var(--color-text);
+}
+
+.held-date {
+  flex-shrink: 0;
+  font-size: 12.5px;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-muted);
 }
 
 .cadet-text {

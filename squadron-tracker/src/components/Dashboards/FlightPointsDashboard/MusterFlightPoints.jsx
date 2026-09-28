@@ -1,13 +1,21 @@
-import { useContext, useMemo, useState } from "react";
+import { useContext, useEffect, useMemo, useState } from "react";
 import { DataContext } from "../../../context/DataContext";
 import { useSquadron } from "../../../context/SquadronContext";
 import { getCadetPoints, getEventYear } from "../../../utils/points";
-import { flightColour, getCompetingFlights } from "../../../utils/flights";
+import {
+  flightColour,
+  getAssignableFlights,
+  getCompetingFlights,
+} from "../../../utils/flights";
+import { addPointsToFlight, fetchTeamPoints } from "../../../firebase/flightPoints";
 import MusterPage from "../../Muster/MusterPage";
 import MusterTable from "../../Muster/MusterTable";
+import MusterDialog from "../../Muster/MusterDialog";
+import MusterField from "../../Muster/MusterField";
 import {
   FlightMark,
   MusterBar,
+  MusterButton,
   MusterEmpty,
   MusterSelect,
 } from "../../Muster/MusterControls";
@@ -31,6 +39,20 @@ import styles from "./MusterFlightPoints.module.css";
  * Who is carrying each flight. Worth knowing before the standings are read
  * out, because "Alpha are doing well" and "two people in Alpha are doing well"
  * call for different things to be said.
+ *
+ * Team points are part of a flight's total, and this screen shipped without
+ * them -- which was the worse half of the bug, because the standings looked
+ * complete and were simply wrong for any squadron that had allocated any. A
+ * flight given 25 points on a staff decision showed 25 fewer here than on the
+ * classic screen, with nothing to suggest a number was missing. Allocating
+ * them was missing too, and that at least was visible.
+ *
+ * They are added to the total exactly as the classic screen adds them,
+ * including its quirk: fetchTeamPoints returns the CURRENT year's allocations
+ * whatever year is selected above, because the stored document holds one
+ * year's worth and zeroes itself when the year turns over. Matching that
+ * matters more than tidying it -- two screens disagreeing about a flight's
+ * total is how the competition gets argued about on parade.
  */
 
 const MONTHS = ["Sep", "Oct", "Nov", "Dec", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug"];
@@ -44,7 +66,7 @@ const monthIndex = (date) => {
 
 const MusterFlightPoints = () => {
   const { data } = useContext(DataContext);
-  const { flights, flightMap } = useSquadron();
+  const { flights, flightMap, squadronNumber } = useSquadron();
 
   const years = useMemo(() => {
     const seen = new Set();
@@ -57,7 +79,69 @@ const MusterFlightPoints = () => {
 
   const [year, setYear] = useState(() => years[0] || String(new Date().getFullYear()));
 
+  /*
+   * Team points live in their own document rather than in the event log, so
+   * they need a read of their own. `refresh` re-runs it after an allocation;
+   * DataContext knows nothing about this document and cannot tell us.
+   */
+  const [teamPoints, setTeamPoints] = useState({});
+  const [refresh, setRefresh] = useState(0);
+
+  const [allocating, setAllocating] = useState(false);
+  const [allocateFlight, setAllocateFlight] = useState("");
+  const [allocatePoints, setAllocatePoints] = useState("");
+  const [allocateError, setAllocateError] = useState(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    if (!squadronNumber) return undefined;
+
+    fetchTeamPoints(squadronNumber)
+      .then((points) => {
+        if (!cancelled) setTeamPoints(points || {});
+      })
+      .catch((error) => {
+        // fetchTeamPoints already logs; a squadron with no document scores none.
+        console.error("Error reading team points:", error);
+        if (!cancelled) setTeamPoints({});
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [squadronNumber, refresh]);
+
   const competing = useMemo(() => getCompetingFlights(flights), [flights]);
+
+  const openAllocate = () => {
+    setAllocateFlight("");
+    setAllocatePoints("");
+    setAllocateError(null);
+    setAllocating(true);
+  };
+
+  const confirmAllocate = async () => {
+    const points = Number(allocatePoints);
+    if (!allocateFlight) {
+      setAllocateError("Choose a flight.");
+      return;
+    }
+    if (!allocatePoints || Number.isNaN(points)) {
+      setAllocateError("Enter the number of points to add.");
+      return;
+    }
+
+    try {
+      await addPointsToFlight(squadronNumber, String(allocateFlight), points);
+      setAllocating(false);
+      /* Re-read rather than adding locally: the stored document rolls the year
+         over on write, so what it now holds is not always what we sent. */
+      setRefresh((count) => count + 1);
+    } catch (error) {
+      console.error("Error allocating points:", error);
+      setAllocateError("Those points could not be allocated. Try again.");
+    }
+  };
 
   /** Every cadet's total for the chosen year, with their flight attached. */
   const cadetTotals = useMemo(() => {
@@ -78,13 +162,22 @@ const MusterFlightPoints = () => {
   const standings = useMemo(() => {
     const rows = competing.map((flight) => {
       const members = cadetTotals.filter((cadet) => Number(cadet.flight) === flight.index);
-      const total = members.reduce((sum, cadet) => sum + cadet.points, 0);
+      const earned = members.reduce((sum, cadet) => sum + cadet.points, 0);
+      const allocated = Number(teamPoints[String(flight.index)] || 0);
+      const total = earned + allocated;
       return {
         index: flight.index,
         name: flight.name,
         colour: flightColour(flight.index),
+        earned,
+        allocated,
         total,
         size: members.length,
+        /*
+         * Per cadet counts the allocation too: it was won by the flight, and
+         * leaving it out would make the two headline numbers disagree about
+         * what a flight's total is.
+         */
         perCadet: members.length ? Math.round(total / members.length) : 0,
       };
     });
@@ -93,7 +186,7 @@ const MusterFlightPoints = () => {
     return rows
       .sort((a, b) => b.total - a.total)
       .map((row, position) => ({ ...row, position: position + 1, share: row.total / best }));
-  }, [competing, cadetTotals]);
+  }, [competing, cadetTotals, teamPoints]);
 
   /**
    * Cumulative points per flight through the training year.
@@ -235,12 +328,17 @@ const MusterFlightPoints = () => {
           : "Points earned by each competing flight."
       }
       actions={
-        <MusterSelect
-          label="Year"
-          value={year}
-          onChange={setYear}
-          options={years.map((value) => ({ value, label: value }))}
-        />
+        <>
+          <MusterSelect
+            label="Year"
+            value={year}
+            onChange={setYear}
+            options={years.map((value) => ({ value, label: value }))}
+          />
+          <MusterButton kind="primary" onClick={openAllocate}>
+            Allocate Points
+          </MusterButton>
+        </>
       }
     >
       <section className={styles.standings} aria-label="Flight Standings">
@@ -368,6 +466,43 @@ const MusterFlightPoints = () => {
           />
         </div>
       </div>
+      <MusterDialog
+        open={allocating}
+        title="Allocate Points to a Flight"
+        description="For points won by a flight rather than by a cadet -- a tug of war, a tidy hangar. They are added to this year's total."
+        onClose={() => setAllocating(false)}
+        onConfirm={confirmAllocate}
+        confirmLabel="Allocate Points"
+        error={allocateError}
+      >
+        <MusterField label="Flight">
+          {(id) => (
+            <select
+              id={id}
+              value={allocateFlight}
+              onChange={(selectEvent) => setAllocateFlight(selectEvent.target.value)}
+            >
+              <option value="">Choose a flight</option>
+              {getAssignableFlights(flights).map((flight) => (
+                <option key={flight.index} value={flight.index}>
+                  {flight.name}
+                </option>
+              ))}
+            </select>
+          )}
+        </MusterField>
+
+        <MusterField label="Points" hint="A negative number takes points away.">
+          {(id) => (
+            <input
+              id={id}
+              type="number"
+              value={allocatePoints}
+              onChange={(inputEvent) => setAllocatePoints(inputEvent.target.value)}
+            />
+          )}
+        </MusterField>
+      </MusterDialog>
     </MusterPage>
   );
 };

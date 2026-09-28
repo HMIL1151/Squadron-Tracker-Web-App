@@ -37,7 +37,14 @@ import styles from "./MusterClassification.module.css";
  * them, not all eleven; which six is up to the squadron and the cadet.
  *
  * Clicking an empty cell records that exam, the same way the PTS tracker
- * records a badge. Both go through useSaveEvent, so an exam added here is
+ * records a badge, and clicking the cadet opens the same dialog with nothing
+ * chosen yet. The second one is not a convenience: the board only has columns
+ * up to Leading, so the six Senior and Master papers -- which is most of the
+ * work between Leading and Master -- had no cell to click and could not be
+ * recorded from this screen at all. The classic tracker could record any of
+ * them, several at a time, and this is that back.
+ *
+ * Both go through useSaveEvent, so an exam added here is
  * indistinguishable from one added on the event log.
  */
 
@@ -112,7 +119,13 @@ const MusterClassification = ({ user }) => {
   const [flightFilter, setFlightFilter] = useState(ALL);
   const [nearlyOnly, setNearlyOnly] = useState(false);
   const [pending, setPending] = useState(null);
-  const [pendingDate, setPendingDate] = useState("");
+  /*
+   * A list, because a cadet who has just done a weekend of papers has three
+   * or four to enter and the classic dialog took them in one go. The last row
+   * is always blank: filling it grows another, so there is no "add a row"
+   * button to find.
+   */
+  const [entries, setEntries] = useState([{ exam: "", date: "" }]);
   const [dialogError, setDialogError] = useState(null);
 
   const derived = useMemo(
@@ -138,6 +151,12 @@ const MusterClassification = ({ user }) => {
         isBehind: entry.isBehind,
         targetLabel: entry.targetClassificationLabel,
         marks: BOARD_EXAMS.map((exam) => passed.get(exam) || null),
+        /*
+         * Every pass, not just the ones with a column. The dialog needs the
+         * Senior and Master papers too: they are the ones the board cannot
+         * show and the ones most likely to be entered here.
+         */
+        passed,
         seniorCount,
         /*
          * "One exam from the next classification" means the next pass
@@ -190,39 +209,76 @@ const MusterClassification = ({ user }) => {
     setNearlyOnly(false);
   };
 
-  const openRecord = (row, exam) => {
-    setPending({ cadetName: row.name, exam });
-    setPendingDate("");
+  const openRecord = (row, exam = "") => {
+    setPending({ cadetName: row.name, passed: row.passed });
+    setEntries([{ exam, date: "" }]);
     setDialogError(null);
   };
 
   const closeRecord = () => {
     setPending(null);
+    setEntries([{ exam: "", date: "" }]);
     setDialogError(null);
   };
 
+  /** Editing the last row grows another, so the list never runs out. */
+  const changeEntry = (index, field, value) => {
+    setEntries((current) => {
+      const next = current.map((entry, at) =>
+        at === index ? { ...entry, [field]: value } : entry
+      );
+      const last = next[next.length - 1];
+      if (index === next.length - 1 && last.exam && last.date) {
+        next.push({ exam: "", date: "" });
+      }
+      return next;
+    });
+  };
+
+  const removeEntry = (index) =>
+    setEntries((current) =>
+      current.length === 1 ? [{ exam: "", date: "" }] : current.filter((_, at) => at !== index)
+    );
+
+  const filledCount = entries.filter((entry) => entry.exam && entry.date).length;
+
   const confirmRecord = async () => {
-    if (!pendingDate) {
-      setDialogError("Pick the date the exam was passed.");
+    /*
+     * Half-filled rows are the error, not empty ones. The last row is always
+     * blank by design, so "you have not filled everything in" would fire on
+     * every correct use of this dialog.
+     */
+    const filled = entries.filter((entry) => entry.exam || entry.date);
+    if (filled.some((entry) => !entry.exam || !entry.date)) {
+      setDialogError("Give every exam a date, or clear the row.");
+      return;
+    }
+    if (filled.length === 0) {
+      setDialogError("Choose an exam and the date it was passed.");
       return;
     }
 
+    /* One createdAt for the lot: they were entered in one action. */
+    const createdAt = new Date();
+
     try {
-      const { error } = await saveEvent({
-        createdAt: new Date(),
-        addedBy: user?.displayName || "Unknown",
-        cadetName: [pending.cadetName],
-        date: pendingDate,
-        badgeCategory: "",
-        badgeLevel: "",
-        examName: pending.exam,
-        eventName: "",
-        eventCategory: "",
-        specialAward: "",
-      });
-      if (error) {
-        setDialogError(error);
-        return;
+      for (const entry of filled) {
+        const { error } = await saveEvent({
+          createdAt,
+          addedBy: user?.displayName || "Unknown",
+          cadetName: [pending.cadetName],
+          date: entry.date,
+          badgeCategory: "",
+          badgeLevel: "",
+          examName: entry.exam,
+          eventName: "",
+          eventCategory: "",
+          specialAward: "",
+        });
+        if (error) {
+          setDialogError(error);
+          return;
+        }
       }
       closeRecord();
     } catch (err) {
@@ -266,14 +322,32 @@ const MusterClassification = ({ user }) => {
       width: "226px",
       sortValue: (row) => row.name,
       filterValue: (row) => row.name + " " + row.flightName,
+      /*
+       * The cadet's name is the button, which is how every Senior and Master
+       * paper gets recorded: those have no column of their own, so without
+       * this there is nowhere on the screen to enter one.
+       */
       render: (row) => (
-        <span className={styles.cadet}>
+        <button
+          type="button"
+          className={styles.cadet}
+          onClick={(clickEvent) => {
+            clickEvent.stopPropagation();
+            openRecord(row);
+          }}
+          /*
+           * Explicit, because the button's content is the cadet's name and
+           * their flight -- which says who, not what pressing it does.
+           */
+          aria-label={`Add exams for ${row.name}`}
+          title={`Add exams for ${row.name}`}
+        >
           <FlightMark flight={row.flight} />
           <span className={styles["cadet-text"]}>
             <span className={styles["cadet-name"]}>{row.name}</span>
             <span className={styles["cadet-flight"]}>{row.flightName}</span>
           </span>
-        </span>
+        </button>
       ),
     },
     {
@@ -411,23 +485,79 @@ const MusterClassification = ({ user }) => {
 
       <MusterDialog
         open={Boolean(pending)}
-        title="Record an Exam Pass"
-        description={pending ? `${pending.exam} for ${pending.cadetName}.` : ""}
+        title={pending ? `Add Exams \u2014 ${pending.cadetName}` : "Add Exams"}
+        description="Every exam, including the Senior and Master papers the board has no column for."
         onClose={closeRecord}
         onConfirm={confirmRecord}
-        confirmLabel="Record Pass"
+        confirmLabel={filledCount > 1 ? "Record Passes" : "Record Pass"}
         error={dialogError}
       >
-        <MusterField label="Date passed" hint="The date on the certificate, not today.">
-          {(id) => (
-            <input
-              id={id}
-              type="date"
-              value={pendingDate}
-              onChange={(inputEvent) => setPendingDate(inputEvent.target.value)}
-            />
-          )}
-        </MusterField>
+        <div className={styles["entry-list"]}>
+          {entries.map((entry, index) => (
+            <div key={index} className={styles.entry}>
+              <MusterField label={index === 0 ? "Exam" : `Exam ${index + 1}`}>
+                {(id) => (
+                  <select
+                    id={id}
+                    value={entry.exam}
+                    onChange={(selectEvent) => changeEntry(index, "exam", selectEvent.target.value)}
+                  >
+                    <option value="">Choose an exam</option>
+                    {examList
+                      .filter((exam) => !pending?.passed?.has(exam) || exam === entry.exam)
+                      .map((exam) => (
+                        <option key={exam} value={exam}>
+                          {exam}
+                        </option>
+                      ))}
+                  </select>
+                )}
+              </MusterField>
+
+              <MusterField label="Date passed">
+                {(id) => (
+                  <input
+                    id={id}
+                    type="date"
+                    value={entry.date}
+                    onChange={(inputEvent) => changeEntry(index, "date", inputEvent.target.value)}
+                  />
+                )}
+              </MusterField>
+
+              <button
+                type="button"
+                className={styles["entry-remove"]}
+                onClick={() => removeEntry(index)}
+                disabled={!entry.exam && !entry.date}
+                title="Clear this row"
+              >
+                <span aria-hidden="true">&times;</span>
+                <span className={styles["visually-hidden"]}>Clear row {index + 1}</span>
+              </button>
+            </div>
+          ))}
+        </div>
+
+        <p className={styles["entry-hint"]}>
+          The date on the certificate, not today. Fill the last row and another appears.
+        </p>
+
+        {pending?.passed?.size > 0 && (
+          <div className={styles.held}>
+            <h3 className={styles["held-title"]}>Already recorded</h3>
+            <ul className={styles["held-list"]}>
+              {[...pending.passed.entries()]
+                .sort((a, b) => examList.indexOf(a[0]) - examList.indexOf(b[0]))
+                .map(([exam, date]) => (
+                  <li key={exam} className={styles["held-item"]}>
+                    <span>{exam}</span>
+                    <span className={styles["held-date"]}>{shortDate(date)}</span>
+                  </li>
+                ))}
+            </ul>
+          </div>
+        )}
       </MusterDialog>
     </MusterPage>
   );

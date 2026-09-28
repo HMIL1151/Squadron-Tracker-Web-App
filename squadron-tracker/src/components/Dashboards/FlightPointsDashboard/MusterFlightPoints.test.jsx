@@ -9,11 +9,12 @@
  */
 
 import React from "react";
-import { screen, within } from "@testing-library/react";
+import { screen, waitFor, within } from "@testing-library/react";
 
 import MusterFlightPoints from "./MusterFlightPoints";
 import { renderWithProviders } from "../../../test/renderWithProviders";
 import { SQUADRONS, userFor } from "../../../test/dummyData";
+import { getCadetPoints } from "../../../utils/points";
 
 const renderView = (squadron = SQUADRONS.FAKETON) =>
   renderWithProviders(<MusterFlightPoints user={userFor(squadron)} />, {
@@ -121,5 +122,94 @@ describe("the full roll", () => {
     const { container } = renderView();
     const points = pointsColumn(tableWithCaption(container, /every cadet/i));
     expect(points).toEqual([...points].sort((a, b) => b - a));
+  });
+});
+
+describe("points allocated to a flight", () => {
+  /*
+   * Team points are staff allocations -- a tug of war, a tidy hangar -- kept
+   * in their own document rather than in the event log, so they need a read
+   * of their own.
+   *
+   * This screen shipped without that read, which made the standings quietly
+   * wrong rather than visibly incomplete: the fixture allocates 40 to Alpha
+   * and 25 to Bravo, and both were simply missing from the totals with
+   * nothing to say a number had been left out. The classic screen has always
+   * added them. These tests exist because that failure is invisible.
+   */
+  const cardFor = (name) =>
+    cards().find((card) => card.textContent.includes(name));
+
+  it("adds the allocation to the flight's total", async () => {
+    const { data } = renderView();
+
+    await waitFor(() => {
+      const alpha = cardFor("Alpha");
+      const earned = (data.cadets || [])
+        .filter((cadet) => Number(cadet.flight) === 2)
+        .reduce(
+          (sum, cadet) =>
+            sum +
+            getCadetPoints(
+              `${cadet.forename} ${cadet.surname}`,
+              String(new Date().getFullYear()),
+              data.events,
+              data.flightPoints
+            ),
+          0
+        );
+      // 40 is the fixture's allocation to flight 2.
+      expect(alpha.textContent).toContain(String(earned + 40));
+    });
+  });
+
+  it("allocates points to a flight", async () => {
+    const { user, writes } = renderView();
+    await user.click(screen.getByRole("button", { name: "Allocate Points" }));
+
+    const dialog = within(screen.getByRole("dialog"));
+    await user.selectOptions(dialog.getByLabelText("Flight"), "2");
+    await user.type(dialog.getByLabelText("Points"), "15");
+    await user.click(dialog.getByRole("button", { name: "Allocate Points" }));
+
+    await waitFor(() => {
+      const teamWrites = writes().filter((write) => write.path.includes("TeamPoints"));
+      expect(teamWrites.length).toBeGreaterThan(0);
+    });
+  });
+
+  it("refuses an allocation with no flight chosen", async () => {
+    const { user, writes } = renderView();
+    await user.click(screen.getByRole("button", { name: "Allocate Points" }));
+
+    const dialog = within(screen.getByRole("dialog"));
+    await user.type(dialog.getByLabelText("Points"), "15");
+    await user.click(dialog.getByRole("button", { name: "Allocate Points" }));
+
+    expect(dialog.getByText("Choose a flight.")).toBeInTheDocument();
+    expect(writes().filter((write) => write.path.includes("TeamPoints"))).toHaveLength(0);
+  });
+
+  it("refuses an allocation with no points", async () => {
+    const { user, writes } = renderView();
+    await user.click(screen.getByRole("button", { name: "Allocate Points" }));
+
+    const dialog = within(screen.getByRole("dialog"));
+    await user.selectOptions(dialog.getByLabelText("Flight"), "2");
+    await user.click(dialog.getByRole("button", { name: "Allocate Points" }));
+
+    expect(dialog.getByText(/Enter the number of points/)).toBeInTheDocument();
+    expect(writes().filter((write) => write.path.includes("TeamPoints"))).toHaveLength(0);
+  });
+
+  it("offers the staff flight too, which earns no cadet points", async () => {
+    // Allocation is not limited to competing flights in the classic screen.
+    const { user } = renderView();
+    await user.click(screen.getByRole("button", { name: "Allocate Points" }));
+
+    const choices = [...within(screen.getByRole("dialog")).getByLabelText("Flight").options].map(
+      (option) => option.textContent
+    );
+    expect(choices).toEqual(expect.arrayContaining(["Staff Team", "Alpha", "Bravo"]));
   });
 });
