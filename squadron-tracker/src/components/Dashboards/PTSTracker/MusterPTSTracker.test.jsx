@@ -492,3 +492,56 @@ describe("filtering by syllabus area", () => {
     );
   });
 });
+
+describe("the totals row", () => {
+  /*
+   * The classic tracker counts, under each badge column, how many cadets hold
+   * it. That is "how many have their Blue First Aid", which the squadron-wide
+   * count on the level chips cannot answer -- it counts Blues of every
+   * subject. This screen had no totals at all.
+   */
+  const totalsCells = (container) =>
+    [...container.querySelectorAll("tfoot td")].map((cell) => cell.textContent.trim());
+
+  it("counts how many cadets hold each badge", async () => {
+    const { user, container, data } = renderView();
+    await user.click(screen.getByRole("button", { name: "Highest Held" }));
+
+    const radioAt = headers(container).indexOf("Radio");
+    expect(radioAt).toBeGreaterThan(-1);
+
+    const holders = new Set(
+      (data.events || [])
+        .filter((event) => event.badgeCategory === "Radio" && event.badgeLevel)
+        .map((event) => event.cadetName)
+    );
+    expect(totalsCells(container)[radioAt]).toBe(String(holders.size));
+  });
+
+  it("totals the badges held across the squadron", async () => {
+    const { user, container } = renderView();
+    await user.click(screen.getByRole("button", { name: "Highest Held" }));
+
+    const held = [...container.querySelectorAll("tbody tr")].map((row) =>
+      Number([...row.cells].at(-1).textContent)
+    );
+    const sum = held.reduce((a, b) => a + b, 0);
+    expect(totalsCells(container).at(-1)).toBe(String(sum));
+  });
+
+  it("counts only what the filters leave showing", async () => {
+    // A total that ignores the filter above it is the same lie as a tile that does.
+    const { user, container } = renderView();
+    await user.click(screen.getByRole("button", { name: "Highest Held" }));
+    const before = totalsCells(container).at(-1);
+
+    await user.click(chipFor("Blue"));
+    await user.click(chipFor("Bronze"));
+    await user.click(chipFor("Silver"));
+    await user.click(chipFor("Gold"));
+
+    expect(totalsCells(container).at(-1)).not.toBe(before);
+    expect(totalsCells(container).at(-1)).toBe("0");
+  });
+});
+

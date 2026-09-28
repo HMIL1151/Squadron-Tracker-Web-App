@@ -102,6 +102,25 @@
   color: var(--color-text-muted);
 }
 
+/*
+ * The figure a training officer is actually asked for. Set beside the
+ * distribution rather than over the plot, because it describes the same thing
+ * the bands below it do.
+ */
+.on-track {
+  margin: 6px 0 0;
+  font-size: 12.5px;
+  color: var(--color-text-muted);
+}
+
+.on-track-figure {
+  margin-right: 6px;
+  font-size: 15px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text);
+}
+
 .bands {
   display: flex;
   height: 30px;

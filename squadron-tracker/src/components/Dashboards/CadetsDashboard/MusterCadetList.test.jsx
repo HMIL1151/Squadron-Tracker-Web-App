@@ -123,3 +123,20 @@ describe("the detail panel", () => {
     expect(screen.queryByRole("complementary")).not.toBeInTheDocument();
   });
 });
+
+describe("the joining date", () => {
+  /*
+   * The classic list has a Start Date column. This screen dropped it on
+   * purpose -- service length is the useful form of it -- but dropping the
+   * column dropped the date from the interface altogether, and it is the
+   * thing service length is derived from. The panel carries it.
+   */
+  it("shows when a cadet joined, in the panel", async () => {
+    const { user, container } = renderView();
+    await user.click(within(container.querySelector("tbody")).getByText("Amelia Hart"));
+
+    const panel = screen.getByLabelText(/Amelia Hart details/);
+    expect(within(panel).getByText("Joined")).toBeInTheDocument();
+    expect(within(panel).getByText("2021-09-06")).toBeInTheDocument();
+  });
+});

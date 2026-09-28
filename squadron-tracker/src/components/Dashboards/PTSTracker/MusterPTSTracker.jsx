@@ -415,6 +415,8 @@ const MusterPTSTracker = ({ user }) => {
       align: "center",
       width: "104px",
       sortValue: (row) => row.byLevel[category + ":" + level] || "",
+      /* How many cadets hold this one, the way the classic tracker counts. */
+      total: (rows) => rows.filter((row) => row.byLevel[category + ":" + level]).length,
       render: (row) => {
         const date = row.byLevel[category + ":" + level];
         if (!date) {
@@ -475,6 +477,7 @@ const MusterPTSTracker = ({ user }) => {
       header: category,
       align: "center",
       sortValue: (row) => row.highest[category]?.date || "",
+      total: (rows) => rows.filter((row) => row.highest[category]).length,
       render: (row) => {
         const held = row.highest[category];
         if (!held) {
@@ -519,6 +522,7 @@ const MusterPTSTracker = ({ user }) => {
       align: "right",
       width: "84px",
       sortValue: (row) => row.held,
+      total: (rows) => rows.reduce((sum, row) => sum + row.held, 0),
       render: (row) => <strong>{row.held}</strong>,
     },
   ];
@@ -548,6 +552,7 @@ const MusterPTSTracker = ({ user }) => {
         defaultSort={{ key: "held", direction: "desc" }}
         stickyFirstColumn
         dense
+        showTotals
         toolbar={
           <>
             <MusterSearch

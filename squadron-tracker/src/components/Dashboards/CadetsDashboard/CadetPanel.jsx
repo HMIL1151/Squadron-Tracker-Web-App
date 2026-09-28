@@ -125,6 +125,10 @@ const CadetPanel = ({ row, events, onClose, onEdit }) => {
             <dt>Service</dt>
             <dd className={styles["stat-small"]}>{serviceLabel(row.serviceMonths)}</dd>
           </div>
+          <div className={styles.stat}>
+            <dt>Joined</dt>
+            <dd className={styles["stat-small"]}>{row.startDate || "Not recorded"}</dd>
+          </div>
         </dl>
 
         <section className={styles.section}>

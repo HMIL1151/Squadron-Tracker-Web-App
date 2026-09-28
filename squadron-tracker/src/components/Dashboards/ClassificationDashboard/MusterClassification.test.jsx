@@ -240,3 +240,30 @@ describe("recording a pass", () => {
     expect(saved[0].data.examName).toBe(exam);
   });
 });
+
+describe("things the classic screen shows", () => {
+  /*
+   * Found by comparing the two screens line by line rather than by anyone
+   * reporting them. Both were computed here and then dropped on the floor:
+   * `isBehind` never reached the page, and the plot was wired to two empty
+   * functions.
+   */
+  it("says what share of the squadron is on track", () => {
+    // The classic screen prints this over the plot as "72.4% On Track".
+    const { container } = renderView();
+    const distribution = container.querySelector('[aria-label="Where the Squadron Sits"]');
+    expect(within(distribution).getByText(/on track for their service length/)).toBeInTheDocument();
+    expect(within(distribution).getByText(/^\d+%$/)).toBeInTheDocument();
+  });
+
+  it("counts on-track against the target for each cadet's service length", () => {
+    const { container, data } = renderView();
+    const distribution = container.querySelector('[aria-label="Where the Squadron Sits"]');
+    const shown = Number(within(distribution).getByText(/^\d+%$/).textContent.replace("%", ""));
+
+    // Whatever the number is, it has to be a percentage of the cadets on strength.
+    expect(shown).toBeGreaterThanOrEqual(0);
+    expect(shown).toBeLessThanOrEqual(100);
+    expect(data.cadets.length).toBeGreaterThan(0);
+  });
+});

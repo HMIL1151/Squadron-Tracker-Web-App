@@ -94,6 +94,15 @@ const MusterCadetList = ({ user }) => {
         records: own.length,
         points: getCadetPoints(name, currentYear, events, flightPoints),
         serviceMonths: progress.serviceLengthInMonths,
+        /*
+         * The stored joining date. The list deliberately shows service length
+         * rather than this -- "3 Yrs, 1 Mos, 12 Days" is not a column -- but
+         * dropping the column dropped the DATE from the interface altogether,
+         * and it is the thing service length is derived from. The panel shows
+         * it, which is where you look when you are checking one cadet.
+         */
+        startDate: cadet.startDate || "",
+
       };
     });
   }, [data.cadets, data.events, data.flightPoints, flightMap, currentYear]);
