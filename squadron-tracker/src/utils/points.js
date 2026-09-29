@@ -69,6 +69,7 @@ export const getEventDescription = (event) => {
   if (event.examName) return event.examName;
   if (event.eventName) return event.eventName;
   if (event.specialAward) return event.specialAward;
+  if (event.weaponName) return `${event.weaponName} Weapon Handling Test`;
   return "";
 };
 

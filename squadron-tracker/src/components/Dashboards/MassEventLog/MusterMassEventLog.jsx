@@ -39,6 +39,10 @@ import styles from "./MusterMassEventLog.module.css";
  * they are the two things staff most often want to slice by, and having to
  * open a record to find out which flight someone is in is why people keep
  * their own lists.
+ *
+ * The add popup here also takes more than one date -- one activity, several
+ * nights -- written as one record per cadet per date. The classic screen
+ * renders the same popup without that option.
  */
 
 const ALL = "all";
@@ -292,6 +296,10 @@ const MusterMassEventLog = ({ user }) => {
         eventDate={log.eventDate}
         handleDateChange={log.handleDateChange}
         onButtonSelect={log.handleButtonSelect}
+        extraDates={log.extraDates}
+        onAddDate={log.addDate}
+        onExtraDateChange={log.handleExtraDateChange}
+        onRemoveDate={log.removeDate}
       />
       <EventDetailsPopup
         isOpen={log.isEventPopupOpen}

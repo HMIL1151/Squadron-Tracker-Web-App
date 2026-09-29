@@ -120,6 +120,7 @@ const EVENT_HEADERS = [
   "Event Name",
   "Event Category",
   "Special Award",
+  "Weapon",
   "Added By",
   "Created At",
 ];
@@ -138,6 +139,7 @@ export const eventLogCsv = (events) =>
       event.eventName,
       event.eventCategory,
       event.specialAward,
+      event.weaponName,
       event.addedBy,
       timestampToIso(event.createdAt),
     ])

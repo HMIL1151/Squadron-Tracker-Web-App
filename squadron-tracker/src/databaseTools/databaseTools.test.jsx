@@ -241,3 +241,102 @@ describe("keeping DataContext in step", () => {
     expect(written.path.split("/").pop()).toMatch(/^auto-/);
   });
 });
+
+describe("several dates at once", () => {
+  /*
+   * "Joe did road marching on the 3rd, the 10th and the 17th" -- one form,
+   * one record per cadet per date.
+   */
+  it("writes one record per cadet per date", async () => {
+    const { result } = setup();
+    let outcome;
+    await act(async () => {
+      outcome = await result.current(
+        newEvent({
+          cadetName: ["Isla Muir", "Femi Adeyemi"],
+          eventName: "Road March",
+          dates: ["2025-06-03", "2025-06-10"],
+        })
+      );
+    });
+    expect(eventWrites().map((w) => [w.data.cadetName, w.data.date])).toEqual([
+      ["Isla Muir", "2025-06-03"],
+      ["Femi Adeyemi", "2025-06-03"],
+      ["Isla Muir", "2025-06-10"],
+      ["Femi Adeyemi", "2025-06-10"],
+    ]);
+    expect(outcome.saved).toHaveLength(4);
+  });
+
+  it("writes a date typed twice only once", async () => {
+    const { result } = setup();
+    await act(async () => {
+      await result.current(
+        newEvent({ eventName: "Road March", dates: ["2025-06-03", "2025-06-03"] })
+      );
+    });
+    expect(eventWrites()).toHaveLength(1);
+  });
+
+  it("names the date of a duplicate it skipped", async () => {
+    // Ben already has Weekly Parade on 2025-03-06.
+    const { result } = setup();
+    let outcome;
+    await act(async () => {
+      outcome = await result.current(
+        newEvent({
+          cadetName: ["Ben Okafor"],
+          eventName: "Weekly Parade",
+          dates: ["2025-03-06", "2025-03-13"],
+        })
+      );
+    });
+    expect(eventWrites().map((w) => w.data.date)).toEqual(["2025-03-13"]);
+    expect(outcome.skippedDuplicates).toEqual(["Ben Okafor (2025-03-06)"]);
+  });
+
+  it("refuses the lot when any one date is out of range", async () => {
+    const { result } = setup();
+    await act(async () => {
+      await result.current(
+        newEvent({ eventName: "Road March", dates: ["2025-06-03", "2025-06-30"] })
+      );
+    });
+    expect(eventWrites()).toEqual([]);
+  });
+});
+
+describe("weapon handling tests", () => {
+  const pass = (over = {}) =>
+    newEvent({ eventName: "", eventCategory: "", weaponName: "L98A2", ...over });
+
+  it("stores the weapon on the record", async () => {
+    const { result } = setup();
+    await act(async () => {
+      await result.current(pass());
+    });
+    expect(eventWrites()[0].data).toMatchObject({ weaponName: "L98A2", date: "2025-06-10" });
+  });
+
+  it("skips the same pass entered twice, but allows a re-test", async () => {
+    const { result } = setup();
+    await act(async () => {
+      await result.current(pass());
+    });
+    await act(async () => {
+      await result.current(pass());
+    });
+    await act(async () => {
+      await result.current(pass({ date: "2025-06-12" }));
+    });
+    expect(eventWrites().map((w) => w.data.date)).toEqual(["2025-06-10", "2025-06-12"]);
+  });
+
+  it("leaves every other kind of record without the field", async () => {
+    const { result } = setup();
+    await act(async () => {
+      await result.current(newEvent());
+    });
+    expect(eventWrites()[0].data).not.toHaveProperty("weaponName");
+  });
+});

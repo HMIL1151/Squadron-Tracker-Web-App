@@ -4,6 +4,13 @@ import { useSquadron } from "../../../context/SquadronContext";
 import { badgeLevel } from "../../../utils/examList";
 import { getAssignableFlights } from "../../../utils/flights";
 import { useSaveEvent } from "../../../databaseTools/databaseTools";
+import {
+  getWeapons,
+  isExpired,
+  latestWeaponPasses,
+  todayIso,
+  weaponExpiry,
+} from "../../../utils/weapons";
 import MusterPage from "../../Muster/MusterPage";
 import MusterTable from "../../Muster/MusterTable";
 import MusterDialog from "../../Muster/MusterDialog";
@@ -58,6 +65,15 @@ import styles from "./MusterPTSTracker.module.css";
  *
  * Every count obeys every filter. A total that ignores the control sitting
  * above it is a total nobody can use.
+ *
+ * Weapon handling tests ride along at the right-hand end, one column per
+ * weapon configured under Record Categories. They are the exception to the
+ * rule above, deliberately: a WHT is a currency, not an achievement, and the
+ * only question about it is "is this cadet in date TODAY" -- so the level,
+ * subject and date-range filters, which are all about what was awarded when,
+ * leave these columns alone. The cell shows the latest pass and goes red on
+ * the day it runs out; clicking any weapon cell records a pass, because a
+ * re-test is the normal thing to do to one that has expired.
  */
 
 const ALL = "all";
@@ -159,6 +175,8 @@ const MusterPTSTracker = ({ user }) => {
   const [pendingLevel, setPendingLevel] = useState(badgeLevel[0]);
   const [pendingDate, setPendingDate] = useState("");
   const [dialogError, setDialogError] = useState(null);
+  const [pendingWeapon, setPendingWeapon] = useState(null);
+  const [weaponDate, setWeaponDate] = useState("");
 
   /*
    * The syllabus areas, from the squadron's own badge list rather than a
@@ -174,6 +192,10 @@ const MusterPTSTracker = ({ user }) => {
     });
     return [...seen].sort((a, b) => a.localeCompare(b));
   }, [data.flightPoints, data.events]);
+
+  const weapons = useMemo(() => getWeapons(data.flightPoints), [data.flightPoints]);
+  const weaponPasses = useMemo(() => latestWeaponPasses(data.events), [data.events]);
+  const today = todayIso();
 
   /** Every year a badge was awarded in, newest first, for the range selects. */
   const badgeYears = useMemo(() => {
@@ -267,12 +289,14 @@ const MusterPTSTracker = ({ user }) => {
         byLevel,
         everHeld,
         held: Object.keys(highest).length,
+        weaponPasses: weaponPasses[name] || {},
       };
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     data.cadets,
     data.events,
+    weaponPasses,
     flightMap,
     levels,
     subjects,
@@ -403,6 +427,115 @@ const MusterPTSTracker = ({ user }) => {
     }
   };
 
+  const openWeapon = (row, weapon) => {
+    setPendingWeapon({ cadetName: row.name, weapon, lastPass: row.weaponPasses[weapon.name] });
+    setWeaponDate("");
+    setDialogError(null);
+  };
+
+  const closeWeapon = () => {
+    setPendingWeapon(null);
+    setDialogError(null);
+  };
+
+  const confirmWeapon = async () => {
+    if (!weaponDate) {
+      setDialogError("Pick the date the test was passed.");
+      return;
+    }
+
+    try {
+      const { error, skippedDuplicates } = await saveEvent({
+        createdAt: new Date(),
+        addedBy: user?.displayName || "Unknown",
+        cadetName: [pendingWeapon.cadetName],
+        date: weaponDate,
+        badgeCategory: "",
+        badgeLevel: "",
+        examName: "",
+        eventName: "",
+        eventCategory: "",
+        specialAward: "",
+        weaponName: pendingWeapon.weapon.name,
+      });
+      if (error) {
+        setDialogError(error);
+        return;
+      }
+      if (skippedDuplicates?.length) {
+        setDialogError("That pass is already recorded.");
+        return;
+      }
+      closeWeapon();
+    } catch (err) {
+      console.error("Error recording weapon handling test:", err);
+      setDialogError("That could not be saved. Try again.");
+    }
+  };
+
+  /** Whether a cadet is in date on a weapon; undefined when never passed. */
+  const weaponStatus = (row, weapon) => {
+    const passed = row.weaponPasses[weapon.name];
+    if (!passed) return undefined;
+    const expiry = weaponExpiry(passed, weapon.months);
+    return { passed, expiry, expired: isExpired(expiry, today) };
+  };
+
+  /*
+   * Grouped under one heading in the Every Level view, where every other
+   * column already sits under its syllabus area; ungrouped in Highest Held,
+   * which has no group row to put it in.
+   */
+  const weaponColumns = weapons.map((weapon) => ({
+    key: "weapon:" + weapon.name,
+    header: weapon.name,
+    group: view === "levels" ? "Weapon Handling" : undefined,
+    align: "center",
+    width: "120px",
+    sortValue: (row) => weaponStatus(row, weapon)?.expiry || "",
+    /* How many cadets are IN DATE -- an expired pass is not a qualification. */
+    total: (rows) => rows.filter((row) => weaponStatus(row, weapon)?.expired === false).length,
+    render: (row) => {
+      const status = weaponStatus(row, weapon);
+      if (!status) {
+        return (
+          <button
+            type="button"
+            className={styles.add}
+            onClick={(clickEvent) => {
+              clickEvent.stopPropagation();
+              openWeapon(row, weapon);
+            }}
+          >
+            <span aria-hidden="true">+</span>
+            <span className={styles["visually-hidden"]}>
+              Record a {weapon.name} handling test for {row.name}
+            </span>
+          </button>
+        );
+      }
+      const label = status.expired
+        ? `Expired ${shortDate(status.expiry)}`
+        : `In date until ${shortDate(status.expiry)}`;
+      return (
+        <button
+          type="button"
+          className={status.expired ? styles["weapon-expired"] : styles["weapon-valid"]}
+          title={`${weapon.name}: passed ${shortDate(status.passed)}. ${label}.`}
+          onClick={(clickEvent) => {
+            clickEvent.stopPropagation();
+            openWeapon(row, weapon);
+          }}
+        >
+          {shortDate(status.passed)}
+          <span className={styles["visually-hidden"]}>
+            {` (${label}. Record a new ${weapon.name} pass for ${row.name})`}
+          </span>
+        </button>
+      );
+    },
+  }));
+
   /*
    * Four columns per area in the expanded view, grouped under the area name
    * so it is written once rather than prefixed onto all four headings.
@@ -516,6 +649,7 @@ const MusterPTSTracker = ({ user }) => {
         );
       },
     }))),
+    ...weaponColumns,
     {
       key: "held",
       header: "Held",
@@ -724,6 +858,40 @@ const MusterPTSTracker = ({ user }) => {
               type="date"
               value={pendingDate}
               onChange={(inputEvent) => setPendingDate(inputEvent.target.value)}
+            />
+          )}
+        </MusterField>
+      </MusterDialog>
+
+      <MusterDialog
+        open={Boolean(pendingWeapon)}
+        title="Record a Weapon Handling Test"
+        description={
+          pendingWeapon
+            ? `${pendingWeapon.weapon.name} for ${pendingWeapon.cadetName}. A pass lasts ${
+                pendingWeapon.weapon.months
+              } month${pendingWeapon.weapon.months === 1 ? "" : "s"}.`
+            : ""
+        }
+        onClose={closeWeapon}
+        onConfirm={confirmWeapon}
+        confirmLabel="Record Pass"
+        error={dialogError}
+      >
+        <MusterField
+          label="Date passed"
+          hint={
+            pendingWeapon?.lastPass
+              ? `Last passed ${shortDate(pendingWeapon.lastPass)}. A new pass replaces it on the board; the old one stays in the event log.`
+              : undefined
+          }
+        >
+          {(id) => (
+            <input
+              id={id}
+              type="date"
+              value={weaponDate}
+              onChange={(inputEvent) => setWeaponDate(inputEvent.target.value)}
             />
           )}
         </MusterField>

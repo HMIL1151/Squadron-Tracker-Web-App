@@ -128,5 +128,10 @@
     "version": "v0.18.2",
     "date": "28/09/2026",
     "content": "Four things the new interface had lost, found by comparing it with the old one screen by screen rather than by waiting for them to be noticed.\nOn the Classification Tracker the graph works again: hover a point to pick out that cadet's row, click one to add exams for them. The same screen now says what share of the squadron is on track for their service length, which the old one prints over its graph.\nThe PTS Tracker has its totals back — the count under each badge column of how many cadets hold it. The count beside each colour answers a different question: it counts Blues of every subject.\nThe Cadet List shows the date a cadet joined again, in the panel that opens when you select them. The list itself still shows length of service, which is the more useful form of it day to day."
+  },
+  {
+    "version": "v0.19.0",
+    "date": "29/09/2026",
+    "content": "Weapon handling tests on the PTS Tracker. Add your weapons under Record Categories, each with how many months a pass lasts, and each gets its own column. Click a cell to record the date a cadet passed; the cell turns red on the day the pass runs out. Clicking a filled cell records a re-test. Every pass is also kept in the Mass Event Log, so a wrong entry can be deleted there.\nOne record, several dates: when adding a record in the Mass Event Log you can now add more than one date — road marching on the 3rd, the 10th and the 17th is one form, saved as one record per cadet per date.\nFixed: in the new interface, typing into a pop-up form moved the cursor onto its close button after the first letter, so the rest of what you typed was lost and a space closed the form."
   }
 ]

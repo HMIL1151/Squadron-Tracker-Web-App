@@ -22,6 +22,15 @@ const AddEventPopup = ({
   eventDate,
   handleDateChange,
   onButtonSelect,
+  /*
+   * Optional, and only the Muster screen passes them. With extraDates
+   * undefined the popup is exactly the classic one -- no "Add another date"
+   * -- which the classic snapshot holds it to.
+   */
+  extraDates,
+  onAddDate,
+  onExtraDateChange,
+  onRemoveDate,
 }) => {
   const [selectedButton, setSelectedButton] = useState(null);
   const [freeText, setFreeText] = useState("");
@@ -63,9 +72,8 @@ const AddEventPopup = ({
   const onAddEventClick = () => {
     setValidationError("");
 
-    // Validate the event date
+    // Validate the event date, and any extra ones
     const currentDate = new Date();
-    const selectedDate = new Date(eventDate);
 
     const eightYearsAgo = new Date();
     eightYearsAgo.setFullYear(currentDate.getFullYear() - 8);
@@ -73,7 +81,18 @@ const AddEventPopup = ({
     const sevenDaysFromNow = new Date();
     sevenDaysFromNow.setDate(currentDate.getDate() + 7);
 
-    if (selectedDate < eightYearsAgo || selectedDate > sevenDaysFromNow) {
+    const outOfRange = (value) => {
+      const selectedDate = new Date(value);
+      return selectedDate < eightYearsAgo || selectedDate > sevenDaysFromNow;
+    };
+    const extras = (extraDates || []).filter(Boolean);
+
+    if (extras.length && (selectedButton === "Badge" || selectedButton === "Classification/Exam")) {
+      setValidationError("A badge or exam is only passed once. Remove the extra dates.");
+      return;
+    }
+
+    if (outOfRange(eventDate) || extras.some(outOfRange)) {
       setValidationError(
         "Invalid date: The selected date must be within the last 8 years and no more than 7 days in the future."
       );
@@ -178,7 +197,34 @@ const AddEventPopup = ({
             value={eventDate}
             onChange={handleDateChange}
           />
+          {extraDates && (
+            <button type="button" className={styles["add-date-button"]} onClick={onAddDate}>
+              + Add another date
+            </button>
+          )}
         </div>
+        {extraDates?.map((value, index) => (
+          <div key={index} className={styles["flex-container"]}>
+            <label className={styles["popup-label"]} htmlFor={`event-date-${index + 2}`}>
+              Date {index + 2}:
+            </label>
+            <input
+              id={`event-date-${index + 2}`}
+              type="date"
+              className={"date-input"}
+              value={value}
+              onChange={(e) => onExtraDateChange(index, e.target.value)}
+            />
+            <button
+              type="button"
+              className={styles["remove-date-button"]}
+              aria-label={`Remove date ${index + 2}`}
+              onClick={() => onRemoveDate(index)}
+            >
+              &times;
+            </button>
+          </div>
+        ))}
         <div className={styles["button-grid"]}>
           {["Badge", "Classification/Exam", "Event/Other", "Special"].map((buttonText) => (
             <button

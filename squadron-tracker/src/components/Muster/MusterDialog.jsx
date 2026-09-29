@@ -40,15 +40,32 @@ const MusterDialog = ({
   const panelRef = useRef(null);
   const returnFocusRef = useRef(null);
 
+  /*
+   * onClose through a ref, and the effect keyed on `open` alone.
+   *
+   * Callers pass an inline `() => setEditing(null)`, a new function every
+   * render, and with onClose in the dependency list the effect re-ran on each
+   * keystroke: its cleanup put focus back on the page, then it focused the
+   * dialog's first focusable element -- the header's Close button. So after
+   * one character everything else typed went to Close, and a space in
+   * "Parade Night" shut the dialog and threw the form away.
+   */
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
+
   useEffect(() => {
     if (!open) return undefined;
 
     returnFocusRef.current = document.activeElement;
-    const firstField = panelRef.current?.querySelector("input, select, textarea, button");
+    // A field first, as promised above; the header's Close button is only the
+    // fallback for a dialog with nothing to fill in.
+    const firstField =
+      panelRef.current?.querySelector("input, select, textarea") ||
+      panelRef.current?.querySelector("button");
     firstField?.focus();
 
     const onKeyDown = (event) => {
-      if (event.key === "Escape") onClose();
+      if (event.key === "Escape") onCloseRef.current();
     };
     document.addEventListener("keydown", onKeyDown);
 
@@ -58,7 +75,7 @@ const MusterDialog = ({
       // the top of the page.
       if (returnFocusRef.current instanceof HTMLElement) returnFocusRef.current.focus();
     };
-  }, [open, onClose]);
+  }, [open]);
 
   if (!open) return null;
 
