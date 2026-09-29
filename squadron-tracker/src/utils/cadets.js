@@ -15,11 +15,15 @@ import { getEventDescription, getEventYear } from "./points";
  *
  * Events with none of the describing fields set are dropped rather than
  * printed as a blank line.
+ *
+ * Weapon handling tests are dropped too. They are a currency, re-taken every
+ * year or so, and a certificate listing "Rifle Weapon Handling Test" four
+ * times reads as padding rather than achievement.
  */
 export const getEventsForCadet = (cadetName, data) => {
   const events = data?.events || [];
   return events
-    .filter((event) => event.cadetName === cadetName)
+    .filter((event) => event.cadetName === cadetName && !event.weaponName)
     .map((event) => ({ event: getEventDescription(event), date: event.date }))
     .filter(({ event }) => event !== "");
 };

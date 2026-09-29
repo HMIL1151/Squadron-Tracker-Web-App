@@ -32,6 +32,13 @@ export const useMassEventLog = (user) => {
   const [filteredNames, setFilteredNames] = useState([]);
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
   const [eventDate, setEventDate] = useState("");
+  /*
+   * Dates beyond the first, for "did road marching on the 3rd, 10th and
+   * 17th". Kept apart from eventDate rather than turning it into an array,
+   * so the classic popup -- which never offers a second date -- sees exactly
+   * the state it always has.
+   */
+  const [extraDates, setExtraDates] = useState([]);
   const [selectedButton, setSelectedButton] = useState(null);
   const [successMessage, setSuccessMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
@@ -60,6 +67,7 @@ export const useMassEventLog = (user) => {
     setFilteredNames([]);
     setHighlightedIndex(-1);
     setEventDate("");
+    setExtraDates([]);
     setInputValue("");
     setSelectedButton(null);
   }, [data, squadronNumber]);
@@ -101,6 +109,11 @@ export const useMassEventLog = (user) => {
   };
 
   const handleDateChange = (e) => setEventDate(e.target.value);
+
+  const addDate = () => setExtraDates((prev) => [...prev, ""]);
+  const handleExtraDateChange = (index, value) =>
+    setExtraDates((prev) => prev.map((current, i) => (i === index ? value : current)));
+  const removeDate = (index) => setExtraDates((prev) => prev.filter((_, i) => i !== index));
 
   const handleNameSelect = (name) => {
     if (!selectedNames.includes(name)) {
@@ -154,12 +167,24 @@ export const useMassEventLog = (user) => {
       return;
     }
 
+    const dates = [eventDate, ...extraDates.filter(Boolean)];
+
+    // A badge or exam is passed once; a second date could only be a duplicate.
+    if (
+      dates.length > 1 &&
+      (selectedButton === "Badge" || selectedButton === "Classification/Exam")
+    ) {
+      setErrorMessage("A badge or exam is only passed once. Remove the extra dates.");
+      return;
+    }
+
     try {
       const newEvent = {
         addedBy: user.displayName,
         createdAt: new Date(),
         cadetName: selectedNames,
         date: eventDate,
+        dates,
         badgeCategory: selectedButton === "Badge" ? selectedBadgeType : "",
         badgeLevel: selectedButton === "Badge" ? selectedBadgeLevel : "",
         examName: selectedButton === "Classification/Exam" ? selectedExam : "",
@@ -178,6 +203,7 @@ export const useMassEventLog = (user) => {
       setSelectedNames([]);
       setInputValue("");
       setEventDate("");
+      setExtraDates([]);
       setSelectedButton(null);
       setIsPopupOpen(false);
       setErrorMessage("");
@@ -190,6 +216,8 @@ export const useMassEventLog = (user) => {
         setSuccessMessage(
           `Event added. Already recorded for ${skippedDuplicates.join(", ")}.`
         );
+      } else if (saved.length > 1 && dates.length > 1) {
+        setSuccessMessage(`${saved.length} records added.`);
       } else {
         setSuccessMessage("Event added successfully!");
       }
@@ -255,6 +283,10 @@ export const useMassEventLog = (user) => {
     highlightedIndex,
     selectedNames,
     eventDate,
+    extraDates,
+    addDate,
+    handleExtraDateChange,
+    removeDate,
     handleInputChange,
     handleKeyDown,
     handleNameSelect,

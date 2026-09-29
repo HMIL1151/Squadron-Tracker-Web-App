@@ -20,6 +20,10 @@ import styles from "./MusterRecordCategories.module.css";
  * Each list says what it is for, because the names do not: "Badge Points"
  * scores exams and special awards too, and "Badges" is the list of syllabus
  * subjects rather than a list of badges.
+ *
+ * Weapons joined later as a fifth list. It scores nothing -- its number is
+ * how many months a handling test pass lasts -- but it is the same kind of
+ * thing: squadron vocabulary that another screen draws its columns from.
  */
 const MusterRecordCategories = () => {
   const { lists, save, remove } = useRecordCategories();
@@ -81,7 +85,7 @@ const MusterRecordCategories = () => {
     if (kind.shape === "priced") {
       columns.push({
         key: "points",
-        header: "Points",
+        header: kind.valueShort || "Points",
         align: "right",
         width: "100px",
         sortValue: (row) => row.points,
@@ -179,7 +183,7 @@ const MusterRecordCategories = () => {
         </MusterField>
 
         {editingKind?.shape === "priced" && (
-          <MusterField label="Points">
+          <MusterField label={editingKind.valueLabel || "Points"}>
             {(id) => (
               <input
                 id={id}
@@ -197,7 +201,11 @@ const MusterRecordCategories = () => {
       <MusterDialog
         open={Boolean(deleting)}
         title={deleting ? "Delete " + deleting.name + "?" : "Delete"}
-        description="Records already logged against it keep their name, but stop scoring."
+        description={
+          deleting?.kindKey === "weapons"
+            ? "Passes already logged stay in the event log, but the PTS tracker stops showing a column for it."
+            : "Records already logged against it keep their name, but stop scoring."
+        }
         onClose={() => setDeleting(null)}
         onConfirm={confirmDelete}
         confirmLabel={busy ? "Deleting…" : "Delete"}

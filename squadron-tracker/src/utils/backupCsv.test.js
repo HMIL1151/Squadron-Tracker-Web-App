@@ -191,7 +191,15 @@ describe("eventLogCsv", () => {
 
   it("writes every stored field, blanks included", () => {
     expect(dataRows(eventLogCsv([event]))[0]).toBe(
-      "event-9999-01,Amelia Hart,2024-03-12,Radio,Blue,,,,,Admin User,2025-06-01T09:00:00.000Z"
+      "event-9999-01,Amelia Hart,2024-03-12,Radio,Blue,,,,,,Admin User,2025-06-01T09:00:00.000Z"
+    );
+  });
+
+  it("keeps the weapon on a weapon handling test pass", () => {
+    // Only written on WHT passes, so every other record has it undefined.
+    const csv = eventLogCsv([{ ...event, badgeCategory: "", badgeLevel: "", weaponName: "L98A2" }]);
+    expect(dataRows(csv)[0]).toBe(
+      "event-9999-01,Amelia Hart,2024-03-12,,,,,,,L98A2,Admin User,2025-06-01T09:00:00.000Z"
     );
   });
 

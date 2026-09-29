@@ -20,7 +20,7 @@ import { screen, within } from "@testing-library/react";
 
 import MusterPTSTracker from "./MusterPTSTracker";
 import { renderWithProviders } from "../../../test/renderWithProviders";
-import { SQUADRONS, userFor } from "../../../test/dummyData";
+import { SQUADRONS, dataContextFor, userFor } from "../../../test/dummyData";
 
 const renderView = (options = {}) =>
   renderWithProviders(<MusterPTSTracker user={userFor(SQUADRONS.FAKETON)} />, {
@@ -545,3 +545,118 @@ describe("the totals row", () => {
   });
 });
 
+
+/*
+ * Weapon handling tests. The frozen clock is 2025-06-15, so a 12-month pass
+ * from 2024-06-15 runs out today and one from 2024-06-16 runs out tomorrow.
+ */
+describe("weapon handling tests", () => {
+  const withWeapons = () => {
+    const base = dataContextFor(SQUADRONS.FAKETON);
+    const pass = (id, cadetName, weaponName, date) => ({
+      id,
+      cadetName,
+      weaponName,
+      date,
+      badgeCategory: "",
+      badgeLevel: "",
+      examName: "",
+      eventName: "",
+      eventCategory: "",
+      specialAward: "",
+    });
+    return {
+      ...base,
+      flightPoints: { ...base.flightPoints, Weapons: { Rifle: 12, Pistol: 6 } },
+      events: [
+        ...base.events,
+        pass("wht-1", "Amelia Hart", "Rifle", "2024-06-15"),
+        pass("wht-2", "Isla Muir", "Rifle", "2024-06-16"),
+        pass("wht-3", "Isla Muir", "Pistol", "2024-01-01"),
+        pass("wht-4", "Isla Muir", "Pistol", "2025-03-01"),
+      ],
+    };
+  };
+
+  const renderWeapons = () => renderView({ data: withWeapons() });
+
+  it("gives every configured weapon a column, in both views", async () => {
+    const { container, user } = renderWeapons();
+    expect(headers(container)).toEqual(expect.arrayContaining(["Weapon Handling", "Pistol", "Rifle"]));
+    await showSummary(user);
+    expect(headers(container)).toEqual(expect.arrayContaining(["Pistol", "Rifle"]));
+  });
+
+  it("has no weapon columns until a weapon is configured", () => {
+    const { container } = renderView();
+    expect(headers(container)).not.toContain("Weapon Handling");
+  });
+
+  it("turns a pass red on the day it runs out", () => {
+    const { container } = renderWeapons();
+    const amelia = within(rowFor(container, "Amelia Hart"));
+    expect(amelia.getByRole("button", { name: /Expired 15 Jun 2025/ })).toBeInTheDocument();
+
+    const isla = within(rowFor(container, "Isla Muir"));
+    expect(isla.getByRole("button", { name: /In date until 16 Jun 2025/ })).toBeInTheDocument();
+  });
+
+  it("goes by the latest pass, not the first", () => {
+    // Isla's January 2024 Pistol pass expired long ago; March 2025 has not.
+    const { container } = renderWeapons();
+    const isla = within(rowFor(container, "Isla Muir"));
+    expect(isla.getByRole("button", { name: /01 Mar 2025.*In date until 01 Sept? 2025/ })).toBeInTheDocument();
+  });
+
+  it("counts only cadets who are in date", () => {
+    const { container } = renderWeapons();
+    const heads = [...container.querySelectorAll("thead tr:last-child th")].map((th) => th.textContent);
+    const totals = [...container.querySelectorAll("tfoot td, tfoot th")].map((cell) => cell.textContent);
+    // Rifle: Amelia expired, Isla in date.
+    expect(totals[heads.indexOf("Rifle")]).toBe("1");
+  });
+
+  it("records a pass from an empty cell, as an event log record", async () => {
+    const { container, user, writes } = renderWeapons();
+    const ben = within(rowFor(container, "Ben Okafor"));
+    await user.click(ben.getByRole("button", { name: "Record a Rifle handling test for Ben Okafor" }));
+    await user.type(screen.getByLabelText("Date passed"), "2025-06-10");
+    await user.click(screen.getByRole("button", { name: "Record Pass" }));
+
+    const written = writes().filter((w) => w.path.includes("/EventLog/"));
+    expect(written).toHaveLength(1);
+    expect(written[0].data).toMatchObject({
+      cadetName: "Ben Okafor",
+      weaponName: "Rifle",
+      date: "2025-06-10",
+    });
+    expect(
+      within(rowFor(container, "Ben Okafor")).getByRole("button", { name: /In date until 10 Jun 2026/ })
+    ).toBeInTheDocument();
+  });
+
+  it("records a re-test over an expired pass", async () => {
+    const { container, user, writes } = renderWeapons();
+    await user.click(
+      within(rowFor(container, "Amelia Hart")).getByRole("button", { name: /Expired 15 Jun 2025/ })
+    );
+    expect(screen.getByText(/Last passed 15 Jun 2024/)).toBeInTheDocument();
+    await user.type(screen.getByLabelText("Date passed"), "2025-06-14");
+    await user.click(screen.getByRole("button", { name: "Record Pass" }));
+
+    expect(writes().filter((w) => w.path.includes("/EventLog/"))).toHaveLength(1);
+    expect(
+      within(rowFor(container, "Amelia Hart")).getByRole("button", { name: /In date until 14 Jun 2026/ })
+    ).toBeInTheDocument();
+  });
+
+  it("ignores the badge filters, which are about what was awarded when", async () => {
+    const { container, user } = renderWeapons();
+    // Switch off every level and every subject: no badge column is left.
+    for (const button of screen.getAllByRole("button", { name: "None" })) {
+      await user.click(button);
+    }
+    expect(headers(container)).not.toContain("Blue");
+    expect(headers(container)).toEqual(expect.arrayContaining(["Rifle", "Pistol"]));
+  });
+});

@@ -304,6 +304,33 @@ export const buildDevSquadron = () => {
     }
   });
 
+  /*
+   * Weapon handling tests, generated last so that none of the random draws
+   * above move and the rest of the squadron stays exactly as it was.
+   *
+   * Spread over two years against a 12-month validity, so the PTS board shows
+   * a real mix of in-date and red cells -- and some cadets have a re-test on
+   * top of an older pass, which is the case "only the latest counts" is for.
+   */
+  docs[`${base}/FlightPoints/Weapons`] = {
+    "L98A2 Cadet GP Rifle": 12,
+    "L144A1 Cadet Small Bore Target Rifle": 12,
+  };
+  cadets.forEach((cadet) => {
+    const name = `${cadet.forename} ${cadet.surname}`;
+    ["L98A2 Cadet GP Rifle", "L144A1 Cadet Small Bore Target Rifle"].forEach((weaponName) => {
+      if (random() < 0.35) return;
+      const passes = random() < 0.4 ? 2 : 1;
+      for (let i = 0; i < passes; i += 1) {
+        add({
+          cadetName: name,
+          date: `${2025 + i}-${pad(between(1, 9))}-${pad(between(1, 28))}`,
+          weaponName,
+        });
+      }
+    });
+  });
+
   return docs;
 };
 

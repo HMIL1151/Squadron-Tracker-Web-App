@@ -117,3 +117,70 @@ describe("adding a record", () => {
     expect(screen.getByText(/add.*record/i)).toBeInTheDocument();
   });
 });
+
+/*
+ * One activity on several dates -- "road marching on the 3rd, 10th and 17th"
+ * -- is one form rather than three. The classic popup never offers it; see
+ * MassEventLog.test.jsx, whose snapshot holds that screen still.
+ */
+describe("adding a record on several dates", () => {
+  const popup = () => within(screen.getByRole("dialog"));
+  const eventWrites = (writes) => writes().filter((w) => w.path.includes("/EventLog/"));
+
+  const fillEvent = async (result, name) => {
+    const { user } = result;
+    await user.click(screen.getByRole("button", { name: "Add Record" }));
+    await user.type(popup().getByLabelText("Name(s):"), name.slice(0, 4));
+    const suggestion = (await popup().findAllByText(name)).find((el) => el.tagName === "LI");
+    await user.click(suggestion);
+    await user.type(popup().getByLabelText("Date:"), "2025-06-03");
+    await user.click(popup().getByRole("button", { name: "+ Add another date" }));
+    await user.type(popup().getByLabelText("Date 2:"), "2025-06-10");
+    await user.click(popup().getByRole("button", { name: "+ Add another date" }));
+    await user.type(popup().getByLabelText("Date 3:"), "2025-06-17");
+  };
+
+  it("writes one record per date", async () => {
+    const result = renderView();
+    await fillEvent(result, "Isla Muir");
+    await result.user.click(popup().getByRole("button", { name: "Event/Other" }));
+    await result.user.type(popup().getByLabelText("Event Description:"), "road march");
+    await result.user.selectOptions(popup().getByLabelText("Event Category:"), "Squadron Event");
+    await result.user.click(popup().getByRole("button", { name: "Add Event" }));
+
+    expect(
+      eventWrites(result.writes).map((w) => [w.data.cadetName, w.data.eventName, w.data.date])
+    ).toEqual([
+      ["Isla Muir", "Road March", "2025-06-03"],
+      ["Isla Muir", "Road March", "2025-06-10"],
+      ["Isla Muir", "Road March", "2025-06-17"],
+    ]);
+  });
+
+  it("drops a date that is removed before saving", async () => {
+    const result = renderView();
+    await fillEvent(result, "Isla Muir");
+    await result.user.click(popup().getByRole("button", { name: "Remove date 2" }));
+    await result.user.click(popup().getByRole("button", { name: "Event/Other" }));
+    await result.user.type(popup().getByLabelText("Event Description:"), "road march");
+    await result.user.selectOptions(popup().getByLabelText("Event Category:"), "Squadron Event");
+    await result.user.click(popup().getByRole("button", { name: "Add Event" }));
+
+    expect(eventWrites(result.writes).map((w) => w.data.date)).toEqual([
+      "2025-06-03",
+      "2025-06-17",
+    ]);
+  });
+
+  it("refuses several dates for a badge, which is only passed once", async () => {
+    const result = renderView();
+    await fillEvent(result, "Isla Muir");
+    await result.user.click(popup().getByRole("button", { name: "Badge" }));
+    await result.user.selectOptions(popup().getByLabelText("Badge Type:"), "Radio");
+    await result.user.selectOptions(popup().getByLabelText("Badge Level:"), "Blue");
+    await result.user.click(popup().getByRole("button", { name: "Add Event" }));
+
+    expect(eventWrites(result.writes)).toEqual([]);
+    expect(popup().getByText(/only passed once/)).toBeInTheDocument();
+  });
+});

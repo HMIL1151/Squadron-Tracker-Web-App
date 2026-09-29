@@ -5,6 +5,7 @@ import {
   DOCS,
   fetchDoc,
   removePrice,
+  replaceDoc,
   setList,
   setPrice,
 } from "../../../firebase/flightPoints";
@@ -61,6 +62,23 @@ export const KINDS = {
     title: "Special Awards",
     itemLabel: "Award",
     note: "One-off awards, offered when a record is added.",
+  },
+  /*
+   * Priced in months rather than points, but the same shape: a map of name to
+   * number. `wholeDoc` because the Weapons document does not exist on any
+   * squadron until its first weapon is added, and setPrice/removePrice go
+   * through updateDoc, which rejects on a missing document.
+   */
+  weapons: {
+    doc: DOCS.weapons,
+    field: "Weapons",
+    shape: "priced",
+    wholeDoc: true,
+    valueLabel: "Valid for (months)",
+    valueShort: "Months",
+    title: "Weapons",
+    itemLabel: "Weapon",
+    note: "Weapon handling tests the PTS tracker has a column for, and how long a pass lasts.",
   },
 };
 
@@ -129,7 +147,19 @@ export const useRecordCategories = () => {
     if (!trimmed) return "Give it a name.";
 
     try {
-      if (kind.shape === "priced") {
+      if (kind.wholeDoc) {
+        const value = Number(points);
+        if (!Number.isInteger(value) || value < 1) return "Months must be a whole number, 1 or more.";
+
+        const stored = (await fetchDoc(squadronNumber, kind.doc)) || {};
+        if (previousName !== trimmed && trimmed in stored) return "That already exists.";
+        const next = { ...stored };
+        if (previousName) delete next[previousName];
+        next[trimmed] = value;
+
+        await replaceDoc(squadronNumber, kind.doc, next);
+        patchPriced(kind, () => next);
+      } else if (kind.shape === "priced") {
         const value = Number(points);
         if (!Number.isFinite(value)) return "Points must be a number.";
 
@@ -166,7 +196,12 @@ export const useRecordCategories = () => {
   const remove = async (kindKey, name) => {
     const kind = KINDS[kindKey];
     try {
-      if (kind.shape === "priced") {
+      if (kind.wholeDoc) {
+        const next = { ...((await fetchDoc(squadronNumber, kind.doc)) || {}) };
+        delete next[name];
+        await replaceDoc(squadronNumber, kind.doc, next);
+        patchPriced(kind, () => next);
+      } else if (kind.shape === "priced") {
         await removePrice(squadronNumber, kind.doc, name);
         patchPriced(kind, (current) => {
           const next = { ...current };

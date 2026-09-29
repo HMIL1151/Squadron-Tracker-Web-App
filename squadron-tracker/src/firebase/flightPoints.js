@@ -2,15 +2,22 @@
  * The FlightPoints collection: the price list every dashboard scores against,
  * plus TeamPoints, the bonus points an admin allocates directly to a flight.
  *
- * Five documents, each a different shape:
+ * Six documents, each a different shape:
  *   "Badge Points"           { "Blue Badge": 5, ..., Exam: 8, Special: 25 }
  *   "Event Category Points"  { "Parade Night": 1, ... }
  *   "Badges"                 { "Badge Types": [...] }
  *   "Special Awards"         { "Special Awards": [...] }
  *   "TeamPoints"             { "1": 0, "2": 40, ..., LastLoginDate }
+ *   "Weapons"                { "L98A2 Cadet GP Rifle": 12, ... }  months valid
+ *
+ * Weapons is the only one that may not exist: every squadron created before
+ * weapon handling tests has no such document, and nothing seeds it. So it is
+ * never written with updateDoc -- which rejects on a missing document -- but
+ * replaced whole with setDoc. That also sidesteps updateDoc reading a dot in
+ * a weapon name ("G.P. Rifle") as a path into a nested field.
  */
 
-import { arrayUnion, deleteField, getDoc, squadronDoc, updateDoc } from "./db";
+import { arrayUnion, deleteField, getDoc, setDoc, squadronDoc, updateDoc } from "./db";
 
 const COLLECTION = "FlightPoints";
 
@@ -20,6 +27,7 @@ export const DOCS = {
   badges: "Badges",
   specialAwards: "Special Awards",
   teamPoints: "TeamPoints",
+  weapons: "Weapons",
 };
 
 const ref = (squadronNumber, docName) => squadronDoc(squadronNumber, COLLECTION, docName);
@@ -42,6 +50,14 @@ export const addToList = async (squadronNumber, docName, arrayName, value) => {
 /** Replace one of the list documents wholesale, e.g. after a removal. */
 export const setList = async (squadronNumber, docName, arrayName, values) => {
   await updateDoc(ref(squadronNumber, docName), { [arrayName]: values });
+};
+
+/**
+ * Replace a whole document. Used for Weapons, which may not exist yet; see the
+ * note at the top of this file.
+ */
+export const replaceDoc = async (squadronNumber, docName, values) => {
+  await setDoc(ref(squadronNumber, docName), values);
 };
 
 export const fetchDoc = async (squadronNumber, docName) => {

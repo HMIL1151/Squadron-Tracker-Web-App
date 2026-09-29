@@ -140,6 +140,34 @@
   cursor: pointer;
 }
 
+/*
+ * "Add another date", for logging one activity on several dates at once. A
+ * text-weight link rather than a filled button: it is optional, and the four
+ * type buttons below are the real decision on this form.
+ */
+.add-date-button {
+  background: none;
+  border: none;
+  padding: 4px 6px;
+  color: var(--color-accent);
+  font: inherit;
+  font-size: 0.9rem;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.add-date-button:hover {
+  text-decoration: underline;
+}
+
+.remove-date-button {
+  background: none;
+  border: none;
+  color: var(--color-danger);
+  font-size: 1.1rem;
+  cursor: pointer;
+}
+
 .button-grid {
   display: grid;
   grid-template-columns: repeat(2, auto); /* 2 columns with auto width */
