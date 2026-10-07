@@ -331,6 +331,63 @@ export const buildDevSquadron = () => {
     });
   });
 
+  /*
+   * Flying and gliding, last again for the same reason as the weapons.
+   *
+   * A mix of the three shapes the PTS board has to cope with: records tagged
+   * when they were added, older untagged ones that are only GUESSED from
+   * their names ("AEF", "Gliding Induction Course"), and one record that
+   * looks like flying and has been told it was not. Most cadets have flown
+   * once or twice; a few never have, which is what a squadron looks like.
+   */
+  const SORTIES = [
+    ["AEF at RAF Benson", "Squadron Event", "flying"],
+    ["AEF", "Wing Event", null],
+    ["Air Experience Flight", "Wing Event", null],
+    ["Gliding Induction Course", "Wing Event", null],
+    ["GIF at RAF Syerston", "Squadron Event", "gliding"],
+    ["Viking Gliding Day", "Wing Event", null],
+  ];
+  cadets.forEach((cadet, index) => {
+    const name = `${cadet.forename} ${cadet.surname}`;
+    const sorties = random() < 0.25 ? 0 : between(1, 4);
+    for (let i = 0; i < sorties; i += 1) {
+      const [eventName, eventCategory, aviation] = pick(SORTIES);
+      add({
+        cadetName: name,
+        date: `${pick([2024, 2025, 2026])}-${pad(between(1, 9))}-${pad(between(1, 28))}`,
+        eventName,
+        eventCategory,
+        ...(aviation ? { aviation } : {}),
+      });
+    }
+    if (index === 0) {
+      add({
+        cadetName: name,
+        date: "2025-07-12",
+        eventName: "RAF Museum Flying Display",
+        eventCategory: "Squadron Event",
+        aviation: "none",
+      });
+    }
+  });
+
+  /*
+   * One cadet whose flying predates the app, set by hand on the PTS board.
+   * `counted` is empty, so every logged flight above is added on top -- the
+   * cell reads the hand-set twelve plus whatever this cadet was generated.
+   */
+  docs[`${base}/Cadets/dev-cadet-02`] = {
+    ...docs[`${base}/Cadets/dev-cadet-02`],
+    flyingOverride: {
+      count: 12,
+      lastDate: "2023-08-19",
+      counted: [],
+      setAt: "2025-01-05T10:00:00.000Z",
+      setBy: "Admin User",
+    },
+  };
+
   return docs;
 };
 

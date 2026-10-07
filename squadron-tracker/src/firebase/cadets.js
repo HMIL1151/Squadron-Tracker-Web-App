@@ -5,7 +5,7 @@
  * in exactly one place (db.js) rather than in each component.
  */
 
-import { deleteDoc, newSquadronDoc, setDoc, squadronDoc, updateDoc } from "./db";
+import { deleteDoc, deleteField, newSquadronDoc, setDoc, squadronDoc, updateDoc } from "./db";
 
 const COLLECTION = "Cadets";
 
@@ -22,6 +22,22 @@ export const addCadet = async (squadronNumber, cadet) => {
 /** Update the given fields on a cadet. */
 export const updateCadet = async (squadronNumber, cadetId, fields) => {
   await updateDoc(squadronDoc(squadronNumber, COLLECTION, cadetId), fields);
+};
+
+/**
+ * Set, or with `override` null clear, a hand-set flying or gliding total.
+ *
+ * `field` is "flyingOverride" or "glidingOverride" (see utils/aviation.js).
+ * One top-level field per kind rather than an `aviation: { flying, gliding }`
+ * map: setting one must not need to read and rewrite the other, and dotted
+ * field paths are the one thing the fake Firestore refuses to imitate.
+ * Clearing deletes the field, so a cleared cadet is stored exactly as one that
+ * never had an override.
+ */
+export const setAviationOverride = async (squadronNumber, cadetId, field, override) => {
+  await updateDoc(squadronDoc(squadronNumber, COLLECTION, cadetId), {
+    [field]: override ? override : deleteField(),
+  });
 };
 
 /**

@@ -8,7 +8,14 @@ import styles from "./EventDetailsPopup.module.css";
  * `e.target.className === "popup-overlay"` string comparison that would have
  * failed silently once these stylesheets are scoped.
  */
-const EventDetailsPopup = ({ isOpen, eventData, onClose, onRemove }) => {
+/*
+ * `onAviationChange` is Muster only. When it is passed, an Event/Other record
+ * shows whether the PTS board counts it as a flight or a glide and lets that
+ * be changed -- the way to correct a record from before the tag existed,
+ * which is counted by guessing from its name. Left off, this is the classic
+ * popup, unchanged.
+ */
+const EventDetailsPopup = ({ isOpen, eventData, onClose, onRemove, onAviationChange }) => {
   /*
    * Still an early return, even though Modal takes isOpen.
    *
@@ -36,6 +43,22 @@ const EventDetailsPopup = ({ isOpen, eventData, onClose, onRemove }) => {
         )}
         <p><strong>Date:</strong> {eventData.Date || "N/A"}</p>
         <p><strong>Points:</strong> {eventData.Points}</p>
+        {onAviationChange && eventData.canFly && (
+          <p>
+            <label htmlFor="event-details-aviation">
+              <strong>PTS board:</strong>
+            </label>{" "}
+            <select
+              id="event-details-aviation"
+              value={eventData.aviation || "none"}
+              onChange={(e) => onAviationChange(eventData.id, e.target.value)}
+            >
+              <option value="none">Not a flight or glide</option>
+              <option value="flying">Counts as a flight</option>
+              <option value="gliding">Counts as a glide</option>
+            </select>
+          </p>
+        )}
         <p><strong>Added By:</strong> {eventData.AddedBy}</p>
         <p><strong>Created At:</strong> 
           {eventData.CreatedAt 

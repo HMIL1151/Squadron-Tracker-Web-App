@@ -2,6 +2,7 @@ import { useContext, useMemo, useState } from "react";
 import { DataContext } from "../../../context/DataContext";
 import { useSquadron } from "../../../context/SquadronContext";
 import { getEventYear } from "../../../utils/points";
+import { AVIATION } from "../../../utils/aviation";
 import MusterPage from "../../Muster/MusterPage";
 import MusterTable from "../../Muster/MusterTable";
 import {
@@ -43,6 +44,13 @@ import styles from "./MusterMassEventLog.module.css";
  * The add popup here also takes more than one date -- one activity, several
  * nights -- written as one record per cadet per date. The classic screen
  * renders the same popup without that option.
+ *
+ * It also asks whether an Event/Other record is a flight or a glide, which is
+ * what the PTS board's Flying and Gliding columns count, and marks those
+ * records in the table -- including old ones that are only GUESSED to be
+ * flights from their name, so a wrong guess is visible here rather than
+ * silently inflating a total on another screen. Opening a record lets the tag
+ * be changed. See utils/aviation.js.
  */
 
 const ALL = "all";
@@ -155,7 +163,15 @@ const MusterMassEventLog = ({ user }) => {
       header: "Record",
       sortValue: (row) => row.Record,
       filterValue: (row) => row.Record,
-      render: (row) => row.Record,
+      render: (row) =>
+        row.aviation ? (
+          <span className={styles["record-with-tag"]}>
+            {row.Record}
+            <MusterTag>{AVIATION[row.aviation].tag}</MusterTag>
+          </span>
+        ) : (
+          row.Record
+        ),
     },
     {
       key: "category",
@@ -300,12 +316,14 @@ const MusterMassEventLog = ({ user }) => {
         onAddDate={log.addDate}
         onExtraDateChange={log.handleExtraDateChange}
         onRemoveDate={log.removeDate}
+        offerAviation
       />
       <EventDetailsPopup
         isOpen={log.isEventPopupOpen}
         eventData={log.selectedEvent}
         onClose={log.closeEventPopup}
         onRemove={log.handleRemoveEvent}
+        onAviationChange={log.handleAviationChange}
       />
       <SuccessMessage message={log.successMessage} />
       <ErrorMessage message={log.errorMessage} />

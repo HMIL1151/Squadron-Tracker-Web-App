@@ -1,9 +1,10 @@
 import { useContext, useEffect, useMemo, useState } from "react";
 import { useSquadron } from "../../../context/SquadronContext";
 import { DataContext } from "../../../context/DataContext";
-import { removeEvent } from "../../../firebase/events";
+import { removeEvent, setEventAviation } from "../../../firebase/events";
 import { useSaveEvent } from "../../../databaseTools/databaseTools";
 import { getEventDescription, getEventPoints } from "../../../utils/points";
+import { AVIATION_KINDS, aviationOf, aviationToStore, isActivity } from "../../../utils/aviation";
 
 /**
  * Everything the event log does, minus how it looks.
@@ -87,6 +88,13 @@ export const useMassEventLog = (user) => {
       CreatedAt: event.createdAt || "N/A",
       id: event.id || "N/A",
       eventCategory: event.eventCategory || "",
+      /*
+       * Whether the PTS board counts this record as a flight or glide, and
+       * whether it could be one at all. Extra keys on the row are invisible
+       * to the classic table, which names its columns.
+       */
+      aviation: aviationOf(event),
+      canFly: isActivity(event),
     }));
   }, [data.events, data.flightPoints]);
 
@@ -155,6 +163,7 @@ export const useMassEventLog = (user) => {
       freeText,
       selectedEventCategory,
       selectedSpecialAward,
+      aviation,
     } = eventData;
 
     if (!selectedNames.length) {
@@ -191,6 +200,8 @@ export const useMassEventLog = (user) => {
         eventName: selectedButton === "Event/Other" ? freeText : "",
         eventCategory: selectedButton === "Event/Other" ? selectedEventCategory : "",
         specialAward: selectedButton === "Special" ? selectedSpecialAward : "",
+        // Only the Muster popup sends it; the classic one never offers it.
+        aviation: selectedButton === "Event/Other" && aviation ? aviation : "",
       };
 
       const { saved, skippedDuplicates, error } = await saveEvent(newEvent);
@@ -263,6 +274,42 @@ export const useMassEventLog = (user) => {
     }
   };
 
+  /**
+   * Retag a record as a flight, a glide or neither.
+   *
+   * For the records written before the tag existed, which are guessed from
+   * their description, and for the guess being wrong. DataContext is patched
+   * in step, as everywhere: the lite SDK has no listener to do it for us, and
+   * the PTS board reads the same array.
+   */
+  const handleAviationChange = async (eventId, choice) => {
+    const event = (data.events || []).find((candidate) => candidate.id === eventId);
+    if (!event) return;
+    const stored = aviationToStore(choice, event);
+
+    try {
+      await setEventAviation(squadronNumber, eventId, stored);
+      setData((prevData) => ({
+        ...prevData,
+        events: (prevData.events || []).map((candidate) => {
+          if (candidate.id !== eventId) return candidate;
+          const next = { ...candidate };
+          if (stored) next.aviation = stored;
+          else delete next.aviation;
+          return next;
+        }),
+      }));
+      setSelectedEvent((current) =>
+        current && current.id === eventId
+          ? { ...current, aviation: AVIATION_KINDS.includes(choice) ? choice : null }
+          : current
+      );
+    } catch (error) {
+      console.error("Error updating flying tag:", error);
+      setErrorMessage("That change could not be saved. Please try again.");
+    }
+  };
+
   /** The lists the add-record popup needs, all from flightPoints. */
   const badgeTypes = data.flightPoints?.Badges?.["Badge Types"] || [];
   const eventCategories = Object.keys(data.flightPoints?.["Event Category Points"] || {});
@@ -300,6 +347,7 @@ export const useMassEventLog = (user) => {
     handleRowClick,
     closeEventPopup: () => setIsEventPopupOpen(false),
     handleRemoveEvent,
+    handleAviationChange,
     // messages
     successMessage,
     errorMessage,

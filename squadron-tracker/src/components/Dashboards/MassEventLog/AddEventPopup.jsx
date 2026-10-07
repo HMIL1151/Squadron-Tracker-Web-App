@@ -3,6 +3,7 @@ import Modal from "../DashboardComponents/Modal";
 import styles from "./MassEventLog.module.css";
 import shared from "../DashboardComponents/dashboardStyles.module.css";
 import { examList, badgeLevel } from "../../../utils/examList";
+import { AVIATION, aviationToStore, guessAviation } from "../../../utils/aviation";
 
 const AddEventPopup = ({
   isPopupOpen,
@@ -31,6 +32,12 @@ const AddEventPopup = ({
   onAddDate,
   onExtraDateChange,
   onRemoveDate,
+  /*
+   * Muster only, like extraDates: whether an Event/Other record offers to be
+   * counted as a flight or glide on the PTS board. Left off, the classic
+   * popup renders and saves exactly what it always has.
+   */
+  offerAviation = false,
 }) => {
   const [selectedButton, setSelectedButton] = useState(null);
   const [freeText, setFreeText] = useState("");
@@ -40,6 +47,12 @@ const AddEventPopup = ({
   const [selectedEventCategory, setSelectedEventCategory] = useState("");
   const [selectedSpecialAward, setSelectedSpecialAward] = useState("");
   const [validationError, setValidationError] = useState("");
+  /*
+   * null until someone touches the select, and while it is null the select
+   * follows the guess -- so typing "AEF" picks Flight without anyone asking,
+   * and a choice once made is never overwritten by more typing.
+   */
+  const [aviationChoice, setAviationChoice] = useState(null);
 
   // Reset state when the popup is opened
   useEffect(() => {
@@ -52,6 +65,7 @@ const AddEventPopup = ({
       setSelectedEventCategory("");
       setSelectedSpecialAward("");
       setValidationError("");
+      setAviationChoice(null);
     }
   }, [isPopupOpen]);
 
@@ -67,7 +81,11 @@ const AddEventPopup = ({
     setSelectedExam("");
     setSelectedEventCategory("");
     setSelectedSpecialAward("");
+    setAviationChoice(null);
   };
+
+  const guessedAviation = guessAviation({ eventName: freeText, eventCategory: selectedEventCategory });
+  const aviation = aviationChoice ?? guessedAviation ?? "none";
 
   const onAddEventClick = () => {
     setValidationError("");
@@ -128,6 +146,14 @@ const AddEventPopup = ({
       freeText: formattedFreeText, // Use the formatted text
       selectedEventCategory,
       selectedSpecialAward,
+      ...(offerAviation && selectedButton === "Event/Other"
+        ? {
+            aviation: aviationToStore(aviation, {
+              eventName: formattedFreeText,
+              eventCategory: selectedEventCategory,
+            }),
+          }
+        : {}),
     };
 
     handleAddEvent(eventData);
@@ -342,6 +368,23 @@ const AddEventPopup = ({
                     ))}
                 </select>
               </div>
+              {offerAviation && (
+                <div className={styles["flex-container"]}>
+                  <label className={styles["popup-label"]} htmlFor="event-aviation">
+                    PTS board:
+                  </label>
+                  <select
+                    id="event-aviation"
+                    className={styles["dropdown"]}
+                    value={aviation}
+                    onChange={(e) => setAviationChoice(e.target.value)}
+                  >
+                    <option value="none">Not a flight or glide</option>
+                    <option value="flying">Counts as a {AVIATION.flying.noun}</option>
+                    <option value="gliding">Counts as a {AVIATION.gliding.noun}</option>
+                  </select>
+                </div>
+              )}
             </>
           )}
           {selectedButton === "Special" && (

@@ -80,7 +80,16 @@ const CADET_HEADERS = [
   "Rank Name",
   "Added By",
   "Created At",
+  "Flying Override",
+  "Gliding Override",
 ];
+
+/**
+ * A hand-set flying or gliding total, as JSON. It is a small object (see
+ * utils/aviation.js) and a restore needs all of it -- the ids in `counted` are
+ * what stop the log's records being added on top twice.
+ */
+const overrideCell = (value) => (value ? JSON.stringify(value) : "");
 
 /**
  * @param cadets  [{ id, forename, surname, startDate, flight, rank, ... }]
@@ -104,6 +113,8 @@ export const cadetsCsv = (cadets, flights) => {
       rankMap[cadet.rank] ?? "",
       cadet.addedBy,
       timestampToIso(cadet.createdAt),
+      overrideCell(cadet.flyingOverride),
+      overrideCell(cadet.glidingOverride),
     ])
   );
 };
@@ -121,6 +132,7 @@ const EVENT_HEADERS = [
   "Event Category",
   "Special Award",
   "Weapon",
+  "Flying/Gliding",
   "Added By",
   "Created At",
 ];
@@ -140,6 +152,7 @@ export const eventLogCsv = (events) =>
       event.eventCategory,
       event.specialAward,
       event.weaponName,
+      event.aviation,
       event.addedBy,
       timestampToIso(event.createdAt),
     ])
