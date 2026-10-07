@@ -650,13 +650,51 @@ describe("weapon handling tests", () => {
     ).toBeInTheDocument();
   });
 
-  it("ignores the badge filters, which are about what was awarded when", async () => {
+  it("ignores the level filter, which is about what was awarded when", async () => {
     const { container, user } = renderWeapons();
-    // Switch off every level and every subject: no badge column is left.
-    for (const button of screen.getAllByRole("button", { name: "None" })) {
-      await user.click(button);
-    }
+    const levels = within(screen.getByRole("group", { name: "Badge levels to show" }));
+    await user.click(levels.getByRole("button", { name: "None" }));
     expect(headers(container)).not.toContain("Blue");
     expect(headers(container)).toEqual(expect.arrayContaining(["Rifle", "Pistol"]));
+  });
+
+  it("has a Subjects chip of its own that shows and hides the columns", async () => {
+    const { container, user } = renderWeapons();
+    const chip = screen.getByRole("button", { name: "Weapon Handling" });
+    expect(chip).toHaveAttribute("aria-pressed", "true");
+
+    await user.click(chip);
+    expect(headers(container)).not.toContain("Rifle");
+    expect(headers(container)).not.toContain("Weapon Handling");
+    // The badge subjects are untouched.
+    expect(headers(container)).toContain("Radio");
+
+    await user.click(chip);
+    expect(headers(container)).toEqual(expect.arrayContaining(["Rifle", "Pistol"]));
+  });
+
+  it("goes with the other subjects on None, and comes back on All", async () => {
+    const { container, user } = renderWeapons();
+    const subjects = within(screen.getByRole("group", { name: "Syllabus areas to show" }));
+    await user.click(subjects.getByRole("button", { name: "None" }));
+    expect(headers(container)).not.toContain("Rifle");
+    await user.click(subjects.getByRole("button", { name: "All" }));
+    expect(headers(container)).toContain("Rifle");
+  });
+
+  /* "Only the WHTs" in two clicks, the same as any other subject. */
+  it("shows the weapon columns on their own", async () => {
+    const { container, user } = renderWeapons();
+    const subjects = within(screen.getByRole("group", { name: "Syllabus areas to show" }));
+    await user.click(subjects.getByRole("button", { name: "None" }));
+    await user.click(subjects.getByRole("button", { name: "Weapon Handling" }));
+    expect(headers(container)).toEqual(expect.arrayContaining(["Rifle", "Pistol"]));
+    expect(headers(container)).not.toContain("Radio");
+    expect(headers(container)).not.toContain("Flights");
+  });
+
+  it("offers no Weapon Handling chip until a weapon is configured", () => {
+    renderView();
+    expect(screen.queryByRole("button", { name: "Weapon Handling" })).not.toBeInTheDocument();
   });
 });

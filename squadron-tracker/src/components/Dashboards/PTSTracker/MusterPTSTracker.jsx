@@ -78,18 +78,20 @@ import styles from "./MusterPTSTracker.module.css";
  * Weapon handling tests ride along at the right-hand end, one column per
  * weapon configured under Record Categories. They are the exception to the
  * rule above, deliberately: a WHT is a currency, not an achievement, and the
- * only question about it is "is this cadet in date TODAY" -- so the level,
- * subject and date-range filters, which are all about what was awarded when,
- * leave these columns alone. The cell shows the latest pass and goes red on
+ * only question about it is "is this cadet in date TODAY" -- so the level and
+ * date-range filters, which are about what was awarded when, leave these
+ * columns alone. They do have a Subjects chip of their own, which shows or
+ * hides the columns and nothing else. The cell shows the latest pass and goes red on
  * the day it runs out; clicking any weapon cell records a pass, because a
  * re-test is the normal thing to do to one that has expired.
  *
  * Flying and gliding come last, two columns each: how many, and when the most
  * recent was. They are counted from the event log -- any Event/Other record
  * tagged, or guessed, as a flight or glide (utils/aviation.js) -- and they
- * share the weapons' exemption from the filters for a related reason: "how
- * many times has this cadet flown" is a running total, and a total that drops
- * when someone narrows the badge date range has stopped being one.
+ * share the weapons' exemption from the level and date filters for a related
+ * reason: "how many times has this cadet flown" is a running total, and a
+ * total that drops when someone narrows the badge date range has stopped
+ * being one. All four columns sit behind one "Flying" Subjects chip.
  *
  * Any of the four cells can be clicked to set the figure by hand, because the
  * log only knows what was typed into it: a cadet with ten flights from before
@@ -101,6 +103,14 @@ import styles from "./MusterPTSTracker.module.css";
  */
 
 const ALL = "all";
+
+/*
+ * The two Subjects chips that are not badge subjects. Keys a staff member
+ * would never type as a subject name, because a squadron with a badge
+ * subject called "Flying" must still get two chips that do different things.
+ */
+const WEAPONS_SUBJECT = "@@weapons";
+const FLYING_SUBJECT = "@@flying";
 
 const MONTHS = [
   { value: "01", label: "Jan" },
@@ -291,6 +301,26 @@ const MusterPTSTracker = ({ user }) => {
   const showSubject = (category) => subjects === null || subjects.includes(category);
   const visibleCategories = categories.filter(showSubject);
 
+  /*
+   * Weapon handling and flying ride on the Subjects chips too, after the
+   * badge subjects. Only the chips: the level and date filters still leave
+   * those columns alone, for the reasons at the top of this file -- but
+   * "which columns am I looking at" is exactly what Subjects is for, and a
+   * board you could not narrow to just the WHTs was a board with no way to
+   * answer "who is out of date on the rifle" without scrolling sideways.
+   *
+   * One chip for flying AND gliding: they are one area of the syllabus, and
+   * two chips for four narrow columns is more control than anyone asked for.
+   * The weapons chip only exists once a weapon is configured, like the
+   * columns it controls.
+   */
+  const subjectChips = [
+    ...categories.map((category) => ({ key: category, label: category })),
+    ...(weapons.length ? [{ key: WEAPONS_SUBJECT, label: "Weapon Handling" }] : []),
+    { key: FLYING_SUBJECT, label: "Flying" },
+  ];
+  const subjectKeys = subjectChips.map((chip) => chip.key);
+
   const rows = useMemo(() => {
     const events = data.events || [];
 
@@ -442,11 +472,11 @@ const MusterPTSTracker = ({ user }) => {
    * like it does.
    */
   const toggleSubject = (category) => {
-    const current = subjects === null ? categories : subjects;
+    const current = subjects === null ? subjectKeys : subjects;
     const next = current.includes(category)
       ? current.filter((entry) => entry !== category)
       : [...current, category];
-    setSubjects(next.length === categories.length ? null : next);
+    setSubjects(next.length === subjectKeys.length ? null : next);
   };
 
   const openAward = (row, category, level = null) => {
@@ -867,8 +897,8 @@ const MusterPTSTracker = ({ user }) => {
         );
       },
     }))),
-    ...weaponColumns,
-    ...aviationColumns,
+    ...(showSubject(WEAPONS_SUBJECT) ? weaponColumns : []),
+    ...(showSubject(FLYING_SUBJECT) ? aviationColumns : []),
     {
       key: "held",
       header: "Held",
@@ -1010,15 +1040,15 @@ const MusterPTSTracker = ({ user }) => {
             <fieldset className={styles.filters}>
               <legend className={styles["visually-hidden"]}>Syllabus areas to show</legend>
               <span className={styles["filters-label"]}>Subjects</span>
-              {categories.map((category) => (
+              {subjectChips.map(({ key, label }) => (
                 <button
-                  key={category}
+                  key={key}
                   type="button"
-                  className={showSubject(category) ? styles["chip-on"] : styles["chip-off"]}
-                  aria-pressed={showSubject(category)}
-                  onClick={() => toggleSubject(category)}
+                  className={showSubject(key) ? styles["chip-on"] : styles["chip-off"]}
+                  aria-pressed={showSubject(key)}
+                  onClick={() => toggleSubject(key)}
                 >
-                  {category}
+                  {label}
                 </button>
               ))}
               <button
