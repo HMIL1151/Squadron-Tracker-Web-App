@@ -105,9 +105,9 @@ import styles from "./MusterPTSTracker.module.css";
 const ALL = "all";
 
 /*
- * The two Subjects chips that are not badge subjects. Keys a staff member
- * would never type as a subject name, because a squadron with a badge
- * subject called "Flying" must still get two chips that do different things.
+ * The Subjects chips that are not badge subjects, keyed so that no subject a
+ * staff member types can collide with them. FLYING_SUBJECT is only used when
+ * the squadron has no Flying badge subject; see `flyingKey`.
  */
 const WEAPONS_SUBJECT = "@@weapons";
 const FLYING_SUBJECT = "@@flying";
@@ -313,11 +313,22 @@ const MusterPTSTracker = ({ user }) => {
    * two chips for four narrow columns is more control than anyone asked for.
    * The weapons chip only exists once a weapon is configured, like the
    * columns it controls.
+   *
+   * A squadron with a Flying BADGE subject gets one Flying chip, not two.
+   * The first version kept them apart, on the theory that two things with
+   * the same name should not switch each other -- and so the Flying chip
+   * people clicked hid the flight counts and left the Flying badges on the
+   * board, which is the opposite of what "show me flying" means. Badges,
+   * flights and glides are all the one syllabus area. The flying columns
+   * therefore follow the badge subject's own chip when there is one, and
+   * get the sentinel chip only when there is not.
    */
+  const flyingKey =
+    categories.find((category) => category.trim().toLowerCase() === "flying") || FLYING_SUBJECT;
   const subjectChips = [
     ...categories.map((category) => ({ key: category, label: category })),
     ...(weapons.length ? [{ key: WEAPONS_SUBJECT, label: "Weapon Handling" }] : []),
-    { key: FLYING_SUBJECT, label: "Flying" },
+    ...(flyingKey === FLYING_SUBJECT ? [{ key: FLYING_SUBJECT, label: "Flying" }] : []),
   ];
   const subjectKeys = subjectChips.map((chip) => chip.key);
 
@@ -898,7 +909,7 @@ const MusterPTSTracker = ({ user }) => {
       },
     }))),
     ...(showSubject(WEAPONS_SUBJECT) ? weaponColumns : []),
-    ...(showSubject(FLYING_SUBJECT) ? aviationColumns : []),
+    ...(showSubject(flyingKey) ? aviationColumns : []),
     {
       key: "held",
       header: "Held",

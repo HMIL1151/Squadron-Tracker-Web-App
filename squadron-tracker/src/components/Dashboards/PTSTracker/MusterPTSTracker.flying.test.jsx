@@ -164,23 +164,55 @@ describe("the columns", () => {
   });
 
   /*
-   * A squadron can have a badge subject called "Flying". It keeps its own
-   * chip, and the two do not switch each other.
+   * A squadron with a Flying badge subject gets ONE Flying chip, and it
+   * switches the Flying badges and the flight and glide columns together.
+   * v0.20.1 gave it two chips that did not, so "Flying" hid the flights and
+   * left the badges -- the bug this pins.
    */
-  it("does not confuse itself with a badge subject called Flying", async () => {
-    const data = withFlights();
-    data.flightPoints = {
-      ...data.flightPoints,
-      Badges: { "Badge Types": [...data.flightPoints.Badges["Badge Types"], "Flying"] },
+  describe("with a Flying badge subject", () => {
+    const withFlyingBadges = (name = "Flying") => {
+      const data = withFlights();
+      data.flightPoints = {
+        ...data.flightPoints,
+        Badges: { "Badge Types": [...data.flightPoints.Badges["Badge Types"], name] },
+      };
+      return data;
     };
-    const { container, user } = renderView({ data });
-    const subjects = within(screen.getByRole("group", { name: "Syllabus areas to show" }));
-    const [badgeChip, flyingChip] = subjects.getAllByRole("button", { name: "Flying" });
+    const subjects = () => within(screen.getByRole("group", { name: "Syllabus areas to show" }));
+    // The Flying badge subject's four level columns, under its group heading.
+    const flyingBadgeColumns = (container) =>
+      [...container.querySelectorAll("thead tr:first-child th")].filter((th) => th.textContent === "Flying");
 
-    await user.click(flyingChip);
-    expect(headers(container)).not.toContain("Flights");
-    expect(badgeChip).toHaveAttribute("aria-pressed", "true");
-    expect(flyingChip).toHaveAttribute("aria-pressed", "false");
+    it("offers one Flying chip, not two", () => {
+      renderView({ data: withFlyingBadges() });
+      expect(subjects().getAllByRole("button", { name: "Flying" })).toHaveLength(1);
+    });
+
+    it("hides the Flying badges and the flight and glide columns together", async () => {
+      const { container, user } = renderView({ data: withFlyingBadges() });
+      expect(flyingBadgeColumns(container).length).toBeGreaterThan(0);
+
+      await user.click(subjects().getByRole("button", { name: "Flying" }));
+      expect(flyingBadgeColumns(container)).toHaveLength(0);
+      for (const header of ["Flights", "Last Flight", "Glides", "Last Glide"]) {
+        expect(headers(container)).not.toContain(header);
+      }
+      expect(headers(container)).toContain("Radio");
+    });
+
+    it("shows the Flying badges and the flight and glide columns on their own", async () => {
+      const { container, user } = renderView({ data: withFlyingBadges() });
+      await user.click(subjects().getByRole("button", { name: "None" }));
+      await user.click(subjects().getByRole("button", { name: "Flying" }));
+      expect(headers(container)).toEqual(expect.arrayContaining(["Flights", "Glides"]));
+      expect(flyingBadgeColumns(container).length).toBeGreaterThan(0);
+      expect(headers(container)).not.toContain("Radio");
+    });
+
+    it("matches the subject however it is capitalised", () => {
+      renderView({ data: withFlyingBadges("FLYING") });
+      expect(subjects().getAllByRole("button", { name: /^flying$/i })).toHaveLength(1);
+    });
   });
 });
 
