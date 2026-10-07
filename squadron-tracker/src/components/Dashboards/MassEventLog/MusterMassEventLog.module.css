@@ -49,3 +49,14 @@
   color: var(--color-text-muted);
   white-space: nowrap;
 }
+
+/*
+ * A record the PTS board counts as a flight or glide carries a tag saying so,
+ * guessed or not -- the tag is how a wrong guess gets noticed.
+ */
+.record-with-tag {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}

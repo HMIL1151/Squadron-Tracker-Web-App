@@ -139,6 +139,72 @@
   outline-offset: 1px;
 }
 
+/*
+ * Flying and gliding. Every cell is a button, empty or not, because setting a
+ * total by hand is the one thing to do to them -- and plain text rather than
+ * a tinted chip, because a count has no level to colour by. The empty state
+ * is as quiet as the badge board's +, for the same reason: forty rows of
+ * zeros across four columns would shout louder than the cadets who have flown.
+ */
+.aviation-count,
+.aviation-date,
+.aviation-empty {
+  min-width: 44px;
+  padding: 4px 8px;
+  border: 1px solid transparent;
+  border-radius: 5px;
+  background-color: transparent;
+  font: inherit;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: border-color 0.12s ease, background-color 0.12s ease;
+}
+
+.aviation-count {
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.aviation-date {
+  color: var(--color-text);
+}
+
+.aviation-empty {
+  color: var(--color-text-faint);
+}
+
+.aviation-count:hover,
+.aviation-date:hover,
+.aviation-empty:hover {
+  border-color: var(--color-accent);
+  background-color: var(--color-chip-active);
+}
+
+.aviation-count:focus-visible,
+.aviation-date:focus-visible,
+.aviation-empty:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 1px;
+}
+
+/*
+ * The mark on a total that includes a hand-set figure. An asterisk rather
+ * than a colour, so it survives a printout and a colour-blind reader; the
+ * words are in the cell's title and its screen-reader text.
+ */
+.aviation-manual {
+  margin-left: 1px;
+  color: var(--color-text-muted);
+  font-weight: 400;
+}
+
+.aviation-reset {
+  display: flex;
+  justify-content: flex-start;
+}
+
 .dot-blue,
 .dot-bronze,
 .dot-silver,

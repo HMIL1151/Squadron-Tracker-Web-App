@@ -131,7 +131,7 @@ describe("producing the backup", () => {
   it("exports an event with its blank fields intact", async () => {
     await clickBackup();
     expect(zipped()["event-log.csv"]).toContain(
-      "event-9999-01,Amelia Hart,2024-03-12,Radio,Blue,,,,,,Admin User"
+      "event-9999-01,Amelia Hart,2024-03-12,Radio,Blue,,,,,,,Admin User"
     );
   });
 

@@ -97,7 +97,8 @@ slower, but never stale. The reverse order would be stale-by-default under one o
 - **Certificates** — previewable PDF per cadet, with bulk generation as a `.zip`. End of Year
   covers one year; End of Career covers a leaving cadet's whole record. The two differ only in
   which slice of the event log they print.
-- **PTS Tracker** — badges earned across the Progressive Training Syllabus.
+- **PTS Tracker** — badges earned across the Progressive Training Syllabus. In Muster it also
+  shows weapon handling tests, and each cadet's flights and glides: how many, and the last one.
 - **Flights** — add and rename flights, and choose which ones compete for
   points (admins only). A squadron can have any number of flights.
 - **Admin Area** — approve or deny squadron access requests (admins only).
@@ -180,8 +181,10 @@ Firestore, multi-tenant by squadron number:
 ```
 SquadronList/{autoId}              { Name, Number, flights }
 SquadronDatabases/{squadronNumber}
-  Cadets/{autoId}                  { forename, surname, startDate, flight, rank, ... }
-  EventLog/{autoId}                { cadetName, date, badgeCategory, badgeLevel, examName, ... }
+  Cadets/{autoId}                  { forename, surname, startDate, flight, rank,
+                                     flyingOverride?, glidingOverride?, ... }
+  EventLog/{autoId}                { cadetName, date, badgeCategory, badgeLevel, examName,
+                                     weaponName?, aviation?, ... }
   FlightPoints/{docName}           "Badge Points" | "Event Category Points" | "Badges"
                                    | "Special Awards" | "TeamPoints"
   AuthorisedUsers/{uid}            { displayName, email, role }
@@ -189,6 +192,20 @@ SquadronDatabases/{squadronNumber}
 MassUserList/{autoId}              { UID, Squadron, systemAdmin? }
 NewAccountRequests/{autoId}        { squadronName, squadronNumber, flights, uid, ... }
 ```
+
+### Flying and gliding
+
+Not to be confused with flights, below. The PTS board counts a cadet's **sorties**: Event/Other
+records carrying `aviation: "flying"` or `"gliding"`, which the Muster Add Record form sets
+(guessed from the description, and changeable). Records from before the tag existed are guessed
+from their name — "AEF", "Gliding Induction Course" — and `aviation: "none"` overrules a wrong
+guess. The record keeps its own category and points; the tag rides alongside.
+
+A total the log cannot reach is set by hand on the board and stored on the cadet as
+`flyingOverride` / `glidingOverride`: `{ count, lastDate, counted, setAt, setBy }`. `counted` holds
+the ids of the records the hand-set figure already includes, so anything logged afterwards is
+added on top — set 10, log a flight, read 11 — whatever date it carries. The details are in
+[utils/aviation.js](squadron-tracker/src/utils/aviation.js).
 
 ### Flights
 

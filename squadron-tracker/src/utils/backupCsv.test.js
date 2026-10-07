@@ -125,14 +125,23 @@ describe("cadetsCsv", () => {
 
   it("names the columns", () => {
     expect(rows(cadetsCsv(cadets, FAKETON_FLIGHTS))[0]).toBe(
-      "Doc ID,Forename,Surname,Start Date,Flight Index,Flight Name,Rank,Rank Name,Added By,Created At"
+      "Doc ID,Forename,Surname,Start Date,Flight Index,Flight Name,Rank,Rank Name,Added By,Created At,Flying Override,Gliding Override"
     );
   });
 
   it("writes a cadet with both the raw flight index and its name", () => {
     expect(rowStartingWith(cadetsCsv(cadets, FAKETON_FLIGHTS), "cadet-9999-01")).toBe(
-      "cadet-9999-01,Amelia,Hart,2021-09-06,2,Alpha,3,Sergeant,Admin User,2025-01-05T10:00:00.000Z"
+      "cadet-9999-01,Amelia,Hart,2021-09-06,2,Alpha,3,Sergeant,Admin User,2025-01-05T10:00:00.000Z,,"
     );
+  });
+
+  it("keeps a hand-set flying total whole, ids and all", () => {
+    // A restore needs `counted`, or the log's flights are added on top twice.
+    const flyingOverride = { count: 10, lastDate: "2024-08-01", counted: ["e1"], setAt: "2025-06-15T12:00:00.000Z", setBy: "Admin User" };
+    const csv = cadetsCsv([{ ...cadets[0], flyingOverride }], FAKETON_FLIGHTS);
+    const cells = dataRows(csv)[0];
+    expect(cells).toContain('"{""count"":10,""lastDate"":""2024-08-01"",""counted"":[""e1""]');
+    expect(cells.endsWith(",")).toBe(true); // no gliding override
   });
 
   it("resolves flight names from the legacy string shape too", () => {
@@ -191,7 +200,7 @@ describe("eventLogCsv", () => {
 
   it("writes every stored field, blanks included", () => {
     expect(dataRows(eventLogCsv([event]))[0]).toBe(
-      "event-9999-01,Amelia Hart,2024-03-12,Radio,Blue,,,,,,Admin User,2025-06-01T09:00:00.000Z"
+      "event-9999-01,Amelia Hart,2024-03-12,Radio,Blue,,,,,,,Admin User,2025-06-01T09:00:00.000Z"
     );
   });
 
@@ -199,7 +208,16 @@ describe("eventLogCsv", () => {
     // Only written on WHT passes, so every other record has it undefined.
     const csv = eventLogCsv([{ ...event, badgeCategory: "", badgeLevel: "", weaponName: "L98A2" }]);
     expect(dataRows(csv)[0]).toBe(
-      "event-9999-01,Amelia Hart,2024-03-12,,,,,,,L98A2,Admin User,2025-06-01T09:00:00.000Z"
+      "event-9999-01,Amelia Hart,2024-03-12,,,,,,,L98A2,,Admin User,2025-06-01T09:00:00.000Z"
+    );
+  });
+
+  it("keeps the flying tag on a flight", () => {
+    const csv = eventLogCsv([
+      { ...event, badgeCategory: "", badgeLevel: "", eventName: "AEF", eventCategory: "Wing Event", aviation: "flying" },
+    ]);
+    expect(dataRows(csv)[0]).toBe(
+      "event-9999-01,Amelia Hart,2024-03-12,,,,AEF,Wing Event,,,flying,Admin User,2025-06-01T09:00:00.000Z"
     );
   });
 

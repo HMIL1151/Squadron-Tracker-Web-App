@@ -27,6 +27,10 @@ export const useSaveEvent = () => {
    *
    * `weaponName` marks a weapon handling test pass. It is only written when
    * set, so every other kind of record is stored exactly as before.
+   *
+   * `aviation` marks an Event/Other record as a flight or a glide (or, as
+   * "none", as explicitly neither -- see utils/aviation.js). Same rule: only
+   * written when set.
    */
   const saveEvent = async (eventDetails) => {
     const existingEvents = data.events; // Get the current events array
@@ -44,6 +48,7 @@ export const useSaveEvent = () => {
       examName = "",
       specialAward = "",
       weaponName = "",
+      aviation = "",
     } = eventDetails;
 
     const allDates = [...new Set((Array.isArray(dates) && dates.length ? dates : [date]).filter(Boolean))];
@@ -143,6 +148,7 @@ export const useSaveEvent = () => {
             eventCategory: eventCategory,
             specialAward: specialAward,
             ...(weaponName ? { weaponName } : {}),
+            ...(aviation ? { aviation } : {}),
           };
 
           const eventDocRef = newEventRef(squadronNumber);

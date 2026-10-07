@@ -133,5 +133,10 @@
     "version": "v0.19.0",
     "date": "29/09/2026",
     "content": "Weapon handling tests on the PTS Tracker. Add your weapons under Record Categories, each with how many months a pass lasts, and each gets its own column. Click a cell to record the date a cadet passed; the cell turns red on the day the pass runs out. Clicking a filled cell records a re-test. Every pass is also kept in the Mass Event Log, so a wrong entry can be deleted there.\nOne record, several dates: when adding a record in the Mass Event Log you can now add more than one date — road marching on the 3rd, the 10th and the 17th is one form, saved as one record per cadet per date.\nFixed: in the new interface, typing into a pop-up form moved the cursor onto its close button after the first letter, so the rest of what you typed was lost and a space closed the form."
+  },
+  {
+    "version": "v0.20.0",
+    "date": "07/10/2026",
+    "content": "Flying and gliding on the PTS Tracker. Four new columns show how many flights and glides each cadet has had, and the date of the last one. They are counted from the Mass Event Log: when you add an Event/Other record there, a new PTS board option says whether it counts as a flight or a glide. It is filled in for you from the description (AEF, gliding, GIF and so on) and you can change it. Older records are counted from their description in the same way; each one shows a Flight or Glide tag in the log, and opening a record lets you correct it.\nIf a cadet's flights were never logged, click their cell on the PTS Tracker and type in the real total. Anything logged after that is added on top: set 10, log a flight, and it reads 11. Totals that include a figure typed in by hand are marked with an asterisk, and the same box can switch a cadet back to the event log only."
   }
 ]

@@ -11,6 +11,15 @@ import {
   todayIso,
   weaponExpiry,
 } from "../../../utils/weapons";
+import {
+  AVIATION,
+  AVIATION_KINDS,
+  aviationRecords,
+  buildOverride,
+  summariseAviation,
+  validateOverride,
+} from "../../../utils/aviation";
+import { setAviationOverride } from "../../../firebase/cadets";
 import MusterPage from "../../Muster/MusterPage";
 import MusterTable from "../../Muster/MusterTable";
 import MusterDialog from "../../Muster/MusterDialog";
@@ -74,6 +83,21 @@ import styles from "./MusterPTSTracker.module.css";
  * leave these columns alone. The cell shows the latest pass and goes red on
  * the day it runs out; clicking any weapon cell records a pass, because a
  * re-test is the normal thing to do to one that has expired.
+ *
+ * Flying and gliding come last, two columns each: how many, and when the most
+ * recent was. They are counted from the event log -- any Event/Other record
+ * tagged, or guessed, as a flight or glide (utils/aviation.js) -- and they
+ * share the weapons' exemption from the filters for a related reason: "how
+ * many times has this cadet flown" is a running total, and a total that drops
+ * when someone narrows the badge date range has stopped being one.
+ *
+ * Any of the four cells can be clicked to set the figure by hand, because the
+ * log only knows what was typed into it: a cadet with ten flights from before
+ * the squadron used this app shows zero until someone says otherwise. The
+ * hand-set figure is stored on the cadet and the log keeps adding to it --
+ * set 10, log a flight, read 11 -- rather than replacing the log, which would
+ * freeze the column at whatever was typed. A total that includes a hand-set
+ * figure is marked, so nobody mistakes it for one the log can back up.
  */
 
 const ALL = "all";
@@ -149,9 +173,33 @@ const VIEWS = {
   summary: "Highest Held",
 };
 
+/**
+ * What the log says, and -- when a hand-set total is in play -- who set it and
+ * what has been added since. The person about to change a figure needs both
+ * halves: changing a total without seeing what the log already backs up is
+ * how a cadet's flights get counted twice.
+ */
+const aviationDescription = ({ row, kind }) => {
+  const { noun, nouns } = AVIATION[kind];
+  const summary = row.aviation[kind];
+  const plural = (count) => `${count} ${count === 1 ? noun : nouns}`;
+  const logged =
+    summary.logged === 0
+      ? `The event log has no ${nouns} for ${row.name}.`
+      : `The event log has ${plural(summary.logged)} for ${row.name}, the last on ${shortDate(
+          summary.loggedLast
+        )}.`;
+  if (!summary.manual) return logged;
+  const setOn = summary.setAt ? ` on ${shortDate(summary.setAt.slice(0, 10))}` : "";
+  const since = summary.added
+    ? `, and ${plural(summary.added)} logged since ${summary.added === 1 ? "has" : "have"} been added to it.`
+    : ".";
+  return `${logged} The total was set by hand by ${summary.setBy}${setOn}${since}`;
+};
+
 const MusterPTSTracker = ({ user }) => {
-  const { data } = useContext(DataContext);
-  const { flightMap, flights } = useSquadron();
+  const { data, setData } = useContext(DataContext);
+  const { flightMap, flights, squadronNumber } = useSquadron();
   const saveEvent = useSaveEvent();
 
   const [search, setSearch] = useState("");
@@ -177,6 +225,9 @@ const MusterPTSTracker = ({ user }) => {
   const [dialogError, setDialogError] = useState(null);
   const [pendingWeapon, setPendingWeapon] = useState(null);
   const [weaponDate, setWeaponDate] = useState("");
+  const [pendingAviation, setPendingAviation] = useState(null);
+  const [aviationCount, setAviationCount] = useState("");
+  const [aviationDate, setAviationDate] = useState("");
 
   /*
    * The syllabus areas, from the squadron's own badge list rather than a
@@ -195,6 +246,7 @@ const MusterPTSTracker = ({ user }) => {
 
   const weapons = useMemo(() => getWeapons(data.flightPoints), [data.flightPoints]);
   const weaponPasses = useMemo(() => latestWeaponPasses(data.events), [data.events]);
+  const flyingRecords = useMemo(() => aviationRecords(data.events), [data.events]);
   const today = todayIso();
 
   /** Every year a badge was awarded in, newest first, for the range selects. */
@@ -290,6 +342,17 @@ const MusterPTSTracker = ({ user }) => {
         everHeld,
         held: Object.keys(highest).length,
         weaponPasses: weaponPasses[name] || {},
+        /*
+         * The records stay on the row beside the summary: setting a total by
+         * hand has to know exactly which records it is taking account of.
+         */
+        aviationRecords: flyingRecords[name] || { flying: [], gliding: [] },
+        aviation: Object.fromEntries(
+          AVIATION_KINDS.map((kind) => [
+            kind,
+            summariseAviation(flyingRecords[name]?.[kind], cadet[AVIATION[kind].field]),
+          ])
+        ),
       };
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -297,6 +360,7 @@ const MusterPTSTracker = ({ user }) => {
     data.cadets,
     data.events,
     weaponPasses,
+    flyingRecords,
     flightMap,
     levels,
     subjects,
@@ -473,6 +537,85 @@ const MusterPTSTracker = ({ user }) => {
     }
   };
 
+  const openAviation = (row, kind) => {
+    const current = row.aviation[kind];
+    setPendingAviation({ row, kind });
+    // Starts from what the board shows, so changing one field keeps the other.
+    setAviationCount(String(current.count));
+    setAviationDate(current.last || "");
+    setDialogError(null);
+  };
+
+  const closeAviation = () => {
+    setPendingAviation(null);
+    setDialogError(null);
+  };
+
+  /** Write (or with null, clear) an override, then patch DataContext to match. */
+  const storeOverride = async (row, kind, override) => {
+    const { field } = AVIATION[kind];
+    await setAviationOverride(squadronNumber, row.id, field, override);
+    setData((prev) => ({
+      ...prev,
+      cadets: (prev.cadets || []).map((cadet) => {
+        if (cadet.id !== row.id) return cadet;
+        const next = { ...cadet };
+        if (override) next[field] = override;
+        else delete next[field];
+        return next;
+      }),
+    }));
+  };
+
+  const confirmAviation = async () => {
+    const { row, kind } = pendingAviation;
+    const current = row.aviation[kind];
+    const error = validateOverride({ count: aviationCount, lastDate: aviationDate, today, kind });
+    if (error) {
+      setDialogError(error);
+      return;
+    }
+
+    const count = Number(aviationCount);
+    /*
+     * Saving what the log already says, on a cadet with no override, is a
+     * no-op rather than a new override. Otherwise opening a cell and pressing
+     * Save would quietly pin the cadet to a hand-set figure nobody chose.
+     */
+    if (!current.manual && count === current.count && aviationDate === (current.last || "")) {
+      closeAviation();
+      return;
+    }
+
+    try {
+      await storeOverride(
+        row,
+        kind,
+        buildOverride({
+          count,
+          lastDate: aviationDate,
+          records: row.aviationRecords[kind],
+          setBy: user?.displayName,
+        })
+      );
+      closeAviation();
+    } catch (err) {
+      console.error("Error saving flying total:", err);
+      setDialogError("That could not be saved. Try again.");
+    }
+  };
+
+  const clearAviation = async () => {
+    const { row, kind } = pendingAviation;
+    try {
+      await storeOverride(row, kind, null);
+      closeAviation();
+    } catch (err) {
+      console.error("Error clearing flying total:", err);
+      setDialogError("That could not be cleared. Try again.");
+    }
+  };
+
   /** Whether a cadet is in date on a weapon; undefined when never passed. */
   const weaponStatus = (row, weapon) => {
     const passed = row.weaponPasses[weapon.name];
@@ -535,6 +678,81 @@ const MusterPTSTracker = ({ user }) => {
       );
     },
   }));
+
+  /*
+   * Two columns per kind, grouped in the Every Level view like the weapons.
+   * Both cells open the same dialog -- the total and the date are one fact
+   * about the cadet, and which half was clicked is not worth a second dialog.
+   */
+  const aviationColumns = AVIATION_KINDS.flatMap((kind) => {
+    const { group, countHeader, lastHeader, noun, nouns } = AVIATION[kind];
+    const describe = (row) => {
+      const { count, last, manual } = row.aviation[kind];
+      return (
+        `${count} ${count === 1 ? noun : nouns}` +
+        (last ? `, last on ${shortDate(last)}` : "") +
+        (manual ? ", including a total set by hand" : "")
+      );
+    };
+    const cell = (row, content, className) => (
+      <button
+        type="button"
+        className={className}
+        title={row.aviation[kind].manual ? "Includes a total set by hand" : undefined}
+        onClick={(clickEvent) => {
+          clickEvent.stopPropagation();
+          openAviation(row, kind);
+        }}
+      >
+        {content}
+        <span className={styles["visually-hidden"]}>
+          {` (${row.name}: ${describe(row)}. Edit ${group.toLowerCase()} record)`}
+        </span>
+      </button>
+    );
+    const grouped = view === "levels" ? group : undefined;
+
+    return [
+      {
+        key: kind + ":count",
+        header: countHeader,
+        group: grouped,
+        align: "center",
+        width: "84px",
+        sortValue: (row) => row.aviation[kind].count,
+        total: (rows) => rows.reduce((sum, row) => sum + row.aviation[kind].count, 0),
+        render: (row) => {
+          const { count, manual } = row.aviation[kind];
+          return cell(
+            row,
+            <>
+              {count}
+              {manual && (
+                <span className={styles["aviation-manual"]} aria-hidden="true">
+                  *
+                </span>
+              )}
+            </>,
+            count ? styles["aviation-count"] : styles["aviation-empty"]
+          );
+        },
+      },
+      {
+        key: kind + ":last",
+        header: lastHeader,
+        group: grouped,
+        align: "center",
+        width: "120px",
+        sortValue: (row) => row.aviation[kind].last || "",
+        render: (row) => {
+          const { last } = row.aviation[kind];
+          return last
+            ? cell(row, shortDate(last), styles["aviation-date"])
+            : cell(row, <span aria-hidden="true">&mdash;</span>, styles["aviation-empty"]);
+        },
+      },
+    ];
+  });
 
   /*
    * Four columns per area in the expanded view, grouped under the area name
@@ -650,6 +868,7 @@ const MusterPTSTracker = ({ user }) => {
       },
     }))),
     ...weaponColumns,
+    ...aviationColumns,
     {
       key: "held",
       header: "Held",
@@ -895,6 +1114,56 @@ const MusterPTSTracker = ({ user }) => {
             />
           )}
         </MusterField>
+      </MusterDialog>
+
+      <MusterDialog
+        open={Boolean(pendingAviation)}
+        title={pendingAviation ? `${AVIATION[pendingAviation.kind].group} Record` : ""}
+        description={pendingAviation ? aviationDescription(pendingAviation) : ""}
+        onClose={closeAviation}
+        onConfirm={confirmAviation}
+        confirmLabel="Save"
+        error={dialogError}
+      >
+        {pendingAviation && (
+          <>
+            <MusterField
+              label={`Total ${AVIATION[pendingAviation.kind].nouns}`}
+              hint={`Every ${AVIATION[pendingAviation.kind].noun} logged after you save is added on top of this.`}
+            >
+              {(id) => (
+                <input
+                  id={id}
+                  type="number"
+                  inputMode="numeric"
+                  min="0"
+                  step="1"
+                  value={aviationCount}
+                  onChange={(inputEvent) => setAviationCount(inputEvent.target.value)}
+                />
+              )}
+            </MusterField>
+            <MusterField
+              label={AVIATION[pendingAviation.kind].lastHeader}
+              hint="Leave blank if nobody knows. A later one logged afterwards takes over."
+            >
+              {(id) => (
+                <input
+                  id={id}
+                  type="date"
+                  max={today}
+                  value={aviationDate}
+                  onChange={(inputEvent) => setAviationDate(inputEvent.target.value)}
+                />
+              )}
+            </MusterField>
+            {pendingAviation.row.aviation[pendingAviation.kind].manual && (
+              <div className={styles["aviation-reset"]}>
+                <MusterButton onClick={clearAviation}>Use the Event Log Only</MusterButton>
+              </div>
+            )}
+          </>
+        )}
       </MusterDialog>
     </MusterPage>
   );

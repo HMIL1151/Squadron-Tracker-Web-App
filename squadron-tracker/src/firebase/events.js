@@ -6,7 +6,7 @@
  * the dashboards build on.
  */
 
-import { deleteDoc, newSquadronDoc, setDoc, squadronDoc, updateDoc } from "./db";
+import { deleteDoc, deleteField, newSquadronDoc, setDoc, squadronDoc, updateDoc } from "./db";
 
 const COLLECTION = "EventLog";
 
@@ -30,4 +30,14 @@ export const removeEvent = async (squadronNumber, eventId) => {
 /** Rename the cadet on an event. Used when a cadet is renamed. */
 export const renameEventCadet = async (squadronNumber, eventId, cadetName) => {
   await updateDoc(squadronDoc(squadronNumber, COLLECTION, eventId), { cadetName });
+};
+
+/**
+ * Mark a record as a flight, a glide, or explicitly neither; undefined removes
+ * the tag so the record goes back to being guessed. See utils/aviation.js.
+ */
+export const setEventAviation = async (squadronNumber, eventId, aviation) => {
+  await updateDoc(squadronDoc(squadronNumber, COLLECTION, eventId), {
+    aviation: aviation ? aviation : deleteField(),
+  });
 };
