@@ -138,5 +138,10 @@
     "version": "v0.20.0",
     "date": "07/10/2026",
     "content": "Flying and gliding on the PTS Tracker. Four new columns show how many flights and glides each cadet has had, and the date of the last one. They are counted from the Mass Event Log: when you add an Event/Other record there, a new PTS board option says whether it counts as a flight or a glide. It is filled in for you from the description (AEF, gliding, GIF and so on) and you can change it. Older records are counted from their description in the same way; each one shows a Flight or Glide tag in the log, and opening a record lets you correct it.\nIf a cadet's flights were never logged, click their cell on the PTS Tracker and type in the real total. Anything logged after that is added on top: set 10, log a flight, and it reads 11. Totals that include a figure typed in by hand are marked with an asterisk, and the same box can switch a cadet back to the event log only."
+  },
+  {
+    "version": "v0.20.1",
+    "date": "07/10/2026",
+    "content": "The Subjects filter on the PTS Tracker now covers every column. Weapon Handling has its own chip, which shows or hides the weapon handling test columns, and Flying shows or hides the four flying and gliding columns. To see just one of them, click None and then that chip. The level and date filters still leave these columns alone, because they are about which badges were awarded and when."
   }
 ]
