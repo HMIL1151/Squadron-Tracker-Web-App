@@ -69,8 +69,11 @@ old. Low urgency — correctness of revoke, not of login.
 
 ```bash
 cd squadron-tracker
-firebase deploy --only firestore:rules
+npm run deploy:rules
 ```
+
+After this, release with `npm run deploy`, which ships hosting and rules
+together, so a feature can never go live ahead of the rules it needs.
 
 ## 5. Verify
 
@@ -79,8 +82,11 @@ firebase deploy --only firestore:rules
 - Firestore console → Rules → **Rules playground**: simulate a `get` of
   `/SquadronDatabases/1151/Cadets/anything` with **Authenticated = off** →
   must be **denied**.
-- If a member reports "missing or insufficient permissions", their
-  `AuthorisedUsers` doc is still keyed by request-id — see step 3a.
+- If a member reports "missing or insufficient permissions", or an empty
+  tracker, their `AuthorisedUsers` doc is still keyed by request-id — see
+  step 3a. Since v0.21.0 they are told so at login, and a system admin can
+  fix every such user at once from **System Admin Area → Locked-out users**,
+  which does step 3a automatically wherever the access request is on file.
 
 ## Notes
 

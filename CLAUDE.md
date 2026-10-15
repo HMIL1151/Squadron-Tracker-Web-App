@@ -37,6 +37,7 @@ npm run test:visual:update
 npm run lint:css          # Stylelint: no raw colours outside tokens.css
 npm run test:rules        # Firestore rules vs emulator; needs a JDK
 npm run build             # production build into build/
+npm run deploy            # build, then deploy hosting + rules together (production!)
 ```
 
 Verify UI work through the `squadron-tracker-offline` preview config in
@@ -172,5 +173,6 @@ deletion) before doing it.
 
 Add an entry to `public/changelog.json` and bump `package.json`. The highest changelog version is
 what the app displays, so a version bump changes rendering — expect snapshot and screenshot
-updates. Deploy: `npm run build && firebase deploy` (project `squadron-tracker-1151`); read
+updates. Deploy: `npm run deploy` (build + hosting + rules, project `squadron-tracker-1151`) —
+never hosting alone, which is how the live rules once fell two features behind the code. Read
 [docs/deploy-rules.md](squadron-tracker/docs/deploy-rules.md) before deploying rules.

@@ -440,3 +440,29 @@ describe("signing in as a system admin", () => {
     expect(Object.keys(store).filter((p) => p.startsWith("NewAccountRequests/auto"))).toEqual([]);
   });
 });
+
+describe("signing in with a membership the rules cannot see", () => {
+  // Granted before Phase 4: MassUserList points at Testwood, but the
+  // AuthorisedUsers document is keyed by the request id, not the uid. Every
+  // squadron read would be refused, so login used to open an empty tracker.
+  const LOCKED = { uid: UIDS.testwoodLocked, email: "locked@testwood.test", displayName: "Locked Out" };
+
+  it("explains the problem instead of opening an empty tracker", async () => {
+    const result = renderPage();
+    await signInAs(result, LOCKED);
+
+    expect(await screen.findByText(/access record is missing or out of date/)).toBeInTheDocument();
+    expect(screen.getByText(/locked@testwood\.test/)).toBeInTheDocument();
+    expect(screen.getByText(/squadron 9998/)).toBeInTheDocument();
+    expect(result.onUserChange).not.toHaveBeenCalled();
+  });
+
+  it("leaves them signed in with a way to log out, and asks nothing else", async () => {
+    const result = renderPage();
+    await signInAs(result, LOCKED);
+
+    await screen.findByText(/access record is missing or out of date/);
+    expect(screen.getByRole("button", { name: "Log Out" })).toBeInTheDocument();
+    expect(screen.queryByPlaceholderText("Enter Squadron Number")).toBeNull();
+  });
+});

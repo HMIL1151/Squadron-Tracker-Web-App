@@ -4,7 +4,7 @@ import React, { useState, useEffect, useContext } from "react";
 import { getAuth, signInWithPopup, GoogleAuthProvider, signOut } from "firebase/auth"; // Import Firebase Auth
 import { useUiVersion } from "../../context/UiVersionContext";
 import MusterWelcomeFrame from "./MusterWelcomeFrame";
-import { checkUserRole, createAccessRequest } from "../../firebase/users";
+import { checkUserRole, createAccessRequest, hasMembership } from "../../firebase/users";
 import { doesSquadronExist, fetchSquadronDoc } from "../../firebase/squadron";
 import { createAccountRequest, createSquadron } from "../../firebase/accounts";
 import { squadronCollection, getDocs, query, where } from "../../firebase/db";
@@ -88,6 +88,21 @@ const WelcomePage = ({ onUserChange }) => {
 
       if (!isNaN(userRole)) {
         const squadronNumber = userRole.toString();
+
+        // Stop here, with an explanation, rather than opening a tracker every
+        // read of which the rules will refuse -- that showed as an empty
+        // squadron with no hint of why. null (could not tell) carries on.
+        if ((await hasMembership(squadronNumber, uid)) === false) {
+          setUser({ uid, email, displayName });
+          setRole("No Access");
+          setError(
+            `Your account (${email}) is linked to squadron ${squadronNumber}, but its access record ` +
+              "is missing or out of date, so your squadron's data cannot be shown. Ask your " +
+              "squadron admin to contact the system admin, who can repair it from the System " +
+              "Admin Area."
+          );
+          return;
+        }
 
         // One lookup for name, flights and the document id. This used to be
         // two identical queries plus a third that could never match.

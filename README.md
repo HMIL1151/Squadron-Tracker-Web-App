@@ -61,9 +61,16 @@ themselves when no emulator is running.
 
 ```bash
 cd squadron-tracker
-npm run build
-firebase deploy
+npm run deploy          # build, then hosting AND security rules together
+npm run deploy:rules    # rules only
 ```
+
+Always deploy through these scripts rather than a hand-typed `firebase deploy --only hosting`.
+Releases after August 2026 went out without the rules, so the live rules fell behind the
+code: the dark-mode and interface-switch features shipped without the `UserPreferences` and
+`SystemConfig` rules they depend on, and every user's preference reads were refused. `deploy`
+names its targets rather than deploying everything so that it never touches Firestore indexes,
+which `firebase deploy` would otherwise reconcile against `firestore.indexes.json`.
 
 Hosting config is in `firebase.json`; the project alias is in `.firebaserc`
 (`squadron-tracker-1151`).

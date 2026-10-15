@@ -19,6 +19,7 @@
  *   /?as=legacy     squadron 9998 Testwood, admin      (legacy string[] flights)
  *   /?as=sysadmin   system admin
  *   /?as=new        signed in, authorised for nothing  (first-login flow)
+ *   /?as=locked     squadron 9998 Testwood, legacy membership the rules refuse
  *
  * This file is wired in by a resolve alias in vite.config.js, exactly as the
  * Firestore fake is, and for the same reason: a production build has no
@@ -65,6 +66,12 @@ export const PERSONAS = {
     displayName: "New Person",
     email: "new@example.test",
     describe: "signed in, authorised for nothing -- first-login flow",
+  },
+  locked: {
+    uid: UIDS.testwoodLocked,
+    displayName: "Locked Out",
+    email: "locked@testwood.test",
+    describe: "squadron 9998 Testwood, membership keyed by request id -- locked out",
   },
 };
 

@@ -3,6 +3,7 @@ import { createSquadron, deleteAccountRequest, fetchAccountRequests } from "../.
 import styles from "./SystemAdminDashboard.module.css"; // Import styles for the dashboard
 import ErrorMessage from "../DashboardComponents/ErrorMessage";
 import InterfaceSetting from "./InterfaceSetting";
+import AccessRepair from "./AccessRepair";
 
 /** A request's flights, from either the array or the legacy flat fields. */
 const requestedFlights = (request) => {
@@ -66,6 +67,8 @@ const SystemAdminDashboard = () => {
       <p>Welcome, System Admin! Here you can review and manage new account requests.</p>
 
       <InterfaceSetting />
+
+      <AccessRepair />
 
       <h2>New account requests</h2>
       {requests.length === 0 ? (
