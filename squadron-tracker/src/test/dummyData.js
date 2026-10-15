@@ -236,6 +236,9 @@ export const UIDS = {
   systemAdmin: "uid-system-admin",
   // Signed in, but authorised for nothing. checkUserRole -> "First Login".
   stranger: "uid-stranger",
+  // Granted before Phase 4, so their membership is keyed by the request id
+  // rather than their uid. The rules refuse them every squadron read.
+  testwoodLocked: "uid-testwood-locked",
 };
 
 /**
@@ -288,6 +291,7 @@ export const dummyData = {
   "MassUserList/mul-02": { UID: UIDS.faketonUser, Squadron: 9999 },
   "MassUserList/mul-03": { UID: UIDS.testwoodAdmin, Squadron: 9998 },
   "MassUserList/mul-04": { UID: UIDS.systemAdmin, systemAdmin: true },
+  "MassUserList/mul-05": { UID: UIDS.testwoodLocked, Squadron: 9998 },
 
   "NewAccountRequests/nar-01": {
     squadronName: "Newtown",
@@ -344,6 +348,8 @@ export const dummyData = {
     flightPoints: flightPointsDocs({ 1: 0, 2: 30, 3: 15 }, "2025-06-13T20:00:00Z"),
     authorised: {
       [UIDS.testwoodAdmin]: { displayName: "Testwood Admin", email: "admin@testwood.test", role: "admin" },
+      // Legacy: keyed by the request below, not by uid. See accessRepair.js.
+      "req-9998-locked": { displayName: "Locked Out", email: "locked@testwood.test", role: "user" },
     },
     requests: {
       "req-9998-granted": {
@@ -352,6 +358,13 @@ export const dummyData = {
         uid: UIDS.testwoodAdmin,
         progress: "granted",
         timestamp: "2025-01-02T09:00:00.000Z",
+      },
+      "req-9998-locked": {
+        displayName: "Locked Out",
+        email: "locked@testwood.test",
+        uid: UIDS.testwoodLocked,
+        progress: "granted",
+        timestamp: "2025-03-01T09:00:00.000Z",
       },
     },
   }),

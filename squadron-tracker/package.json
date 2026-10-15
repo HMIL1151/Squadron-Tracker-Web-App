@@ -1,6 +1,6 @@
 {
   "name": "squadron-tracker",
-  "version": "0.20.2",
+  "version": "0.21.0",
   "private": true,
   "dependencies": {
     "@testing-library/dom": "^10.4.0",
@@ -34,7 +34,9 @@
     "test:rules": "node scripts/test-rules.js",
     "test:visual": "playwright test",
     "test:visual:update": "playwright test --update-snapshots",
-    "lint:css": "stylelint \"src/**/*.css\""
+    "lint:css": "stylelint \"src/**/*.css\"",
+    "deploy": "npm run build && firebase deploy --only hosting,firestore:rules",
+    "deploy:rules": "firebase deploy --only firestore:rules"
   },
   "eslintConfig": {
     "extends": [

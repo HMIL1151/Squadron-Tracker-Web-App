@@ -148,5 +148,10 @@
     "version": "v0.20.2",
     "date": "07/10/2026",
     "content": "Fixed: on the PTS Tracker, squadrons with a Flying badge subject had two Flying chips in the Subjects filter, and neither showed or hid everything to do with flying. There is now one Flying chip, and it covers the Flying badges and the flights and glides columns together."
+  },
+  {
+    "version": "v0.21.0",
+    "date": "15/10/2026",
+    "content": "Fixed: some users who were given access before August 2026 could sign in but saw an empty tracker. Their access record was saved in an older format that the security checks no longer recognise. They now get a message at sign-in explaining this, instead of an empty squadron. System admins have a new Locked-out users panel in the System Admin Area that finds these records in every squadron and repairs them in one go."
   }
 ]

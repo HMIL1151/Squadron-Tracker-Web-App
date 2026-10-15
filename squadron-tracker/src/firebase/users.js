@@ -16,6 +16,7 @@ import {
   db,
   deleteDoc,
   doc,
+  getDoc,
   getDocs,
   query,
   setDoc,
@@ -77,6 +78,32 @@ export const grantAccess = async (squadronNumber, { uid, displayName, email, rol
   if (!uid) throw new Error("grantAccess: uid is required");
   await setDoc(squadronDoc(squadronNumber, "AuthorisedUsers", uid), { displayName, email, role });
   await setDoc(doc(db(), "MassUserList", uid), { UID: uid, Squadron: squadronNumber });
+};
+
+/**
+ * Whether the rules will let this user into their squadron's data.
+ *
+ * MassUserList can say a user belongs to a squadron while AuthorisedUsers/{uid}
+ * -- the document the rules actually check -- is missing; see accessRepair.js
+ * for how that happened. Login used to carry on regardless, every read was
+ * refused, and the user saw an empty tracker with no explanation.
+ *
+ * The rules only let members read AuthorisedUsers, so for a locked-out user
+ * this read is itself refused. A refusal and a missing document both mean
+ * "no". Any other failure returns null -- unknown -- so a flaky network never
+ * locks out someone who does have access.
+ *
+ * @returns true | false | null
+ */
+export const hasMembership = async (squadronNumber, uid) => {
+  try {
+    const snapshot = await getDoc(squadronDoc(squadronNumber, "AuthorisedUsers", uid));
+    return snapshot.exists();
+  } catch (error) {
+    if (error?.code === "permission-denied") return false;
+    console.error(`Could not check membership of squadron ${squadronNumber}:`, error);
+    return null;
+  }
 };
 
 /** Revoke access, removing both documents so no login mapping survives. */

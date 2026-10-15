@@ -1,0 +1,120 @@
+/*
+ * The locked-out users panel on the System Admin dashboard.
+ *
+ * Matches InterfaceSetting's panel so the two read as one set of tools. Class
+ * names are prefixed rather than generic (.lead, .note) because cssShape.test.js
+ * pools class names across every stylesheet, module or not, and a generic name
+ * here could cross a defect off an unrelated component's list.
+ */
+
+.access-repair {
+  margin: 0 0 32px;
+  padding: 20px;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+}
+
+.access-repair h2 {
+  margin: 0;
+  font-size: 20px;
+  color: var(--color-text);
+}
+
+.access-repair-lead {
+  margin: 6px 0 16px;
+  font-size: 14px;
+  color: var(--color-text-muted);
+}
+
+.access-repair-button {
+  padding: 8px 16px;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-on-accent);
+  background-color: var(--color-accent);
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.access-repair-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.access-repair-button:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+.access-repair-list {
+  margin: 16px 0;
+  padding: 0;
+  list-style: none;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+}
+
+.access-repair-item {
+  padding: 12px 14px;
+  border-top: 1px solid var(--color-border);
+}
+
+.access-repair-item:first-child {
+  border-top: none;
+}
+
+.access-repair-who {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 8px;
+  font-size: 15px;
+  color: var(--color-text);
+}
+
+.access-repair-where,
+.access-repair-why {
+  margin-top: 4px;
+  font-size: 13px;
+  color: var(--color-text-muted);
+}
+
+.access-repair-tag-rekey,
+.access-repair-tag-leftover {
+  padding: 1px 8px;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 4px;
+  border: 1px solid currentcolor;
+}
+
+.access-repair-tag-rekey {
+  color: var(--color-accent);
+}
+
+.access-repair-tag-leftover {
+  color: var(--color-text-muted);
+}
+
+.access-repair-status-ok,
+.access-repair-status-error {
+  margin: 14px 0 0;
+  font-size: 14px;
+}
+
+.access-repair-status-ok {
+  color: var(--color-text);
+}
+
+.access-repair-status-error {
+  color: var(--color-danger);
+}
+
+.access-repair-note {
+  margin: 14px 0 0;
+  font-size: 13px;
+  color: var(--color-text-muted);
+}
